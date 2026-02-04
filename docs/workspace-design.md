@@ -1,0 +1,32 @@
+﻿# Workspace design: extending AI and patterns
+
+## Design patterns
+
+### Extending the AI (actions, context, delegation, prompts)
+
+1. **Context**: Expose minimal, stable state via `useCopilotReadable` (or the domain contract's `getContextSnapshot()`). Include `workspaceId`, selection summary, and domain-specific state (e.g. graph summary, track count). Shell context is registered in `AppShell`; domain context is registered when the workspace mounts (e.g. `useDomainCopilot(forgeContract)`).
+
+2. **Actions**: Register with `useCopilotAction`. Use a **domain prefix** (e.g. `forge_createNode`, `video_addTrack`) to avoid collisions. Each action: name, description, parameters, handler; optional `render` for generative UI (confirmations, previews). Domain actions are created in `lib/domains/<domain>/copilot/actions.ts` and registered via `useDomainCopilot`.
+
+3. **Delegation**: The main agent can call shell actions (`switchWorkspace`, `openWorkspace`, `closeWorkspace`). For sub-tasks, you can add co-agents (`useCoAgent` / `useAgent`). See [co-agents-and-multi-agent.md](./co-agents-and-multi-agent.md).
+
+4. **Prompts / instructions**: Base instructions come from the app-level settings and the CopilotKit provider. Domain-specific instructions come from the contract's `getInstructions()` and are layered as additional instructions. Keep instructions short and mention available action prefixes.
+
+### What to expect with auto model (free-only)
+
+- **Auto mode**: App rotates through enabled free models; skips models in cooldown (exponential backoff after 429/5xx). First available model (free-first, registry order) is used.
+- **Manual mode**: User picks a specific model; that model is used even if in cooldown.
+- **If all in cooldown**: The model whose cooldown expires soonest is used.
+- **Health**: Model switcher shows health dots (green / amber / red). Cooldown is cleared on success.
+
+### Adding a workspace or editor
+
+1. **New workspace**: Add a workspace id to `AppShellWorkspaceId` in `lib/app-shell/store.ts`. Create a workspace component (e.g. `XWorkspace`) using `WorkspaceShell`, wire domain store, `useXContract` + `useDomainCopilot`. Add tab and render branch in `AppShell`. Register shell context/actions (workspace name, switch/open/close) if not already generic.
+2. **New editor type**: Implement the editor in the workspace's **main** slot. Expose selection (and optional viewport handle) for `revealSelection`. If you add multiple editor windows/tabs later, extend route state with `editors[]` and `sessions` per editor; see [unified-workspace.md](./architecture/unified-workspace.md).
+3. **Register agents**: Domain contract registers context and actions when the workspace is active. Optionally add a co-agent (see [co-agents-and-multi-agent.md](./co-agents-and-multi-agent.md)).
+
+## References
+
+- [Adding domain actions](./adding-domain-actions.md)
+- [Unified workspace architecture](./architecture/unified-workspace.md)
+- [Errors and attempts](./errors-and-attempts.md) (do not repeat)

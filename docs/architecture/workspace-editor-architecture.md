@@ -1,0 +1,129 @@
+# Workspace & editor architecture
+
+## Mental model
+
+- **Workspace Shell** — Layout + surfaces (header, toolbar, left, main, right, statusBar, bottom, overlays). Declarative slots only.
+- **Workspace Controller (domain)** — Store + adapter + subscriptions (e.g. Zustand).
+- **Editor Bridge (per editor)** — Converts editor state/events into shared **Selection** and commands.
+- **Chat Orchestrator** — Reads shared state, emits intents, proposes drafts, triggers navigation.
+
+Rule: **shared UI stays dumb**; capabilities live in a **headless controller layer**.
+
+**AI-first:** The chat UI operates the main application. The agent reads workspace context and performs edits via domain actions. See [AI–workspace integration](../../ai-workspace-integration.md) and [Adding domain actions](../../adding-domain-actions.md).
+
+---
+
+## Workspace UI kit surfaces
+
+| Surface | Purpose |
+|--------|--------|
+| **Header** | Project switcher, breadcrumbs, workspace switcher (Left / Center / Right) |
+| **Toolbar** | Primary actions; declarative `ToolbarGroup[]` or Left/Center/Right slots |
+| **Main** | Primary editor surface (React Flow, Lexical, JointJS, Twick) |
+| **Inspector** | Selection-driven properties; `sections[]` with `when(selection)` + `render` |
+| **StatusBar** | Saving, validation, play state, selection summary |
+| **Overlays** | Modals/drawers/popovers; **declarative list** (`OverlaySpec[]`), no registry |
+| **LeftPanel** | Optional: library, palette, navigator |
+| **BottomPanel** | Optional: timeline, logs, errors (a slot, not a core concept) |
+
+---
+
+## Selection model
+
+Shared shape; every editor adapts into it:
+
+- **none** — No selection.
+- **entity** — `{ type: 'entity', entityType, id, ref?, meta? }` (node, edge, character, etc.).
+- **textRange** — `{ type: 'textRange', anchor, focus, textPreview?, meta? }` (e.g. Lexical).
+- **canvasObject** — `{ type: 'canvasObject', system, id, meta? }` (e.g. Twick, JointJS).
+
+Helpers: `isNone`, `isEntity`, `isTextRange`, `isCanvasObject`, `toEntitySelection(kind, id)`.
+Legacy: `SelectionKind` / `LegacySelection` for backward compat; map to entity in adapters.
+
+---
+
+## Inspector section pattern
+
+Inspector is **composition**, not a monolith:
+
+- `WorkspaceInspector` receives `selection` and `sections: InspectorSection[]`.
+- Each section: `id`, `title`, `when(selection) => boolean`, `render({ selection }) => ReactNode`.
+- Only sections that pass `when(selection)` are rendered. Handles Forge node/edge, Writer range, Characters element, etc.
+
+---
+
+## Toolbar model
+
+Declarative **data + slots**:
+
+- `ToolbarGroup`: `id`, `align` ('start' | 'center' | 'end'), `items: ToolbarItem[]`.
+- `ToolbarItem`: `button` | `toggle` | `menu` | `custom` (with id, label, onClick / onToggle / render / children).
+- Pass `groups` to `WorkspaceToolbar` to render from data; otherwise use `Left`/`Center`/`Right` slots.
+
+---
+
+## Overlays pattern
+
+- **No registry.** One list per workspace: `OverlaySpec[]` with `id`, `type`, `title?`, `size?`, `render({ payload, onDismiss })`.
+- Workspace state holds `activeOverlay: { id, payload? } | null`. Set to open; `onDismiss()` clears.
+- `WorkspaceOverlaySurface` finds spec by `activeOverlay.id` and calls `render`. No file scanning or generators.
+
+---
+
+## Shared types (src/shared/workspace/)
+
+- **Selection** — Discriminant union: none | entity | textRange | canvasObject (see above).
+- **Focus** — `FocusTarget = 'chat' | 'viewport' | 'inspector' | { custom }`.
+- **OverlaySpec** / **ActiveOverlay** — Declarative overlays; no registry.
+- **ToolbarGroup** / **ToolbarItem** — Declarative toolbar.
+- **InspectorSection** — when(selection) + render(selection).
+- **WorkspaceUISpec** — slots + overlays list (one place per workspace).
+- **ModalRoute** / **ModalRegistry** — Legacy; prefer OverlaySpec + OverlaySurface.
+- **DeepLink** / **NavRequest**, **Draft**, **Proposal**, **WorkspaceCapabilities** — Unchanged.
+
+---
+
+## Chat-first loop
+
+1. **Context snapshot** — Workspace exposes id, selection, open document/template, minimal context for LLM.
+2. **Proposal pipeline** — Create proposal → user reviews → apply/reject via capabilities.
+3. **Navigation + reveal** — Deep link + focus + highlight.
+4. **Overlays** — Open by setting `activeOverlay`; no registry.
+
+---
+
+## Unified API: common capabilities + per-workspace actions
+
+The Copilot agent operates on workspaces in a consistent way without a single over-abstracted "createEntity" API.
+
+- **Common capabilities** (every workspace implements):
+  - `getSelection()` — Returns shared Selection (entity / textRange / canvasObject / none).
+  - `getContextSnapshot()` — workspaceId, selection, openDocumentId, optional context (e.g. selected node label).
+  - `revealSelection()` — Fit viewport to selection (Forge: fitView to node/edge; Writer: scroll to range; etc.).
+  - `openModal` / overlay — Same pattern everywhere; workspace sets activeOverlay.
+  - `navigateTo(target)` — Deep links; host implements router.
+
+- **Domain actions** (per workspace; registered with CopilotKit when that workspace is active):
+  - Forge: createNode, updateNode, deleteNode, createEdge, getGraph, openCreateNodeModal, revealSelection.
+  - Writer (future): insertText, replaceRange, formatSelection, getDocument.
+  - Characters (future): createElement, updateElement, createLink.
+  - Video/Twick (future): addLayer, updateElement, etc.
+
+The agent uses `workspaceId` and `editorType` from context to choose which actions to call. No file scanning or registry in shared UI.
+
+---
+
+## Editor viewport and selection
+
+Editors expose selection (e.g. React Flow `onSelectionChange`) and optionally a viewport handle (e.g. `fitView`, `fitViewToNodes`) so the workspace can implement `revealSelection()`. See `EditorViewportHandle` in capabilities.ts. Forge wires React Flow via `onInit` and `onSelectionChange` and maps to shared Selection (forge.node / forge.edge).
+
+---
+
+## Editor bridges (per domain, later)
+
+- **Forge (React Flow)** — entity selection (`forge.node`, `forge.edge`); reveal = fitView/zoomTo. Implemented.
+- **Writer (Lexical)** — textRange; reveal = scroll selection into view.
+- **Characters (JointJS)** — entity (`characters.element`, `characters.link`); reveal = center paper.
+- **Video (Twick)** — canvasObject or entity; reveal = highlight/scroll timeline.
+
+No framework abstraction over editors; only the shared Selection + capability contract at the edges.
