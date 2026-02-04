@@ -22,11 +22,11 @@ For workspace-specific sub-tasks (e.g. "edit the graph in Forge" or "add a track
 
 3. **Instructions**: Give the co-agent workspace-specific instructions (e.g. "You are the Forge graph editor agent. You can create nodes, connect edges, and reveal selection.") so the main agent knows when to hand off.
 
-4. **Delegation**: The main agent uses tools or instructions to "invoke" the co-agent; exact API depends on CopilotKit version. Document the co-agent id and `whenToUse` in `WorkspaceAgentConfig` (see `src/shared/copilot/agent-types.ts`).
+4. **Delegation**: The main agent uses tools or instructions to "invoke" the co-agent; exact API depends on CopilotKit version. Document the co-agent id and `whenToUse` in `WorkspaceAgentConfig` (see `packages/shared/src/shared/copilot/agent-types.ts`).
 
 ## Types and utilities
 
-- **src/shared/copilot/agent-types.ts**: `AgentDelegationTarget`, `WorkspaceAgentConfig`. Use these to declare which workspace has an optional co-agent and how the main agent should delegate.
+- **packages/shared/src/shared/copilot/agent-types.ts**: `AgentDelegationTarget`, `WorkspaceAgentConfig`. Use these to declare which workspace has an optional co-agent and how the main agent should delegate.
 
 ## Summary
 

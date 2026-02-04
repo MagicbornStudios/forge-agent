@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "jsx": "preserve",
+    "strict": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@forge/domain-forge": ["./src/index.ts"],
+      "@forge/domain-forge/*": ["./src/*"],
+      "@forge/shared": ["../shared/src/index.ts"],
+      "@forge/shared/*": ["../shared/src/shared/*"],
+      "@forge/types": ["../types/src/index.ts"],
+      "@forge/types/*": ["../types/src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}

@@ -5,11 +5,11 @@
 - **Spotify/Photoshop-inspired**: clean, dense, high-contrast hierarchy with muted borders and purposeful accents.
 - **Declarative shadcn**: use shadcn UI primitives (DropdownMenu, Select, Sheet, Card, Button, etc.) instead of hand-rolled UI.
 - **Workspace theming**: app theme is the base (driven by `ui.theme` via `AppThemeProvider`), workspaces may override via `WorkspaceShell theme`.
-- **Atomic design**: atoms live in `components/ui/*` (shadcn). Build molecules and organisms from those primitives.
+- **Atomic design**: atoms live in `apps/studio/components/ui/*` (shadcn). Build molecules and organisms from those primitives.
 
 ## UI rules
 
-- Prefer semantic tokens (`--background`, `--foreground`, `--border`) from `src/shared/styles/themes.css`.
+- Prefer semantic tokens (`--background`, `--foreground`, `--border`) from `packages/shared/src/shared/styles/themes.css`.
 - Avoid single-purpose UI components per workspace; extend shared components and document the slot.
 - Standard toolbar layout: File menu + Project select + Settings (plus domain actions).
 

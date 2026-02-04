@@ -1,4 +1,8 @@
-# Dependencies
+# -----------------------------------------------------------------------------
+# Forge Agent – pnpm monorepo (apps/*, packages/*)
+# -----------------------------------------------------------------------------
+
+# Dependencies (root + every workspace)
 node_modules/
 .pnp
 .pnp.*
@@ -7,6 +11,7 @@ node_modules/
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+.pnpm-store/
 
 # Build & output
 .next/
@@ -22,6 +27,7 @@ next-env.d.ts
 coverage/
 .nyc_output/
 *.lcov
+.jest/cache/
 
 # Environment (secrets – use .env.example as template)
 .env
@@ -31,15 +37,21 @@ coverage/
 .env.production.local
 .env*.local
 
-# Payload CMS
+# Payload CMS (studio app)
 /data
 media/
+apps/studio/data/
+apps/studio/media/
 
 # Vercel
 .vercel
 
-# Turbo (monorepo cache, if used)
+# Monorepo / Turbo
 .turbo
+
+# Linters & formatters
+.eslintcache
+.prettiercache
 
 # Debug & logs
 npm-debug.log*
@@ -56,7 +68,7 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-# IDE / editors (optional – uncomment if you don’t want to commit these)
+# IDE / editors (uncomment to ignore)
 # .cursor/
 # .vscode/
 # .idea/

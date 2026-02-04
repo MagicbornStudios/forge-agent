@@ -9,9 +9,9 @@ The workspace bottom panel shows a sequence timeline of the Forge graph: nodes i
 
 ## Mapping: Forge graph -> timeline model
 
-Implemented in `lib/forge-to-timeline.ts`:
+Implemented in `apps/studio/lib/forge-to-timeline.ts`:
 
-- **Order:** Same as the sequence util: topological sort of nodes (roots first, then dependencies). See `lib/graph-to-sequence.ts`.
+- **Order:** Same as the sequence util: topological sort of nodes (roots first, then dependencies). See `apps/studio/lib/graph-to-sequence.ts`.
 - **Tracks:** One track (`main`) containing all nodes in that order. Multiple tracks (e.g. one per branch) can be added later.
 - **Elements:** Each node becomes one TimelineElement:
   - `id`: synthetic (e.g. `el-{nodeId}`)
@@ -40,7 +40,7 @@ If Twick's timeline is built for video time only (e.g. seconds), you can still u
 
 ## Files
 
-- **Sequence order:** `lib/graph-to-sequence.ts`
-- **Graph -> timeline model:** `lib/forge-to-timeline.ts`
-- **Timeline UI:** `components/forge/ForgeTimeline.tsx`
-- **Wiring:** `components/workspaces/ForgeWorkspace.tsx` passes `bottom={timelineContent}` to `WorkspaceLayoutGrid`.
+- **Sequence order:** `apps/studio/lib/graph-to-sequence.ts`
+- **Graph -> timeline model:** `apps/studio/lib/forge-to-timeline.ts`
+- **Timeline UI:** `apps/studio/components/forge/ForgeTimeline.tsx`
+- **Wiring:** `apps/studio/components/workspaces/ForgeWorkspace.tsx` passes `bottom={timelineContent}` to `WorkspaceLayoutGrid`.

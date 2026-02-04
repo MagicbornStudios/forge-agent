@@ -1,31 +1,33 @@
-﻿# Code organization
+# Code organization
 
 ## Layout
 
-- **app/** - Routes, layout, globals.css.
-- **components/** - App and domain components. `components/workspaces/ForgeWorkspace.tsx` is the Forge workspace (uses shared shell + CopilotKit).
-- **src/shared/** - Shared app/workspace UI and styles. No app routes or domain imports.
-- **lib/** - Store, CopilotKit actions, utils, OpenRouter config.
-- **types/** - Graph and app types.
+- **apps/studio/app/** - Routes, layout, globals.css.
+- **apps/studio/components/** - App and domain components. `apps/studio/components/workspaces/ForgeWorkspace.tsx` is the primary workspace.
+- **apps/studio/lib/** - Store, CopilotKit actions, utils, OpenRouter config. `apps/studio/lib/domains/video` is a UI showcase only.
+- **apps/studio/payload/** - Payload CMS collections (forge-graphs, video-docs, settings-snapshots, agent-sessions).
+- **packages/shared/** - Shared app/workspace UI and styles. No app routes or domain imports.
+- **packages/domain-forge/** - Forge domain logic (types, store, operations, copilot wiring).
+- **packages/types/** - Generated Payload types + domain aliases.
 
 ## Atomic design map
 
-- **Atoms**: `components/ui/*` (shadcn primitives).
-- **Molecules**: composable widgets (e.g. `components/settings/*`, `components/model-switcher/*`, `src/shared/components/workspace/*` controls).
-- **Organisms**: workspace shells and larger assemblies (e.g. `components/workspaces/*`, `components/AppShell.tsx`).
-- **Templates**: `app/*` layout and route composition.
+- **Atoms**: `apps/studio/components/ui/*` (shadcn primitives).
+- **Molecules**: composable widgets (e.g. `apps/studio/components/settings/*`, `apps/studio/components/model-switcher/*`, `packages/shared/src/shared/components/workspace/*` controls).
+- **Organisms**: workspace shells and larger assemblies (e.g. `apps/studio/components/workspaces/*`, `apps/studio/components/AppShell.tsx`).
+- **Templates**: `apps/studio/app/*` layout and route composition.
 
 ## Workspace + CopilotKit
 
-- **Shell** - `src/shared/components/workspace/`: declarative slots, shadcn-based (Button, Separator, DropdownMenu, Select, Sheet, etc.).
-- **Forge workspace** - `components/workspaces/ForgeWorkspace.tsx`: composes shell, registers `useCopilotReadable` (context) and `useCopilotAction` (graph actions from `lib/domains/forge/copilot`). CopilotKit chat uses that context and those actions to edit the graph.
-- **Editor** - `components/GraphEditor.tsx`: React Flow main surface; receives graph from store; mutations go through `applyOperations` which the CopilotKit actions call.
+- **Shell** - `packages/shared/src/shared/components/workspace/`: declarative slots, shadcn-based primitives.
+- **Forge workspace** - `apps/studio/components/workspaces/ForgeWorkspace.tsx`: composes shell, registers context and actions from `packages/domain-forge/src/copilot`.
+- **Editor** - `apps/studio/components/GraphEditor.tsx`: React Flow surface; mutations go through operations used by Copilot actions.
 
-So: **context** (readable) describes the graph; **actions** (createNode, updateNode, deleteNode, createEdge, getGraph) perform edits. The agent in the chat uses both.
+So: **context** (readable) describes the graph; **actions** (createNode, updateNode, deleteNode, createEdge, getGraph) perform edits.
 
 ## Adding a new workspace
 
-1. Add a route and a workspace component that uses `WorkspaceShell` + slots.
+1. Add a workspace component that uses `WorkspaceShell` + slots.
 2. Register `useCopilotReadable` with that workspace's context.
 3. Register `useCopilotAction` with domain-specific actions.
-4. Put the editor in `WorkspaceLayoutGrid` `main`. Declare overlays in one place and use `WorkspaceOverlaySurface` with `activeOverlay` state (no registry).
+4. Put the editor in `WorkspaceLayoutGrid` `main` and declare overlays in one place.
