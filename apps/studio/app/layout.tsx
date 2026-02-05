@@ -3,9 +3,6 @@ import './globals.css';
 import { AppThemeProvider } from '@/components/providers/AppThemeProvider';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { SettingsHydration } from '@/components/settings/SettingsHydration';
-import { EntitlementsProvider } from '@/components/providers/EntitlementsProvider';
-import { AppShellPersistGate } from '@/components/persistence/AppShellPersistGate';
-import { DirtyBeforeUnload } from '@/components/persistence/DirtyBeforeUnload';
 
 export const metadata: Metadata = {
   title: 'Forge Agent PoC',
@@ -23,10 +20,7 @@ export default function RootLayout({
         <AppThemeProvider>
           <QueryProvider>
             <SettingsHydration />
-            <AppShellPersistGate>
-              <DirtyBeforeUnload />
-              <EntitlementsProvider>{children}</EntitlementsProvider>
-            </AppShellPersistGate>
+            {children}
           </QueryProvider>
         </AppThemeProvider>
       </body>

@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { CopilotKitProvider } from '@/components/providers/CopilotKitProvider';
-import { TooltipProvider } from '@/components/providers/TooltipProvider';
 import { AppShell } from '@/components/AppShell';
+import { AppProviders } from '@/components/AppProviders';
 import { useAppShellStore } from '@/lib/app-shell/store';
 import type { ForgeGraphDoc } from '@forge/types/graph';
 import { useGraphStore, GRAPH_DRAFT_KEY } from '@/lib/store';
@@ -82,10 +81,8 @@ function HomeContent() {
 
 export default function Home() {
   return (
-    <TooltipProvider>
-      <CopilotKitProvider defaultOpen={true}>
-        <HomeContent />
-      </CopilotKitProvider>
-    </TooltipProvider>
+    <AppProviders copilotDefaultOpen>
+      <HomeContent />
+    </AppProviders>
   );
 }

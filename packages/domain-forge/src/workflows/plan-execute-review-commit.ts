@@ -1,5 +1,4 @@
-import type { Workflow, WorkflowContext, Emit } from '../../workflow/types';
-import type { WorkflowRunResult } from '../../workflow/events';
+import type { Workflow, WorkflowContext, Emit, WorkflowRunResult } from '@forge/agent-engine';
 import type { PatchEnvelope, ReviewResult } from '@forge/shared/copilot/workflows/patch';
 import { FORGE_NODE_TYPE, type ForgeGraphDoc, type ForgeGraphPatchOp } from '@forge/types/graph';
 
@@ -105,16 +104,96 @@ async function buildPatchWithLoop(
     if (review.ok) {
       return patch;
     }
+
+    if (review.errors && review.errors.length > 0) {
+      await emit({
+        type: 'step.delta',
+        runId: ctx.runId,
+        stepId: 'propose',
+        channel: 'validation',
+        delta: `Validation failed: ${review.errors.join(' | ')}`,
+        ts: now(),
+      });
+    }
   }
 
   return lastPatch;
 }
 
-function validatePatch(_snapshot: unknown, patch: PatchEnvelope<'reactflow', ForgeGraphPatchOp[]>): ReviewResult {
+function validatePatch(snapshot: unknown, patch: PatchEnvelope<'reactflow', ForgeGraphPatchOp[]>): ReviewResult {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
   if (!Array.isArray(patch.ops) || patch.ops.length === 0) {
-    return { ok: false, errors: ['Patch has no operations.'] };
+    errors.push('Patch has no operations.');
   }
-  return { ok: true };
+
+  const graph = snapshot as ForgeGraphDoc | null;
+  if (!graph?.flow?.nodes || !graph?.flow?.edges) {
+    errors.push('Graph snapshot missing nodes/edges.');
+  }
+
+  const nodeIds = new Set<string>(graph?.flow?.nodes?.map((n) => n.id) ?? []);
+  const edgeIds = new Set<string>(graph?.flow?.edges?.map((e) => e.id) ?? []);
+  const createdNodeIds = new Set<string>();
+
+  for (const op of patch.ops ?? []) {
+    switch (op.type) {
+      case 'createNode': {
+        if (!op.id) {
+          warnings.push('createNode missing id; runtime will generate a node id.');
+          break;
+        }
+        if (nodeIds.has(op.id) || createdNodeIds.has(op.id)) {
+          errors.push(`Duplicate node id in patch: ${op.id}`);
+          break;
+        }
+        createdNodeIds.add(op.id);
+        nodeIds.add(op.id);
+        break;
+      }
+      case 'deleteNode': {
+        if (!nodeIds.has(op.nodeId)) {
+          errors.push(`deleteNode refers to missing node: ${op.nodeId}`);
+          break;
+        }
+        nodeIds.delete(op.nodeId);
+        break;
+      }
+      case 'updateNode':
+      case 'moveNode': {
+        if (!nodeIds.has(op.nodeId)) {
+          errors.push(`${op.type} refers to missing node: ${op.nodeId}`);
+        }
+        break;
+      }
+      case 'createEdge': {
+        const missing: string[] = [];
+        if (!nodeIds.has(op.source)) missing.push(op.source);
+        if (!nodeIds.has(op.target)) missing.push(op.target);
+        if (missing.length > 0) {
+          errors.push(`createEdge refers to missing nodes: ${missing.join(', ')}`);
+        }
+        break;
+      }
+      case 'deleteEdge': {
+        if (!edgeIds.has(op.edgeId)) {
+          errors.push(`deleteEdge refers to missing edge: ${op.edgeId}`);
+          break;
+        }
+        edgeIds.delete(op.edgeId);
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  return {
+    ok: errors.length === 0,
+    errors: errors.length > 0 ? errors : undefined,
+    warnings: warnings.length > 0 ? warnings : undefined,
+  };
 }
 
 export const forgePlanExecuteReviewCommit: Workflow<ForgeWorkflowInput> = {

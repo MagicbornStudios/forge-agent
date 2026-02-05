@@ -1,4 +1,5 @@
 import type { CopilotActionConfig, AIHighlightPayload } from '@forge/shared/copilot/types';
+import { createDomainAction } from '@forge/shared/copilot';
 import { getVideoDocData, type VideoDoc, type VideoPatchOp } from '../types';
 
 export interface VideoActionsDeps {
@@ -10,17 +11,17 @@ export interface VideoActionsDeps {
 /**
  * Factory: produce all CopilotKit action configs for the video domain.
  *
- * All action names are prefixed with `video_` to prevent collisions.
+ * Action names are prefixed via createDomainAction('video', ...).
  */
 export function createVideoActions(deps: VideoActionsDeps): CopilotActionConfig[] {
   const { getDoc, applyOperations, onAIHighlight } = deps;
 
-  return [
+  const actions: CopilotActionConfig[] = [
     // -----------------------------------------------------------------------
     // video_addTrack
     // -----------------------------------------------------------------------
     {
-      name: 'video_addTrack',
+      name: 'addTrack',
       description: 'Add a new track to the timeline (e.g. video, audio, text overlay, caption).',
       parameters: [
         { name: 'name', type: 'string' as const, description: 'Track name', required: true },
@@ -36,7 +37,7 @@ export function createVideoActions(deps: VideoActionsDeps): CopilotActionConfig[
     // video_removeTrack
     // -----------------------------------------------------------------------
     {
-      name: 'video_removeTrack',
+      name: 'removeTrack',
       description: 'Remove a track from the timeline.',
       parameters: [
         { name: 'trackId', type: 'string' as const, description: 'Track ID to remove', required: true },
@@ -51,7 +52,7 @@ export function createVideoActions(deps: VideoActionsDeps): CopilotActionConfig[
     // video_addElement
     // -----------------------------------------------------------------------
     {
-      name: 'video_addElement',
+      name: 'addElement',
       description: 'Add an element (clip, text, audio) to a track at a specific time range.',
       parameters: [
         { name: 'trackId', type: 'string' as const, description: 'Track to add element to', required: true },
@@ -78,7 +79,7 @@ export function createVideoActions(deps: VideoActionsDeps): CopilotActionConfig[
     // video_moveElement
     // -----------------------------------------------------------------------
     {
-      name: 'video_moveElement',
+      name: 'moveElement',
       description: 'Move an element to a new start time on its track.',
       parameters: [
         { name: 'trackId', type: 'string' as const, description: 'Track ID', required: true },
@@ -100,7 +101,7 @@ export function createVideoActions(deps: VideoActionsDeps): CopilotActionConfig[
     // video_resizeElement
     // -----------------------------------------------------------------------
     {
-      name: 'video_resizeElement',
+      name: 'resizeElement',
       description: 'Resize an element by setting new start and end times.',
       parameters: [
         { name: 'trackId', type: 'string' as const, description: 'Track ID', required: true },
@@ -124,7 +125,7 @@ export function createVideoActions(deps: VideoActionsDeps): CopilotActionConfig[
     // video_removeElement
     // -----------------------------------------------------------------------
     {
-      name: 'video_removeElement',
+      name: 'removeElement',
       description: 'Remove an element from a track.',
       parameters: [
         { name: 'trackId', type: 'string' as const, description: 'Track ID', required: true },
@@ -144,7 +145,7 @@ export function createVideoActions(deps: VideoActionsDeps): CopilotActionConfig[
     // video_setSceneOverride
     // -----------------------------------------------------------------------
     {
-      name: 'video_setSceneOverride',
+      name: 'setSceneOverride',
       description:
         'Set a scene property override for a specific graph node on the timeline. Use this to change lighting, mood, music, etc. at a specific point in the story.',
       parameters: [
@@ -168,7 +169,7 @@ export function createVideoActions(deps: VideoActionsDeps): CopilotActionConfig[
     // video_getTimeline
     // -----------------------------------------------------------------------
     {
-      name: 'video_getTimeline',
+      name: 'getTimeline',
       description: 'Get the current timeline state including all tracks, elements, and scene overrides.',
       parameters: [],
       handler: async () => {
@@ -206,7 +207,7 @@ export function createVideoActions(deps: VideoActionsDeps): CopilotActionConfig[
     // video_reorderTracks
     // -----------------------------------------------------------------------
     {
-      name: 'video_reorderTracks',
+      name: 'reorderTracks',
       description: 'Reorder tracks by providing the track IDs in the desired order.',
       parameters: [
         { name: 'trackIds', type: 'string[]' as const, description: 'Track IDs in desired order', required: true },
@@ -221,7 +222,7 @@ export function createVideoActions(deps: VideoActionsDeps): CopilotActionConfig[
     // video_setResolution
     // -----------------------------------------------------------------------
     {
-      name: 'video_setResolution',
+      name: 'setResolution',
       description: 'Set the video output resolution.',
       parameters: [
         { name: 'width', type: 'number' as const, description: 'Width in pixels', required: true },
@@ -233,4 +234,6 @@ export function createVideoActions(deps: VideoActionsDeps): CopilotActionConfig[
       },
     },
   ];
+
+  return actions.map((action) => createDomainAction('video', action));
 }

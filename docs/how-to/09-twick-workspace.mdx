@@ -17,6 +17,8 @@ Build a VideoWorkspace that:
 - Keeps the domain contract pattern (AI context/actions) wired.
 - Leaves persistence as a later phase (draft and AI ops can remain internal for now).
 
+App-level note: VideoWorkspace is mounted inside the AppShell, which uses `AppSpace` for layout and `AppProviders` for the runtime/provider stack (Copilot, tooltips, entitlements).
+
 ## 1. Install Twick packages (app-level only)
 
 ```bash

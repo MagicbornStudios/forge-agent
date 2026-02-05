@@ -9,7 +9,7 @@ import {
 } from '@/lib/app-shell/workspace-metadata';
 import { ForgeWorkspace, VideoWorkspace } from '@/components/workspaces';
 import { WorkspaceButton } from '@forge/shared/components/workspace';
-import { AppLayout, AppTabGroup, AppTab, AppContent } from '@forge/shared/components/app';
+import { AppSpace } from '@forge/shared/components/app';
 import { SettingsMenu } from '@/components/settings/SettingsMenu';
 import { Toaster } from '@forge/ui/sonner';
 import { useSettingsStore } from '@/lib/settings/store';
@@ -191,9 +191,9 @@ export function AppShell() {
   }));
 
   return (
-    <AppLayout>
+    <AppSpace>
       {/* Workspace tabs */}
-      <AppTabGroup
+      <AppSpace.Tabs
         label="Workspace tabs"
         actions={
           <>
@@ -222,7 +222,7 @@ export function AppShell() {
         }
       >
         {openWorkspaceIds.map((id) => (
-          <AppTab
+          <AppSpace.Tab
             key={id}
             label={WORKSPACE_LABELS[id]}
             isActive={activeWorkspaceId === id}
@@ -233,14 +233,14 @@ export function AppShell() {
             closeTooltip={`Close ${WORKSPACE_LABELS[id]}`}
           />
         ))}
-      </AppTabGroup>
+      </AppSpace.Tabs>
 
       {/* Active workspace content */}
-      <AppContent>
+      <AppSpace.Content>
         {activeWorkspaceId === 'forge' && <ForgeWorkspace />}
         {activeWorkspaceId === 'video' && <VideoWorkspace />}
-      </AppContent>
+      </AppSpace.Content>
       {toastsEnabled !== false && <Toaster />}
-    </AppLayout>
+    </AppSpace>
   );
 }

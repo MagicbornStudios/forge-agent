@@ -1,6 +1,6 @@
 ---
 created: 2026-02-04
-updated: 2026-02-04
+updated: 2026-02-05
 ---
 
 # Unified workspace (App Shell) architecture
@@ -15,7 +15,7 @@ The app has a **Unified Workspace** implemented as an **App Shell** that owns mu
   - State: `activeWorkspaceId`, `openWorkspaceIds`, `globalModals`, `workspaceThemes` (optional per-workspace overrides)
   - Settings: `apps/studio/lib/settings/store.ts` provides app/workspace/editor settings with inheritance; settings sheets live in `apps/studio/components/settings/*`.
   - Theme: `apps/studio/components/providers/AppThemeProvider.tsx` binds `ui.theme` to `<html data-theme>` via `next-themes`.
-  - App layout primitives: `packages/shared/src/shared/components/app/*` (AppLayout, AppTabGroup, AppTab, AppContent)
+- App layout primitives: `packages/shared/src/shared/components/app/*` (AppLayout, AppTabGroup, AppTab, AppContent). `AppSpace` is the semantic wrapper used by AppShell.
   - Actions: `setActiveWorkspace`, `openWorkspace`, `closeWorkspace`
   - Shell-level CopilotKit: `useCopilotReadable` (activeWorkspaceId, workspaceNames, editorSummary), `useCopilotAction` (switchWorkspace, openWorkspace, closeWorkspace)
 

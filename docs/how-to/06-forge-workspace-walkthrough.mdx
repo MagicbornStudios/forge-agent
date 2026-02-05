@@ -15,6 +15,35 @@ Build a ForgeWorkspace that:
 - Supports AI plan -> patch -> review -> commit with streamed output.
 - Highlights changed nodes and edges after AI actions or patch acceptance.
 
+## 0. AppSpace + AppProviders (app-level)
+
+ForgeWorkspace lives inside the **App Shell**, which uses a semantic wrapper called `AppSpace`. We also centralize providers in `AppProviders` so a consumer app can drop in AppShell with minimal setup.
+
+```tsx
+// apps/studio/components/AppShell.tsx
+return (
+  <AppSpace>
+    <AppSpace.Tabs>...</AppSpace.Tabs>
+    <AppSpace.Content>...</AppSpace.Content>
+  </AppSpace>
+);
+```
+
+```tsx
+// apps/studio/app/page.tsx
+export default function Home() {
+  return (
+    <AppProviders>
+      <HomeContent />
+    </AppProviders>
+  );
+}
+```
+
+Expected behavior:
+- App shell layout is consistent across apps.
+- Providers (Copilot, tooltips, entitlements) are composed once.
+
 ## Glossary
 
 - **Draft**: Local, unsaved graph state stored in `useGraphStore`.
