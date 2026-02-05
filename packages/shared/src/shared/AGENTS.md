@@ -23,5 +23,5 @@ Extend the workspace types and `WorkspaceLayoutGrid` (or equivalent) in `package
 
 ## Pitfalls
 
-- Do not duplicate theme tokens in `apps/studio/app/globals.css`; see **docs/errors-and-attempts.md**.
+- Do not duplicate theme tokens in `apps/studio/app/globals.css`; see **docs/agent-artifacts/core/errors-and-attempts.md**.
 

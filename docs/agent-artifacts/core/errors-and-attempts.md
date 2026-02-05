@@ -3,9 +3,11 @@ created: 2026-02-04
 updated: 2026-02-04
 ---
 
+Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../18-agent-artifacts-index.mdx).
+
 # Errors and attempts (do not repeat)
 
-> **For coding agents.** See [Agent artifacts index](agent-artifacts.md) for the full list.
+> **For coding agents.** See [Agent artifacts index](../18-agent-artifacts-index.mdx) for the full list.
 
 Log of known failures and fixes so agents and developers avoid repeating the same mistakes.
 
@@ -69,9 +71,9 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ## Duplicating collection CRUD in custom routes
 
-**Problem**: Adding custom Next routes that reimplement Payload collection CRUD (e.g. `/api/graphs` that just calls `payload.find`/`create`/`update`) duplicates Payload’s built-in REST and is unnecessary.
+**Problem**: Adding custom Next routes that reimplement Payload collection CRUD (e.g. `/api/graphs` that just calls `payload.find`/`create`/`update`) duplicates Payload's built-in REST and is unnecessary.
 
-**Fix**: Use Payload’s auto-generated REST (`/api/forge-graphs`, `/api/video-docs`) and the Payload SDK from the client. Add custom routes only for app-specific behavior (e.g. scope-based settings upsert, AI, SSE).
+**Fix**: Use Payload's auto-generated REST (`/api/forge-graphs`, `/api/video-docs`) and the Payload SDK from the client. Add custom routes only for app-specific behavior (e.g. scope-based settings upsert, AI, SSE).
 
 ---
 

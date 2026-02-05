@@ -11,7 +11,7 @@ const VALID_SLUGS = new Set(DOC_ENTRIES.map((e) => e.slug));
 const REPO_ROOT = path.join(process.cwd(), '..', '..');
 
 function getDocPaths(slug: string): string[] {
-  if (slug === '00-docs-index') {
+  if (slug === '00-docs-index' || slug === '18-agent-artifacts-index' || slug === '19-coding-agent-strategy') {
     const base = path.join(REPO_ROOT, 'docs', slug);
     return [`${base}.mdx`, `${base}.md`];
   }

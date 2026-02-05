@@ -1,0 +1,34 @@
+---
+created: 2026-02-04
+updated: 2026-02-04
+---
+
+# Agent artifacts index
+
+These files are maintained for AI/coding agents to read and use when modifying the codebase. Keep them accurate and greppable; avoid redundant copies.
+
+## Living agent artifacts (core)
+
+- **[agent-artifacts/core/STATUS.md](agent-artifacts/core/STATUS.md)** — Current state, Ralph Wiggum loop, next steps.
+- **[agent-artifacts/core/decisions.md](agent-artifacts/core/decisions.md)** — Architecture decisions and rationale.
+- **[agent-artifacts/core/errors-and-attempts.md](agent-artifacts/core/errors-and-attempts.md)** — Known failures and fixes (do not repeat).
+- **[AGENTS.md](../AGENTS.md)** (root) — Global agent rules, loop, conventions.
+
+## Per-package / per-area AGENTS.md
+
+- [packages/shared/src/shared/AGENTS.md](../packages/shared/src/shared/AGENTS.md)
+- [packages/shared/src/shared/components/workspace/AGENTS.md](../packages/shared/src/shared/components/workspace/AGENTS.md)
+- [packages/shared/src/shared/workspace/AGENTS.md](../packages/shared/src/shared/workspace/AGENTS.md)
+- [packages/ui/AGENTS.md](../packages/ui/AGENTS.md)
+- [packages/agent-engine/AGENTS.md](../packages/agent-engine/AGENTS.md)
+
+## Documentation conventions (human vs agent)
+
+- **Living agent artifacts:** Only `docs/agent-artifacts/core/*.md` (STATUS, decisions, errors-and-attempts). Purpose: current state, decisions, and failure log for agents. Updated after each slice or when something breaks. No number prefix; humans and agents reference this folder.
+- **Official human-facing docs:** Numbered `.mdx` in `docs/` (00, 10–19), `docs/how-to/` (00–09), `docs/architecture/` (01–03), `docs/design/` (01–). Purpose: tutorials, architecture, code organization, and the agent index/strategy (18–19). Kept up to date with the product.
+- **Root / package:** `README.md`, `SETUP.md`, `AGENTS.md` stay `.md` at repo root or under packages; they point at `docs/18-agent-artifacts-index.mdx` and `docs/agent-artifacts/core/` for artifact locations.
+- **No duplicates:** One canonical file per topic; no parallel .md when a .mdx exists. One artifact folder for the three core living docs.
+
+## Search strategy
+
+For any task: (1) Grep `docs/` and relevant `AGENTS.md` first. (2) Check [agent-artifacts/core/errors-and-attempts.md](agent-artifacts/core/errors-and-attempts.md) before retrying a failed pattern. (3) See [19-coding-agent-strategy.mdx](19-coding-agent-strategy.mdx) for how we use and extend these artifacts.

@@ -1,6 +1,6 @@
 /**
  * Centralized query keys with service namespaces.
- * Use for cache identity and invalidation; see docs/decisions.md and plan Slice C.
+ * Use for cache identity and invalidation; see docs/agent-artifacts/core/decisions.md and plan Slice C.
  */
 
 export const studioKeys = {

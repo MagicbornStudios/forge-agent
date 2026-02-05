@@ -93,7 +93,7 @@ Single source of truth for how the AI sidebar, context, actions, and runtime wor
 | **Workflow graphs (internal engine)** | Implemented (minimal) | `packages/agent-engine` defines steps + events; `POST /api/workflows/run` streams plan/patch/review over SSE. Used as the base pattern for plan -> propose -> review. |
 | **Graphs / subgraphs (e.g. LangGraph)** | Future | We currently use the minimal workflow engine above. If we add LangGraph, it replaces the executor, not the domain contracts. |
 
-Image generation (Section 8), structured output (Section 10), and plan-execute-review-commit (Section 11) are implemented. See [15-ai-workspace-integration.mdx](../15-ai-workspace-integration.mdx#missing--roadmap) and [STATUS.md](../STATUS.md) for status. To add more AI (actions, agents, future graphs), see [08 - Adding AI to workspaces](../how-to/08-adding-ai-to-workspaces.mdx).
+Image generation (Section 8), structured output (Section 10), and plan-execute-review-commit (Section 11) are implemented. See [15-ai-workspace-integration.mdx](../15-ai-workspace-integration.mdx#missing--roadmap) and [agent-artifacts/core/STATUS.md](../agent-artifacts/core/STATUS.md) for status. To add more AI (actions, agents, future graphs), see [08 - Adding AI to workspaces](../how-to/08-adding-ai-to-workspaces.mdx).
 
 ## 13. Conventions
 

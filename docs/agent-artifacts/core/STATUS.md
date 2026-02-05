@@ -3,9 +3,11 @@ created: 2026-02-04
 updated: 2026-02-04
 ---
 
+Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../18-agent-artifacts-index.mdx).
+
 # Status
 
-> **For coding agents.** See [Agent artifacts index](agent-artifacts.md) for the full list.
+> **For coding agents.** See [Agent artifacts index](../18-agent-artifacts-index.mdx) for the full list.
 
 ## Current
 
@@ -44,14 +46,14 @@ updated: 2026-02-04
 1. Wire the workflow stream into Forge UI (plan/proposal preview panel) and replace stub patch generation with a tool loop based on graph snapshot + selection.
 2. Keep `pnpm payload:types` in sync with collection changes (do this after any Payload edits).
 3. Apply gates to more surfaces (Copilot sidebar, model selection) as needed.
-4. Track any new build warnings in `docs/errors-and-attempts.md`.
+4. Track any new build warnings in [errors-and-attempts.md](./errors-and-attempts.md).
 5. Re-run `pnpm --filter @forge/studio build` to confirm (CopilotKit action render fix: `ImageGenerateRender` / `StructuredOutputRender` now return `<></>` instead of `null`).
 
-**Roadmap remaining:** Vision/image input (model registry + chat upload); co-agents (documented, not used). Optional future: agent graphs/subgraphs in runtime. See [architecture/03-copilotkit-and-agents.mdx](architecture/03-copilotkit-and-agents.mdx) Section 12.
+**Roadmap remaining:** Vision/image input (model registry + chat upload); co-agents (documented, not used). Optional future: agent graphs/subgraphs in runtime. See [architecture/03-copilotkit-and-agents.mdx](../../architecture/03-copilotkit-and-agents.mdx) Section 12.
 
 ## What changed (recent)
 
 - Studio app moved to `apps/studio` and workspace packages to `packages/*`, including new `packages/ui` for shared shadcn atoms.
 - Payload types now flow from the app config into a shared `packages/types` package.
 - Docs updated to reflect single-app focus and new paths.
-- Studio build succeeds; Payload emits a known dynamic import warning (documented in `docs/errors-and-attempts.md`).
+- Studio build succeeds; Payload emits a known dynamic import warning (documented in [errors-and-attempts.md](./errors-and-attempts.md)).

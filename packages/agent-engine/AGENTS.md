@@ -6,7 +6,7 @@ Agent Engine Engineer: owns `packages/agent-engine` workflow runtime, registry, 
 
 ## Loop
 
-Read `docs/STATUS.md` and root `AGENTS.md`. Implement one vertical slice, then update STATUS and any relevant AGENTS.
+Read `docs/agent-artifacts/core/STATUS.md` and root `AGENTS.md`. Implement one vertical slice, then update STATUS and any relevant AGENTS.
 
 ## Rules
 
