@@ -38,9 +38,23 @@ When adding or documenting a new workspace/domain, consider implementing:
 
 Not every domain needs all of these; implement what makes sense and document the set for that domain.
 
+## Missing / roadmap
+
+Planned capabilities not yet implemented:
+
+| Capability | Status | Notes |
+|------------|--------|--------|
+| **Image generation in chat** | Done | `app_generateImage` + `/api/image-generate`; gated by `IMAGE_GENERATION` (pro). |
+| **Structured output** | Done | `app_respondWithStructure` + `/api/structured-output` with predefined schemas. |
+| **Plan → execute → review → commit** | Done (Forge) | `forge_createPlan`, `forge_executePlan`, review bar (Revert/Accept), `forge_commit`. |
+| **Vision / image input** | Missing | Model registry has no `supportsVision`; no image upload in chat. |
+| **Co-agents** | Documented, not used | See [co-agents-and-multi-agent.md](./co-agents-and-multi-agent.md). |
+
+See [architecture/copilotkit-and-agents.md](./architecture/copilotkit-and-agents.md) for full architecture, roadmap, and conventions (§13: one contract per domain, app_ prefix, new features as slices).
+
 ## References
 
-- **Context + actions** - `apps/studio/components/workspaces/ForgeWorkspace.tsx` (Forge), `apps/studio/lib/useForgeCopilotActions.ts`, `apps/studio/lib/copilot-actions.ts`.
+- **Context + actions** - `apps/studio/components/workspaces/ForgeWorkspace.tsx` (Forge), `packages/domain-forge/src/copilot`, `useDomainCopilot`.
 - **Capabilities contract** - `packages/shared/src/shared/workspace/capabilities.ts` (`getSelection`, `getContextSnapshot`, `revealSelection`).
 - **Adding a new domain** - See [adding-domain-actions.md](./adding-domain-actions.md).
-- **Architecture** - [architecture/workspace-editor-architecture.md](./architecture/workspace-editor-architecture.md) (AI-first, unified API).
+- **Architecture** - [architecture/copilotkit-and-agents.md](./architecture/copilotkit-and-agents.md), [architecture/workspace-editor-architecture.md](./architecture/workspace-editor-architecture.md) (AI-first, unified API).

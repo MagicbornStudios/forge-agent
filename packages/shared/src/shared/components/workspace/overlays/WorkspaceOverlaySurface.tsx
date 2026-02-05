@@ -6,7 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@forge/ui/dialog';
 import type { OverlaySpec, ActiveOverlay } from '@forge/shared/workspace';
 import { cn } from '@forge/shared/lib/utils';
 

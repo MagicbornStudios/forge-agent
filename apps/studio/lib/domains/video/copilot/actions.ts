@@ -1,5 +1,5 @@
 import type { CopilotActionConfig, AIHighlightPayload } from '@forge/shared/copilot/types';
-import type { VideoDoc, VideoPatchOp } from '../types';
+import { getVideoDocData, type VideoDoc, type VideoPatchOp } from '../types';
 
 export interface VideoActionsDeps {
   getDoc: () => VideoDoc | null;
@@ -174,15 +174,16 @@ export function createVideoActions(deps: VideoActionsDeps): CopilotActionConfig[
       handler: async () => {
         const doc = getDoc();
         if (!doc) return { success: false, message: 'No video document loaded' };
+        const data = getVideoDocData(doc);
 
         return {
           success: true,
           message: 'Timeline retrieved',
           data: {
             title: doc.title,
-            resolution: doc.resolution,
-            trackCount: doc.tracks.length,
-            tracks: doc.tracks.map((t) => ({
+            resolution: data.resolution,
+            trackCount: data.tracks.length,
+            tracks: data.tracks.map((t) => ({
               id: t.id,
               name: t.name,
               type: t.type,
@@ -195,7 +196,7 @@ export function createVideoActions(deps: VideoActionsDeps): CopilotActionConfig[
                 nodeId: el.nodeId,
               })),
             })),
-            sceneOverrides: doc.sceneOverrides,
+            sceneOverrides: data.sceneOverrides,
           },
         };
       },

@@ -4,7 +4,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { forgeGraphToTimelineModel } from '@/lib/forge-to-timeline';
 import type { ForgeGraphDoc } from '@forge/types/graph';
-import { Button } from '@/components/ui/button';
+import { Button } from '@forge/ui/button';
 
 export interface ForgeTimelineProps {
   graph: ForgeGraphDoc | null;

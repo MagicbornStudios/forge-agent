@@ -3,14 +3,17 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { GraphEditor, type ForgeViewportHandle } from '@/components/GraphEditor';
 import { useGraphStore } from '@/lib/store';
+import { useSaveGraph } from '@/lib/data/hooks';
+import { toast } from 'sonner';
 import { useAppShellStore } from '@/lib/app-shell/store';
 import { WORKSPACE_EDITOR_IDS } from '@/lib/app-shell/workspace-metadata';
 import { useSettingsStore } from '@/lib/settings/store';
 import { useAIHighlight } from '@forge/shared/copilot/use-ai-highlight';
 import { useDomainCopilot } from '@forge/shared/copilot/use-domain-copilot';
 import { useForgeContract } from '@forge/domain-forge/copilot';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card } from '@forge/ui/card';
+import { Badge } from '@forge/ui/badge';
+import { WorkspaceReviewBar } from '@forge/shared/components/workspace';
 import {
   WorkspaceShell,
   WorkspaceHeader,
@@ -27,6 +30,7 @@ import { SettingsMenu } from '@/components/settings/SettingsMenu';
 import type { OverlaySpec, ActiveOverlay, Selection } from '@forge/shared/workspace';
 import { isEntity } from '@forge/shared/workspace';
 import type { ForgeNodeType } from '@forge/types/graph';
+import { useEntitlements, CAPABILITIES } from '@forge/shared/entitlements';
 
 const CREATE_NODE_OVERLAY_ID = 'create-node';
 
@@ -59,7 +63,22 @@ function useForgeSelection(
 }
 
 export function ForgeWorkspace() {
-  const { graph, applyOperations, saveGraph, isDirty, loadGraph } = useGraphStore();
+  const { graph, applyOperations, isDirty, loadGraph, pendingFromPlan, setPendingFromPlan } = useGraphStore();
+  const saveGraphMutation = useSaveGraph();
+  const saveGraph = useCallback(() => {
+    saveGraphMutation.mutate(undefined, {
+      onSuccess: (data: { title?: string } | undefined) => {
+        if (data?.title && useSettingsStore.getState().getSettingValue('ui.toastsEnabled') !== false) {
+          toast.success('Graph saved', { description: `Saved ${data.title}.` });
+        }
+      },
+      onError: () => {
+        if (useSettingsStore.getState().getSettingValue('ui.toastsEnabled') !== false) {
+          toast.error('Save failed', { description: 'The server rejected the save request.' });
+        }
+      },
+    });
+  }, [saveGraphMutation]);
   const workspaceTheme = useAppShellStore((s) => s.workspaceThemes.forge);
   const editorId = WORKSPACE_EDITOR_IDS.forge;
   const agentName = useSettingsStore((s) =>
@@ -68,9 +87,14 @@ export function ForgeWorkspace() {
   const showAgentName = useSettingsStore((s) =>
     s.getSettingValue('ai.showAgentName', { workspaceId: 'forge' })
   ) as boolean | undefined;
-  const toolsEnabled = useSettingsStore((s) =>
+  const toolsEnabledSetting = useSettingsStore((s) =>
     s.getSettingValue('ai.toolsEnabled', { workspaceId: 'forge', editorId })
   ) as boolean | undefined;
+  const entitlements = useEntitlements();
+  const toolsEnabled =
+    toolsEnabledSetting !== false &&
+    entitlements.has(CAPABILITIES.STUDIO_AI_TOOLS) &&
+    entitlements.has(CAPABILITIES.FORGE_AI_EDIT);
   const [activeOverlay, setActiveOverlay] = useState<ActiveOverlay | null>(null);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
   const [selectedEdgeIds, setSelectedEdgeIds] = useState<string[]>([]);
@@ -117,6 +141,25 @@ export function ForgeWorkspace() {
     }
   }, [forgeSelection, graph]);
 
+  const createPlanApi = useCallback(async (goal: string, graphSummary: unknown) => {
+    const res = await fetch('/api/forge/plan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ goal, graphSummary }),
+    });
+    if (!res.ok) throw new Error((await res.json()).error ?? 'Plan failed');
+    return res.json();
+  }, []);
+
+  const commitGraph = useCallback(async () => {
+    return new Promise<void>((resolve, reject) => {
+      saveGraphMutation.mutate(undefined, {
+        onSuccess: () => resolve(),
+        onError: () => reject(new Error('Save failed')),
+      });
+    });
+  }, [saveGraphMutation]);
+
   const forgeContract = useForgeContract({
     graph,
     selection: forgeSelection,
@@ -127,9 +170,12 @@ export function ForgeWorkspace() {
     onAIHighlight,
     clearAIHighlights: clearHighlights,
     createNodeOverlayId: CREATE_NODE_OVERLAY_ID,
+    createPlanApi,
+    setPendingFromPlan,
+    commitGraph,
   });
 
-  useDomainCopilot(forgeContract, { toolsEnabled: toolsEnabled !== false });
+  useDomainCopilot(forgeContract, { toolsEnabled });
 
   const overlays = useMemo<OverlaySpec[]>(
     () => [
@@ -179,7 +225,7 @@ export function ForgeWorkspace() {
       <Card className="p-6 max-w-md">
         <h2 className="text-xl font-semibold mb-2">No Graph Loaded</h2>
         <p className="text-muted-foreground">
-          A sample graph should load automatically. If not, please refresh the page.
+          Loading your last graph or creating a new one…
         </p>
       </Card>
     </div>
@@ -358,6 +404,13 @@ export function ForgeWorkspace() {
           </WorkspaceToolbar.Button>
         </WorkspaceToolbar.Right>
       </WorkspaceToolbar>
+
+      <WorkspaceReviewBar
+        visible={!!(isDirty && pendingFromPlan && graph)}
+        onRevert={() => graph && loadGraph(graph.id)}
+        onAccept={() => setPendingFromPlan(false)}
+        label="Pending changes from plan"
+      />
 
       <WorkspaceLayoutGrid
         main={mainContent}

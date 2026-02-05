@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "../../apps/studio/tailwind.config.ts",
+    "css": "../../apps/studio/app/globals.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "iconLibrary": "lucide",
+  "rtl": false,
+  "aliases": {
+    "components": "@forge/ui",
+    "utils": "@forge/ui/lib/utils",
+    "ui": "@forge/ui",
+    "lib": "@forge/ui/lib",
+    "hooks": "@forge/ui/hooks"
+  },
+  "registries": {}
+}

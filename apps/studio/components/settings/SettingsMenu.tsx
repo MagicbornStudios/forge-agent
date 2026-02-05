@@ -8,7 +8,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@forge/ui/dropdown-menu";
 import type { SettingsScope } from "@/lib/settings/store";
 import { SettingsSheet } from "./SettingsSheet";
 

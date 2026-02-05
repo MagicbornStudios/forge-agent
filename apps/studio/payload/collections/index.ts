@@ -1,18 +1,24 @@
+import { Users } from './users.ts';
+import { Projects } from './projects.ts';
 import { ForgeGraphs } from './forge-graphs.ts';
 import { VideoDocs } from './video-docs.ts';
-import { SettingsSnapshots } from './settings-snapshots.ts';
+import { SettingsOverrides } from './settings-overrides.ts';
 import { AgentSessions } from './agent-sessions.ts';
 
 export const collections = [
+  Users,
+  Projects,
   ForgeGraphs,
   VideoDocs,
-  SettingsSnapshots,
+  SettingsOverrides,
   AgentSessions,
 ];
 
 export {
+  Users,
+  Projects,
   ForgeGraphs,
   VideoDocs,
-  SettingsSnapshots,
+  SettingsOverrides,
   AgentSessions,
 };

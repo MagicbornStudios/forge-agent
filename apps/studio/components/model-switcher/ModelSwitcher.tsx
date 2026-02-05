@@ -15,7 +15,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuCheckboxItem,
-} from '@/components/ui/dropdown-menu';
+} from '@forge/ui/dropdown-menu';
 import { WorkspaceButton } from '@forge/shared/components/workspace';
 
 // ---------------------------------------------------------------------------

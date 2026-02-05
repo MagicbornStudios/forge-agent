@@ -25,7 +25,9 @@ The app has a **Unified Workspace** implemented as an **App Shell** that owns mu
 
 ## Route state (minimal v1)
 
-- **AppShellRoute**: `activeWorkspaceId`, `openWorkspaceIds`, `globalModals`. In-memory only; no URL.
+- **AppShellRoute**: `activeWorkspaceId`, `openWorkspaceIds`, `globalModals`. Restored from and persisted to `localStorage` under `forge:app-shell:v1` via `AppShellRoutePersistence`; see `apps/studio/lib/persistence/local-storage.ts`.
+- **Current document ids**: `forge:lastGraphId:v1` and `forge:lastVideoDocId:v1` store the last opened graph/video doc; used on app load to open last document or first from list or create empty. Graph store and (when implemented) video flow persist the current id on load/set.
+- **Draft vs server-state**: Draft edits live in Zustand (e.g. graph store, video store); save sends to the server and clears dirty. Server-state is fetched via Next API routes and cached with TanStack Query (`apps/studio/lib/data/keys.ts`, `lib/data/hooks/`). `beforeunload` warns when any draft is dirty (`DirtyBeforeUnload`).
 - **Future**: Per-workspace `WorkspaceRoute` with `editors[]`, `focusedEditorId`, `sessions` when we add multiple editor windows/tabs.
 
 ## Model routing and OpenRouter

@@ -5,14 +5,14 @@
 - **apps/studio/app/** - Routes, layout, globals.css.
 - **apps/studio/components/** - App and domain components. `apps/studio/components/workspaces/ForgeWorkspace.tsx` is the primary workspace.
 - **apps/studio/lib/** - Store, CopilotKit actions, utils, OpenRouter config. `apps/studio/lib/domains/video` is a UI showcase only.
-- **apps/studio/payload/** - Payload CMS collections (forge-graphs, video-docs, settings-snapshots, agent-sessions).
+- **apps/studio/payload/** - Payload CMS collections (users, projects, forge-graphs, video-docs, settings-overrides, agent-sessions).
 - **packages/shared/** - Shared app/workspace UI and styles. No app routes or domain imports.
 - **packages/domain-forge/** - Forge domain logic (types, store, operations, copilot wiring).
 - **packages/types/** - Generated Payload types + domain aliases.
 
 ## Atomic design map
 
-- **Atoms**: `apps/studio/components/ui/*` (shadcn primitives).
+- **Atoms**: `packages/ui/src/components/ui/*` (shadcn primitives).
 - **Molecules**: composable widgets (e.g. `apps/studio/components/settings/*`, `apps/studio/components/model-switcher/*`, `packages/shared/src/shared/components/workspace/*` controls).
 - **Organisms**: workspace shells and larger assemblies (e.g. `apps/studio/components/workspaces/*`, `apps/studio/components/AppShell.tsx`).
 - **Templates**: `apps/studio/app/*` layout and route composition.

@@ -3,7 +3,7 @@ import { withPayload } from "@payloadcms/next/withPayload";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  transpilePackages: ["@forge/shared", "@forge/domain-forge", "@forge/types"],
+  transpilePackages: ["@forge/shared", "@forge/domain-forge", "@forge/types", "@forge/ui"],
   experimental: {
     reactCompiler: false,
   },

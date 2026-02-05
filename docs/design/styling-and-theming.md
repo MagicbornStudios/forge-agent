@@ -5,7 +5,7 @@
 - **Spotify/Photoshop-inspired**: clean, dense, high-contrast hierarchy with muted borders and purposeful accents.
 - **Declarative shadcn**: use shadcn UI primitives (DropdownMenu, Select, Sheet, Card, Button, etc.) instead of hand-rolled UI.
 - **Workspace theming**: app theme is the base (driven by `ui.theme` via `AppThemeProvider`), workspaces may override via `WorkspaceShell theme`.
-- **Atomic design**: atoms live in `apps/studio/components/ui/*` (shadcn). Build molecules and organisms from those primitives.
+- **Atomic design**: atoms live in `packages/ui/src/components/ui/*` (shadcn). Build molecules and organisms from those primitives.
 
 ## UI rules
 

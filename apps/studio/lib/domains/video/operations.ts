@@ -1,4 +1,12 @@
-import type { VideoDoc, VideoPatchOp, VideoTrack, VideoElement } from './types';
+import {
+  getVideoDocData,
+  setVideoDocData,
+  type VideoDoc,
+  type VideoDocData,
+  type VideoPatchOp,
+  type VideoTrack,
+  type VideoElement,
+} from './types';
 
 function deepClone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
@@ -13,7 +21,7 @@ function genId(prefix: string): string {
  * Returns a new document; the input is never mutated.
  */
 export function applyVideoOperation(doc: VideoDoc, op: VideoPatchOp): VideoDoc {
-  const d = deepClone(doc);
+  const data: VideoDocData = deepClone(getVideoDocData(doc));
 
   switch (op.type) {
     // ----- Tracks -----
@@ -24,22 +32,22 @@ export function applyVideoOperation(doc: VideoDoc, op: VideoPatchOp): VideoDoc {
         type: op.trackType ?? 'video',
         elements: [],
       };
-      d.tracks.push(track);
+      data.tracks.push(track);
       break;
     }
     case 'removeTrack': {
-      d.tracks = d.tracks.filter((t) => t.id !== op.trackId);
+      data.tracks = data.tracks.filter((t) => t.id !== op.trackId);
       break;
     }
     case 'reorderTracks': {
-      const map = new Map(d.tracks.map((t) => [t.id, t]));
-      d.tracks = op.trackIds.map((id) => map.get(id)).filter(Boolean) as VideoTrack[];
+      const map = new Map(data.tracks.map((t) => [t.id, t]));
+      data.tracks = op.trackIds.map((id) => map.get(id)).filter(Boolean) as VideoTrack[];
       break;
     }
 
     // ----- Elements -----
     case 'addElement': {
-      const track = d.tracks.find((t) => t.id === op.trackId);
+      const track = data.tracks.find((t) => t.id === op.trackId);
       if (track) {
         const el: VideoElement = {
           id: genId('el'),
@@ -54,14 +62,14 @@ export function applyVideoOperation(doc: VideoDoc, op: VideoPatchOp): VideoDoc {
       break;
     }
     case 'removeElement': {
-      const track = d.tracks.find((t) => t.id === op.trackId);
+      const track = data.tracks.find((t) => t.id === op.trackId);
       if (track) {
         track.elements = track.elements.filter((e) => e.id !== op.elementId);
       }
       break;
     }
     case 'moveElement': {
-      const track = d.tracks.find((t) => t.id === op.trackId);
+      const track = data.tracks.find((t) => t.id === op.trackId);
       const el = track?.elements.find((e) => e.id === op.elementId);
       if (el) {
         const duration = el.end - el.start;
@@ -71,7 +79,7 @@ export function applyVideoOperation(doc: VideoDoc, op: VideoPatchOp): VideoDoc {
       break;
     }
     case 'resizeElement': {
-      const track = d.tracks.find((t) => t.id === op.trackId);
+      const track = data.tracks.find((t) => t.id === op.trackId);
       const el = track?.elements.find((e) => e.id === op.elementId);
       if (el) {
         el.start = op.start;
@@ -80,7 +88,7 @@ export function applyVideoOperation(doc: VideoDoc, op: VideoPatchOp): VideoDoc {
       break;
     }
     case 'updateElementProps': {
-      const track = d.tracks.find((t) => t.id === op.trackId);
+      const track = data.tracks.find((t) => t.id === op.trackId);
       const el = track?.elements.find((e) => e.id === op.elementId);
       if (el) {
         el.props = { ...el.props, ...op.props };
@@ -91,10 +99,10 @@ export function applyVideoOperation(doc: VideoDoc, op: VideoPatchOp): VideoDoc {
     // ----- Scene overrides -----
     case 'setSceneOverride': {
       // Remove existing override for same nodeId + property, then add new
-      d.sceneOverrides = d.sceneOverrides.filter(
+      data.sceneOverrides = data.sceneOverrides.filter(
         (o) => !(o.nodeId === op.nodeId && o.property === op.property),
       );
-      d.sceneOverrides.push({
+      data.sceneOverrides.push({
         nodeId: op.nodeId,
         property: op.property,
         value: op.value,
@@ -104,7 +112,7 @@ export function applyVideoOperation(doc: VideoDoc, op: VideoPatchOp): VideoDoc {
       break;
     }
     case 'removeSceneOverride': {
-      d.sceneOverrides = d.sceneOverrides.filter(
+      data.sceneOverrides = data.sceneOverrides.filter(
         (o) => !(o.nodeId === op.nodeId && o.property === op.property),
       );
       break;
@@ -112,12 +120,12 @@ export function applyVideoOperation(doc: VideoDoc, op: VideoPatchOp): VideoDoc {
 
     // ----- Resolution -----
     case 'setResolution': {
-      d.resolution = { width: op.width, height: op.height };
+      data.resolution = { width: op.width, height: op.height };
       break;
     }
   }
 
-  return d;
+  return setVideoDocData(doc, data);
 }
 
 /** Batch-apply multiple operations left-to-right. */

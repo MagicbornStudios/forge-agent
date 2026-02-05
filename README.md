@@ -7,6 +7,7 @@ Forge Agent is an AI-first studio for editing dialogue graphs using CopilotKit a
 - `apps/studio/` - Next.js app (App Shell, workspaces, CopilotKit integration, Payload config).
 - `packages/shared/` - Shared workspace UI kit and headless contracts.
 - `packages/domain-forge/` - Forge domain logic (types, store, operations, copilot wiring).
+- `packages/ui/` - Shared shadcn UI atoms.
 - `packages/types/` - Payload-generated types and domain aliases used across packages.
 
 ## Setup
@@ -49,8 +50,8 @@ pnpm dev
 - Forge is the primary workspace. Video is a UI showcase only (not a priority).
 - Payload types are the source of truth for persisted shapes. Domain packages should import from `@forge/types`.
 
-## Docs
+## Documentation
 
-- `docs/PROJECT-OVERVIEW.md` - Architecture + codebase layout.
-- `docs/STATUS.md` - Current state and Ralph Wiggum loop.
-- `AGENTS.md` - Agent rules and boundaries.
+- **In-app docs**: Run the app and open [/docs](http://localhost:3000/docs) for the full how-to series and sidebar.
+- **How-to guides** (in order): Foundation → Workspace shell and slots → Styling → Data and state → Building a workspace → ForgeWorkspace walkthrough → Copilot and AI integration. Content lives in `docs/how-to/` (00–07); each guide states what the AI can do at that stage.
+- **Reference**: `docs/PROJECT-OVERVIEW.md`, `docs/STATUS.md`, `docs/architecture/copilotkit-and-agents.md`, `AGENTS.md`.

@@ -4,10 +4,10 @@ import * as React from 'react';
 import type { InspectorSection } from '@forge/shared/workspace';
 import { isEntity } from '@forge/shared/workspace';
 import type { ForgeGraphDoc, ForgeGraphPatchOp } from '@forge/types/graph';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
+import { Input } from '@forge/ui/input';
+import { Textarea } from '@forge/ui/textarea';
+import { Label } from '@forge/ui/label';
+import { Badge } from '@forge/ui/badge';
 
 export interface ForgeInspectorSectionsParams {
   graph: ForgeGraphDoc | null;

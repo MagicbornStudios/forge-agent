@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   WorkspaceShell,
   WorkspaceHeader,
@@ -10,27 +10,25 @@ import {
 } from '@forge/shared/components/workspace';
 import { ModelSwitcher } from '@/components/model-switcher';
 import { useVideoStore } from '@/lib/domains/video/store';
+import { useSaveVideoDoc } from '@/lib/data/hooks';
 import { useAppShellStore } from '@/lib/app-shell/store';
 import { WORKSPACE_EDITOR_IDS } from '@/lib/app-shell/workspace-metadata';
 import { useSettingsStore } from '@/lib/settings/store';
 import { useAIHighlight } from '@forge/shared/copilot/use-ai-highlight';
 import { useDomainCopilot } from '@forge/shared/copilot/use-domain-copilot';
 import { useVideoContract } from '@/lib/domains/video/copilot';
-import type { VideoDoc } from '@/lib/domains/video/types';
+import { DEFAULT_VIDEO_DOC_DATA, getVideoDocData } from '@/lib/domains/video/types';
+import { getLastVideoDocId } from '@/lib/persistence/local-storage';
 import { SettingsMenu } from '@/components/settings/SettingsMenu';
-import { Badge } from '@/components/ui/badge';
-
-const createEmptyVideoDoc = (): VideoDoc => ({
-  id: `video-${Date.now()}`,
-  graphId: 1,
-  title: 'Untitled timeline',
-  tracks: [],
-  sceneOverrides: [],
-  resolution: { width: 1920, height: 1080 },
-});
+import { Badge } from '@forge/ui/badge';
+import { FeatureGate } from '@forge/shared/components/gating';
+import { CAPABILITIES, useEntitlements } from '@forge/shared/entitlements';
 
 export function VideoWorkspace() {
-  const { doc, setDoc, applyOperations } = useVideoStore();
+  const { doc, setDoc, applyOperations, loadDoc, isDirty } = useVideoStore();
+  const saveVideoDocMutation = useSaveVideoDoc();
+  const save = () => saveVideoDocMutation.mutate();
+  const initialLoadDone = useRef(false);
   const workspaceTheme = useAppShellStore((s) => s.workspaceThemes.video);
   const editorId = WORKSPACE_EDITOR_IDS.video;
   const agentName = useSettingsStore((s) =>
@@ -39,16 +37,48 @@ export function VideoWorkspace() {
   const showAgentName = useSettingsStore((s) =>
     s.getSettingValue('ai.showAgentName', { workspaceId: 'video' })
   ) as boolean | undefined;
-  const toolsEnabled = useSettingsStore((s) =>
+  const toolsEnabledSetting = useSettingsStore((s) =>
     s.getSettingValue('ai.toolsEnabled', { workspaceId: 'video', editorId })
   ) as boolean | undefined;
+  const entitlements = useEntitlements();
+  const toolsEnabled =
+    toolsEnabledSetting !== false && entitlements.has(CAPABILITIES.STUDIO_AI_TOOLS);
   const { onAIHighlight, clearHighlights } = useAIHighlight();
 
   useEffect(() => {
-    if (!doc) {
-      setDoc(createEmptyVideoDoc());
-    }
-  }, [doc, setDoc]);
+    if (initialLoadDone.current) return;
+    initialLoadDone.current = true;
+
+    const run = async () => {
+      const lastId = getLastVideoDocId();
+      if (lastId != null) {
+        await loadDoc(lastId);
+        return;
+      }
+      const listRes = await fetch('/api/video-docs');
+      if (!listRes.ok) return;
+      const docs = await listRes.json();
+      if (Array.isArray(docs) && docs.length > 0) {
+        const id = docs[0].id != null ? Number(docs[0].id) : docs[0].id;
+        await loadDoc(id);
+        return;
+      }
+      const createRes = await fetch('/api/video-docs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: 'Untitled timeline',
+          doc: { ...DEFAULT_VIDEO_DOC_DATA },
+        }),
+      });
+      if (createRes.ok) {
+        const created = await createRes.json();
+        setDoc(created);
+      }
+    };
+
+    run();
+  }, [loadDoc, setDoc]);
 
   const videoContract = useVideoContract({
     doc,
@@ -58,15 +88,24 @@ export function VideoWorkspace() {
     clearAIHighlights: clearHighlights,
   });
 
-  useDomainCopilot(videoContract, { toolsEnabled: toolsEnabled !== false });
+  useDomainCopilot(videoContract, { toolsEnabled });
 
-  const projectOptions = doc ? [{ value: doc.id, label: doc.title }] : [];
+  const docData = getVideoDocData(doc);
+  const projectOptions = doc ? [{ value: String(doc.id), label: doc.title }] : [];
   const fileMenuItems = [
     {
       id: 'new',
       label: 'New timeline',
-      onSelect: () => {
-        setDoc(createEmptyVideoDoc());
+      onSelect: async () => {
+        const res = await fetch('/api/video-docs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: 'Untitled timeline',
+            doc: { ...DEFAULT_VIDEO_DOC_DATA },
+          }),
+        });
+        if (res.ok) setDoc(await res.json());
       },
     },
     {
@@ -80,9 +119,8 @@ export function VideoWorkspace() {
     {
       id: 'save',
       label: 'Save',
-      onSelect: () => {
-        console.info('[Video] Save action not implemented yet.');
-      },
+      disabled: !isDirty,
+      onSelect: save,
     },
     {
       id: 'export',
@@ -157,7 +195,7 @@ export function VideoWorkspace() {
           <WorkspaceToolbar.Group className="gap-2">
             <WorkspaceToolbar.Menubar menus={menubarMenus} />
             <WorkspaceToolbar.ProjectSelect
-              value={doc?.id}
+              value={doc ? String(doc.id) : undefined}
               options={projectOptions}
               placeholder="Select timeline"
               disabled={!doc}
@@ -166,7 +204,7 @@ export function VideoWorkspace() {
             />
           </WorkspaceToolbar.Group>
           <span className="text-xs text-muted-foreground">
-            {doc ? `${doc.tracks.length} track(s)` : 'Video timeline'}
+            {doc ? `${docData.tracks.length} track(s)` : 'Video timeline'}
           </span>
         </WorkspaceToolbar.Left>
         <WorkspaceToolbar.Right>
@@ -176,6 +214,16 @@ export function VideoWorkspace() {
             </Badge>
           )}
           <ModelSwitcher />
+          <FeatureGate capability={CAPABILITIES.VIDEO_EXPORT} mode="lock-overlay" className="rounded-md">
+            <WorkspaceToolbar.Button
+              variant="outline"
+              size="sm"
+              tooltip="Export timeline"
+              onClick={() => console.info('[Video] Export not implemented yet.')}
+            >
+              Export
+            </WorkspaceToolbar.Button>
+          </FeatureGate>
           <WorkspaceToolbar.Separator />
           <SettingsMenu workspaceId="video" editorId={editorId} />
         </WorkspaceToolbar.Right>

@@ -9,7 +9,9 @@
     "baseUrl": ".",
     "paths": {
       "@forge/shared": ["./src/index.ts"],
-      "@forge/shared/*": ["./src/shared/*"]
+      "@forge/shared/*": ["./src/shared/*"],
+      "@forge/ui": ["../ui/src/index.ts"],
+      "@forge/ui/*": ["../ui/src/components/ui/*", "../ui/src/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"]

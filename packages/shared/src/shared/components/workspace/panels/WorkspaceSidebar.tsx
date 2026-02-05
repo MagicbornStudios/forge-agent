@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { cn } from '@forge/shared/lib/utils';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea } from '@forge/ui/scroll-area';
 
 export interface WorkspaceSidebarProps {
   children?: React.ReactNode;

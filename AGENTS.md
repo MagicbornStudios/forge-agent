@@ -1,4 +1,4 @@
-﻿# Forge Agent - Agent rules
+# Forge Agent - Agent rules
 
 ## Workspace Platform Engineer
 
@@ -18,8 +18,25 @@ Owns **packages/shared/src/shared**: workspace components, shared styles, and wo
 
 When touching workspaces (Forge, Writer, etc.): use the shared shell from `@forge/shared/components/workspace`. Do not invent new layout patterns; extend via slots and document in shared AGENTS.
 
+## UI atoms
+
+- Shared shadcn atoms live in `packages/ui` and are imported via `@forge/ui/*`.
+
+## Feature gating
+
+- Use `FeatureGate` for locked UI and `CAPABILITIES` from `packages/shared/src/shared/entitlements`.
+- Avoid ad-hoc plan checks in components.
+
 ## Payload + Types (single app)
 
-- **Collections live in** `apps/studio/payload/collections/` (forge-graphs, video-docs, settings-snapshots, agent-sessions).
+- **Collections live in** `apps/studio/payload/collections/` (users, projects, forge-graphs, video-docs, settings-overrides, agent-sessions).
+- **Studio settings persistence** uses the `settings-overrides` collection and `GET`/`POST` `/api/settings`. Hydration runs on app init via `SettingsHydration`; users save explicitly from the settings sheet. Do not claim persistence is wired unless load and save are implemented.
+- **Update** `docs/STATUS.md` after each slice.
 - **Generated types live in** `packages/types/src/payload-types.ts`. Run `pnpm payload:types` after changing collections.
 - **Domain types should prefer payload-generated shapes** via `packages/types/src/payload.ts` aliases (e.g. `ForgeGraphDoc` derives from payload types).
+
+## Persistence and data layer
+
+- **Read** `docs/decisions.md` and `docs/tech-stack.md` when changing persistence or the data layer (TanStack Query, Zustand drafts, API routes, localStorage).
+- **Update** those docs when making or rejecting a significant choice (e.g. adding a new backend, changing the client boundary).
+- **Keep one API boundary:** client talks only to our Next API routes; no direct Payload REST/GraphQL from the browser.

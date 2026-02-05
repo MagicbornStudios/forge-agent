@@ -8,6 +8,7 @@ import { useAppShellStore } from '@/lib/app-shell/store';
 import { WORKSPACE_EDITOR_IDS, WORKSPACE_LABELS } from '@/lib/app-shell/workspace-metadata';
 import { useSettingsStore } from '@/lib/settings/store';
 import { useModelRouterStore } from '@/lib/model-router/store';
+import { CAPABILITIES, useEntitlements } from '@forge/shared/entitlements';
 
 interface CopilotKitProviderProps {
   children: React.ReactNode;
@@ -63,6 +64,7 @@ export function CopilotKitProvider({
     | undefined;
   const setSetting = useSettingsStore((state) => state.setSetting);
   const { mode, manualModelId, setMode, setManualModel, fetchSettings } = useModelRouterStore();
+  const entitlements = useEntitlements();
 
   useEffect(() => {
     fetchSettings();
@@ -94,7 +96,8 @@ export function CopilotKitProvider({
     typeof mergedSettings['ai.agentName'] === 'string' ? mergedSettings['ai.agentName'] : 'AI Assistant';
   const settingsInstructions =
     typeof mergedSettings['ai.instructions'] === 'string' ? mergedSettings['ai.instructions'] : '';
-  const toolsEnabled = mergedSettings['ai.toolsEnabled'] !== false;
+  const toolsEnabled =
+    mergedSettings['ai.toolsEnabled'] !== false && entitlements.has(CAPABILITIES.STUDIO_AI_TOOLS);
   const temperatureSetting = mergedSettings['ai.temperature'];
   const temperature =
     typeof temperatureSetting === 'number' ? temperatureSetting : Number(temperatureSetting);

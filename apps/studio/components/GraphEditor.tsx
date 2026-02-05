@@ -19,7 +19,7 @@ import {
   ContextMenuItem,
   ContextMenuSeparator,
   ContextMenuTrigger,
-} from '@/components/ui/context-menu';
+} from '@forge/ui/context-menu';
 import { CharacterNode } from './nodes/CharacterNode';
 import { PlayerNode } from './nodes/PlayerNode';
 import { ConditionalNode } from './nodes/ConditionalNode';

@@ -27,21 +27,40 @@ export interface VideoTrack {
   elements: VideoElement[];
 }
 
-/** Top-level video workspace document. */
-export interface VideoDoc {
-  id: string;
-  /** Reference to the forge graph this video is derived from. */
-  graphId: string | number;
-  title: string;
+// Persisted payload shape (stored in `video-docs` collection).
+// The timeline content lives in `VideoDoc.doc` and is modeled by `VideoDocData`.
+export type VideoDoc = PayloadVideoDocRecord;
+export type VideoDocRecord = PayloadVideoDocRecord;
+
+/** Minimal timeline payload stored in VideoDoc.doc */
+export interface VideoDocData {
   tracks: VideoTrack[];
   sceneOverrides: SceneOverride[];
   resolution: { width: number; height: number };
-  createdAt?: string;
-  updatedAt?: string;
 }
 
-// Persisted payload shape (stored in `video-docs` collection).
-export type VideoDocRecord = PayloadVideoDocRecord;
+export const DEFAULT_VIDEO_DOC_DATA: VideoDocData = {
+  tracks: [],
+  sceneOverrides: [],
+  resolution: { width: 1920, height: 1080 },
+};
+
+export function getVideoDocData(doc: VideoDoc | null): VideoDocData {
+  if (!doc || !doc.doc || typeof doc.doc !== 'object' || Array.isArray(doc.doc)) {
+    return { ...DEFAULT_VIDEO_DOC_DATA };
+  }
+  return {
+    ...DEFAULT_VIDEO_DOC_DATA,
+    ...(doc.doc as Partial<VideoDocData>),
+  };
+}
+
+export function setVideoDocData(doc: VideoDoc, data: VideoDocData): VideoDoc {
+  return {
+    ...doc,
+    doc: data,
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Video patch operations

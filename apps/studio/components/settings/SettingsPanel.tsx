@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@forge/ui/card";
+import { Input } from "@forge/ui/input";
+import { Textarea } from "@forge/ui/textarea";
 import {
   Field,
   FieldContent,
@@ -13,17 +13,17 @@ import {
   FieldLegend,
   FieldSet,
   FieldTitle,
-} from "@/components/ui/field";
+} from "@forge/ui/field";
 import {
   Item,
   ItemActions,
   ItemContent,
   ItemGroup,
   ItemSeparator,
-} from "@/components/ui/item";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
+} from "@forge/ui/item";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@forge/ui/select";
+import { Switch } from "@forge/ui/switch";
+import { Button } from "@forge/ui/button";
 import { cn } from "@/lib/utils";
 import { useSettingsStore, type SettingsScope } from "@/lib/settings/store";
 import type { SettingsSection, SettingsField } from "./types";

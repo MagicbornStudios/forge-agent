@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@forge/ui/tooltip';
 
 export interface WorkspaceTooltipProps {
   tooltip?: React.ReactNode;

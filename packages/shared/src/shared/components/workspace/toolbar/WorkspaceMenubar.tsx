@@ -10,7 +10,7 @@ import {
   MenubarSeparator,
   MenubarShortcut,
   MenubarTrigger,
-} from "@/components/ui/menubar";
+} from "@forge/ui/menubar";
 
 export type WorkspaceMenubarItem = {
   id: string;

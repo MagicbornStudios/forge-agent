@@ -5,6 +5,7 @@
   "types": "src/index.ts",
   "main": "src/index.ts",
   "dependencies": {
+    "@forge/ui": "workspace:*",
     "clsx": "^2.1.1",
     "tailwind-merge": "^3.4.0"
   },

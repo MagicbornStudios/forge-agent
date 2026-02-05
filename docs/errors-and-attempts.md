@@ -30,9 +30,9 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ## Payload type generation failing via CLI
 
-**Problem**: Running `payload generate:types` directly can fail with ESM/require errors when loading `payload.config.ts`.
+**Problem**: Running `payload generate:types` directly can fail with ESM/require errors when loading `payload.config.ts` on Node 24.
 
-**Fix**: Use the repo script `pnpm payload:types`, which runs Payload's ESM CLI entrypoint with `tsx` support. Generated output is `packages/types/src/payload-types.ts`.
+**Fix**: Use `pnpm payload:types`, which calls `node scripts/generate-payload-types.mjs`. This script loads collections via `tsx/esm/api`, builds config, and writes to `packages/types/src/payload-types.ts`.
 
 ---
 

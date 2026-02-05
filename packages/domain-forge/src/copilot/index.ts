@@ -19,6 +19,12 @@ export interface ForgeCopilotDeps {
   onAIHighlight: (payload: AIHighlightPayload) => void;
   clearAIHighlights: () => void;
   createNodeOverlayId: string;
+  /** Optional: plan API for forge_createPlan. */
+  createPlanApi?: (goal: string, graphSummary: unknown) => Promise<{ steps: unknown[] }>;
+  /** Optional: set pending-from-plan for review UI. */
+  setPendingFromPlan?: (value: boolean) => void;
+  /** Optional: save graph (for forge_commit). */
+  commitGraph?: () => Promise<void>;
 }
 
 /**
@@ -69,7 +75,20 @@ export function useForgeContract(deps: ForgeCopilotDeps): DomainCopilotContract 
       onAIHighlight,
       clearAIHighlights,
     }),
-    [graph, selection, isDirty, applyOperations, openOverlay, revealSelection, onAIHighlight, clearAIHighlights, createNodeOverlayId],
+    [
+      graph,
+      selection,
+      isDirty,
+      applyOperations,
+      openOverlay,
+      revealSelection,
+      onAIHighlight,
+      clearAIHighlights,
+      createNodeOverlayId,
+      createPlanApi,
+      setPendingFromPlan,
+      commitGraph,
+    ],
   );
 }
 

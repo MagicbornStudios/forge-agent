@@ -1,4 +1,4 @@
-﻿# Workspace UI kit — Agent rules
+# Workspace UI kit — Agent rules
 
 ## Owner
 
@@ -23,7 +23,7 @@ Use **left** / **main** / **right** / **bottom** in `WorkspaceLayoutGrid`.
 
 ## Design (shadcn + atomic)
 
-Add components via: `npx shadcn@latest add <name>`. Use shadcn atoms from `apps/studio/components/ui/*` (Button, Separator, Card, ScrollArea, Dialog, DropdownMenu, Select, Sheet, Tabs, Popover, Menubar, etc.). Do not hand-roll equivalents.
+Add components via: `npx shadcn@latest add <name>`. Use shadcn atoms from `packages/ui/src/components/ui/*` (Button, Separator, Card, ScrollArea, Dialog, DropdownMenu, Select, Sheet, Tabs, Popover, Menubar, etc.). Do not hand-roll equivalents.
 
 ## Slot composition
 
@@ -34,13 +34,14 @@ Add components via: `npx shadcn@latest add <name>`. Use shadcn atoms from `apps/
 5. **WorkspaceInspector** — Either `selection` + `sections: InspectorSection[]` (when/render) or `children`.
 6. **WorkspaceOverlaySurface** — `overlays: OverlaySpec[]`, `activeOverlay`, `onDismiss`. No registry. Declare overlays in one place per workspace.
 7. **WorkspaceEditor** — Required wrapper inside the main slot; always provide `editorId` + `editorType` metadata.
+8. **WorkspaceReviewBar** — Optional. For plan–commit flows: place between Toolbar and LayoutGrid. Wire `visible` to `(isDirty && pendingFromPlan)`, `onRevert` to refetch/reset draft, `onAccept` to clear pending. State is owned by the domain/store; the bar is presentational only.
 
 ## Rules
 
 - **Slots not refs**: No imperative toolbar or modal registry. Composition only.
 - **Selection-first**: Inspector content keyed off shared `Selection` (entity / textRange / canvasObject).
 - **No file scanning/generators**: Overlays are an explicit array in the workspace composition file.
-- **No cross-domain imports**: Shared components should not import from app or domain code. Temporary exception: shared UI uses Studio shadcn atoms (`apps/studio/components/ui`) until we extract a shared atoms package. Do not expand this footprint.
+- **No cross-domain imports**: Shared components should not import from app or domain code. UI atoms come from `@forge/ui`.
 - **Tooltips**: Use `WorkspaceButton`, `WorkspaceTab`, or `WorkspaceTooltip` when you need `tooltip` / `tooltipDisabled` props (typo alias: `tootlipDisabled`).
 - **Themes**: `WorkspaceShell` accepts `theme` to override `data-theme` for a workspace. Omit to inherit app theme.
 - **Toolbar standard**: Menubar (File/Edit/View), Project combobox, and Settings are expected in workspace toolbars.

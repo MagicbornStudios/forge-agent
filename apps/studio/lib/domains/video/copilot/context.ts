@@ -1,7 +1,7 @@
 import type { DomainContextSnapshot } from '@forge/shared/copilot/types';
 import type { Selection } from '@forge/shared/workspace/selection';
 import { isEntity, isCanvasObject } from '@forge/shared/workspace/selection';
-import type { VideoDoc } from '../types';
+import { getVideoDocData, type VideoDoc } from '../types';
 
 export interface VideoContextDeps {
   doc: VideoDoc | null;
@@ -19,7 +19,8 @@ export function buildVideoContext(deps: VideoContextDeps): DomainContextSnapshot
     selectionSummary = `${selection.system} object: ${selection.id}`;
   }
 
-  const totalElements = doc?.tracks.reduce((sum, t) => sum + t.elements.length, 0) ?? 0;
+  const data = getVideoDocData(doc);
+  const totalElements = data.tracks.reduce((sum, t) => sum + t.elements.length, 0);
 
   return {
     domain: 'video',
@@ -28,16 +29,16 @@ export function buildVideoContext(deps: VideoContextDeps): DomainContextSnapshot
     selectionSummary,
     domainState: {
       title: doc?.title ?? null,
-      trackCount: doc?.tracks.length ?? 0,
+      trackCount: data.tracks.length,
       totalElements,
-      sceneOverrideCount: doc?.sceneOverrides.length ?? 0,
-      resolution: doc?.resolution ?? null,
-      trackSummary: doc?.tracks.map((t) => ({
+      sceneOverrideCount: data.sceneOverrides.length,
+      resolution: data.resolution,
+      trackSummary: data.tracks.map((t) => ({
         id: t.id,
         name: t.name,
         type: t.type,
         elementCount: t.elements.length,
-      })) ?? [],
+      })),
     },
   };
 }

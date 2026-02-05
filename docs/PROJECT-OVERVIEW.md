@@ -32,6 +32,7 @@ Forge Agent is an AI-first studio for editing dialogue graphs. It focuses on:
 - **Domains**: Forge logic lives in `packages/domain-forge` and consumes types from `packages/types`.
 - **Types**: Payload generates types into `packages/types/src/payload-types.ts`. Domain aliases live in `packages/types/src/payload.ts` and `packages/types/src/graph.ts`.
 - **Persistence**: Payload runs inside the Studio app. Collections live under `apps/studio/payload/collections`.
+- **Settings**: Config-based defaults in `apps/studio/lib/settings/config.ts`. Overrides are loaded from Payload (`settings-overrides`) on app init via `GET /api/settings` and `hydrateFromOverrides`; saved explicitly via the settings sheet Save button and `POST /api/settings`.
 
 Note: API routes exist inside the Studio app for CopilotKit and Payload operations, but they are internal to the app and not treated as separate services.
 
@@ -47,8 +48,9 @@ Note: API routes exist inside the Studio app for CopilotKit and Payload operatio
 | **apps/studio/lib/** | App logic (stores, model router, settings, graph operations, utils). |
 | **packages/shared/** | Shared workspace UI kit and headless contracts. |
 | **packages/domain-forge/** | Forge domain logic (types, store, operations, copilot wiring). |
+| **packages/ui/** | Shared shadcn UI atoms (Radix-based primitives). |
 | **packages/types/** | Payload-generated types + domain aliases (source of truth). |
-| **docs/** | Documentation (STATUS, architecture, design, guides). |
+| **docs/** | Documentation (STATUS, architecture, design, guides). How-to guides live in `docs/how-to/` (numbered 00–07) and are also served in-app at `/docs`. |
 | **__tests__/** | Jest tests. |
 | **__mocks__/** | Jest mocks (server-only, etc.). |
 
@@ -73,13 +75,13 @@ apps/
         graphs/route.ts
         graphs/[id]/route.ts
         model-settings/route.ts
+        settings/route.ts
     components/
       AppShell.tsx
       GraphEditor.tsx
       CreateNodeModal.tsx
       providers/
       settings/
-      ui/
       workspaces/
     lib/
       app-shell/
@@ -89,9 +91,11 @@ apps/
       settings/
     payload/
       collections/
+        projects.ts
+        users.ts
         agent-sessions.ts
         forge-graphs.ts
-        settings-snapshots.ts
+        settings-overrides.ts
         video-docs.ts
       collections/index.ts
     payload.config.ts
@@ -123,6 +127,13 @@ packages/
       types.ts
       index.ts
     package.json
+  ui/
+    src/
+      components/
+        ui/
+      lib/
+      index.ts
+    package.json
   types/
     src/
       graph.ts
@@ -138,14 +149,11 @@ docs/
   design/
   guides/
 
+scripts/
+  generate-payload-types.mjs
+
 __tests__/
 __mocks__/
-
-collections/
-  README.md
-
-src/
-  README.md
 
 types/
   README.md
@@ -180,8 +188,15 @@ types/
 
 ---
 
+## How-to guides
+
+Numbered guides in `docs/how-to/` build a workspace from the ground up. They are served in the Studio app at **/docs** (sidebar + article). Order: 01 Foundation → 02 Workspace shell and slots → 03 Styling → 04 Data and state → 05 Building a workspace → 06 ForgeWorkspace walkthrough → 07 Copilot and AI integration. Each guide includes “What the AI can do at this stage” and points to real code.
+
+---
+
 ## References
 
 - **AGENTS.md** (root): Agent rules and boundaries.
 - **docs/STATUS.md**: Current state and Ralph Wiggum loop.
+- **docs/how-to/00-index.md**: Index of how-tos and reference doc links.
 - **packages/shared/src/shared/AGENTS.md** and **packages/shared/src/shared/components/workspace/AGENTS.md**: Shared UI rules.

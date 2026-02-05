@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@forge/ui/dropdown-menu";
 import { WorkspaceButton } from "../controls/WorkspaceButton";
 
 export type WorkspaceFileMenuItem =

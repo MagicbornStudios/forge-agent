@@ -25,6 +25,8 @@
       "@forge/shared/*": ["../../packages/shared/src/shared/*"],
       "@forge/domain-forge": ["../../packages/domain-forge/src/index.ts"],
       "@forge/domain-forge/*": ["../../packages/domain-forge/src/*"],
+      "@forge/ui": ["../../packages/ui/src/index.ts"],
+      "@forge/ui/*": ["../../packages/ui/src/components/ui/*", "../../packages/ui/src/*"],
       "@forge/types": ["../../packages/types/src/index.ts"],
       "@forge/types/*": ["../../packages/types/src/*"],
       "payload/generated-types": ["../../packages/types/src/payload-types.ts"]

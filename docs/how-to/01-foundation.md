@@ -1,0 +1,33 @@
+# 01 – Foundation
+
+Repo structure, packages, and key concepts so you can run the app and navigate the codebase.
+
+## Repo structure
+
+- **apps/studio/** — Next.js app: App Shell, workspaces, CopilotKit, Payload, API routes.
+- **packages/shared/** — Workspace UI kit and headless contracts (`WorkspaceShell`, slots, toolbar, overlays).
+- **packages/domain-forge/** — Forge domain: types, operations, Copilot contract (actions, context, suggestions).
+- **packages/ui/** — shadcn UI atoms (Button, Card, Dialog, etc.).
+- **packages/types/** — Payload-generated types and domain aliases (`ForgeGraphDoc`, etc.).
+- **docs/** — Documentation; how-tos live in `docs/how-to/`.
+
+## Key concepts
+
+- **App Shell**: Owns workspace tabs and active workspace. Only one workspace is mounted at a time. See `apps/studio/components/AppShell.tsx` and `apps/studio/lib/app-shell/store.ts`.
+- **Workspace**: A domain-specific editor (Forge = graph, Video = timeline). Each uses `WorkspaceShell` from shared and composes Header, Toolbar, LayoutGrid, StatusBar, Overlays.
+- **Domain**: Logic and Copilot contract for a workspace (e.g. `packages/domain-forge`). Types come from `packages/types`.
+
+## Running the app
+
+```bash
+pnpm install
+pnpm dev
+```
+
+Configure `.env.local` (e.g. `OPENROUTER_API_KEY`, `PAYLOAD_SECRET`). After changing Payload collections, run `pnpm payload:types`.
+
+## What the AI can do at this stage
+
+N/A — concepts only. No workspace or agent wiring yet.
+
+**Next:** [02 – Workspace shell and slots](02-workspace-shell.md)

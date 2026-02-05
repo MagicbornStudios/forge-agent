@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { TooltipProvider as RadixTooltipProvider } from "@/components/ui/tooltip"
+import { TooltipProvider as RadixTooltipProvider } from "@forge/ui/tooltip"
 
 export interface TooltipProviderProps {
   children?: React.ReactNode

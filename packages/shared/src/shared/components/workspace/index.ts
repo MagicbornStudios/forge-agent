@@ -18,6 +18,8 @@ export {
   WorkspaceMain,
 } from './panels';
 export { WorkspaceStatusBar } from './status/WorkspaceStatusBar';
+export { WorkspaceReviewBar } from './review/WorkspaceReviewBar';
+export type { WorkspaceReviewBarProps } from './review/WorkspaceReviewBar';
 export { WorkspaceOverlaySurface } from './overlays/WorkspaceOverlaySurface';
 export { WorkspaceModalsHost } from './modals/WorkspaceModalsHost';
 export type {

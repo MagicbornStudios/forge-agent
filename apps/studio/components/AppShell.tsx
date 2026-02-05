@@ -11,13 +11,18 @@ import { ForgeWorkspace, VideoWorkspace } from '@/components/workspaces';
 import { WorkspaceButton } from '@forge/shared/components/workspace';
 import { AppLayout, AppTabGroup, AppTab, AppContent } from '@forge/shared/components/app';
 import { SettingsMenu } from '@/components/settings/SettingsMenu';
-import { Toaster } from '@/components/ui/sonner';
+import { Toaster } from '@forge/ui/sonner';
 import { useSettingsStore } from '@/lib/settings/store';
+import { useEntitlements, CAPABILITIES } from '@forge/shared/entitlements';
+import { ImageGenerateRender } from '@/components/copilot/ImageGenerateRender';
+import { StructuredOutputRender } from '@/components/copilot/StructuredOutputRender';
 
 export function AppShell() {
   const { route, setActiveWorkspace, openWorkspace, closeWorkspace } = useAppShellStore();
   const { activeWorkspaceId, openWorkspaceIds } = route;
   const toastsEnabled = useSettingsStore((s) => s.getSettingValue('ui.toastsEnabled')) as boolean | undefined;
+  const entitlements = useEntitlements();
+  const imageGenEnabled = entitlements.has(CAPABILITIES.IMAGE_GENERATION);
 
   // Shell-level context for the agent and user (workspace names, active workspace, editor summary)
   useCopilotReadable({
@@ -97,6 +102,96 @@ export function AppShell() {
       }
       return { success: false, message: `Unknown workspace: ${workspaceId}.` };
     },
+  });
+
+  useCopilotAction({
+    name: 'app_generateImage',
+    description:
+      'Generate an image from a text prompt. Use when the user asks to create, draw, or generate an image.',
+    parameters: [
+      { name: 'prompt', type: 'string', description: 'Detailed description of the image to generate', required: true },
+      {
+        name: 'aspectRatio',
+        type: 'string',
+        description: 'Optional aspect ratio: 1:1, 16:9, 9:16, 4:3, 3:4, etc.',
+        required: false,
+      },
+      {
+        name: 'imageSize',
+        type: 'string',
+        description: 'Optional size: 1K, 2K, 4K',
+        required: false,
+      },
+    ],
+    handler: async ({ prompt, aspectRatio, imageSize }) => {
+      try {
+        const res = await fetch('/api/image-generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: String(prompt ?? ''),
+            ...(aspectRatio && { aspectRatio: String(aspectRatio) }),
+            ...(imageSize && { imageSize: String(imageSize) }),
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          return { success: false, message: data.error ?? 'Image generation failed', data: {} };
+        }
+        return {
+          success: true,
+          message: 'Image generated',
+          data: { imageUrl: data.imageUrl },
+        };
+      } catch (err) {
+        return {
+          success: false,
+          message: err instanceof Error ? err.message : 'Image generation failed',
+          data: {},
+        };
+      }
+    },
+    render: ImageGenerateRender,
+    ...(imageGenEnabled ? {} : { available: 'disabled' as const }),
+  });
+
+  useCopilotAction({
+    name: 'app_respondWithStructure',
+    description:
+      'Extract or produce structured data (JSON) from a prompt. Use when the user wants a list of characters, key-value pairs, or other structured output. Choose schemaName to match the request: "characters" for character lists, "keyValue" for key-value pairs, "list" for a simple string list.',
+    parameters: [
+      { name: 'prompt', type: 'string', description: 'What to extract or generate (e.g. "List the main characters in this scene")', required: true },
+      {
+        name: 'schemaName',
+        type: 'string',
+        description: 'Predefined schema: "characters", "keyValue", or "list"',
+        required: false,
+      },
+    ],
+    handler: async ({ prompt, schemaName }) => {
+      try {
+        const res = await fetch('/api/structured-output', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: String(prompt ?? ''),
+            ...(schemaName && { schemaName: String(schemaName) }),
+          }),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          return { success: false, message: json.error ?? 'Structured output failed', data: undefined };
+        }
+        return { success: true, message: 'Structured data extracted', data: json.data };
+      } catch (err) {
+        return {
+          success: false,
+          message: err instanceof Error ? err.message : 'Structured output failed',
+          data: undefined,
+        };
+      }
+    },
+    render: StructuredOutputRender,
   });
 
   return (

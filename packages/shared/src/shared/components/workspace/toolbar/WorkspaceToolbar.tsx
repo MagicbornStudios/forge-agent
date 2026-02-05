@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { cn } from '@forge/shared/lib/utils';
-import { Separator } from '@/components/ui/separator';
+import { Separator } from '@forge/ui/separator';
 import type { ToolbarGroup, ToolbarItem } from '@forge/shared/workspace';
 import { WorkspaceButton } from '../controls/WorkspaceButton';
 import { WorkspaceFileMenu } from './WorkspaceFileMenu';

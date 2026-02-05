@@ -8,9 +8,9 @@ Workspace Platform Engineer: owns `packages/shared/src/shared` (workspace compon
 
 - **Workspace shell**: Declarative, slot-based. See `components/workspace/AGENTS.md` for slot map and how to build a workspace.
 - **Layout grid**: `WorkspaceLayoutGrid` is the layout primitive. It wraps the main slot in `WorkspaceEditor` metadata. Always provide `editorId` + `editorType`.
-- **Atomic design**: shadcn atoms live in `apps/studio/components/ui/*`; shared workspace UI composes those atoms into molecules. This is a temporary coupling until atoms are extracted to a shared package.
+- **Atomic design**: shadcn atoms live in `packages/ui/src/components/ui/*`; shared workspace UI composes those atoms into molecules.
 - **Styles**: Single source in `packages/shared/src/shared/styles/`. Themes are data-driven (`data-theme` on `<html>` or workspace root). Do not duplicate theme tokens elsewhere.
-- **No cross-domain imports**: Shared should not import from app routes or domain-specific code (e.g. Forge, Writer). Temporary exception: shared UI uses Studio shadcn atoms. Do not add new app-level imports beyond atoms.
+- **No cross-domain imports**: Shared should not import from app routes or domain-specific code (e.g. Forge, Writer). UI atoms are imported from `@forge/ui`.
 - **Workspace UI primitives**: Use `WorkspaceButton`, `WorkspaceTabGroup`, `WorkspaceTab`, and `WorkspaceTooltip` for tooltip-enabled UI.
 
 ## Adding a new slot or panel

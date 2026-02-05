@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@forge/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@forge/ui/popover";
 import { cn } from "@forge/shared/lib/utils";
 import { WorkspaceButton } from "../controls/WorkspaceButton";
 

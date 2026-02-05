@@ -4,10 +4,10 @@ import * as React from 'react';
 import { FORGE_NODE_TYPE, type ForgeNodeType } from '@forge/types/graph';
 import type { ModalComponentProps } from '@forge/shared/workspace';
 import { WorkspaceButton } from '@forge/shared/components/workspace';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@forge/ui/input';
+import { Textarea } from '@forge/ui/textarea';
+import { Label } from '@forge/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@forge/ui/select';
 
 export interface CreateNodeModalPayload {
   nodeType?: ForgeNodeType;

@@ -4,14 +4,17 @@ import { toast } from 'sonner';
 import type { ForgeGraphDoc, ForgeGraphPatchOp } from '@forge/types/graph';
 import { applyPatchOperations } from './graph-operations';
 import { useSettingsStore } from '@/lib/settings/store';
+import { setLastGraphId } from '@/lib/persistence/local-storage';
 
 interface GraphStore {
   graph: ForgeGraphDoc | null;
   isDirty: boolean;
+  /** True when the last draft change came from executing a plan (for review UI: Revert/Accept). */
+  pendingFromPlan: boolean;
 
-  // Actions
   setGraph: (graph: ForgeGraphDoc) => void;
   applyOperations: (operations: ForgeGraphPatchOp[]) => void;
+  setPendingFromPlan: (value: boolean) => void;
   saveGraph: () => Promise<void>;
   loadGraph: (id: number) => Promise<void>;
 }
@@ -31,6 +34,12 @@ export const useGraphStore = create<GraphStore>()(
       set((state) => {
         state.graph = graph;
         state.isDirty = false;
+      });
+    },
+
+    setPendingFromPlan: (value) => {
+      set((state) => {
+        state.pendingFromPlan = value;
       });
     },
 
@@ -88,7 +97,9 @@ export const useGraphStore = create<GraphStore>()(
           set((state) => {
             state.graph = graph;
             state.isDirty = false;
+            state.pendingFromPlan = false;
           });
+          setLastGraphId(id);
         } else if (canToast()) {
           toast.error('Load failed', {
             description: 'The server could not load that graph.',

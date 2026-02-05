@@ -15,6 +15,7 @@ export interface AppShellRoute {
 interface AppShellState {
   route: AppShellRoute;
   workspaceThemes: Partial<Record<AppShellWorkspaceId, string>>;
+  setRoute: (route: Partial<Pick<AppShellRoute, 'activeWorkspaceId' | 'openWorkspaceIds'>>) => void;
   setActiveWorkspace: (id: AppShellWorkspaceId) => void;
   openWorkspace: (id: AppShellWorkspaceId) => void;
   closeWorkspace: (id: AppShellWorkspaceId) => void;
@@ -33,6 +34,13 @@ export const useAppShellStore = create<AppShellState>()(
     },
     workspaceThemes: {
       video: 'darcula',
+    },
+
+    setRoute: (route) => {
+      set((state) => {
+        if (route.activeWorkspaceId != null) state.route.activeWorkspaceId = route.activeWorkspaceId as AppShellWorkspaceId;
+        if (route.openWorkspaceIds != null && route.openWorkspaceIds.length > 0) state.route.openWorkspaceIds = route.openWorkspaceIds as AppShellWorkspaceId[];
+      });
     },
 
     setActiveWorkspace: (id) => {

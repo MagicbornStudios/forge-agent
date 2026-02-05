@@ -10,6 +10,12 @@ export interface ForgeActionsDeps {
   openOverlay: (id: string, payload?: Record<string, unknown>) => void;
   revealSelection: () => void;
   createNodeOverlayId: string;
+  /** Optional: plan API for forge_createPlan. When absent, createPlan is no-op. */
+  createPlanApi?: (goal: string, graphSummary: unknown) => Promise<{ steps: unknown[] }>;
+  /** Optional: set pending-from-plan flag for review UI. */
+  setPendingFromPlan?: (value: boolean) => void;
+  /** Optional: persist draft (save). Used by forge_commit. */
+  commitGraph?: () => Promise<void>;
 }
 
 /**
@@ -18,8 +24,54 @@ export interface ForgeActionsDeps {
  * All action names are prefixed with `forge_` to prevent collisions
  * when multiple domains register simultaneously.
  */
+function stepToOp(step: Record<string, unknown>): ForgeGraphPatchOp | null {
+  const type = String(step.type ?? '');
+  if (type === 'createEdge') {
+    const source = step.source ?? step.sourceNodeId;
+    const target = step.target ?? step.targetNodeId;
+    if (source != null && target != null) {
+      return { type: 'createEdge', source: String(source), target: String(target) };
+    }
+    return null;
+  }
+  if (type === 'updateNode' && step.nodeId != null) {
+    return { type: 'updateNode', nodeId: String(step.nodeId), updates: (step.updates as Record<string, unknown>) ?? {} };
+  }
+  if (type === 'deleteNode' && step.nodeId != null) {
+    return { type: 'deleteNode', nodeId: String(step.nodeId) };
+  }
+  if (type === 'createNode') {
+    const nodeId = `node_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+    return {
+      type: 'createNode',
+      nodeType: (step.nodeType as ForgeNodeType) ?? 'CHARACTER',
+      position: {
+        x: typeof step.x === 'number' ? step.x : Math.random() * 400,
+        y: typeof step.y === 'number' ? step.y : Math.random() * 400,
+      },
+      data: {
+        label: step.label as string | undefined,
+        content: step.content as string | undefined,
+        speaker: step.speaker as string | undefined,
+      },
+      id: nodeId,
+    };
+  }
+  return null;
+}
+
 export function createForgeActions(deps: ForgeActionsDeps): CopilotActionConfig[] {
-  const { getGraph, applyOperations, onAIHighlight, openOverlay, revealSelection, createNodeOverlayId } = deps;
+  const {
+    getGraph,
+    applyOperations,
+    onAIHighlight,
+    openOverlay,
+    revealSelection,
+    createNodeOverlayId,
+    createPlanApi,
+    setPendingFromPlan,
+    commitGraph,
+  } = deps;
 
   return [
     // -----------------------------------------------------------------------
@@ -215,6 +267,106 @@ export function createForgeActions(deps: ForgeActionsDeps): CopilotActionConfig[
       handler: async () => {
         revealSelection();
         return { success: true, message: 'Viewport fitted to selection.' };
+      },
+    },
+
+    // -----------------------------------------------------------------------
+    // forge_createPlan
+    // -----------------------------------------------------------------------
+    {
+      name: 'forge_createPlan',
+      description:
+        'Create a plan (list of graph operations) for a goal without applying them. Use when the user wants to preview or review changes before executing. Call forge_executePlan with the returned steps to apply.',
+      parameters: [
+        { name: 'goal', type: 'string' as const, description: 'What to achieve (e.g. "Add 3 character nodes and connect them")', required: true },
+      ],
+      handler: async (args: Record<string, unknown>) => {
+        if (!createPlanApi) {
+          return { success: false, message: 'Plan API not configured.' };
+        }
+        const graph = getGraph();
+        const graphSummary = graph
+          ? {
+              title: graph.title,
+              nodeCount: graph.flow.nodes.length,
+              nodes: graph.flow.nodes.map((n) => ({ id: n.id, type: n.data?.type, label: n.data?.label })),
+              edges: graph.flow.edges.map((e) => ({ id: e.id, source: e.source, target: e.target })),
+            }
+          : {};
+        try {
+          const { steps } = await createPlanApi(String(args.goal ?? ''), graphSummary);
+          return { success: true, message: `Plan with ${Array.isArray(steps) ? steps.length : 0} steps.`, data: { steps: steps ?? [] } };
+        } catch (err) {
+          return { success: false, message: err instanceof Error ? err.message : 'Plan failed.', data: { steps: [] } };
+        }
+      },
+    },
+
+    // -----------------------------------------------------------------------
+    // forge_executePlan
+    // -----------------------------------------------------------------------
+    {
+      name: 'forge_executePlan',
+      description:
+        'Execute a plan (list of steps from forge_createPlan). Applies each operation to the graph and highlights changes. Use after forge_createPlan when the user approves.',
+      parameters: [
+        {
+          name: 'steps',
+          type: 'object' as const,
+          description: 'Array of plan steps (from forge_createPlan result). Each has type and args.',
+          required: true,
+        },
+      ],
+      handler: async (args: Record<string, unknown>) => {
+        const raw = args.steps ?? (args as { data?: { steps?: unknown[] } }).data?.steps ?? args;
+        const steps = Array.isArray(raw) ? raw : [];
+        const graph = getGraph();
+        if (!graph) return { success: false, message: 'No active graph.' };
+        const nodeIds: string[] = [];
+        const edgeIds: string[] = [];
+        for (const step of steps) {
+          const op = stepToOp(typeof step === 'object' && step !== null ? (step as Record<string, unknown>) : {});
+          if (!op) continue;
+          applyOperations([op]);
+          if (op.type === 'createNode' && op.id) nodeIds.push(op.id);
+          if (op.type === 'updateNode') nodeIds.push(op.nodeId);
+          if (op.type === 'createEdge') {
+            const g2 = getGraph();
+            const edge = g2?.flow.edges.find((e) => e.source === op.source && e.target === op.target);
+            if (edge) edgeIds.push(edge.id);
+          }
+        }
+        if (nodeIds.length || edgeIds.length) {
+          onAIHighlight({
+            entities: {
+              ...(nodeIds.length ? { 'forge.node': nodeIds } : {}),
+              ...(edgeIds.length ? { 'forge.edge': edgeIds } : {}),
+            },
+          });
+        }
+        setPendingFromPlan?.(true);
+        return { success: true, message: `Executed ${steps.length} steps.`, data: { stepCount: steps.length } };
+      },
+    },
+
+    // -----------------------------------------------------------------------
+    // forge_commit
+    // -----------------------------------------------------------------------
+    {
+      name: 'forge_commit',
+      description: 'Save the current graph to the server (persist draft). Use after reviewing changes.',
+      parameters: [],
+      handler: async () => {
+        if (!commitGraph) {
+          return { success: false, message: 'Commit not available.' };
+        }
+        try {
+          await commitGraph();
+          setPendingFromPlan?.(false);
+          return { success: true, message: 'Graph saved.' };
+        } catch (err) {
+          return { success: false, message: err instanceof Error ? err.message : 'Save failed.' };
+        }
       },
     },
   ];
