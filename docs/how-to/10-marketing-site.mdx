@@ -1,0 +1,41 @@
+---
+created: 2026-02-05
+updated: 2026-02-05
+---
+
+# 10 – Marketing site (customer-facing)
+
+Overview of the consumer-facing marketing app: routes, layout, auth boundary, and component structure.
+
+## What it is
+
+- **App:** `apps/marketing` — Next.js 15, Tailwind, `@forge/ui`. Runs separately (e.g. port 3001) and talks to Studio for auth and data.
+- **Routes:** `/` (landing), `/docs`, `/docs/[slug]`, `/login`, `/account`, `/billing`, `/waitlist`, `/newsletter`.
+- **Auth:** No Payload in the marketing app. Login and “me” are handled by Studio (`POST /api/users/login`, `GET /api/me`). Marketing uses `credentials: 'include'` so cookies are sent when same-origin or when CORS and cookie domain are set correctly.
+
+## Layout and sidebar
+
+- **Logged out:** Header + main only.
+- **Logged in:** Header + **MarketingSidebar** + main. Sidebar shows Account, Billing, Docs, and “Open app” (link to Studio). See `apps/marketing/components/organisms/MarketingShell.tsx` and `MarketingSidebar.tsx`.
+
+## Component structure
+
+Same idea as workspace components but lighter: atoms from `@forge/ui`, molecules and organisms in the app.
+
+| Layer | Location | Examples |
+|-------|----------|----------|
+| Atoms | `@forge/ui` | Button, Card, Input, Label |
+| Molecules | `apps/marketing/components/molecules/` | HeroSection, FeatureCard, PricingCard, DocNavSidebar |
+| Organisms | `apps/marketing/components/organisms/` | MarketingHeader, PromotionsBanner, MarketingSidebar, MarketingShell |
+| Providers | `apps/marketing/components/providers/` | AuthProvider, useAuth |
+
+See `apps/marketing/components/README.md` and `AGENTS.md`.
+
+## CORS and cookie domain
+
+If marketing and Studio are on different origins (e.g. marketing on `example.com`, Studio on `app.example.com`):
+
+1. Studio must allow the marketing origin in CORS and send credentials.
+2. Set the Payload/auth cookie domain to `.example.com` so both subdomains receive it (if your stack supports it).
+
+**Next:** [11 – Marketing auth](11-marketing-auth.mdx)

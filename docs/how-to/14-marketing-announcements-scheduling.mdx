@@ -1,0 +1,27 @@
+---
+created: 2026-02-05
+updated: 2026-02-05
+---
+
+# 14 – Marketing announcements and scheduling
+
+How promotions (announcements) work and how scheduling is implemented with Payload Jobs.
+
+## Promotions collection
+
+- **Collection:** `promotions` in Studio. Fields: `title`, `body` (rich text), `active`, `startsAt`, `endsAt`, `ctaUrl`.
+- **API:** `GET /api/promotions` returns active promotions whose `startsAt`/`endsAt` window includes now. Marketing uses this for the promotions banner.
+
+## Scheduling with Payload Jobs
+
+- **Tasks:** `activatePromotion` and `deactivatePromotion` (in `apps/studio/payload/tasks/`). Each takes `promotionId` and updates the doc’s `active` flag.
+- **When to queue:** In the `promotions` collection’s `afterChange` hook we queue:
+  - If `startsAt` is in the future: `payload.jobs.queue({ task: 'activatePromotion', input: { promotionId }, waitUntil: startsAt })`.
+  - If `endsAt` is in the future: `payload.jobs.queue({ task: 'deactivatePromotion', input: { promotionId }, waitUntil: endsAt })`.
+- **Running jobs:** Payload’s job queue needs a long-running process (e.g. Node server). It is **not** suitable for serverless (e.g. Vercel) where the process does not stay alive; jobs with `waitUntil` are only picked up when the job runner runs.
+
+## Serverless / cron alternative
+
+- On serverless, use an external cron (e.g. Vercel Cron or a small server) that hits a Studio API route. That route can run the same logic (find promotions where `startsAt <= now` and `active === false`, set `active: true`, and similarly for `endsAt`) or queue jobs if you run a separate worker. Document this in your runbook; the how-to does not implement a full cron.
+
+**Back to index:** [00 – How-to index](00-index.mdx)

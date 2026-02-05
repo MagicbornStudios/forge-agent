@@ -88,12 +88,70 @@ async function ensureProject(payload: Payload, ownerId: string | number, graphId
   });
 }
 
+const SEED_PROMOTION_TITLE = 'Welcome to Forge';
+
+async function ensurePromotion(payload: Payload) {
+  const existing = await payload.find({
+    collection: 'promotions',
+    where: { title: { equals: SEED_PROMOTION_TITLE } },
+    limit: 1,
+  });
+  if (existing.docs.length > 0) return existing.docs[0];
+  return payload.create({
+    collection: 'promotions',
+    data: {
+      title: SEED_PROMOTION_TITLE,
+      active: true,
+      ctaUrl: '/docs',
+    },
+  });
+}
+
+const SEED_WAITLIST_EMAIL = 'seed@forge.local';
+
+async function ensureWaitlistEntry(payload: Payload) {
+  const existing = await payload.find({
+    collection: 'waitlist',
+    where: { email: { equals: SEED_WAITLIST_EMAIL } },
+    limit: 1,
+  });
+  if (existing.docs.length > 0) return existing.docs[0];
+  return payload.create({
+    collection: 'waitlist',
+    data: {
+      email: SEED_WAITLIST_EMAIL,
+      name: 'Seed Waitlist',
+      source: 'seed',
+    },
+  });
+}
+
+async function ensureNewsletterEntry(payload: Payload) {
+  const existing = await payload.find({
+    collection: 'newsletter-subscribers',
+    where: { email: { equals: SEED_WAITLIST_EMAIL } },
+    limit: 1,
+  });
+  if (existing.docs.length > 0) return existing.docs[0];
+  return payload.create({
+    collection: 'newsletter-subscribers',
+    data: {
+      email: SEED_WAITLIST_EMAIL,
+      optedIn: true,
+      source: 'seed',
+    },
+  });
+}
+
 export async function seedStudio(payload: Payload) {
   try {
     const admin = await ensureUser(payload, DEFAULT_ADMIN);
     await ensureUser(payload, DEFAULT_USER);
     const graph = await ensureGraph(payload);
     await ensureProject(payload, admin.id, graph.id);
+    await ensurePromotion(payload);
+    await ensureWaitlistEntry(payload);
+    await ensureNewsletterEntry(payload);
     payload.logger.info('[Seed] Studio seed complete');
   } catch (err) {
     payload.logger.error(`[Seed] Failed: ${err instanceof Error ? err.message : String(err)}`);

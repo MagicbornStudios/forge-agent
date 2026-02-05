@@ -12,6 +12,32 @@ export const Promotions: CollectionConfig = {
     update: () => true,
     delete: () => true,
   },
+  hooks: {
+    afterChange: [
+      async ({ doc, req }) => {
+        const jobs = (req.payload as { jobs?: { queue: (args: unknown) => Promise<unknown> } }).jobs;
+        if (!jobs?.queue) return;
+        const id = doc.id as number;
+        const startsAt = doc.startsAt ? new Date(doc.startsAt as string) : null;
+        const endsAt = doc.endsAt ? new Date(doc.endsAt as string) : null;
+        const now = new Date();
+        if (startsAt && startsAt > now) {
+          await jobs.queue({
+            task: 'activatePromotion',
+            input: { promotionId: id },
+            waitUntil: startsAt,
+          });
+        }
+        if (endsAt && endsAt > now) {
+          await jobs.queue({
+            task: 'deactivatePromotion',
+            input: { promotionId: id },
+            waitUntil: endsAt,
+          });
+        }
+      },
+    ],
+  },
   fields: [
     {
       name: 'title',

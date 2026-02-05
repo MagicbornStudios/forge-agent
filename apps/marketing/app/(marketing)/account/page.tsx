@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@forge/ui';
-import { useAuth } from '@/components/AuthProvider';
+import { useAuth } from '@/components/providers/AuthProvider';
 import { getStudioApiUrl } from '@/lib/api';
 
 export default function AccountPage() {

@@ -3,7 +3,7 @@ created: 2026-02-05
 updated: 2026-02-05
 ---
 
-# Design: components (atoms ? molecules ? organisms)
+# Design: components (atoms -> molecules -> organisms)
 
 This document catalogs the **shared components** we expose for consumers and contributors. It focuses on **real components in the repo** and how they map to our atomic design system.
 
@@ -13,7 +13,7 @@ This document catalogs the **shared components** we expose for consumers and con
 
 ## Atoms (`@forge/ui`)
 
-Shadcn/Radix primitives — always import from the **root** package.
+Shadcn/Radix primitives - always import from the **root** package.
 
 ```ts
 import {
@@ -42,9 +42,9 @@ import {
 
 ### Core atoms we use constantly
 
-- **Button / Badge / Card** — structured surfaces and actions.
-- **Item / ItemGroup** — list rows and compact summaries (e.g. patch preview items).
-- **Form / FormField / FormItem** — React Hook Form helpers (see `CreateNodeModal` for the canonical pattern).
+- **Button / Badge / Card** - structured surfaces and actions.
+- **Item / ItemGroup** - list rows and compact summaries (e.g. patch preview items).
+- **Form / FormField / FormItem** - React Hook Form helpers (see `CreateNodeModal` for the canonical pattern).
 
 ---
 
@@ -60,6 +60,8 @@ Composable UI patterns built on atoms.
 - `WorkspaceLayoutGrid` (left / main / right / bottom slots)
 - `WorkspaceStatusBar`
 - `WorkspaceReviewBar`
+- `AppSpace` (semantic wrapper over AppLayout + tabs + content)
+- `AppProviders` (optional shared provider stack for tooltips/copilot)
 
 ### Gating + AI
 
@@ -73,9 +75,9 @@ Composable UI patterns built on atoms.
 
 These live in the **app repo** and are not published.
 
-- `AppShell` — workspace tabs + active workspace routing.
-- `ForgeWorkspace` — React Flow editor + AI workflow panel.
-- `VideoWorkspace` — Twick editor skeleton + AI contract.
+- `AppShell` - workspace tabs + active workspace routing.
+- `ForgeWorkspace` - React Flow editor + AI workflow panel.
+- `VideoWorkspace` - Twick editor skeleton + AI contract.
 
 ---
 
@@ -119,4 +121,4 @@ See `apps/studio/components/CreateNodeModal.tsx` for the canonical form structur
 
 - **Atoms:** import from `@forge/dev-kit` (or `@forge/ui`).
 - **Workspace shell + AI helpers:** import from `@forge/dev-kit` (or `@forge/shared`).
-- **Domain logic:** stays in your app/workspace package — not in the shared layer.
+- **Domain logic:** stays in your app/workspace package - not in the shared layer.

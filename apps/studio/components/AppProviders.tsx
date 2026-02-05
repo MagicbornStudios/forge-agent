@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CopilotKitProvider } from '@/components/providers/CopilotKitProvider';
-import { TooltipProvider } from '@/components/providers/TooltipProvider';
+import { AppProviders as SharedAppProviders } from '@forge/shared/components/app';
 import { EntitlementsProvider } from '@/components/providers/EntitlementsProvider';
 import { AppShellPersistGate } from '@/components/persistence/AppShellPersistGate';
 import { DirtyBeforeUnload } from '@/components/persistence/DirtyBeforeUnload';
@@ -17,11 +17,11 @@ export function AppProviders({ children, copilotDefaultOpen = true }: AppProvide
     <AppShellPersistGate>
       <DirtyBeforeUnload />
       <EntitlementsProvider>
-        <TooltipProvider>
+        <SharedAppProviders>
           <CopilotKitProvider defaultOpen={copilotDefaultOpen}>
             {children}
           </CopilotKitProvider>
-        </TooltipProvider>
+        </SharedAppProviders>
       </EntitlementsProvider>
     </AppShellPersistGate>
   );

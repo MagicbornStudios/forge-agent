@@ -5,6 +5,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { collections } from './payload/collections/index.ts';
 import { seedStudio } from './payload/seed.ts';
+import { activatePromotion } from './payload/tasks/activatePromotion.ts';
+import { deactivatePromotion } from './payload/tasks/deactivatePromotion.ts';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -14,6 +16,18 @@ export default buildConfig({
     user: 'users',
   },
   collections,
+  jobs: {
+    tasks: [
+      {
+        slug: 'activatePromotion',
+        handler: activatePromotion,
+      },
+      {
+        slug: 'deactivatePromotion',
+        handler: deactivatePromotion,
+      },
+    ],
+  },
   onInit: async (payload) => {
     await seedStudio(payload);
   },

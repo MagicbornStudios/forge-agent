@@ -10,7 +10,7 @@ import {
   LogIn,
   User,
 } from 'lucide-react';
-import { useAuth } from '@/components/AuthProvider';
+import { useAuth } from '@/components/providers/AuthProvider';
 import { getStudioApiUrl } from '@/lib/api';
 
 export function MarketingHeader() {

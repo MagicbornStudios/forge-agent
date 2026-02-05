@@ -38,7 +38,7 @@ updated: 2026-02-05
 - Done (2026-02-05): Added agent-engine workflow runtime, shared patch/workflow event types, SSE workflow route, and `useWorkflowRun` streaming hook. Added lower-level feature gating on `WorkspaceButton` and toolbar items.
 - Done (2026-02-05): Wired workflow streaming into Forge inspector (plan + patch + review panel) and switched Forge workflow patch proposal to a snapshot/selection loop.
 - Done (2026-02-05): Added human-readable patch summaries in the Forge workflow panel and enabled MDX rendering for how-to docs.
-- Done (2026-02-05): Added `AppSpace` + `AppProviders`, removed legacy `src/shared` folder, tightened Forge workflow validation, and aligned video copilot actions with `createDomainAction`.
+- Done (2026-02-05): Added `AppSpace` + `AppProviders`, removed legacy `src/shared` folder, tightened Forge workflow validation (including Start node requirement), and aligned video copilot actions with `createDomainAction`.
 - Done: Settings persistence (Slice 1). Renamed `settings-snapshots` to `settings-overrides`; added `GET`/`POST` `/api/settings`; `SettingsHydration` in layout; explicit Save in settings sheet; store `hydrateFromOverrides` and `getOverridesForScope`.
 - Done: Zustand persist replace. App-shell store persists route + lastGraphId/lastVideoDocId with rehydration gate; graph and video stores persist drafts (partialize when dirty), conditional rehydration when draft matches current doc, clear on save; removed AppShellRoutePersistence and local-storage get/set for route and lastDocIds.
 - In progress: None.

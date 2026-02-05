@@ -260,6 +260,14 @@ Expected behavior:
 - Patch preview appears after proposal.
 - Review status (ok/errors) is visible before apply.
 
+### Strict validation (Forge)
+
+The Forge workflow validates patches before apply:
+- Patch must contain ops
+- Create/update/delete ops must reference valid nodes
+- Edge endpoints must exist after staged ops
+- Graph must contain a **Start** node (id `"start"` or label `"Start"`)
+
 ## 7. Apply patch, highlight, commit
 
 Accepting a workflow patch applies it to the draft, highlights affected nodes/edges, and commits.

@@ -1,0 +1,32 @@
+---
+created: 2026-02-05
+updated: 2026-02-05
+---
+
+# 11 – Marketing auth
+
+How authentication works between the marketing site and Studio (Payload).
+
+## Payload users
+
+- Users live in Studio’s Payload (`users` collection). Fields include `name`, `email`, `role`, `plan`.
+- Auth is cookie-based. Payload’s login sets an HTTP-only cookie; `GET /api/me` returns the current user when that cookie is sent.
+
+## Login flow
+
+1. User submits email + password on the marketing login page.
+2. Marketing calls `POST {STUDIO_API_URL}/api/users/login` with `credentials: 'include'` and body `{ email, password }`.
+3. Payload validates and sets the auth cookie on the response (domain depends on server config).
+4. Marketing redirects to `/account` or home. Subsequent requests to Studio (e.g. `GET /api/me`) send the cookie and get the user.
+
+## Marketing: useAuth
+
+- `AuthProvider` (client) fetches `GET {STUDIO_API_URL}/api/me` with `credentials: 'include'` on mount and stores the user (or null).
+- `useAuth()` exposes `{ user, isLoading }`. Header and MarketingShell use this to show Login vs Account/Billing/Open app and to show the sidebar when logged in.
+
+## Cross-origin
+
+- For same origin (e.g. both on localhost with different ports), cookies may not be shared by default; use a reverse proxy or same port to avoid cross-origin.
+- For production with two domains (e.g. `example.com` and `app.example.com`), set the cookie domain to `.example.com` in Payload/auth config so both receive the cookie, and allow the marketing origin in CORS with credentials.
+
+**Next:** [12 – Marketing Stripe](12-marketing-stripe.mdx)

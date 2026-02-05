@@ -59,3 +59,15 @@ export async function fetchPromotions(): Promise<
   const data = await res.json();
   return data?.promotions ?? [];
 }
+
+export async function createCheckoutSession(successUrl?: string, cancelUrl?: string): Promise<{ url?: string }> {
+  const res = await fetch(`${STUDIO_API_URL}/api/stripe/create-checkout-session`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ successUrl, cancelUrl }),
+    credentials: 'include',
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error || 'Failed to create checkout session');
+  return data;
+}

@@ -1,0 +1,36 @@
+---
+created: 2026-02-05
+updated: 2026-02-05
+---
+
+# 12 – Marketing Stripe (minimal)
+
+Minimal Stripe integration: hosted Checkout and a webhook that sets `user.plan` to `pro`.
+
+## Env (Studio)
+
+- `STRIPE_SECRET_KEY` — Secret key (e.g. `sk_test_...`).
+- `STRIPE_PRICE_ID_PRO` — Price ID for the Pro plan (e.g. `price_...`).
+- `STRIPE_WEBHOOK_SECRET` — Webhook signing secret (e.g. `whsec_...`).
+
+See `apps/studio/.env.example`.
+
+## Create Checkout Session
+
+- **Route:** `POST /api/stripe/create-checkout-session` (Studio). Requires auth (cookie).
+- **Body (optional):** `{ successUrl?, cancelUrl? }`. Defaults point to `/billing` and `/billing?success=1`.
+- **Response:** `{ url }` — redirect the user to this URL for Stripe Checkout.
+- **Session:** Created with `client_reference_id` and `metadata.userId` set to the current user id so the webhook can identify the user.
+
+## Webhook
+
+- **Route:** `POST /api/stripe/webhook` (Studio). Must receive raw body for signature verification.
+- **Event:** On `checkout.session.completed`, read `client_reference_id` or `metadata.userId`, then update that user’s `plan` to `pro` via Payload.
+- **Local testing:** Use Stripe CLI to forward webhooks: `stripe listen --forward-to localhost:3000/api/stripe/webhook` and set `STRIPE_WEBHOOK_SECRET` to the printed secret.
+
+## Billing page (marketing)
+
+- “Upgrade to Pro” calls `createCheckoutSession()` (marketing `lib/api.ts`), then redirects to `url`. After payment, Stripe redirects to `successUrl` (e.g. `/billing?success=1`).
+- No Stripe Elements or custom payment form; everything goes through Stripe’s hosted Checkout.
+
+**Next:** [13 – Marketing email / newsletter](13-marketing-email-newsletter.mdx)

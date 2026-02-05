@@ -1,0 +1,25 @@
+---
+created: 2026-02-05
+updated: 2026-02-05
+---
+
+# 13 – Marketing email / newsletter
+
+Minimal email for the marketing site: Resend and an optional welcome email on subscribe.
+
+## Storage
+
+- Subscribers are stored in Payload: `newsletter-subscribers` (email, optedIn, source). No change.
+- Marketing form POSTs to Studio `POST /api/newsletter`; Studio creates the doc.
+
+## Resend (optional welcome)
+
+- **Env (Studio):** `RESEND_API_KEY`. Optional: `FROM_EMAIL` (e.g. `Forge <onboarding@resend.dev>`). See `apps/studio/.env.example`.
+- **Behavior:** After creating a newsletter subscriber, if `RESEND_API_KEY` is set, Studio sends one welcome email via Resend’s API (`POST https://api.resend.com/emails`). If the send fails, the API still returns success (subscriber was saved).
+- **No campaign UI:** We do not build a dashboard or campaign builder; this is a single transactional “thanks for subscribing” email. For broadcasts, export from Payload or use Resend’s UI separately.
+
+## Adding more transactional emails
+
+- Reuse the same pattern: call Resend (or another provider) from a Studio API route or Payload hook. Prefer the smallest setup (one API key, one endpoint) until you need more.
+
+**Next:** [14 – Marketing announcements and scheduling](14-marketing-announcements-scheduling.mdx)

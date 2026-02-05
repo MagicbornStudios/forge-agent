@@ -134,6 +134,10 @@ function validatePatch(snapshot: unknown, patch: PatchEnvelope<'reactflow', Forg
   }
 
   const nodeIds = new Set<string>(graph?.flow?.nodes?.map((n) => n.id) ?? []);
+  const nodeLabels = new Map<string, string>();
+  for (const node of graph?.flow?.nodes ?? []) {
+    nodeLabels.set(node.id, String((node as { data?: { label?: string } }).data?.label ?? ''));
+  }
   const edgeIds = new Set<string>(graph?.flow?.edges?.map((e) => e.id) ?? []);
   const createdNodeIds = new Set<string>();
 
@@ -150,6 +154,9 @@ function validatePatch(snapshot: unknown, patch: PatchEnvelope<'reactflow', Forg
         }
         createdNodeIds.add(op.id);
         nodeIds.add(op.id);
+        if (op.data?.label) {
+          nodeLabels.set(op.id, String(op.data.label));
+        }
         break;
       }
       case 'deleteNode': {
@@ -158,12 +165,15 @@ function validatePatch(snapshot: unknown, patch: PatchEnvelope<'reactflow', Forg
           break;
         }
         nodeIds.delete(op.nodeId);
+        nodeLabels.delete(op.nodeId);
         break;
       }
       case 'updateNode':
       case 'moveNode': {
         if (!nodeIds.has(op.nodeId)) {
           errors.push(`${op.type} refers to missing node: ${op.nodeId}`);
+        } else if (op.type === 'updateNode' && op.updates?.label) {
+          nodeLabels.set(op.nodeId, String(op.updates.label));
         }
         break;
       }
@@ -187,6 +197,14 @@ function validatePatch(snapshot: unknown, patch: PatchEnvelope<'reactflow', Forg
       default:
         break;
     }
+  }
+
+  const hasStartNode =
+    nodeIds.has('start') ||
+    [...nodeLabels.values()].some((label) => label.trim().toLowerCase() === 'start');
+
+  if (!hasStartNode) {
+    errors.push('Graph requires a Start node (id "start" or label "Start").');
   }
 
   return {

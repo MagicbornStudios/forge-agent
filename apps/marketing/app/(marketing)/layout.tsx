@@ -1,5 +1,5 @@
-import { MarketingHeader } from '@/components/MarketingHeader';
-import { AuthProvider } from '@/components/AuthProvider';
+import { AuthProvider } from '@/components/providers/AuthProvider';
+import { MarketingShell } from '@/components/organisms/MarketingShell';
 
 export default function MarketingLayout({
   children,
@@ -8,10 +8,7 @@ export default function MarketingLayout({
 }) {
   return (
     <AuthProvider>
-      <div className="min-h-screen flex flex-col">
-        <MarketingHeader />
-        <main className="flex-1">{children}</main>
-      </div>
+      <MarketingShell>{children}</MarketingShell>
     </AuthProvider>
   );
 }
