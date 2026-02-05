@@ -61,16 +61,20 @@ export interface ItemProps
 
 const Item = React.forwardRef<React.ElementRef<"div">, ItemProps>(
   ({ className, variant = "default", size = "default", asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "div";
+    const classNames = cn(itemVariants({ variant, size, className }));
+    const dataAttrs = { 'data-slot': 'item', 'data-variant': variant, 'data-size': size };
+    if (asChild) {
+      return (
+        <Slot
+          ref={ref as any}
+          className={classNames}
+          {...dataAttrs}
+          {...(props as React.ComponentProps<typeof Slot>)}
+        />
+      );
+    }
     return (
-      <Comp
-        ref={ref}
-        data-slot="item"
-        data-variant={variant}
-        data-size={size}
-        className={cn(itemVariants({ variant, size, className }))}
-        {...props}
-      />
+      <div ref={ref} className={classNames} {...dataAttrs} {...props} />
     );
   }
 );

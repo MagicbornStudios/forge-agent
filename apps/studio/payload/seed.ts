@@ -46,7 +46,7 @@ async function ensureUser(payload: Payload, data: typeof DEFAULT_ADMIN) {
       password: data.password,
       name: data.name,
       role: data.role as 'user' | 'admin',
-      plan: data.plan,
+      plan: data.plan as 'free' | 'pro',
     },
   });
 }
@@ -82,8 +82,8 @@ async function ensureProject(payload: Payload, ownerId: string | number, graphId
       description: 'Seeded demo project for Forge.',
       domain: 'forge',
       status: 'active',
-      owner: ownerId,
-      forgeGraph: graphId,
+      owner: ownerId as number,
+      forgeGraph: graphId as number,
     },
   });
 }

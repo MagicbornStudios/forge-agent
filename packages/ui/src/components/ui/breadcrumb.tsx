@@ -45,14 +45,18 @@ const BreadcrumbLink = React.forwardRef<
     asChild?: boolean
   }
 >(({ asChild, className, ...props }, ref) => {
-  const Comp = asChild ? Slot : "a"
-
+  const classNames = cn("transition-colors hover:text-foreground", className)
+  if (asChild) {
+    return (
+      <Slot
+        ref={ref as any}
+        className={classNames}
+        {...(props as React.ComponentProps<typeof Slot>)}
+      />
+    )
+  }
   return (
-    <Comp
-      ref={ref}
-      className={cn("transition-colors hover:text-foreground", className)}
-      {...props}
-    />
+    <a ref={ref} className={classNames} {...props} />
   )
 })
 BreadcrumbLink.displayName = "BreadcrumbLink"
