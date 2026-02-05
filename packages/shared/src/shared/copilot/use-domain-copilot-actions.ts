@@ -40,6 +40,6 @@ export function useDomainCopilotActions(
   // Safe as long as the array length is stable between renders.
   for (const action of preparedActions) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    useCopilotAction(action as Parameters<typeof useCopilotAction>[0]);
+    useCopilotAction(action);
   }
 }

@@ -6,7 +6,12 @@
  * and highlights wired up via a single `useDomainCopilot()` call.
  */
 
-import type { ReactNode } from 'react';
+import type { Parameter } from '@copilotkit/shared';
+import type {
+  FrontendAction,
+  ActionRenderProps,
+  ActionRenderPropsNoArgs,
+} from '@copilotkit/react-core';
 import type { Selection } from '@forge/shared/workspace/selection';
 
 // ---------------------------------------------------------------------------
@@ -64,35 +69,21 @@ export interface DomainSuggestion {
 // Action config
 // ---------------------------------------------------------------------------
 
-/** Parameter descriptor for a copilot action. */
-export interface CopilotActionParameter {
-  name: string;
-  type: 'string' | 'number' | 'boolean' | 'object' | 'string[]' | 'number[]';
-  description: string;
-  required?: boolean;
-  enum?: string[];
-}
+/** Parameter descriptor for a copilot action (CopilotKit Parameter). */
+export type CopilotActionParameter = Parameter;
 
 /**
  * Configuration for a single CopilotKit action.
  *
- * Mirrors the shape expected by `useCopilotAction` with optional
- * `render` for generative UI (chat-embedded components).
+ * Alias of CopilotKit FrontendAction so it stays compatible with useCopilotAction.
  */
-export interface CopilotActionConfig {
-  name: string;
-  description: string;
-  parameters: CopilotActionParameter[];
-  /** Handler executed when the agent calls this action. */
-  handler?: (args: Record<string, unknown>) => Promise<ActionResult>;
-  /**
-   * Optional render function for generative UI.
-   * When provided, the action renders a React component in the chat.
-   */
-  render?: (props: { status: string; args: Record<string, unknown>; result?: ActionResult }) => ReactNode;
-  /** Set to `'disabled'` to keep the action registered but inactive. */
-  available?: 'enabled' | 'disabled';
-}
+export type CopilotActionConfig<T extends Parameter[] | [] = []> = FrontendAction<T>;
+
+/** Render props for generative UI actions (re-exported for convenience). */
+export type CopilotActionRenderProps<T extends Parameter[] | [] = []> = ActionRenderProps<T>;
+
+/** Render props when actions have no args (re-exported for convenience). */
+export type CopilotActionRenderPropsNoArgs<T extends Parameter[] | [] = []> = ActionRenderPropsNoArgs<T>;
 
 // ---------------------------------------------------------------------------
 // Domain contract

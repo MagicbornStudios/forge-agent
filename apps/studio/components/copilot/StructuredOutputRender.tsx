@@ -1,15 +1,10 @@
 'use client';
 
 import React from 'react';
-
-interface StructuredOutputRenderProps {
-  status: string;
-  args: Record<string, unknown>;
-  result?: { success: boolean; message?: string; data?: unknown };
-}
+import type { CopilotActionRenderProps } from '@forge/shared/copilot/types';
 
 /** Renders structured JSON result in chat when app_respondWithStructure completes. */
-export function StructuredOutputRender({ status, args, result }: StructuredOutputRenderProps) {
+export function StructuredOutputRender({ status, args, result }: CopilotActionRenderProps) {
   const data = result?.data;
 
   if (status === 'complete' && data !== undefined) {

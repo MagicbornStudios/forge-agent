@@ -1,4 +1,8 @@
-import type { CopilotActionConfig, AIHighlightPayload } from '@forge/shared/copilot/types';
+import type {
+  CopilotActionConfig,
+  CopilotActionRenderProps,
+  AIHighlightPayload,
+} from '@forge/shared/copilot/types';
 import { createDomainAction } from '@forge/shared/copilot';
 import type { ReactNode } from 'react';
 import type { ForgeGraphDoc, ForgeGraphPatchOp, ForgeNodeType } from '@forge/types/graph';
@@ -20,11 +24,7 @@ export interface ForgeActionsDeps {
   /** Optional: persist draft (save). Used by commit. */
   commitGraph?: () => Promise<void>;
   /** Optional: render plan UI in chat for createPlan. */
-  renderPlan?: (props: {
-    status: string;
-    args: Record<string, unknown>;
-    result?: { success: boolean; message: string; data?: unknown };
-  }) => ReactNode;
+  renderPlan?: (props: CopilotActionRenderProps) => ReactNode;
 }
 
 /**

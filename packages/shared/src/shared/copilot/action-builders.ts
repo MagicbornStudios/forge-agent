@@ -1,22 +1,35 @@
+import type { Parameter } from '@copilotkit/shared';
 import type { CopilotActionConfig } from './types';
 
-function withPrefix(prefix: string, config: CopilotActionConfig): CopilotActionConfig {
+function withPrefix<T extends Parameter[] | []>(
+  prefix: string,
+  config: CopilotActionConfig<T>,
+): CopilotActionConfig<T> {
   const name = config.name.startsWith(prefix) ? config.name : `${prefix}${config.name}`;
   return { ...config, name };
 }
 
-export function createAppAction(config: CopilotActionConfig): CopilotActionConfig {
+export function createAppAction<T extends Parameter[] | []>(
+  config: CopilotActionConfig<T>,
+): CopilotActionConfig<T> {
   return withPrefix('app_', config);
 }
 
-export function createWorkspaceAction(config: CopilotActionConfig): CopilotActionConfig {
+export function createWorkspaceAction<T extends Parameter[] | []>(
+  config: CopilotActionConfig<T>,
+): CopilotActionConfig<T> {
   return withPrefix('workspace_', config);
 }
 
-export function createEditorAction(config: CopilotActionConfig): CopilotActionConfig {
+export function createEditorAction<T extends Parameter[] | []>(
+  config: CopilotActionConfig<T>,
+): CopilotActionConfig<T> {
   return withPrefix('editor_', config);
 }
 
-export function createDomainAction(domain: string, config: CopilotActionConfig): CopilotActionConfig {
+export function createDomainAction<T extends Parameter[] | []>(
+  domain: string,
+  config: CopilotActionConfig<T>,
+): CopilotActionConfig<T> {
   return withPrefix(`${domain}_`, config);
 }

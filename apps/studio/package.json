@@ -18,6 +18,7 @@
     "@ai-sdk/openai": "^3.0.25",
     "@copilotkit/react-core": "^1.51.2",
     "@copilotkit/react-ui": "^1.51.2",
+    "@copilotkit/shared": "^1.51.2",
     "@copilotkit/runtime": "^1.51.2",
     "@forge/agent-engine": "workspace:*",
     "@forge/domain-forge": "workspace:*",

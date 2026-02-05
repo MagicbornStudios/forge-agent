@@ -35,6 +35,16 @@ An AI-first studio for editing dialogue graphs: CopilotKit, React Flow, and a un
 | `pnpm test` | Run tests (Studio). |
 | `pnpm payload:types` | After changing Payload collections; regenerates `packages/types/src/payload-types.ts`. |
 
+## Consumer example
+
+Use the minimal consumer app in `examples/consumer` to verify `@forge/dev-kit` integration in a fresh Next.js app.
+
+```bash
+pnpm --filter @forge/consumer-example dev
+```
+
+See `examples/consumer/README.md` for environment setup.
+
 ## Documentation
 
 - **Start here:** [docs/00-docs-index.mdx](docs/00-docs-index.mdx) — pick **human/contributor** or **coding agent** and follow the links.

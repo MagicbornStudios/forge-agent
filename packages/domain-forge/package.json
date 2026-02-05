@@ -5,6 +5,7 @@
   "types": "src/index.ts",
   "main": "src/index.ts",
   "dependencies": {
+    "@forge/agent-engine": "workspace:*",
     "@forge/shared": "workspace:*",
     "@forge/types": "workspace:*"
   },

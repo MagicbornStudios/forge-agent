@@ -12,6 +12,8 @@
       "@forge/domain-forge/*": ["./src/*"],
       "@forge/shared": ["../shared/src/index.ts"],
       "@forge/shared/*": ["../shared/src/shared/*"],
+      "@forge/agent-engine": ["../agent-engine/src/index.ts"],
+      "@forge/agent-engine/*": ["../agent-engine/src/*"],
       "@forge/types": ["../types/src/index.ts"],
       "@forge/types/*": ["../types/src/*"]
     }

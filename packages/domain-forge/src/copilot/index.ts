@@ -1,7 +1,11 @@
 'use client';
 
 import { useMemo, type ReactNode } from 'react';
-import type { DomainCopilotContract, AIHighlightPayload } from '@forge/shared/copilot/types';
+import type {
+  DomainCopilotContract,
+  AIHighlightPayload,
+  CopilotActionRenderProps,
+} from '@forge/shared/copilot/types';
 import type { Selection } from '@forge/shared/workspace/selection';
 import type { ForgeGraphDoc, ForgeGraphPatchOp } from '@forge/types/graph';
 import { createForgeActions } from './actions';
@@ -26,11 +30,7 @@ export interface ForgeCopilotDeps {
   /** Optional: save graph (for forge_commit). */
   commitGraph?: () => Promise<void>;
   /** Optional: render plan UI in chat for forge_createPlan. */
-  renderPlan?: (props: {
-    status: string;
-    args: Record<string, unknown>;
-    result?: { success: boolean; message: string; data?: unknown };
-  }) => ReactNode;
+  renderPlan?: (props: CopilotActionRenderProps) => ReactNode;
 }
 
 /**
@@ -106,4 +106,3 @@ export function useForgeContract(deps: ForgeCopilotDeps): DomainCopilotContract 
     ],
   );
 }
-

@@ -1,15 +1,10 @@
 'use client';
 
 import React from 'react';
-
-interface ImageGenerateRenderProps {
-  status: string;
-  args: Record<string, unknown>;
-  result?: { success: boolean; message?: string; data?: { imageUrl?: string } };
-}
+import type { CopilotActionRenderProps } from '@forge/shared/copilot/types';
 
 /** Renders generated image in chat when app_generateImage action completes. */
-export function ImageGenerateRender({ status, args, result }: ImageGenerateRenderProps) {
+export function ImageGenerateRender({ status, args, result }: CopilotActionRenderProps) {
   const imageUrl = result?.data?.imageUrl;
   const prompt = typeof args.prompt === 'string' ? args.prompt : '';
 
@@ -20,6 +15,7 @@ export function ImageGenerateRender({ status, args, result }: ImageGenerateRende
         {prompt && (
           <p className="text-xs text-muted-foreground line-clamp-2">{prompt}</p>
         )}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageUrl}
           alt={prompt || 'Generated image'}

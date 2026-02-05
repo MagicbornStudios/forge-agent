@@ -23,6 +23,7 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../18-agent-ar
 - **Forge domain**: `packages/domain-forge` contains Forge logic and copilot wiring. Video remains a UI showcase under `apps/studio/lib/domains/video` (not a focus).
 - **Video workspace**: `VideoWorkspace` now renders a minimal Twick Studio surface (LivePlayerProvider + TimelineProvider + TwickStudio); persistence integration is pending.
 - **App shell**: `AppSpace` is the semantic root for AppLayout; Studio composes providers via `AppProviders` for drop-in usage.
+- **Consumer example**: `examples/consumer` shows a minimal Next app using `@forge/dev-kit` with Copilot runtime.
 - **Docs**: In-app docs now render MDX with JSX components (next-mdx-remote/rsc).
 - **Payload + types**: Collections in `apps/studio/payload/collections`: users, projects, forge-graphs, video-docs, settings-overrides, agent-sessions; marketing: waitlist, newsletter-subscribers, promotions. Custom API routes: `POST /api/waitlist`, `POST /api/newsletter`, `GET /api/promotions`. Types in `packages/types/src/payload-types.ts`.
 - **Seeded data**: Payload seeds an admin user, a basic user, a demo graph, and a demo project on init (`apps/studio/payload/seed.ts`).
@@ -41,6 +42,7 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../18-agent-ar
 - Done (2026-02-05): Wired workflow streaming into Forge inspector (plan + patch + review panel) and switched Forge workflow patch proposal to a snapshot/selection loop.
 - Done (2026-02-05): Added human-readable patch summaries in the Forge workflow panel and enabled MDX rendering for how-to docs.
 - Done (2026-02-05): Added `AppSpace` + `AppProviders`, removed legacy `src/shared` folder, tightened Forge workflow validation (including Start node requirement), and aligned video copilot actions with `createDomainAction`.
+- Done (2026-02-05): Added `examples/consumer` Next app to validate `@forge/dev-kit` usage (AppSpace + AppProviders + Copilot runtime).
 - Done (2026-02-05): Marketing site: new app `apps/marketing` (Next 15, Tailwind, @forge/ui) with landing, consumer docs, login (Payload `/api/users/login`), account/billing, "Open app" link, waitlist/newsletter forms, promotions banner; Payload collections waitlist, newsletter-subscribers, promotions; Studio API routes waitlist, newsletter, promotions.
 - Done: Settings persistence (Slice 1). Renamed `settings-snapshots` to `settings-overrides`; added `GET`/`POST` `/api/settings`; `SettingsHydration` in layout; explicit Save in settings sheet; store `hydrateFromOverrides` and `getOverridesForScope`.
 - Done: Zustand persist replace. App-shell store persists route + lastGraphId/lastVideoDocId with rehydration gate; graph and video stores persist drafts (partialize when dirty), conditional rehydration when draft matches current doc, clear on save; removed AppShellRoutePersistence and local-storage get/set for route and lastDocIds.

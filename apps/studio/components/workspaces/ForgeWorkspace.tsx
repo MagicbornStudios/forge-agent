@@ -221,7 +221,7 @@ export function ForgeWorkspace() {
         />
       ),
     }),
-    [applyOperations, commitGraph, forgeSelection, graph, toolsEnabled],
+    [applyOperations, commitGraph, forgeSelection, graph, toolsEnabled, onAIHighlight],
   );
 
   const inspectorSections = useMemo(

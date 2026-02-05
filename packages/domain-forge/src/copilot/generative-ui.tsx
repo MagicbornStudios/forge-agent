@@ -1,16 +1,9 @@
 import React from 'react';
+import type { CopilotActionRenderProps } from '@forge/shared/copilot/types';
 import { ConfirmationCard } from '@forge/shared/copilot/generative-ui';
 
 /** Render function for forge_createNode -- shows what was created in chat. */
-export function renderNodeCreated({
-  args,
-  status,
-  result,
-}: {
-  args: Record<string, unknown>;
-  status: string;
-  result?: { success: boolean; message: string };
-}) {
+export function renderNodeCreated({ args, status, result }: CopilotActionRenderProps) {
   if (status === 'complete' && result?.success) {
     return (
       <div className="rounded-md border p-3 bg-muted/50">
@@ -26,19 +19,11 @@ export function renderNodeCreated({
       </div>
     );
   }
-  return null;
+  return <></>;
 }
 
 /** Render function for forge_deleteNode -- shows confirmation in chat. */
-export function renderDeleteNodeResult({
-  args,
-  status,
-  result,
-}: {
-  args: Record<string, unknown>;
-  status: string;
-  result?: { success: boolean; message: string };
-}) {
+export function renderDeleteNodeResult({ args, status, result }: CopilotActionRenderProps) {
   return (
     <ConfirmationCard
       title="Delete Node"
@@ -50,15 +35,7 @@ export function renderDeleteNodeResult({
 }
 
 /** Render function for forge_updateNode -- shows what was changed in chat. */
-export function renderNodeUpdated({
-  args,
-  status,
-  result,
-}: {
-  args: Record<string, unknown>;
-  status: string;
-  result?: { success: boolean; message: string };
-}) {
+export function renderNodeUpdated({ args, status, result }: CopilotActionRenderProps) {
   if (status === 'complete' && result?.success) {
     const fields = Object.entries(args)
       .filter(([k]) => k !== 'nodeId' && args[k] !== undefined)
@@ -79,5 +56,5 @@ export function renderNodeUpdated({
       </div>
     );
   }
-  return null;
+  return <></>;
 }
