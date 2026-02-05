@@ -7,6 +7,7 @@ import { AgentSessions } from './agent-sessions.ts';
 import { Waitlist } from './waitlist.ts';
 import { NewsletterSubscribers } from './newsletter-subscribers.ts';
 import { Promotions } from './promotions.ts';
+import { Posts } from './posts.ts';
 
 export const collections = [
   Users,
@@ -18,6 +19,7 @@ export const collections = [
   Waitlist,
   NewsletterSubscribers,
   Promotions,
+  Posts,
 ];
 
 export {
@@ -30,4 +32,5 @@ export {
   Waitlist,
   NewsletterSubscribers,
   Promotions,
+  Posts,
 };

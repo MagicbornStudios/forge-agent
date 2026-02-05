@@ -6,6 +6,7 @@ import {
   BookOpen,
   CreditCard,
   LayoutDashboard,
+  Newspaper,
   User,
 } from 'lucide-react';
 import { getStudioApiUrl } from '@/lib/api';
@@ -13,6 +14,7 @@ import { getStudioApiUrl } from '@/lib/api';
 const navItems = [
   { href: '/account', label: 'Account', icon: User },
   { href: '/billing', label: 'Billing', icon: CreditCard },
+  { href: '/blog', label: 'Blog', icon: Newspaper },
   { href: '/docs', label: 'Docs', icon: BookOpen },
 ];
 

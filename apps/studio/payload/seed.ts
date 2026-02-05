@@ -143,6 +143,95 @@ async function ensureNewsletterEntry(payload: Payload) {
   });
 }
 
+const SEED_POST_SLUG = 'shadcn-mcp-and-registries';
+
+const seedPostBody = {
+  root: {
+    type: 'root',
+    format: '',
+    indent: 0,
+    version: 1,
+    children: [
+      {
+        type: 'paragraph',
+        format: '',
+        indent: 0,
+        version: 1,
+        children: [
+          {
+            type: 'text',
+            format: 0,
+            mode: 'normal',
+            style: '',
+            text: 'Using the shadcn MCP server lets the AI browse and install shadcn-compatible components from the default registry and from your configured registries without leaving the editor.',
+            version: 1,
+          },
+        ],
+        direction: 'ltr',
+        textFormat: 0,
+      },
+      {
+        type: 'paragraph',
+        format: '',
+        indent: 0,
+        version: 1,
+        children: [
+          {
+            type: 'text',
+            format: 0,
+            mode: 'normal',
+            style: '',
+            text: 'You can browse and search components across registries, install with natural language (e.g. "add a login form", "add the Magic UI hero"), and keep marketing UI in sync with the shadcn directory and MCP docs.',
+            version: 1,
+          },
+        ],
+        direction: 'ltr',
+        textFormat: 0,
+      },
+      {
+        type: 'paragraph',
+        format: '',
+        indent: 0,
+        version: 1,
+        children: [
+          {
+            type: 'text',
+            format: 0,
+            mode: 'normal',
+            style: '',
+            text: 'We set this up with one MCP config at repo root (with cwd pointing at the marketing app), registries added in components.json (@magicui, @aceternity, @tailark, @shadcnblocks), and npx so no local shadcn install is required. Good use cases: add base components into marketing, show hero sections from a registry and install them, find pricing sections and install, and keep design consistent across pages.',
+            version: 1,
+          },
+        ],
+        direction: 'ltr',
+        textFormat: 0,
+      },
+    ],
+    direction: 'ltr',
+  },
+};
+
+async function ensureFirstBlogPost(payload: Payload) {
+  const existing = await payload.find({
+    collection: 'posts',
+    where: { slug: { equals: SEED_POST_SLUG } },
+    limit: 1,
+  });
+  if (existing.docs.length > 0) return existing.docs[0];
+  return payload.create({
+    collection: 'posts',
+    data: {
+      title: 'Setting up the shadcn MCP server and component registries',
+      slug: SEED_POST_SLUG,
+      excerpt:
+        'How we configured the shadcn MCP server and registries so the AI can browse and install components into the marketing app.',
+      body: seedPostBody as never,
+      publishedAt: new Date().toISOString(),
+      status: 'published',
+    },
+  });
+}
+
 export async function seedStudio(payload: Payload) {
   try {
     const admin = await ensureUser(payload, DEFAULT_ADMIN);
@@ -152,6 +241,7 @@ export async function seedStudio(payload: Payload) {
     await ensurePromotion(payload);
     await ensureWaitlistEntry(payload);
     await ensureNewsletterEntry(payload);
+    await ensureFirstBlogPost(payload);
     payload.logger.info('[Seed] Studio seed complete');
   } catch (err) {
     payload.logger.error(`[Seed] Failed: ${err instanceof Error ? err.message : String(err)}`);

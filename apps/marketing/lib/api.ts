@@ -60,6 +60,34 @@ export async function fetchPromotions(): Promise<
   return data?.promotions ?? [];
 }
 
+export type PostListItem = {
+  id: string | number;
+  title: string;
+  slug: string;
+  excerpt?: string;
+  publishedAt?: string;
+};
+
+export type PostDetail = PostListItem & {
+  body?: unknown;
+};
+
+export async function fetchPosts(): Promise<PostListItem[]> {
+  const res = await fetch(`${STUDIO_API_URL}/api/posts`, { cache: 'no-store' });
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data?.posts ?? [];
+}
+
+export async function fetchPostBySlug(slug: string): Promise<PostDetail | null> {
+  const res = await fetch(`${STUDIO_API_URL}/api/posts?slug=${encodeURIComponent(slug)}`, {
+    cache: 'no-store',
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data?.post ?? null;
+}
+
 export async function createCheckoutSession(successUrl?: string, cancelUrl?: string): Promise<{ url?: string }> {
   const res = await fetch(`${STUDIO_API_URL}/api/stripe/create-checkout-session`, {
     method: 'POST',
