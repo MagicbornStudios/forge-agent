@@ -1,5 +1,5 @@
 /**
- * Fetchers for Studio-owned Next API routes. Single boundary: client → Next API.
+ * Fetchers for Studio-owned Next API routes. Single boundary: client -> Next API.
  */
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
@@ -35,6 +35,18 @@ export type VideoDocRecord = {
   updatedAt?: string;
 };
 
+export type StudioUser = {
+  id: number | string;
+  email?: string | null;
+  name?: string | null;
+  role?: string | null;
+  plan?: string | null;
+};
+
+export type StudioMeResponse = {
+  user: StudioUser | null;
+};
+
 export const studioClient = {
   getGraphs: () => fetchJson<ForgeGraphDoc[]>('/api/graphs'),
   getGraph: (id: number) => fetchJson<ForgeGraphDoc>(`/api/graphs/${id}`),
@@ -65,4 +77,21 @@ export const studioClient = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     }),
+
+  getMe: async (): Promise<StudioMeResponse | null> => {
+    const res = await fetch('/api/me');
+    if (res.status === 401) return { user: null };
+    if (!res.ok) {
+      const body = await res.text();
+      let message = `Request failed: ${res.status}`;
+      try {
+        const data = JSON.parse(body);
+        if (data?.error) message = data.error;
+      } catch {
+        if (body) message = body.slice(0, 200);
+      }
+      throw new Error(message);
+    }
+    return res.json() as Promise<StudioMeResponse>;
+  },
 };

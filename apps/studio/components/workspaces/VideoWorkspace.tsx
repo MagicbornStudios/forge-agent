@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   WorkspaceShell,
   WorkspaceHeader,
@@ -23,6 +23,7 @@ import { SettingsMenu } from '@/components/settings/SettingsMenu';
 import { Badge } from '@forge/ui/badge';
 import { FeatureGate } from '@forge/shared/components/gating';
 import { CAPABILITIES, useEntitlements } from '@forge/shared/entitlements';
+import { TwickTimeline, TwickTrackList } from '@/components/video';
 
 export function VideoWorkspace() {
   const { doc, setDoc, applyOperations, loadDoc, isDirty } = useVideoStore();
@@ -44,6 +45,13 @@ export function VideoWorkspace() {
   const toolsEnabled =
     toolsEnabledSetting !== false && entitlements.has(CAPABILITIES.STUDIO_AI_TOOLS);
   const { onAIHighlight, clearHighlights } = useAIHighlight();
+  const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
+  const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSelectedTrackId(null);
+    setSelectedElementId(null);
+  }, [doc?.id]);
 
   useEffect(() => {
     if (initialLoadDone.current) return;
@@ -90,7 +98,39 @@ export function VideoWorkspace() {
 
   useDomainCopilot(videoContract, { toolsEnabled });
 
-  const docData = getVideoDocData(doc);
+  const docData = useMemo(() => getVideoDocData(doc), [doc]);
+  const selectedTrack = docData.tracks.find((track) => track.id === selectedTrackId) ?? null;
+  const selectedElement = selectedTrack?.elements.find((el) => el.id === selectedElementId) ?? null;
+
+  const handleAddTrack = useCallback(() => {
+    if (!doc) return;
+    const name = `Track ${docData.tracks.length + 1}`;
+    applyOperations([{ type: 'addTrack', name, trackType: 'video' }]);
+  }, [applyOperations, doc, docData.tracks.length]);
+
+  const handleAddTextElement = useCallback(() => {
+    if (!doc) return;
+    let targetTrackId = selectedTrackId ?? docData.tracks[0]?.id ?? null;
+    if (!targetTrackId) {
+      applyOperations([{ type: 'addTrack', name: 'Track 1', trackType: 'video' }]);
+      const nextDoc = useVideoStore.getState().doc;
+      const nextData = getVideoDocData(nextDoc);
+      targetTrackId = nextData.tracks[0]?.id ?? null;
+    }
+    if (!targetTrackId) return;
+    applyOperations([
+      {
+        type: 'addElement',
+        trackId: targetTrackId,
+        elementType: 'text',
+        start: 0,
+        end: 5,
+        props: { text: 'Title card' },
+      },
+    ]);
+    setSelectedTrackId(targetTrackId);
+  }, [applyOperations, doc, docData.tracks, selectedTrackId]);
+
   const projectOptions = doc ? [{ value: String(doc.id), label: doc.title }] : [];
   const fileMenuItems = [
     {
@@ -172,6 +212,40 @@ export function VideoWorkspace() {
     { id: 'view', label: 'View', items: viewMenuItems },
   ];
 
+  const leftContent = doc ? (
+    <TwickTrackList
+      tracks={docData.tracks}
+      selectedTrackId={selectedTrackId}
+      onSelectTrack={(trackId) => {
+        setSelectedTrackId(trackId);
+        setSelectedElementId(null);
+      }}
+      onAddTrack={handleAddTrack}
+    />
+  ) : (
+    <div className="p-4 text-sm text-muted-foreground">Loading timeline...</div>
+  );
+
+  const mainContent = doc ? (
+    <TwickTimeline
+      data={docData}
+      selectedTrackId={selectedTrackId}
+      selectedElementId={selectedElementId}
+      onSelectTrack={(trackId) => {
+        setSelectedTrackId(trackId);
+        setSelectedElementId(null);
+      }}
+      onSelectElement={(trackId, elementId) => {
+        setSelectedTrackId(trackId);
+        setSelectedElementId(elementId);
+      }}
+    />
+  ) : (
+    <div className="flex h-full items-center justify-center text-muted-foreground">
+      Loading timeline...
+    </div>
+  );
+
   return (
     <WorkspaceShell
       workspaceId="video"
@@ -214,6 +288,24 @@ export function VideoWorkspace() {
             </Badge>
           )}
           <ModelSwitcher />
+          <WorkspaceToolbar.Button
+            variant="outline"
+            size="sm"
+            tooltip="Add a new track"
+            onClick={handleAddTrack}
+            disabled={!doc}
+          >
+            Add track
+          </WorkspaceToolbar.Button>
+          <WorkspaceToolbar.Button
+            variant="outline"
+            size="sm"
+            tooltip="Add a text element"
+            onClick={handleAddTextElement}
+            disabled={!doc}
+          >
+            Add text
+          </WorkspaceToolbar.Button>
           <FeatureGate capability={CAPABILITIES.VIDEO_EXPORT} mode="lock-overlay" className="rounded-md">
             <WorkspaceToolbar.Button
               variant="outline"
@@ -230,15 +322,20 @@ export function VideoWorkspace() {
       </WorkspaceToolbar>
 
       <WorkspaceLayoutGrid
-        main={
-          <div className="flex items-center justify-center h-full text-muted-foreground">
-            Video workspace - timeline and Twick UI coming soon. Use the AI to add tracks or elements.
-          </div>
-        }
+        left={leftContent}
+        main={mainContent}
         editor={{ editorId, editorType: 'timeline' }}
       />
 
-      <WorkspaceStatusBar>Ready</WorkspaceStatusBar>
+      <WorkspaceStatusBar>
+        {isDirty ? 'Unsaved changes' : 'Ready'}
+        {selectedTrack && (
+          <span className="ml-2 text-muted-foreground">- Track: {selectedTrack.name}</span>
+        )}
+        {selectedElement && (
+          <span className="ml-2 text-muted-foreground">- Element: {selectedElement.type}</span>
+        )}
+      </WorkspaceStatusBar>
     </WorkspaceShell>
   );
 }

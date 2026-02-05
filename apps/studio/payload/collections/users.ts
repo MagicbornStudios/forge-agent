@@ -28,5 +28,15 @@ export const Users: CollectionConfig = {
         { label: 'User', value: 'user' },
       ],
     },
+    {
+      name: 'plan',
+      type: 'select',
+      required: true,
+      defaultValue: 'free',
+      options: [
+        { label: 'Free', value: 'free' },
+        { label: 'Pro', value: 'pro' },
+      ],
+    },
   ],
 };

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import type { DomainCopilotContract, AIHighlightPayload } from '@forge/shared/copilot/types';
 import type { Selection } from '@forge/shared/workspace/selection';
 import type { ForgeGraphDoc, ForgeGraphPatchOp } from '@forge/types/graph';
@@ -25,6 +25,12 @@ export interface ForgeCopilotDeps {
   setPendingFromPlan?: (value: boolean) => void;
   /** Optional: save graph (for forge_commit). */
   commitGraph?: () => Promise<void>;
+  /** Optional: render plan UI in chat for forge_createPlan. */
+  renderPlan?: (props: {
+    status: string;
+    args: Record<string, unknown>;
+    result?: { success: boolean; message: string; data?: unknown };
+  }) => ReactNode;
 }
 
 /**
@@ -47,6 +53,10 @@ export function useForgeContract(deps: ForgeCopilotDeps): DomainCopilotContract 
     onAIHighlight,
     clearAIHighlights,
     createNodeOverlayId,
+    createPlanApi,
+    setPendingFromPlan,
+    commitGraph,
+    renderPlan,
   } = deps;
 
   return useMemo<DomainCopilotContract>(
@@ -68,6 +78,10 @@ export function useForgeContract(deps: ForgeCopilotDeps): DomainCopilotContract 
           openOverlay,
           revealSelection,
           createNodeOverlayId,
+          createPlanApi,
+          setPendingFromPlan,
+          commitGraph,
+          renderPlan,
         }),
 
       getSuggestions: () => getForgeSuggestions({ graph, selection }),
@@ -88,6 +102,7 @@ export function useForgeContract(deps: ForgeCopilotDeps): DomainCopilotContract 
       createPlanApi,
       setPendingFromPlan,
       commitGraph,
+      renderPlan,
     ],
   );
 }

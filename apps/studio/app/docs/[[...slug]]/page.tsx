@@ -49,7 +49,7 @@ export default async function DocPage({
                 </a>
               );
             }
-            // Rewrite how-to links: 01-foundation.md → /docs/01-foundation, 00-index.md → /docs
+            // Rewrite how-to links: 01-foundation.md -> /docs/01-foundation, 00-index.md -> /docs
             const howToMatch = href?.match(/^(?:\.\/)?(\d{2}-[a-z0-9-]+)\.md$/i);
             if (howToMatch && VALID_SLUGS.has(howToMatch[1] as DocSlug)) {
               const docHref =

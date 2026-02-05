@@ -27,6 +27,7 @@ import { CreateNodeModal } from '@/components/CreateNodeModal';
 import { forgeInspectorSections, ForgeTimeline } from '@/components/forge';
 import { ModelSwitcher } from '@/components/model-switcher';
 import { SettingsMenu } from '@/components/settings/SettingsMenu';
+import { ForgePlanCard } from '@/components/copilot/ForgePlanCard';
 import type { OverlaySpec, ActiveOverlay, Selection } from '@forge/shared/workspace';
 import { isEntity } from '@forge/shared/workspace';
 import type { ForgeNodeType } from '@forge/types/graph';
@@ -37,25 +38,25 @@ const CREATE_NODE_OVERLAY_ID = 'create-node';
 function useForgeSelection(
   selectedNodeIds: string[],
   selectedEdgeIds: string[],
-  graph: { flow: { nodes: { id: string; data?: { label?: string } }[]; edges: { id: string; source: string; target: string }[] } } | null
+  graph: { flow: { nodes: { id: string; data...: { label...: string } }[]; edges: { id: string; source: string; target: string }[] } } | null
 ): Selection {
   return useMemo(() => {
     if (selectedNodeIds.length === 1 && selectedEdgeIds.length === 0) {
-      const node = graph?.flow.nodes.find((n) => n.id === selectedNodeIds[0]);
+      const node = graph....flow.nodes.find((n) => n.id === selectedNodeIds[0]);
       return {
         type: 'entity',
         entityType: 'forge.node',
         id: selectedNodeIds[0],
-        meta: node?.data?.label != null ? { label: node.data.label } : undefined,
+        meta: node....data....label != null ... { label: node.data.label } : undefined,
       };
     }
     if (selectedEdgeIds.length === 1 && selectedNodeIds.length === 0) {
-      const edge = graph?.flow.edges.find((e) => e.id === selectedEdgeIds[0]);
+      const edge = graph....flow.edges.find((e) => e.id === selectedEdgeIds[0]);
       return {
         type: 'entity',
         entityType: 'forge.edge',
         id: selectedEdgeIds[0],
-        meta: edge ? { source: edge.source, target: edge.target } : undefined,
+        meta: edge ... { source: edge.source, target: edge.target } : undefined,
       };
     }
     return { type: 'none' };
@@ -67,8 +68,8 @@ export function ForgeWorkspace() {
   const saveGraphMutation = useSaveGraph();
   const saveGraph = useCallback(() => {
     saveGraphMutation.mutate(undefined, {
-      onSuccess: (data: { title?: string } | undefined) => {
-        if (data?.title && useSettingsStore.getState().getSettingValue('ui.toastsEnabled') !== false) {
+      onSuccess: (data: { title...: string } | undefined) => {
+        if (data....title && useSettingsStore.getState().getSettingValue('ui.toastsEnabled') !== false) {
           toast.success('Graph saved', { description: `Saved ${data.title}.` });
         }
       },
@@ -104,7 +105,7 @@ export function ForgeWorkspace() {
 
   const { onAIHighlight, clearHighlights, isHighlighted } = useAIHighlight();
 
-  const openOverlay = useCallback((id: string, payload?: Record<string, unknown>) => {
+  const openOverlay = useCallback((id: string, payload...: Record<string, unknown>) => {
     setActiveOverlay({ id, payload });
   }, []);
   const dismissOverlay = useCallback(() => setActiveOverlay(null), []);
@@ -123,7 +124,7 @@ export function ForgeWorkspace() {
   }, []);
 
   const fitView = useCallback(() => {
-    viewportHandleRef.current?.fitView();
+    viewportHandleRef.current....fitView();
   }, []);
 
   const revealSelection = useCallback(() => {
@@ -147,7 +148,7 @@ export function ForgeWorkspace() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ goal, graphSummary }),
     });
-    if (!res.ok) throw new Error((await res.json()).error ?? 'Plan failed');
+    if (!res.ok) throw new Error((await res.json()).error ...... 'Plan failed');
     return res.json();
   }, []);
 
@@ -173,6 +174,7 @@ export function ForgeWorkspace() {
     createPlanApi,
     setPendingFromPlan,
     commitGraph,
+    renderPlan: (props) => <ForgePlanCard {...props} />,
   });
 
   useDomainCopilot(forgeContract, { toolsEnabled });
@@ -190,7 +192,7 @@ export function ForgeWorkspace() {
               key: CREATE_NODE_OVERLAY_ID,
               title: 'Create node',
               size: 'md',
-              payload: payload as { nodeType?: ForgeNodeType; label?: string; content?: string; speaker?: string },
+              payload: payload as { nodeType...: ForgeNodeType; label...: string; content...: string; speaker...: string },
             }}
             onClose={onDismiss}
             onSubmit={({ nodeType, label, content, speaker }) => {
@@ -211,7 +213,7 @@ export function ForgeWorkspace() {
     [graph, applyOperations],
   );
 
-  const mainContent = graph ? (
+  const mainContent = graph ... (
     <GraphEditor
       selectedNodeIds={selectedNodeIds}
       selectedEdgeIds={selectedEdgeIds}
@@ -225,7 +227,7 @@ export function ForgeWorkspace() {
       <Card className="p-6 max-w-md">
         <h2 className="text-xl font-semibold mb-2">No Graph Loaded</h2>
         <p className="text-muted-foreground">
-          Loading your last graph or creating a new one…
+          Loading your last graph or creating a new one...
         </p>
       </Card>
     </div>
@@ -242,7 +244,7 @@ export function ForgeWorkspace() {
     [handleSelectionChange],
   );
 
-  const timelineContent = graph ? (
+  const timelineContent = graph ... (
     <ForgeTimeline
       graph={graph}
       selectedNodeIds={selectedNodeIds}
@@ -251,7 +253,7 @@ export function ForgeWorkspace() {
   ) : null;
 
   const hasSelection = selectedNodeIds.length > 0 || selectedEdgeIds.length > 0;
-  const projectOptions = graph ? [{ value: String(graph.id), label: graph.title }] : [];
+  const projectOptions = graph ... [{ value: String(graph.id), label: graph.title }] : [];
   const fileMenuItems = useMemo(
     () => [
       {
@@ -339,7 +341,7 @@ export function ForgeWorkspace() {
     <WorkspaceShell
       workspaceId="forge"
       title="Forge"
-      subtitle={graph?.title}
+      subtitle={graph....title}
       domain="forge"
       theme={workspaceTheme}
       className="flex flex-col h-full min-h-0 bg-background"
@@ -358,7 +360,7 @@ export function ForgeWorkspace() {
           <WorkspaceToolbar.Group className="gap-2">
             <WorkspaceToolbar.Menubar menus={menubarMenus} />
             <WorkspaceToolbar.ProjectSelect
-              value={graph ? String(graph.id) : undefined}
+              value={graph ... String(graph.id) : undefined}
               options={projectOptions}
               placeholder="Select graph"
               disabled={!graph}
@@ -368,13 +370,13 @@ export function ForgeWorkspace() {
             />
           </WorkspaceToolbar.Group>
           <span className="text-xs text-muted-foreground">
-            {graph ? `Graph: ${graph.title}` : 'No graph loaded'}
+            {graph ... `Graph: ${graph.title}` : 'No graph loaded'}
           </span>
         </WorkspaceToolbar.Left>
         <WorkspaceToolbar.Right>
           {showAgentName !== false && (
             <Badge variant="secondary" className="text-xs">
-              Agent: {agentName ?? 'Default'}
+              Agent: {agentName ...... 'Default'}
             </Badge>
           )}
           <ModelSwitcher />
@@ -398,7 +400,7 @@ export function ForgeWorkspace() {
             disabled={!isDirty}
             variant="default"
             size="sm"
-            tooltip={isDirty ? 'Save graph' : 'No changes to save'}
+            tooltip={isDirty ... 'Save graph' : 'No changes to save'}
           >
             Save
           </WorkspaceToolbar.Button>
@@ -420,10 +422,10 @@ export function ForgeWorkspace() {
       />
 
       <WorkspaceStatusBar>
-        {isDirty ? 'Unsaved changes' : 'Ready'}
+        {isDirty ... 'Unsaved changes' : 'Ready'}
         {forgeSelection && isEntity(forgeSelection) && (
           <span className="ml-2 text-muted-foreground">
-            - {forgeSelection.entityType === 'forge.node' ? 'Node' : 'Edge'}: {forgeSelection.id}
+            - {forgeSelection.entityType === 'forge.node' ... 'Node' : 'Edge'}: {forgeSelection.id}
           </span>
         )}
       </WorkspaceStatusBar>

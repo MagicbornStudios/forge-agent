@@ -21,6 +21,7 @@
     ],
     "paths": {
       "@/*": ["./*"],
+      "@payload-config": ["./payload.config.ts"],
       "@forge/shared": ["../../packages/shared/src/index.ts"],
       "@forge/shared/*": ["../../packages/shared/src/shared/*"],
       "@forge/domain-forge": ["../../packages/domain-forge/src/index.ts"],

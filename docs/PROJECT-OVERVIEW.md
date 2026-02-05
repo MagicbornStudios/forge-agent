@@ -50,7 +50,7 @@ Note: API routes exist inside the Studio app for CopilotKit and Payload operatio
 | **packages/domain-forge/** | Forge domain logic (types, store, operations, copilot wiring). |
 | **packages/ui/** | Shared shadcn UI atoms (Radix-based primitives). |
 | **packages/types/** | Payload-generated types + domain aliases (source of truth). |
-| **docs/** | Documentation (STATUS, architecture, design, guides). How-to guides live in `docs/how-to/` (numbered 00–07) and are also served in-app at `/docs`. |
+| **docs/** | Documentation (STATUS, architecture, design, guides). How-to guides live in `docs/how-to/` (numbered 00-09) and are also served in-app at `/docs`. |
 | **__tests__/** | Jest tests. |
 | **__mocks__/** | Jest mocks (server-only, etc.). |
 
@@ -80,8 +80,11 @@ apps/
       AppShell.tsx
       GraphEditor.tsx
       CreateNodeModal.tsx
+      copilot/
+      forge/
       providers/
       settings/
+      video/
       workspaces/
     lib/
       app-shell/
@@ -190,7 +193,7 @@ types/
 
 ## How-to guides
 
-Numbered guides in `docs/how-to/` build a workspace from the ground up. They are served in the Studio app at **/docs** (sidebar + article). Order: 01 Foundation → 02 Workspace shell and slots → 03 Styling → 04 Data and state → 05 Building a workspace → 06 ForgeWorkspace walkthrough → 07 Copilot and AI integration. Each guide includes “What the AI can do at this stage” and points to real code.
+Numbered guides in `docs/how-to/` build a workspace from the ground up. They are served in the Studio app at **/docs** (sidebar + article). Order: 01 Foundation -> 02 Workspace shell and slots -> 03 Styling -> 04 Data and state -> 05 Building a workspace -> 06 ForgeWorkspace walkthrough -> 07 Copilot and AI integration -> 08 Adding AI to workspaces -> 09 Twick video workspace. Each guide includes "What the AI can do at this stage" and points to real code.
 
 ---
 

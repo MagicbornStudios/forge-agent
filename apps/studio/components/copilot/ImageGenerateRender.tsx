@@ -42,5 +42,6 @@ export function ImageGenerateRender({ status, args, result }: ImageGenerateRende
       </div>
     );
   }
-  return null;
+  // CopilotKit action render must return a ReactElement (no null).
+  return <></>;
 }

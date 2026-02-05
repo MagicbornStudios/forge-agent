@@ -53,5 +53,5 @@ pnpm dev
 ## Documentation
 
 - **In-app docs**: Run the app and open [/docs](http://localhost:3000/docs) for the full how-to series and sidebar.
-- **How-to guides** (in order): Foundation → Workspace shell and slots → Styling → Data and state → Building a workspace → ForgeWorkspace walkthrough → Copilot and AI integration. Content lives in `docs/how-to/` (00–07); each guide states what the AI can do at that stage.
+- **How-to guides** (in order): Foundation -> Workspace shell and slots -> Styling -> Data and state -> Building a workspace -> ForgeWorkspace walkthrough -> Copilot and AI integration -> Adding AI to workspaces -> Twick video workspace. Content lives in `docs/how-to/` (00-09); each guide states what the AI can do at that stage.
 - **Reference**: `docs/PROJECT-OVERVIEW.md`, `docs/STATUS.md`, `docs/architecture/copilotkit-and-agents.md`, `AGENTS.md`.

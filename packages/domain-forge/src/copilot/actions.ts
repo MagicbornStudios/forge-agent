@@ -1,7 +1,9 @@
 import type { CopilotActionConfig, AIHighlightPayload } from '@forge/shared/copilot/types';
+import type { ReactNode } from 'react';
 import type { ForgeGraphDoc, ForgeGraphPatchOp, ForgeNodeType } from '@forge/types/graph';
 import { FORGE_NODE_TYPE } from '@forge/types/graph';
 import { renderNodeCreated, renderDeleteNodeResult, renderNodeUpdated } from './generative-ui';
+import { planStepToOp } from './plan-utils';
 
 export interface ForgeActionsDeps {
   getGraph: () => ForgeGraphDoc | null;
@@ -16,6 +18,12 @@ export interface ForgeActionsDeps {
   setPendingFromPlan?: (value: boolean) => void;
   /** Optional: persist draft (save). Used by forge_commit. */
   commitGraph?: () => Promise<void>;
+  /** Optional: render plan UI in chat for forge_createPlan. */
+  renderPlan?: (props: {
+    status: string;
+    args: Record<string, unknown>;
+    result?: { success: boolean; message: string; data?: unknown };
+  }) => ReactNode;
 }
 
 /**
@@ -24,42 +32,6 @@ export interface ForgeActionsDeps {
  * All action names are prefixed with `forge_` to prevent collisions
  * when multiple domains register simultaneously.
  */
-function stepToOp(step: Record<string, unknown>): ForgeGraphPatchOp | null {
-  const type = String(step.type ?? '');
-  if (type === 'createEdge') {
-    const source = step.source ?? step.sourceNodeId;
-    const target = step.target ?? step.targetNodeId;
-    if (source != null && target != null) {
-      return { type: 'createEdge', source: String(source), target: String(target) };
-    }
-    return null;
-  }
-  if (type === 'updateNode' && step.nodeId != null) {
-    return { type: 'updateNode', nodeId: String(step.nodeId), updates: (step.updates as Record<string, unknown>) ?? {} };
-  }
-  if (type === 'deleteNode' && step.nodeId != null) {
-    return { type: 'deleteNode', nodeId: String(step.nodeId) };
-  }
-  if (type === 'createNode') {
-    const nodeId = `node_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
-    return {
-      type: 'createNode',
-      nodeType: (step.nodeType as ForgeNodeType) ?? 'CHARACTER',
-      position: {
-        x: typeof step.x === 'number' ? step.x : Math.random() * 400,
-        y: typeof step.y === 'number' ? step.y : Math.random() * 400,
-      },
-      data: {
-        label: step.label as string | undefined,
-        content: step.content as string | undefined,
-        speaker: step.speaker as string | undefined,
-      },
-      id: nodeId,
-    };
-  }
-  return null;
-}
-
 export function createForgeActions(deps: ForgeActionsDeps): CopilotActionConfig[] {
   const {
     getGraph,
@@ -71,6 +43,7 @@ export function createForgeActions(deps: ForgeActionsDeps): CopilotActionConfig[
     createPlanApi,
     setPendingFromPlan,
     commitGraph,
+    renderPlan,
   } = deps;
 
   return [
@@ -300,6 +273,7 @@ export function createForgeActions(deps: ForgeActionsDeps): CopilotActionConfig[
           return { success: false, message: err instanceof Error ? err.message : 'Plan failed.', data: { steps: [] } };
         }
       },
+      render: renderPlan,
     },
 
     // -----------------------------------------------------------------------
@@ -325,7 +299,7 @@ export function createForgeActions(deps: ForgeActionsDeps): CopilotActionConfig[
         const nodeIds: string[] = [];
         const edgeIds: string[] = [];
         for (const step of steps) {
-          const op = stepToOp(typeof step === 'object' && step !== null ? (step as Record<string, unknown>) : {});
+          const op = planStepToOp(typeof step === 'object' && step !== null ? (step as Record<string, unknown>) : {});
           if (!op) continue;
           applyOperations([op]);
           if (op.type === 'createNode' && op.id) nodeIds.push(op.id);

@@ -14,7 +14,7 @@ You can implement these as callbacks or derived state in your workspace componen
 
 ## 2. Expose context to the agent
 
-In your workspace component, call **useCopilotReadable** with:
+When using a **DomainCopilotContract**, the contract's **getContextSnapshot()** supplies the context (registered via **useDomainCopilot**). Otherwise, in your workspace component you can call **useCopilotReadable** with:
 
 - A **description** of what this context is for (so the agent knows when to use it).
 - A **value** object that includes at least:
@@ -26,36 +26,34 @@ Keep the value minimal but enough for the agent to reason about state and select
 
 ## 3. Define domain actions
 
-Actions are the way the agent changes the workspace. Define them in a single place per domain (e.g. `apps/studio/lib/copilot-actions.ts` for Forge). Each action has:
+Actions are the way the agent changes the workspace. Define them in a **domain contract** that implements `DomainCopilotContract` (see `packages/shared/src/shared/copilot/types.ts`). The contract's **createActions()** returns an array of action configs. Forge: [packages/domain-forge/src/copilot/actions.ts](../../packages/domain-forge/src/copilot/actions.ts). Each action has:
 
-- **name** - Stable ID (e.g. `createNode`, `insertText`).
+- **name** - Stable ID with domain prefix (e.g. `forge_createNode`, `forge_insertText`).
 - **description** - When and why the agent should use it.
 - **parameters** - Name, type, description, required/optional.
 - **handler** - Async function that performs the change (e.g. call store `applyOperations`, open overlay).
+- **render** (optional) - For generative UI in chat; must return a ReactElement (no `null`).
 
-For a **new domain**, create a similar module (e.g. `apps/studio/lib/writer-copilot-actions.ts`) and optionally an **onAIChange** callback so the UI can highlight AI-created/edited elements.
+For a **new domain**, create a contract (e.g. `useWriterContract`) and wire **onAIHighlight** / **clearAIHighlights** so the UI can highlight AI-created/edited elements.
 
 ## 4. Register actions when the workspace is active
 
-Register actions only when that workspace is active. Forge does this by calling **useForgeCopilotActions** in the workspace component with:
+Register actions only when that workspace is active. Forge does this by calling **useForgeContract(deps)** to build the contract, then **useDomainCopilot(forgeContract, { toolsEnabled })** in the workspace component. Only one workspace is mounted at a time, so only that domain's actions are registered.
 
-- Graph/store access (`graph`, `applyOperations`).
-- Overlay and viewport callbacks (`openOverlay`, `revealSelection`).
-- Optional **onAIChange** for highlights.
-
-For a new domain, create a hook (e.g. `useWriterCopilotActions`) that builds the action configs and calls **useCopilotAction** for each (hooks must be called unconditionally, so use a fixed number of `useCopilotAction` calls). Then call that hook from your domain's workspace component.
+For a new domain, create a contract hook (e.g. `useWriterContract`) that returns a `DomainCopilotContract`, then call **useDomainCopilot(myContract, { toolsEnabled })** from your workspace component. The shared hook registers context, actions, and suggestions from the contract; **createActions()** must always return the same number of actions (use **available: 'disabled'** when an action is contextually inactive).
 
 ## 5. Checklist for a new domain
 
 1. **Capabilities** - Implement `getSelection`, `getContextSnapshot`, and optionally `revealSelection` (with editor viewport handle).
 2. **Context** - `useCopilotReadable` with `workspaceId`, `editorType`, selection, and domain summary.
 3. **Actions** - Create entity, link/connect, edit, delete, get state, open overlay, reveal selection (as needed).
-4. **Registration** - Domain hook that registers all actions via `useCopilotAction`; call it from the workspace component.
+4. **Registration** - Build a domain contract (e.g. `useForgeContract` / `useWriterContract`) and call **useDomainCopilot(contract, { toolsEnabled })** from the workspace component.
 5. **Optional** - `onAIChange` and highlight state if you want to show what the AI changed.
 
 ## References
 
-- **Forge actions** - `apps/studio/lib/copilot-actions.ts`, `apps/studio/lib/useForgeCopilotActions.ts`.
+- **Forge contract and actions** - [packages/domain-forge/src/copilot](../../packages/domain-forge/src/copilot) (`useForgeContract`, `createForgeActions` in actions.ts). Workspace wires it via `useDomainCopilot(forgeContract, { toolsEnabled })`.
 - **Capabilities** - `packages/shared/src/shared/workspace/capabilities.ts`.
 - **AI integration overview** - [ai-workspace-integration.md](./ai-workspace-integration.md).
-- **Architecture** - [architecture/workspace-editor-architecture.md](./architecture/workspace-editor-architecture.md).
+- **Adding more AI** - [how-to/08-adding-ai-to-workspaces.md](./how-to/08-adding-ai-to-workspaces.md).
+- **Architecture** - [architecture/copilotkit-and-agents.md](./architecture/copilotkit-and-agents.md), [architecture/workspace-editor-architecture.md](./architecture/workspace-editor-architecture.md).

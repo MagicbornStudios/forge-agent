@@ -36,5 +36,6 @@ export function StructuredOutputRender({ status, args, result }: StructuredOutpu
       </div>
     );
   }
-  return null;
+  // CopilotKit action render must return a ReactElement (no null).
+  return <></>;
 }

@@ -5,6 +5,7 @@ const DEFAULT_ADMIN = {
   password: process.env.SEED_ADMIN_PASSWORD ?? 'admin12345',
   name: 'Forge Admin',
   role: 'admin',
+  plan: 'pro',
 };
 
 const DEFAULT_USER = {
@@ -12,6 +13,7 @@ const DEFAULT_USER = {
   password: process.env.SEED_USER_PASSWORD ?? 'user12345',
   name: 'Forge User',
   role: 'user',
+  plan: 'free',
 };
 
 const DEMO_GRAPH_TITLE = 'Demo Graph';
@@ -44,6 +46,7 @@ async function ensureUser(payload: Payload, data: typeof DEFAULT_ADMIN) {
       password: data.password,
       name: data.name,
       role: data.role,
+      plan: data.plan,
     },
   });
 }
