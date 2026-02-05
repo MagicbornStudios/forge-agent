@@ -1,4 +1,4 @@
-﻿# Workspace UI kit
+# Workspace UI kit
 
 Declarative, slot-based shell for all workspaces. Same surfaces everywhere: Header, Toolbar, LeftPanel, Main, Right, StatusBar, BottomPanel, Overlays.
 
@@ -83,7 +83,7 @@ Use the shared primitives so every control supports `tooltip` / `tooltipDisabled
 - **Selection-first**: Inspector can use `selection` + `sections[]` with `when(selection)`.
 - **No file scanning**: Overlays declared in one place per workspace.
 - **shadcn**: Use `npx shadcn@latest add <name>` for UI primitives.
-- **Tooltips**: Prefer `WorkspaceButton`, `WorkspaceTab`, and `WorkspaceTooltip` to get `tooltip` + `tooltipDisabled` props (typo alias: `tootlipDisabled`).
+- **Tooltips**: Prefer `WorkspaceButton`, `WorkspaceTab`, and `WorkspaceTooltip` to get `tooltip` + `tooltipDisabled` props.
 - **Themes**: `WorkspaceShell` accepts an optional `theme` override. If omitted, the workspace inherits the app theme.
 - **Toolbar standard**: Include File menu + Project select + Settings in workspace toolbars.
 

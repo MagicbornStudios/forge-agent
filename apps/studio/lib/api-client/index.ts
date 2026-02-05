@@ -9,7 +9,6 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 
 export { AiService } from './services/AiService';
 export { AuthService } from './services/AuthService';
-export { GraphsService } from './services/GraphsService';
 export { ModelService } from './services/ModelService';
 export { SettingsService } from './services/SettingsService';
-export { VideoDocsService } from './services/VideoDocsService';
+export { WorkflowsService } from './services/WorkflowsService';

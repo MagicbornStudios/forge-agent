@@ -7,8 +7,6 @@ import { WorkspaceTooltip } from '../tooltip/WorkspaceTooltip';
 export interface WorkspaceButtonProps extends ButtonProps {
   tooltip?: React.ReactNode;
   tooltipDisabled?: boolean;
-  /** @deprecated Typo alias for tooltipDisabled. */
-  tootlipDisabled?: boolean;
   tooltipSide?: React.ComponentPropsWithoutRef<typeof WorkspaceTooltip>['tooltipSide'];
   tooltipAlign?: React.ComponentPropsWithoutRef<typeof WorkspaceTooltip>['tooltipAlign'];
   tooltipClassName?: string;
@@ -19,7 +17,6 @@ export const WorkspaceButton = React.forwardRef<HTMLButtonElement, WorkspaceButt
     {
       tooltip,
       tooltipDisabled,
-      tootlipDisabled,
       tooltipSide,
       tooltipAlign,
       tooltipClassName,
@@ -29,7 +26,7 @@ export const WorkspaceButton = React.forwardRef<HTMLButtonElement, WorkspaceButt
     ref,
   ) => {
     const button = <Button ref={ref} disabled={disabled} {...props} />;
-    const shouldTooltip = tooltip && !(tooltipDisabled ?? tootlipDisabled);
+    const shouldTooltip = tooltip && !tooltipDisabled;
 
     if (!shouldTooltip) {
       return button;
@@ -47,7 +44,6 @@ export const WorkspaceButton = React.forwardRef<HTMLButtonElement, WorkspaceButt
       <WorkspaceTooltip
         tooltip={tooltip}
         tooltipDisabled={tooltipDisabled}
-        tootlipDisabled={tootlipDisabled}
         tooltipSide={tooltipSide}
         tooltipAlign={tooltipAlign}
         tooltipClassName={tooltipClassName}

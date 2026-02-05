@@ -3,10 +3,23 @@
  */
 
 import type { ReactNode } from 'react';
+import type { CapabilityId } from '../entitlements/capabilities';
+
+export type ToolbarGateMode = 'hide' | 'disable' | 'lock-overlay';
+
+export interface ToolbarGateOptions {
+  capability?: CapabilityId;
+  gateMode?: ToolbarGateMode;
+  gateReason?: string;
+  gateActionLabel?: string;
+  gateOnAction?: () => void;
+  gateFallback?: ReactNode;
+  gateClassName?: string;
+}
 
 export type ToolbarAlign = 'start' | 'center' | 'end';
 
-export interface ToolbarButtonItem {
+export interface ToolbarButtonItem extends ToolbarGateOptions {
   type: 'button';
   id: string;
   label: string;
@@ -17,11 +30,9 @@ export interface ToolbarButtonItem {
   size?: 'sm' | 'default' | 'lg';
   tooltip?: ReactNode;
   tooltipDisabled?: boolean;
-  /** @deprecated Typo alias for tooltipDisabled. */
-  tootlipDisabled?: boolean;
 }
 
-export interface ToolbarToggleItem {
+export interface ToolbarToggleItem extends ToolbarGateOptions {
   type: 'toggle';
   id: string;
   label: string;
@@ -30,11 +41,9 @@ export interface ToolbarToggleItem {
   onToggle: (pressed: boolean) => void;
   tooltip?: ReactNode;
   tooltipDisabled?: boolean;
-  /** @deprecated Typo alias for tooltipDisabled. */
-  tootlipDisabled?: boolean;
 }
 
-export interface ToolbarMenuItem {
+export interface ToolbarMenuItem extends ToolbarGateOptions {
   type: 'menu';
   id: string;
   label: string;
@@ -42,8 +51,6 @@ export interface ToolbarMenuItem {
   children: ReactNode; // dropdown content
   tooltip?: ReactNode;
   tooltipDisabled?: boolean;
-  /** @deprecated Typo alias for tooltipDisabled. */
-  tootlipDisabled?: boolean;
 }
 
 export interface ToolbarCustomItem {

@@ -1,0 +1,189 @@
+# 09 - Twick video workspace (timeline showcase)
+
+This guide shows how to build the Video workspace using the shared workspace shell and the Twick timeline primitives. The goal is a clean, minimal workspace that mirrors the Forge structure but uses a timeline surface instead of React Flow.
+
+## Goal
+
+Build a VideoWorkspace that:
+- Renders a track list + timeline in the shared workspace shell.
+- Uses a draft document in Zustand with video operations.
+- Supports AI context/actions through the domain contract (no heavy AI yet).
+- Can be extended later with patch preview and commit flow.
+
+## Glossary
+
+- **Draft**: Local timeline state stored in `useVideoStore`.
+- **Patch**: A list of video operations (addTrack, addElement, moveElement, etc.).
+- **Preview**: Visual changes in the timeline after operations apply.
+- **Commit**: Persisting the draft via `useSaveVideoDoc` (Next API -> Payload).
+
+## 1. Workspace shell + layout
+
+Start with the same shell and slots used by Forge.
+
+```tsx
+// apps/studio/components/workspaces/VideoWorkspace.tsx
+return (
+  <WorkspaceShell
+    workspaceId="video"
+    title="Video"
+    subtitle={doc?.title ?? 'Timeline'}
+    domain="video"
+    theme={workspaceTheme}
+    className="flex flex-col h-full min-h-0 bg-background"
+  >
+    <WorkspaceHeader>...</WorkspaceHeader>
+    <WorkspaceToolbar>...</WorkspaceToolbar>
+    <WorkspaceLayoutGrid left={leftContent} main={mainContent} editor={{ editorId, editorType: 'timeline' }} />
+    <WorkspaceStatusBar>...</WorkspaceStatusBar>
+  </WorkspaceShell>
+);
+```
+
+Expected behavior:
+- Left panel lists tracks.
+- Main panel shows the timeline.
+
+## 2. Draft state and operations
+
+Video draft state lives in `useVideoStore`. Operations update the draft and set dirty state.
+
+```ts
+// apps/studio/lib/domains/video/store.ts
+applyOperations: (operations) => {
+  const { doc } = get();
+  if (!doc) return;
+  const nextDoc = applyVideoOperations(doc, operations);
+  set((state) => {
+    state.doc = nextDoc;
+    state.isDirty = true;
+  });
+},
+```
+
+Expected behavior:
+- All edits flow through operations.
+- The timeline updates immediately.
+
+## 3. Timeline surfaces
+
+The timeline is split into a track list (left) and the main timeline (center).
+
+```tsx
+// apps/studio/components/workspaces/VideoWorkspace.tsx
+const leftContent = doc ? (
+  <TwickTrackList
+    tracks={docData.tracks}
+    selectedTrackId={selectedTrackId}
+    onSelectTrack={setSelectedTrackId}
+    onAddTrack={handleAddTrack}
+  />
+) : (
+  <div className="p-4 text-sm text-muted-foreground">Loading timeline...</div>
+);
+
+const mainContent = doc ? (
+  <TwickTimeline
+    data={docData}
+    selectedTrackId={selectedTrackId}
+    selectedElementId={selectedElementId}
+    onSelectTrack={(trackId) => {
+      setSelectedTrackId(trackId);
+      setSelectedElementId(null);
+    }}
+    onSelectElement={(trackId, elementId) => {
+      setSelectedTrackId(trackId);
+      setSelectedElementId(elementId);
+    }}
+  />
+) : (
+  <div className="flex h-full items-center justify-center text-muted-foreground">
+    Loading timeline...
+  </div>
+);
+```
+
+Expected behavior:
+- Track list controls the active track.
+- Timeline selects elements and updates UI state.
+
+## 4. Toolbar actions
+
+Standard File/Edit/View menus plus a few basic actions are enough for now.
+
+```tsx
+<WorkspaceToolbar.Right>
+  <ModelSwitcher />
+  <WorkspaceToolbar.Button
+    variant="outline"
+    size="sm"
+    tooltip="Add a new track"
+    onClick={handleAddTrack}
+    disabled={!doc}
+  >
+    Add track
+  </WorkspaceToolbar.Button>
+  <WorkspaceToolbar.Button
+    variant="outline"
+    size="sm"
+    tooltip="Add a text element"
+    onClick={handleAddTextElement}
+    disabled={!doc}
+  >
+    Add text
+  </WorkspaceToolbar.Button>
+</WorkspaceToolbar.Right>
+```
+
+Expected behavior:
+- Actions apply operations to the draft.
+- Dirty state updates in the status bar.
+
+## 5. AI contract (lightweight for now)
+
+Video uses the same domain contract pattern as Forge, but with simpler actions.
+
+```tsx
+// apps/studio/components/workspaces/VideoWorkspace.tsx
+const videoContract = useVideoContract({
+  doc,
+  selection: null,
+  applyOperations,
+  onAIHighlight,
+  clearAIHighlights: clearHighlights,
+});
+
+useDomainCopilot(videoContract, { toolsEnabled });
+```
+
+Expected behavior:
+- AI can read basic context and run simple actions.
+- Complex plan/patch flows can be added later using the same workflow engine.
+
+## 6. Persisting the draft
+
+Video uses `useSaveVideoDoc` to persist changes through the API boundary.
+
+```tsx
+const saveVideoDocMutation = useSaveVideoDoc();
+const save = () => saveVideoDocMutation.mutate();
+```
+
+Expected behavior:
+- The draft remains local until Save.
+- Save persists the current timeline to Payload.
+
+## 7. Extending toward patch preview
+
+When you are ready to add plan -> patch -> review:
+- Reuse the workflow engine (`packages/agent-engine`).
+- Add a `VideoWorkflowPanel` similar to `ForgeWorkflowPanel`.
+- Use video ops as the patch payload and apply them to the draft.
+
+## What the AI can do at this stage
+
+- Read timeline context and run basic operations (add track, add text).
+- Highlight changed tracks/elements (if you wire highlights).
+- Prepare for the same workflow engine used in Forge.
+
+**Next:** Back to [06 - ForgeWorkspace walkthrough](06-forge-workspace-walkthrough.mdx).

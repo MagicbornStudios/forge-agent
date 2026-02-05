@@ -4,6 +4,7 @@ import * as React from 'react';
 import { cn } from '@forge/shared/lib/utils';
 import { Separator } from '@forge/ui/separator';
 import type { ToolbarGroup, ToolbarItem } from '@forge/shared/workspace';
+import { FeatureGate } from '../../gating/FeatureGate';
 import { WorkspaceButton } from '../controls/WorkspaceButton';
 import { WorkspaceFileMenu } from './WorkspaceFileMenu';
 import { WorkspaceMenubar } from './WorkspaceMenubar';
@@ -50,8 +51,8 @@ function ToolbarGroupEl({ children, className }: { children?: React.ReactNode; c
 
 function renderToolbarItem(item: ToolbarItem) {
   switch (item.type) {
-    case 'button':
-      return (
+    case 'button': {
+      const button = (
         <WorkspaceButton
           key={item.id}
           variant={item.variant ?? 'outline'}
@@ -60,14 +61,29 @@ function renderToolbarItem(item: ToolbarItem) {
           onClick={item.onClick}
           tooltip={item.tooltip}
           tooltipDisabled={item.tooltipDisabled}
-          tootlipDisabled={item.tootlipDisabled}
         >
           {item.icon}
           {item.label}
         </WorkspaceButton>
       );
-    case 'toggle':
+      if (!item.capability) return button;
       return (
+        <FeatureGate
+          key={item.id}
+          capability={item.capability}
+          mode={item.gateMode}
+          reason={item.gateReason}
+          actionLabel={item.gateActionLabel}
+          onAction={item.gateOnAction}
+          fallback={item.gateFallback}
+          className={item.gateClassName}
+        >
+          {button}
+        </FeatureGate>
+      );
+    }
+    case 'toggle': {
+      const toggle = (
         <WorkspaceButton
           key={item.id}
           variant="outline"
@@ -76,22 +92,53 @@ function renderToolbarItem(item: ToolbarItem) {
           data-state={item.pressed ? 'on' : 'off'}
           tooltip={item.tooltip}
           tooltipDisabled={item.tooltipDisabled}
-          tootlipDisabled={item.tootlipDisabled}
         >
           {item.icon}
           {item.label}
         </WorkspaceButton>
       );
+      if (!item.capability) return toggle;
+      return (
+        <FeatureGate
+          key={item.id}
+          capability={item.capability}
+          mode={item.gateMode}
+          reason={item.gateReason}
+          actionLabel={item.gateActionLabel}
+          onAction={item.gateOnAction}
+          fallback={item.gateFallback}
+          className={item.gateClassName}
+        >
+          {toggle}
+        </FeatureGate>
+      );
+    }
     case 'custom':
       return <React.Fragment key={item.id}>{item.render()}</React.Fragment>;
     case 'menu':
-      return (
-        <div key={item.id}>
-          {item.icon}
-          {item.label}
-          {item.children}
-        </div>
-      );
+      {
+        const menu = (
+          <div key={item.id}>
+            {item.icon}
+            {item.label}
+            {item.children}
+          </div>
+        );
+        if (!item.capability) return menu;
+        return (
+          <FeatureGate
+            capability={item.capability}
+            mode={item.gateMode}
+            reason={item.gateReason}
+            actionLabel={item.gateActionLabel}
+            onAction={item.gateOnAction}
+            fallback={item.gateFallback}
+            className={item.gateClassName}
+          >
+            {menu}
+          </FeatureGate>
+        );
+      }
     default:
       return null;
   }

@@ -25,7 +25,7 @@ import {
   WorkspaceOverlaySurface,
 } from '@forge/shared/components/workspace';
 import { CreateNodeModal } from '@/components/CreateNodeModal';
-import { forgeInspectorSections, ForgeTimeline } from '@/components/forge';
+import { forgeInspectorSections, ForgeWorkflowPanel, ForgeWorkspaceDrawer } from '@/components/forge';
 import { ModelSwitcher } from '@/components/model-switcher';
 import { SettingsMenu } from '@/components/settings/SettingsMenu';
 import { ForgePlanCard } from '@/components/copilot/ForgePlanCard';
@@ -39,25 +39,25 @@ const CREATE_NODE_OVERLAY_ID = 'create-node';
 function useForgeSelection(
   selectedNodeIds: string[],
   selectedEdgeIds: string[],
-  graph: { flow: { nodes: { id: string; data...: { label...: string } }[]; edges: { id: string; source: string; target: string }[] } } | null
+  graph: { flow: { nodes: { id: string; data?: { label?: string } }[]; edges: { id: string; source: string; target: string }[] } } | null
 ): Selection {
   return useMemo(() => {
     if (selectedNodeIds.length === 1 && selectedEdgeIds.length === 0) {
-      const node = graph....flow.nodes.find((n) => n.id === selectedNodeIds[0]);
+      const node = graph?.flow.nodes.find((n) => n.id === selectedNodeIds[0]);
       return {
         type: 'entity',
         entityType: 'forge.node',
         id: selectedNodeIds[0],
-        meta: node....data....label != null ... { label: node.data.label } : undefined,
+        meta: node?.data?.label != null ? { label: node.data.label } : undefined,
       };
     }
     if (selectedEdgeIds.length === 1 && selectedNodeIds.length === 0) {
-      const edge = graph....flow.edges.find((e) => e.id === selectedEdgeIds[0]);
+      const edge = graph?.flow.edges.find((e) => e.id === selectedEdgeIds[0]);
       return {
         type: 'entity',
         entityType: 'forge.edge',
         id: selectedEdgeIds[0],
-        meta: edge ... { source: edge.source, target: edge.target } : undefined,
+        meta: edge ? { source: edge.source, target: edge.target } : undefined,
       };
     }
     return { type: 'none' };
@@ -69,8 +69,8 @@ export function ForgeWorkspace() {
   const saveGraphMutation = useSaveGraph();
   const saveGraph = useCallback(() => {
     saveGraphMutation.mutate(undefined, {
-      onSuccess: (data: { title...: string } | undefined) => {
-        if (data....title && useSettingsStore.getState().getSettingValue('ui.toastsEnabled') !== false) {
+      onSuccess: (data: { title?: string } | undefined) => {
+        if (data?.title && useSettingsStore.getState().getSettingValue('ui.toastsEnabled') !== false) {
           toast.success('Graph saved', { description: `Saved ${data.title}.` });
         }
       },
@@ -82,6 +82,8 @@ export function ForgeWorkspace() {
     });
   }, [saveGraphMutation]);
   const workspaceTheme = useAppShellStore((s) => s.workspaceThemes.forge);
+  const bottomDrawerOpen = useAppShellStore((s) => s.bottomDrawerOpen.forge);
+  const toggleBottomDrawer = useAppShellStore((s) => s.toggleBottomDrawer);
   const editorId = WORKSPACE_EDITOR_IDS.forge;
   const agentName = useSettingsStore((s) =>
     s.getSettingValue('ai.agentName', { workspaceId: 'forge', editorId })
@@ -106,7 +108,7 @@ export function ForgeWorkspace() {
 
   const { onAIHighlight, clearHighlights, isHighlighted } = useAIHighlight();
 
-  const openOverlay = useCallback((id: string, payload...: Record<string, unknown>) => {
+  const openOverlay = useCallback((id: string, payload?: Record<string, unknown>) => {
     setActiveOverlay({ id, payload });
   }, []);
   const dismissOverlay = useCallback(() => setActiveOverlay(null), []);
@@ -125,7 +127,7 @@ export function ForgeWorkspace() {
   }, []);
 
   const fitView = useCallback(() => {
-    viewportHandleRef.current....fitView();
+    viewportHandleRef.current?.fitView();
   }, []);
 
   const revealSelection = useCallback(() => {
@@ -169,7 +171,7 @@ export function ForgeWorkspace() {
     createPlanApi,
     setPendingFromPlan,
     commitGraph,
-    renderPlan: (props) => <ForgePlanCard {...props} />,
+    renderPlan: (props) => <ForgePlanCard {...(props as React.ComponentProps<typeof ForgePlanCard>)} />,
   });
 
   useDomainCopilot(forgeContract, { toolsEnabled });
@@ -187,7 +189,7 @@ export function ForgeWorkspace() {
               key: CREATE_NODE_OVERLAY_ID,
               title: 'Create node',
               size: 'md',
-              payload: payload as { nodeType...: ForgeNodeType; label...: string; content...: string; speaker...: string },
+              payload: payload as { nodeType?: ForgeNodeType; label?: string; content?: string; speaker?: string },
             }}
             onClose={onDismiss}
             onSubmit={({ nodeType, label, content, speaker }) => {
@@ -203,12 +205,31 @@ export function ForgeWorkspace() {
     [applyOperations],
   );
 
-  const inspectorSections = useMemo(
-    () => forgeInspectorSections({ graph, applyOperations }),
-    [graph, applyOperations],
+  const workflowSection = useMemo(
+    () => ({
+      id: 'forge-ai-workflow',
+      title: 'AI Workflow',
+      when: () => true,
+      render: () => (
+        <ForgeWorkflowPanel
+          graph={graph}
+          selection={forgeSelection}
+          toolsEnabled={toolsEnabled}
+          applyOperations={applyOperations}
+          commitGraph={commitGraph}
+          onAIHighlight={onAIHighlight}
+        />
+      ),
+    }),
+    [applyOperations, commitGraph, forgeSelection, graph, toolsEnabled],
   );
 
-  const mainContent = graph ... (
+  const inspectorSections = useMemo(
+    () => [...forgeInspectorSections({ graph, applyOperations }), workflowSection],
+    [graph, applyOperations, workflowSection],
+  );
+
+  const mainContent = graph ? (
     <GraphEditor
       selectedNodeIds={selectedNodeIds}
       selectedEdgeIds={selectedEdgeIds}
@@ -232,23 +253,8 @@ export function ForgeWorkspace() {
     <WorkspaceInspector selection={forgeSelection} sections={inspectorSections} />
   );
 
-  const handleSelectNodeInTimeline = useCallback(
-    (nodeId: string) => {
-      handleSelectionChange([nodeId], []);
-    },
-    [handleSelectionChange],
-  );
-
-  const timelineContent = graph ... (
-    <ForgeTimeline
-      graph={graph}
-      selectedNodeIds={selectedNodeIds}
-      onSelectNode={handleSelectNodeInTimeline}
-    />
-  ) : null;
-
   const hasSelection = selectedNodeIds.length > 0 || selectedEdgeIds.length > 0;
-  const projectOptions = graph ... [{ value: String(graph.id), label: graph.title }] : [];
+  const projectOptions = graph ? [{ value: String(graph.id), label: graph.title }] : [];
   const fileMenuItems = useMemo(
     () => [
       {
@@ -336,7 +342,7 @@ export function ForgeWorkspace() {
     <WorkspaceShell
       workspaceId="forge"
       title="Forge"
-      subtitle={graph....title}
+      subtitle={graph?.title}
       domain="forge"
       theme={workspaceTheme}
       className="flex flex-col h-full min-h-0 bg-background"
@@ -355,7 +361,7 @@ export function ForgeWorkspace() {
           <WorkspaceToolbar.Group className="gap-2">
             <WorkspaceToolbar.Menubar menus={menubarMenus} />
             <WorkspaceToolbar.ProjectSelect
-              value={graph ... String(graph.id) : undefined}
+              value={graph ? String(graph.id) : undefined}
               options={projectOptions}
               placeholder="Select graph"
               disabled={!graph}
@@ -365,18 +371,26 @@ export function ForgeWorkspace() {
             />
           </WorkspaceToolbar.Group>
           <span className="text-xs text-muted-foreground">
-            {graph ... `Graph: ${graph.title}` : 'No graph loaded'}
+            {graph ? `Graph: ${graph.title}` : 'No graph loaded'}
           </span>
         </WorkspaceToolbar.Left>
         <WorkspaceToolbar.Right>
           {showAgentName !== false && (
             <Badge variant="secondary" className="text-xs">
-              Agent: {agentName ...... 'Default'}
+              Agent: {agentName ?? 'Default'}
             </Badge>
           )}
           <ModelSwitcher />
           <WorkspaceToolbar.Separator />
           <SettingsMenu workspaceId="forge" editorId={editorId} />
+          <WorkspaceToolbar.Button
+            onClick={() => toggleBottomDrawer('forge')}
+            variant="outline"
+            size="sm"
+            tooltip={bottomDrawerOpen ? 'Close workbench' : 'Open workbench'}
+          >
+            Workbench
+          </WorkspaceToolbar.Button>
           <WorkspaceToolbar.Button
             onClick={() => openOverlay(CREATE_NODE_OVERLAY_ID)}
             variant="outline"
@@ -395,7 +409,7 @@ export function ForgeWorkspace() {
             disabled={!isDirty}
             variant="default"
             size="sm"
-            tooltip={isDirty ... 'Save graph' : 'No changes to save'}
+            tooltip={isDirty ? 'Save graph' : 'No changes to save'}
           >
             Save
           </WorkspaceToolbar.Button>
@@ -412,15 +426,15 @@ export function ForgeWorkspace() {
       <WorkspaceLayoutGrid
         main={mainContent}
         right={inspectorContent}
-        bottom={timelineContent}
+        bottom={bottomDrawerOpen ? <ForgeWorkspaceDrawer /> : undefined}
         editor={{ editorId, editorType: 'react-flow' }}
       />
 
       <WorkspaceStatusBar>
-        {isDirty ... 'Unsaved changes' : 'Ready'}
+        {isDirty ? 'Unsaved changes' : 'Ready'}
         {forgeSelection && isEntity(forgeSelection) && (
           <span className="ml-2 text-muted-foreground">
-            - {forgeSelection.entityType === 'forge.node' ... 'Node' : 'Edge'}: {forgeSelection.id}
+            - {forgeSelection.entityType === 'forge.node' ? 'Node' : 'Edge'}: {forgeSelection.id}
           </span>
         )}
       </WorkspaceStatusBar>

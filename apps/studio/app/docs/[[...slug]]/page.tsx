@@ -8,17 +8,24 @@ import { DOC_ENTRIES, type DocSlug } from '../docs-config';
 
 const VALID_SLUGS = new Set(DOC_ENTRIES.map((e) => e.slug));
 
-function getHowToPath(slug: string): string {
-  // From apps/studio, repo root is ../..
+function getHowToPaths(slug: string): string[] {
   const repoRoot = path.join(process.cwd(), '..', '..');
-  return path.join(repoRoot, 'docs', 'how-to', `${slug}.md`);
+  const base = path.join(repoRoot, 'docs', 'how-to', slug);
+  return [`${base}.mdx`, `${base}.md`];
 }
 
 async function getMarkdown(slug: string): Promise<string | null> {
   if (!VALID_SLUGS.has(slug as DocSlug)) return null;
   try {
-    const filePath = getHowToPath(slug);
-    return await readFile(filePath, 'utf-8');
+    const candidates = getHowToPaths(slug);
+    for (const filePath of candidates) {
+      try {
+        return await readFile(filePath, 'utf-8');
+      } catch {
+        // keep trying
+      }
+    }
+    return null;
   } catch {
     return null;
   }
@@ -49,11 +56,9 @@ export default async function DocPage({
                 </a>
               );
             }
-            // Rewrite how-to links: 01-foundation.md -> /docs/01-foundation, 00-index.md -> /docs
-            const howToMatch = href?.match(/^(?:\.\/)?(\d{2}-[a-z0-9-]+)\.md$/i);
+            const howToMatch = href?.match(/^(?:\.\/)?(\d{2}-[a-z0-9-]+)\.(md|mdx)$/i);
             if (howToMatch && VALID_SLUGS.has(howToMatch[1] as DocSlug)) {
-              const docHref =
-                howToMatch[1] === '00-index' ? '/docs' : `/docs/${howToMatch[1]}`;
+              const docHref = howToMatch[1] === '00-index' ? '/docs' : `/docs/${howToMatch[1]}`;
               return (
                 <Link href={docHref} className="text-primary hover:underline">
                   {children}
@@ -77,10 +82,7 @@ export default async function DocPage({
               );
             }
             return (
-              <code
-                className="rounded bg-muted px-1.5 py-0.5 text-sm"
-                {...props}
-              >
+              <code className="rounded bg-muted px-1.5 py-0.5 text-sm" {...props}>
                 {children}
               </code>
             );

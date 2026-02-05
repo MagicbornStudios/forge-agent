@@ -56,9 +56,15 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ## Raw fetch for API routes
 
-**Problem**: Using raw `fetch('/api/graphs')`, `fetch('/api/video-docs')`, etc., bypasses the generated client and duplicates logic. It also breaks type safety and makes it easy to drift from the OpenAPI spec.
+**Problem**: Using raw `fetch` for collection or app API bypasses the Payload SDK / generated client and duplicates logic; it breaks type safety and makes it easy to drift from the contract.
 
-**Fix**: Use the generated client (`apps/studio/lib/api-client/`) or the TanStack Query hooks in `apps/studio/lib/data/hooks/`. Do not call `fetch` for `/api/*` from components or stores. Add or update JSDoc on route handlers and run `pnpm generate-client` after API changes.
+**Fix**: For collection CRUD (forge-graphs, video-docs), use the Payload SDK (`lib/api-client/payload-sdk.ts`) via the TanStack Query hooks. For custom endpoints (auth, settings, AI), use the generated services or manual handlers. Do not call `fetch` for `/api/*` from components or stores.
+
+## Duplicating collection CRUD in custom routes
+
+**Problem**: Adding custom Next routes that reimplement Payload collection CRUD (e.g. `/api/graphs` that just calls `payload.find`/`create`/`update`) duplicates Payload’s built-in REST and is unnecessary.
+
+**Fix**: Use Payload’s auto-generated REST (`/api/forge-graphs`, `/api/video-docs`) and the Payload SDK from the client. Add custom routes only for app-specific behavior (e.g. scope-based settings upsert, AI, SSE).
 
 ---
 

@@ -16,6 +16,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuCheckboxItem,
 } from '@forge/ui/dropdown-menu';
+import { Badge } from '@forge/ui/badge';
 import { WorkspaceButton } from '@forge/shared/components/workspace';
 
 // ---------------------------------------------------------------------------
@@ -24,7 +25,8 @@ import { WorkspaceButton } from '@forge/shared/components/workspace';
 
 function TierBadge({ tier }: { tier: 'free' | 'paid' }) {
   return (
-    <span
+    <Badge
+      variant="outline"
       className={cn(
         'text-[10px] font-medium uppercase px-1.5 py-0.5 rounded',
         tier === 'free'
@@ -33,7 +35,7 @@ function TierBadge({ tier }: { tier: 'free' | 'paid' }) {
       )}
     >
       {tier}
-    </span>
+    </Badge>
   );
 }
 

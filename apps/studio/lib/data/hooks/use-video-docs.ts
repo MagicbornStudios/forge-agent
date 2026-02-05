@@ -2,11 +2,14 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { studioKeys } from '../keys';
-import { VideoDocsService } from '@/lib/api-client';
+import { payloadSdk, VIDEO_DOCS_SLUG } from '@/lib/api-client/payload-sdk';
 
 export function useVideoDocs() {
   return useQuery({
     queryKey: studioKeys.videoDocs(),
-    queryFn: () => VideoDocsService.getApiVideoDocs1(),
+    queryFn: async () => {
+      const result = await payloadSdk.find({ collection: VIDEO_DOCS_SLUG });
+      return result.docs;
+    },
   });
 }

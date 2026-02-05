@@ -85,7 +85,8 @@ Single source of truth for how the AI sidebar, context, actions, and runtime wor
 |------|--------|--------|
 | **Vision / image input** | Missing | Model registry has no `supportsVision`; chat has no image upload. Future: add flag to model def, support image parts in messages. |
 | **Co-agents** | Documented, not used | Pattern in [co-agents-and-multi-agent.md](../co-agents-and-multi-agent.md). When needed: add `useCoAgent` (or equivalent) per workspace/flow. |
-| **Graphs / subgraphs (e.g. LangGraph)** | Future | Not in use. CopilotKit supports Direct-to-LLM and LangGraph-style backends; we use a single OpenRouter agent. If we add orchestration graphs later, they live in the runtime (e.g. new API route or agent definition), not in the client contract. |
+| **Workflow graphs (internal engine)** | Implemented (minimal) | `packages/agent-engine` defines steps + events; `POST /api/workflows/run` streams plan/patch/review over SSE. Used as the base pattern for plan -> propose -> review. |
+| **Graphs / subgraphs (e.g. LangGraph)** | Future | We currently use the minimal workflow engine above. If we add LangGraph, it replaces the executor, not the domain contracts. |
 
 Image generation (Section 8), structured output (Section 10), and plan-execute-review-commit (Section 11) are implemented. See [ai-workspace-integration.md](../ai-workspace-integration.md#missing--roadmap) and [STATUS.md](../STATUS.md) for status. To add more AI (actions, agents, future graphs), see [08 - Adding AI to workspaces](../how-to/08-adding-ai-to-workspaces.md).
 

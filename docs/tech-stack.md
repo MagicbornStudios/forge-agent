@@ -21,15 +21,16 @@ Reference for agents and humans. Update when adding or removing major choices.
 
 ## Why we don’t
 
-- **No direct Payload REST/GraphQL from the browser.** All server-state goes through our Next API routes. This keeps one client boundary, simplifies auth/CORS, and makes it easy to add other backends (platform, billing) later without changing the client.
+- **No raw fetch for server-state.** Collection CRUD goes through the Payload SDK; app-specific ops (auth, settings, AI, SSE) go through our custom routes and generated or manual client. TanStack Query hooks use these; components and stores do not call fetch directly.
 - **No “just Zustand + fetch” for server-state.** We’d reimplement caching identity, invalidation, loading/error, and retries; TanStack Query provides this in one place.
-- **No multiple DBs or backends in the client contract yet.** We use one Payload schema/DB; when we split, the client still talks only to Next API routes.
+- **No multiple DBs or backends in the client contract yet.** We use one Payload schema/DB; when we split, the client still talks to Payload REST and our Next API routes.
 
 ---
 
 ## Where things live
 
-- **Query keys and API clients:** `apps/studio/lib/data/keys.ts`, `studio-client.ts`, `platform-client.ts`
-- **Hooks:** `apps/studio/lib/data/hooks/` (`useGraphs`, `useGraph`, `useSaveGraph`, `useVideoDocs`, `useVideoDoc`, `useSaveVideoDoc`)
-- **Persistence keys:** `apps/studio/lib/persistence/local-storage.ts`
+- **Payload SDK (collection CRUD):** `apps/studio/lib/api-client/payload-sdk.ts`; hooks use it for forge-graphs and video-docs.
+- **Custom endpoints / SSE:** Generated services in `lib/api-client/services/` (Auth, Settings, Model, AI); `lib/api-client/workflows.ts` for SSE.
+- **Query keys and hooks:** `apps/studio/lib/data/keys.ts`, `apps/studio/lib/data/hooks/`
+- **Persisted client state:** Zustand persist on app-shell store (`apps/studio/lib/app-shell/store.ts`) and graph/video stores (draft partialize); see **docs/decisions.md**.
 - **Decisions and rationale:** **docs/decisions.md**

@@ -27,6 +27,10 @@ When touching workspaces (Forge, Writer, etc.): use the shared shell from `@forg
 - Use `FeatureGate` for locked UI and `CAPABILITIES` from `packages/shared/src/shared/entitlements`.
 - Avoid ad-hoc plan checks in components.
 
+## Agent engine
+
+- Workflow graphs live in `packages/agent-engine` (steps + events + streaming). Domains do not commit directly; they emit patches for review.
+
 ## Payload + Types (single app)
 
 - **Collections live in** `apps/studio/payload/collections/` (users, projects, forge-graphs, video-docs, settings-overrides, agent-sessions).
@@ -40,4 +44,4 @@ When touching workspaces (Forge, Writer, etc.): use the shared shell from `@forg
 - **Read** `docs/decisions.md` and `docs/tech-stack.md` when changing persistence or the data layer (TanStack Query, Zustand drafts, API routes, localStorage).
 - **Update** those docs when making or rejecting a significant choice (e.g. adding a new backend, changing the client boundary).
 - **Keep one API boundary:** client talks only to our Next API routes; no direct Payload REST/GraphQL from the browser.
-- **Use the generated API client only:** All API access goes through the OpenAPI-generated client in `apps/studio/lib/api-client/`. Use the TanStack Query hooks in `apps/studio/lib/data/hooks/` for server state. Do not use raw `fetch` or hand-rolled API methods. The OpenAPI spec is auto-generated from JSDoc in `app/api/` (next-swagger-doc); regenerate the client with `pnpm generate-client` after route/JSDoc changes. Swagger UI at `/api-doc`, spec at `/api/docs`.
+- **API client:** Collection CRUD uses the **Payload SDK** (`lib/api-client/payload-sdk.ts`) against Payload REST (`/api/forge-graphs`, `/api/video-docs`). Custom endpoints (auth, settings, AI, model config, SSE) use the generated client or manual handlers (`workflows.ts`). Use the TanStack Query hooks in `apps/studio/lib/data/hooks/` for server state; do not use raw `fetch` in components or stores. Swagger UI at `/api-doc`, spec at `/api/docs` (custom routes only).

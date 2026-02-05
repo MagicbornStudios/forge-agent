@@ -45,7 +45,7 @@ async function ensureUser(payload: Payload, data: typeof DEFAULT_ADMIN) {
       email: data.email,
       password: data.password,
       name: data.name,
-      role: data.role,
+      role: data.role as 'user' | 'admin',
       plan: data.plan,
     },
   });
@@ -96,6 +96,6 @@ export async function seedStudio(payload: Payload) {
     await ensureProject(payload, admin.id, graph.id);
     payload.logger.info('[Seed] Studio seed complete');
   } catch (err) {
-    payload.logger.error('[Seed] Failed', err);
+    payload.logger.error(`[Seed] Failed: ${err instanceof Error ? err.message : String(err)}`);
   }
 }

@@ -12,7 +12,6 @@ const dirname = path.dirname(filename);
 export default buildConfig({
   admin: {
     user: 'users',
-    route: '/payload',
   },
   collections,
   onInit: async (payload) => {

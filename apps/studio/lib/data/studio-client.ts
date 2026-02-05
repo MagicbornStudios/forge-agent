@@ -1,12 +1,13 @@
 /**
- * Studio API client. All HTTP is done via the OpenAPI-generated client.
- * Use the hooks in ./hooks (useGraphs, useGraph, useSaveGraph, useCreateGraph, etc.)
- * or the generated services directly. Do not add hand-rolled fetch here.
+ * Studio API client. Collection CRUD uses Payload SDK (payloadSdk); custom endpoints
+ * use the OpenAPI-generated services (Auth, Settings, Model, AI). SSE (e.g. workflows)
+ * is handled manually in lib/api-client/workflows.ts. Use the hooks in ./hooks for
+ * server state; do not add hand-rolled fetch for /api/*.
  */
 
+export { payloadSdk, FORGE_GRAPHS_SLUG, VIDEO_DOCS_SLUG } from '@/lib/api-client/payload-sdk';
+export { streamWorkflowRun } from '@/lib/api-client/workflows';
 export {
-  GraphsService,
-  VideoDocsService,
   AuthService,
   SettingsService,
   ModelService,

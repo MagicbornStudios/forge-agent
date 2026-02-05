@@ -15,6 +15,7 @@ export * from './components/ui/dialog';
 export * from './components/ui/drawer';
 export * from './components/ui/dropdown-menu';
 export * from './components/ui/field';
+export * from './components/ui/form';
 export * from './components/ui/hover-card';
 export * from './components/ui/input';
 export * from './components/ui/item';

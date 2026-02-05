@@ -1,0 +1,11 @@
+{
+  "name": "@forge/agent-engine",
+  "private": true,
+  "version": "0.0.0",
+  "types": "src/index.ts",
+  "main": "src/index.ts",
+  "dependencies": {
+    "@forge/shared": "workspace:*",
+    "@forge/types": "workspace:*"
+  }
+}

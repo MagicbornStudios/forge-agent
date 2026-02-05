@@ -4,7 +4,7 @@ import { AppThemeProvider } from '@/components/providers/AppThemeProvider';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { SettingsHydration } from '@/components/settings/SettingsHydration';
 import { EntitlementsProvider } from '@/components/providers/EntitlementsProvider';
-import { AppShellRoutePersistence } from '@/components/persistence/AppShellRoutePersistence';
+import { AppShellPersistGate } from '@/components/persistence/AppShellPersistGate';
 import { DirtyBeforeUnload } from '@/components/persistence/DirtyBeforeUnload';
 
 export const metadata: Metadata = {
@@ -23,9 +23,10 @@ export default function RootLayout({
         <AppThemeProvider>
           <QueryProvider>
             <SettingsHydration />
-            <AppShellRoutePersistence />
-            <DirtyBeforeUnload />
-            <EntitlementsProvider>{children}</EntitlementsProvider>
+            <AppShellPersistGate>
+              <DirtyBeforeUnload />
+              <EntitlementsProvider>{children}</EntitlementsProvider>
+            </AppShellPersistGate>
           </QueryProvider>
         </AppThemeProvider>
       </body>

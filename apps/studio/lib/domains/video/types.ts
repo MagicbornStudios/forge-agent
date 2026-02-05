@@ -58,7 +58,7 @@ export function getVideoDocData(doc: VideoDoc | null): VideoDocData {
 export function setVideoDocData(doc: VideoDoc, data: VideoDocData): VideoDoc {
   return {
     ...doc,
-    doc: data,
+    doc: data as unknown as VideoDoc['doc'],
   };
 }
 

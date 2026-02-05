@@ -1,5 +1,6 @@
 import type { Config } from './payload-types';
 
+export type { Config };
 export type PayloadCollections = Config['collections'];
 
 export type UserRecord = PayloadCollections['users'];

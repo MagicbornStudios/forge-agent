@@ -63,7 +63,7 @@ export function SettingsSheet({
       });
     } catch (e) {
       toast.error("Failed to save settings", {
-        description: e instanceof Error ... e.message : "Unknown error",
+        description: e instanceof Error ? e.message : "Unknown error",
       });
     } finally {
       setSaving(false);

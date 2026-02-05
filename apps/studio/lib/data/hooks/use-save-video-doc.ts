@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { studioKeys } from '../keys';
-import { VideoDocsService } from '@/lib/api-client';
+import { payloadSdk, VIDEO_DOCS_SLUG } from '@/lib/api-client/payload-sdk';
 import { useVideoStore } from '@/lib/domains/video/store';
 
 export function useSaveVideoDoc() {
@@ -12,7 +12,11 @@ export function useSaveVideoDoc() {
     mutationFn: async () => {
       const doc = useVideoStore.getState().doc;
       if (!doc) throw new Error('No video doc to save');
-      return VideoDocsService.patchApiVideoDocs(String(doc.id), { doc: doc.doc });
+      return payloadSdk.update({
+        collection: VIDEO_DOCS_SLUG,
+        id: doc.id,
+        data: { doc: doc.doc },
+      });
     },
     onSuccess: (data) => {
       if (data?.id != null) {

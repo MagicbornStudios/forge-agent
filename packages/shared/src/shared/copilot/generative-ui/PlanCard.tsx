@@ -4,17 +4,17 @@ import { Button } from '@forge/ui/button';
 
 export interface PlanStepItem {
   title: string;
-  description...: string;
-  meta...: string;
+  description?: string;
+  meta?: string;
 }
 
 export interface PlanCardProps {
   title: string;
-  summary...: string;
+  summary?: string;
   steps: PlanStepItem[];
-  status...: 'idle' | 'inProgress' | 'complete' | 'error';
-  footer...: React.ReactNode;
-  className...: string;
+  status?: 'idle' | 'inProgress' | 'complete' | 'error';
+  footer?: React.ReactNode;
+  className?: string;
 }
 
 export function PlanCard({
@@ -37,7 +37,7 @@ export function PlanCard({
         )}
       </div>
       {summary && <p className="mt-1 text-xs text-muted-foreground">{summary}</p>}
-      {steps.length > 0 ... (
+      {steps.length > 0 ? (
         <ol className="mt-3 space-y-2">
           {steps.map((step, index) => (
             <li key={`${step.title}-${index}`} className="rounded border border-border/60 bg-background/40 p-2">
@@ -64,11 +64,11 @@ export function PlanCard({
 }
 
 export interface PlanActionBarProps {
-  onAccept...: () => void;
-  onReject...: () => void;
-  acceptLabel...: string;
-  rejectLabel...: string;
-  disabled...: boolean;
+  onAccept: () => void;
+  onReject: () => void;
+  acceptLabel?: string;
+  rejectLabel?: string;
+  disabled?: boolean;
 }
 
 export function PlanActionBar({

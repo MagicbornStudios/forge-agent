@@ -1,0 +1,267 @@
+# 06 - ForgeWorkspace walkthrough (React Flow + AI)
+
+This guide assumes you are new to the repo and want to build ForgeWorkspace from scratch using our shared workspace shell, a React Flow editor, and the AI workflow pattern. It shows where draft state lives, how patches flow through the system, and how we preview and highlight changes.
+
+## Goal
+
+Build a ForgeWorkspace that:
+- Renders a React Flow graph editor inside the shared workspace shell.
+- Uses a draft graph in Zustand with patch operations.
+- Supports AI plan -> patch -> review -> commit with streamed output.
+- Highlights changed nodes and edges after AI actions or patch acceptance.
+
+## Glossary
+
+- **Draft**: Local, unsaved graph state stored in `useGraphStore`.
+- **Patch**: A list of `ForgeGraphPatchOp` operations applied to the draft.
+- **Patch preview**: UI showing patch summary + ops before commit.
+- **Plan**: A human-readable sequence of steps (streamed markdown or structured steps).
+- **Proposal**: The patch produced by an AI workflow.
+- **Review**: Invariants check that marks a proposal as ok or failed.
+- **Commit**: Persisting the draft via `useSaveGraph` (Next API -> Payload).
+- **Highlight**: Visual emphasis of nodes/edges that changed.
+
+## 1. Create the workspace shell
+
+Start with the shared shell and slots. The shell owns layout; the workspace owns state and content.
+
+```tsx
+// apps/studio/components/workspaces/ForgeWorkspace.tsx
+return (
+  <WorkspaceShell
+    workspaceId="forge"
+    title="Forge"
+    subtitle={graph?.title}
+    domain="forge"
+    theme={workspaceTheme}
+    className="flex flex-col h-full min-h-0 bg-background"
+  >
+    <WorkspaceHeader>...</WorkspaceHeader>
+    <WorkspaceToolbar>...</WorkspaceToolbar>
+    <WorkspaceLayoutGrid main={mainContent} right={inspectorContent} bottom={bottomContent} />
+    <WorkspaceStatusBar>...</WorkspaceStatusBar>
+    <WorkspaceOverlaySurface ... />
+  </WorkspaceShell>
+);
+```
+
+Expected behavior:
+- The shell provides consistent layout and theming.
+- The editor surface and inspector are just slots.
+
+## 2. Draft state and patch ops
+
+Forge draft state lives in a single store; all edits are applied via patch operations.
+
+```ts
+// apps/studio/lib/store.ts
+applyOperations: (operations) => {
+  const { graph } = get();
+  if (!graph) return;
+  const updatedGraph = applyPatchOperations(graph, operations);
+  set((state) => {
+    state.graph = updatedGraph;
+    state.isDirty = true;
+  });
+},
+```
+
+Operations are defined in the shared types package.
+
+```ts
+// packages/types/src/graph.ts
+export type ForgeGraphPatchOp =
+  | { type: 'createNode'; nodeType: ForgeNodeType; position: { x: number; y: number }; data?: Partial<ForgeNode>; id?: string }
+  | { type: 'updateNode'; nodeId: string; updates: Partial<ForgeNode> }
+  | { type: 'deleteNode'; nodeId: string }
+  | { type: 'moveNode'; nodeId: string; position: { x: number; y: number } }
+  | { type: 'createEdge'; source: string; target: string; sourceHandle?: string; targetHandle?: string }
+  | { type: 'deleteEdge'; edgeId: string };
+```
+
+Expected behavior:
+- All edits are patch ops; no direct mutation of `graph.flow`.
+- `isDirty` is true after any patch.
+
+## 3. Editor surface and selection
+
+React Flow is rendered in the main slot. Selection is converted to the shared `Selection` contract.
+
+```tsx
+// apps/studio/components/workspaces/ForgeWorkspace.tsx
+const forgeSelection = useForgeSelection(selectedNodeIds, selectedEdgeIds, graph);
+
+const mainContent = graph ? (
+  <GraphEditor
+    selectedNodeIds={selectedNodeIds}
+    selectedEdgeIds={selectedEdgeIds}
+    isHighlighted={isHighlighted}
+    onSelectionChange={handleSelectionChange}
+    onViewportReady={handleViewportReady}
+    onRequestCreateNode={() => openOverlay(CREATE_NODE_OVERLAY_ID)}
+  />
+) : (
+  <EmptyState />
+);
+```
+
+Expected behavior:
+- Selection and highlighting are controlled by the workspace, not the editor.
+- The editor is a pure surface; all state comes from props.
+
+## 4. Inspector sections (node + edge)
+
+Selection-driven inspector sections are declared in `forgeInspectorSections`.
+
+```tsx
+// apps/studio/components/forge/ForgeInspectorSections.tsx
+return [
+  {
+    id: 'forge-node',
+    title: 'Node',
+    when: (s) => (s ? isEntity(s) && s.entityType === 'forge.node' : false),
+    render: ({ selection }) => {
+      const node = graph.flow.nodes.find((n) => n.id === selection.id);
+      return (
+        <NodeFields
+          data={node.data}
+          onUpdate={(updates) => applyOperations([{ type: 'updateNode', nodeId: node.id, updates }])}
+        />
+      );
+    },
+  },
+];
+```
+
+Expected behavior:
+- Inspector renders only when selection matches.
+- Updates go through patch ops.
+
+## 5. Plan card (chat UI)
+
+Forge plans render inside the Copilot chat using `PlanCard` + `PlanActionBar`.
+
+```tsx
+// apps/studio/components/copilot/ForgePlanCard.tsx
+return (
+  <PlanCard
+    title="Plan"
+    summary={summary}
+    steps={stepItems}
+    status={planStatus}
+    footer={
+      showActions ? (
+        <PlanActionBar
+          onAccept={handleApply}
+          onReject={() => setDismissed(true)}
+          acceptLabel={isApplying ? 'Applying...' : 'Apply plan'}
+          rejectLabel="Dismiss"
+          disabled={isApplying || !executeHandler}
+        />
+      ) : undefined
+    }
+  />
+);
+```
+
+Expected behavior:
+- The plan is visible in chat.
+- Applying the plan executes patch ops and sets `pendingFromPlan` for review.
+
+## 6. Workflow streaming panel (plan + patch + review)
+
+The workflow engine streams plan and patch events; Forge previews them in the inspector under **AI Workflow**.
+
+```tsx
+// apps/studio/components/forge/ForgeWorkflowPanel.tsx
+const { state, run } = useWorkflowRun();
+
+const handleRun = async () => {
+  await run({
+    workflowId: 'forge.planExecuteReviewCommit',
+    domain: 'forge',
+    intent,
+    input: { graphId: graph.id },
+    snapshot: graph,
+    selection,
+  });
+};
+```
+
+Patch preview and review are shown in the same panel:
+
+```tsx
+{state.patch && (
+  <div className="rounded-md border bg-muted/10 p-3 text-xs">
+    <div className="font-medium">Patch</div>
+    <pre>{JSON.stringify(state.patch.ops, null, 2)}</pre>
+  </div>
+)}
+```
+
+Expected behavior:
+- Plan stream shows immediately.
+- Patch preview appears after proposal.
+- Review status (ok/errors) is visible before apply.
+
+## 7. Apply patch, highlight, commit
+
+Accepting a workflow patch applies it to the draft, highlights affected nodes/edges, and commits.
+
+```tsx
+// apps/studio/components/forge/ForgeWorkflowPanel.tsx
+const handleAccept = async () => {
+  if (!state.patch || state.patch.kind !== 'reactflow') return;
+  const ops = state.patch.ops as ForgeGraphPatchOp[];
+  applyOperations(ops);
+  const highlight = buildHighlightFromPatch(ops);
+  if (highlight) onAIHighlight(highlight);
+  await commitGraph();
+};
+```
+
+Expected behavior:
+- Draft updates immediately.
+- Highlighted nodes/edges are visible in the editor.
+- Commit persists the draft.
+
+## 8. Review bar (plan -> execute -> review)
+
+When `pendingFromPlan` is set, the shared review bar appears between the toolbar and layout.
+
+```tsx
+<WorkspaceReviewBar
+  visible={!!(isDirty && pendingFromPlan && graph)}
+  onRevert={() => graph && loadGraph(graph.id)}
+  onAccept={() => setPendingFromPlan(false)}
+  label="Pending changes from plan"
+/>
+```
+
+Expected behavior:
+- Users can revert to the last saved graph.
+- Accepting clears pending state but keeps the draft.
+
+## 9. Where things are previewed
+
+- **Plan preview**: Copilot chat (`ForgePlanCard`).
+- **Patch preview**: Inspector panel under **AI Workflow** (`ForgeWorkflowPanel`).
+- **Draft preview**: The main editor updates when ops are applied.
+- **Review UI**: `WorkspaceReviewBar` and `ForgeWorkflowPanel` review summary.
+
+## 10. Extending Forge operations
+
+To add a new operation:
+- Add a new `ForgeGraphPatchOp` variant in `packages/types/src/graph.ts`.
+- Update `applyPatchOperation` in `apps/studio/lib/graph-operations.ts`.
+- If AI should emit it, update `planStepToOp` in `packages/domain-forge/src/copilot/plan-utils.ts` and the workflow generator in `packages/agent-engine/src/domains/forge/plan-execute-review-commit.ts`.
+- Add highlight mapping in `ForgeWorkflowPanel` if needed.
+
+## What the AI can do at this stage
+
+- Read graph context and selection (domain contract).
+- Propose a patch (nodes/edges ops) via workflow engine.
+- Stream plan and patch into UI.
+- Apply and commit patch with explicit user acceptance.
+
+**Next:** See [07 - Copilot and AI integration](07-copilot.md) and [09 - Twick video workspace](09-twick-workspace.mdx).

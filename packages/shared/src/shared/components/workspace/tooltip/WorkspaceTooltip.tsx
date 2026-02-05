@@ -6,8 +6,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@forge/ui/tooltip';
 export interface WorkspaceTooltipProps {
   tooltip?: React.ReactNode;
   tooltipDisabled?: boolean;
-  /** @deprecated Typo alias for tooltipDisabled. */
-  tootlipDisabled?: boolean;
   tooltipSide?: React.ComponentPropsWithoutRef<typeof TooltipContent>['side'];
   tooltipAlign?: React.ComponentPropsWithoutRef<typeof TooltipContent>['align'];
   tooltipClassName?: string;
@@ -17,13 +15,12 @@ export interface WorkspaceTooltipProps {
 export function WorkspaceTooltip({
   tooltip,
   tooltipDisabled,
-  tootlipDisabled,
   tooltipSide = 'top',
   tooltipAlign = 'center',
   tooltipClassName,
   children,
 }: WorkspaceTooltipProps) {
-  const disabled = tooltipDisabled ?? tootlipDisabled ?? false;
+  const disabled = tooltipDisabled ?? false;
   if (!tooltip || disabled) {
     return children;
   }

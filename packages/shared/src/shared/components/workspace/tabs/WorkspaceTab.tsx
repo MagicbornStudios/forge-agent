@@ -17,8 +17,6 @@ export interface WorkspaceTabProps {
   className?: string;
   tooltip?: React.ReactNode;
   tooltipDisabled?: boolean;
-  /** @deprecated Typo alias for tooltipDisabled. */
-  tootlipDisabled?: boolean;
   tooltipSide?: React.ComponentPropsWithoutRef<typeof WorkspaceTooltip>['tooltipSide'];
   tooltipAlign?: React.ComponentPropsWithoutRef<typeof WorkspaceTooltip>['tooltipAlign'];
   tooltipClassName?: string;
@@ -37,7 +35,6 @@ export function WorkspaceTab({
   className,
   tooltip,
   tooltipDisabled,
-  tootlipDisabled,
   tooltipSide,
   tooltipAlign,
   tooltipClassName,
@@ -108,7 +105,6 @@ export function WorkspaceTab({
     <WorkspaceTooltip
       tooltip={tooltip}
       tooltipDisabled={tooltipDisabled}
-      tootlipDisabled={tootlipDisabled}
       tooltipSide={tooltipSide}
       tooltipAlign={tooltipAlign}
       tooltipClassName={tooltipClassName}

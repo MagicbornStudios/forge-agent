@@ -1,4 +1,4 @@
-# Workspace UI kit — Agent rules
+# Workspace UI kit - Agent rules
 
 ## Owner
 
@@ -17,9 +17,9 @@ Every workspace has the same places:
 | **StatusBar** | yes | Saving, validation, selection summary |
 | **Overlays** | n/a | Modals, drawers, popovers (declarative list) |
 | **LeftPanel** | optional | Library, palette, navigator (graphs list, pages tree) |
-| **BottomPanel** | optional | Timeline, logs, errors (slot, not a core concept) |
+| **BottomPanel** | optional | Drawer/workbench (e.g. Stripe workbench, DevTools console); timeline, logs, settings. Slot is optional; state (open/closed) typically lives in app-shell or workspace store keyed by workspace id. |
 
-Use **left** / **main** / **right** / **bottom** in `WorkspaceLayoutGrid`.
+Use `left` / `main` / `right` / `bottom` in `WorkspaceLayoutGrid`.
 
 ## Design (shadcn + atomic)
 
@@ -27,14 +27,14 @@ Add components via: `npx shadcn@latest add <name>`. Use shadcn atoms from `packa
 
 ## Slot composition
 
-1. **WorkspaceShell** — Children: Header, Toolbar, LayoutGrid, StatusBar, OverlaySurface.
-2. **WorkspaceHeader** — `WorkspaceHeader.Left`, `.Center`, `.Right` for composable sections.
-3. **WorkspaceToolbar** — Either `groups: ToolbarGroup[]` (data-driven) or `Left`/`Center`/`Right` slots.
-4. **WorkspaceLayoutGrid** — `left?`, `main`, `right?`, `bottom?`. Layout adapts.
-5. **WorkspaceInspector** — Either `selection` + `sections: InspectorSection[]` (when/render) or `children`.
-6. **WorkspaceOverlaySurface** — `overlays: OverlaySpec[]`, `activeOverlay`, `onDismiss`. No registry. Declare overlays in one place per workspace.
-7. **WorkspaceEditor** — Required wrapper inside the main slot; always provide `editorId` + `editorType` metadata.
-8. **WorkspaceReviewBar** — Optional. For plan–commit flows: place between Toolbar and LayoutGrid. Wire `visible` to `(isDirty && pendingFromPlan)`, `onRevert` to refetch/reset draft, `onAccept` to clear pending. State is owned by the domain/store; the bar is presentational only.
+1. **WorkspaceShell** - Children: Header, Toolbar, LayoutGrid, StatusBar, OverlaySurface.
+2. **WorkspaceHeader** - `WorkspaceHeader.Left`, `.Center`, `.Right` for composable sections.
+3. **WorkspaceToolbar** - Either `groups: ToolbarGroup[]` (data-driven) or `Left`/`Center`/`Right` slots.
+4. **WorkspaceLayoutGrid** - `left?`, `main`, `right?`, `bottom?`. Layout adapts.
+5. **WorkspaceInspector** - Either `selection` + `sections: InspectorSection[]` (when/render) or `children`.
+6. **WorkspaceOverlaySurface** - `overlays: OverlaySpec[]`, `activeOverlay`, `onDismiss`. No registry. Declare overlays in one place per workspace.
+7. **WorkspaceEditor** - Required wrapper inside the main slot; always provide `editorId` + `editorType` metadata.
+8. **WorkspaceReviewBar** - Optional. For plan-commit flows: place between Toolbar and LayoutGrid. Wire `visible` to `(isDirty && pendingFromPlan)`, `onRevert` to refetch/reset draft, `onAccept` to clear pending. State is owned by the domain/store; the bar is presentational only.
 
 ## Rules
 
@@ -42,7 +42,8 @@ Add components via: `npx shadcn@latest add <name>`. Use shadcn atoms from `packa
 - **Selection-first**: Inspector content keyed off shared `Selection` (entity / textRange / canvasObject).
 - **No file scanning/generators**: Overlays are an explicit array in the workspace composition file.
 - **No cross-domain imports**: Shared components should not import from app or domain code. UI atoms come from `@forge/ui`.
-- **Tooltips**: Use `WorkspaceButton`, `WorkspaceTab`, or `WorkspaceTooltip` when you need `tooltip` / `tooltipDisabled` props (typo alias: `tootlipDisabled`).
+- **Tooltips**: Use `WorkspaceButton`, `WorkspaceTab`, or `WorkspaceTooltip` when you need `tooltip` / `tooltipDisabled` props.
+- **Feature gates**: Use `FeatureGate` at the call site (toolbar or slot) to wrap gated controls. `WorkspaceButton` does not accept gate props.
 - **Themes**: `WorkspaceShell` accepts `theme` to override `data-theme` for a workspace. Omit to inherit app theme.
 - **Toolbar standard**: Menubar (File/Edit/View), Project combobox, and Settings are expected in workspace toolbars.
 

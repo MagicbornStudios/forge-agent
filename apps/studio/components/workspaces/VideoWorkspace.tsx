@@ -9,7 +9,7 @@ import {
   WorkspaceStatusBar,
 } from '@forge/shared/components/workspace';
 import { ModelSwitcher } from '@/components/model-switcher';
-import { useVideoStore } from '@/lib/domains/video/store';
+import { useVideoStore, VIDEO_DRAFT_KEY } from '@/lib/domains/video/store';
 import { useSaveVideoDoc, useVideoDocs, useVideoDoc, useCreateVideoDoc } from '@/lib/data/hooks';
 import { useAppShellStore } from '@/lib/app-shell/store';
 import { WORKSPACE_EDITOR_IDS } from '@/lib/app-shell/workspace-metadata';
@@ -18,22 +18,23 @@ import { useAIHighlight } from '@forge/shared/copilot/use-ai-highlight';
 import { useDomainCopilot } from '@forge/shared/copilot/use-domain-copilot';
 import { useVideoContract } from '@/lib/domains/video/copilot';
 import { DEFAULT_VIDEO_DOC_DATA, getVideoDocData } from '@/lib/domains/video/types';
-import { getLastVideoDocId } from '@/lib/persistence/local-storage';
 import { SettingsMenu } from '@/components/settings/SettingsMenu';
 import { Badge } from '@forge/ui/badge';
-import { FeatureGate } from '@forge/shared/components/gating';
+import { FeatureGate } from '@forge/shared';
 import { CAPABILITIES, useEntitlements } from '@forge/shared/entitlements';
 import { TwickTimeline, TwickTrackList } from '@/components/video';
 
 export function VideoWorkspace() {
-  const { doc, setDoc, applyOperations, isDirty } = useVideoStore();
-  const [lastId, setLastId] = useState<number | null>(null);
+  const lastVideoDocId = useAppShellStore((s) => s.lastVideoDocId);
+  const setLastVideoDocId = useAppShellStore((s) => s.setLastVideoDocId);
+  const { doc, setDoc, restoreDraft, applyOperations, isDirty } = useVideoStore();
   const saveVideoDocMutation = useSaveVideoDoc();
   const save = () => saveVideoDocMutation.mutate();
   const initialLoadDone = useRef(false);
+  const draftRestored = useRef(false);
 
   const videoDocsQuery = useVideoDocs();
-  const videoDocQuery = useVideoDoc(lastId);
+  const videoDocQuery = useVideoDoc(lastVideoDocId);
   const createVideoDocMutation = useCreateVideoDoc();
   const workspaceTheme = useAppShellStore((s) => s.workspaceThemes.video);
   const editorId = WORKSPACE_EDITOR_IDS.video;
@@ -58,21 +59,38 @@ export function VideoWorkspace() {
     setSelectedElementId(null);
   }, [doc?.id]);
 
+  // Apply persisted video draft only when it matches current doc (after app-shell has rehydrated).
   useEffect(() => {
-    setLastId(getLastVideoDocId());
-  }, []);
+    if (draftRestored.current || lastVideoDocId == null || typeof window === 'undefined') return;
+    try {
+      const raw = localStorage.getItem(VIDEO_DRAFT_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { state?: { documentId?: number; doc?: unknown; isDirty?: boolean } };
+      const state = parsed?.state;
+      if (state?.documentId === lastVideoDocId && state.doc) {
+        restoreDraft({
+          doc: state.doc as Parameters<typeof restoreDraft>[0]['doc'],
+          isDirty: state.isDirty ?? true,
+        });
+        draftRestored.current = true;
+        initialLoadDone.current = true;
+      }
+    } catch {
+      // ignore
+    }
+  }, [lastVideoDocId, restoreDraft]);
 
   useEffect(() => {
     if (initialLoadDone.current) return;
 
-    if (lastId != null && videoDocQuery.data) {
+    if (lastVideoDocId != null && videoDocQuery.data) {
       setDoc(videoDocQuery.data);
       setLastVideoDocId(videoDocQuery.data.id);
       initialLoadDone.current = true;
       return;
     }
 
-    if (lastId === null && videoDocsQuery.data !== undefined) {
+    if (lastVideoDocId === null && videoDocsQuery.data !== undefined) {
       if (Array.isArray(videoDocsQuery.data) && videoDocsQuery.data.length > 0) {
         const first = videoDocsQuery.data[0];
         setDoc(first);
@@ -92,10 +110,11 @@ export function VideoWorkspace() {
       initialLoadDone.current = true;
     }
   }, [
-    lastId,
+    lastVideoDocId,
     videoDocQuery.data,
     videoDocsQuery.data,
     setDoc,
+    setLastVideoDocId,
     createVideoDocMutation,
   ]);
 
@@ -317,7 +336,11 @@ export function VideoWorkspace() {
           >
             Add text
           </WorkspaceToolbar.Button>
-          <FeatureGate capability={CAPABILITIES.VIDEO_EXPORT} mode="lock-overlay" className="rounded-md">
+          <FeatureGate
+            capability={CAPABILITIES.VIDEO_EXPORT}
+            mode="lock-overlay"
+            className="rounded-md"
+          >
             <WorkspaceToolbar.Button
               variant="outline"
               size="sm"

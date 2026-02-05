@@ -27,9 +27,10 @@ Step-by-step: [adding-domain-actions.md](../adding-domain-actions.md).
 - **Today:** Single agent in [apps/studio/app/api/copilotkit/route.ts](../../apps/studio/app/api/copilotkit/route.ts) (OpenRouter).
 - **Adding another agent** (e.g. co-agent per workspace): see [co-agents-and-multi-agent.md](../co-agents-and-multi-agent.md). No code changes in this guide.
 
-## Graphs / subgraphs (future)
+## Workflow graphs (internal engine)
 
-We use a single "direct" OpenRouter agent today. If we later add LangGraph-style or multi-step agent graphs, they would be implemented in the **runtime** (e.g. new API route or agent definition), not in the domain contract. See CopilotKit docs (e.g. Direct to LLM / LangGraph) for reference.
+- **Now:** We have a minimal workflow engine in `packages/agent-engine` (steps + events) and a streaming endpoint `POST /api/workflows/run` that emits plan/patch/review over SSE. This is the base pattern for plan -> propose -> review workflows.
+- **Later:** If we add LangGraph, it replaces the workflow executor, not the domain contracts. This keeps the client wiring stable.
 
 ## Conventions recap
 

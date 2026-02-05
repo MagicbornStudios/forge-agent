@@ -39,116 +39,6 @@
         }
       }
     },
-    "/api/graphs/{id}": {
-      "get": {
-        "summary": "Get graph by ID",
-        "tags": [
-          "graphs"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Graph document"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      },
-      "patch": {
-        "summary": "Update graph",
-        "tags": [
-          "graphs"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "title": {
-                    "type": "string"
-                  },
-                  "flow": {}
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Updated graph document"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      }
-    },
-    "/api/graphs": {
-      "get": {
-        "summary": "List graphs",
-        "tags": [
-          "graphs"
-        ],
-        "responses": {
-          "200": {
-            "description": "List of forge graph documents"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      },
-      "post": {
-        "summary": "Create graph",
-        "tags": [
-          "graphs"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "title": {
-                    "type": "string"
-                  },
-                  "flow": {}
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Created graph document"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      }
-    },
     "/api/image-generate": {
       "post": {
         "summary": "Generate image from prompt via OpenRouter (image modality)",
@@ -352,112 +242,31 @@
         }
       }
     },
-    "/api/video-docs/{id}": {
-      "get": {
-        "summary": "Get video doc by ID",
-        "tags": [
-          "video-docs"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Video doc document"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      },
-      "patch": {
-        "summary": "Update video doc",
-        "tags": [
-          "video-docs"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "title": {
-                    "type": "string"
-                  },
-                  "doc": {}
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Updated video doc document"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      }
-    },
-    "/api/video-docs": {
-      "get": {
-        "summary": "List video docs",
-        "tags": [
-          "video-docs"
-        ],
-        "responses": {
-          "200": {
-            "description": "List of video doc documents"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      },
+    "/api/workflows/run": {
       "post": {
-        "summary": "Create video doc",
+        "summary": "Run a workflow and stream events over SSE.",
         "tags": [
-          "video-docs"
+          "workflows"
         ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "title": {
-                    "type": "string"
-                  },
-                  "doc": {}
-                }
+                "type": "object"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Created video doc document"
-          },
-          "500": {
-            "description": "Server error"
+            "description": "SSE event stream",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }

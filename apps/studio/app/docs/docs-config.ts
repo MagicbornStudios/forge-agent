@@ -1,6 +1,6 @@
 /**
  * Doc slugs and labels for the how-to sidebar.
- * Files live in repo root: docs/how-to/<slug>.md
+ * Files live in repo root: docs/how-to/<slug>.mdx (or .md fallback).
  */
 export const DOC_ENTRIES = [
   { slug: '00-index', label: 'How-to guides' },

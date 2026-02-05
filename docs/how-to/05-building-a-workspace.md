@@ -41,6 +41,6 @@ If your workspace supports plan-execute-review-commit: add a plan API (e.g. `POS
 
 **AI at this stage:** AI can create a plan, execute it, user reviews with Revert/Accept, then commit (save).
 
-Reference implementation: ForgeWorkspace and `packages/domain-forge`; see [06 - ForgeWorkspace walkthrough](06-forge-workspace-walkthrough.md).
+Reference implementation: ForgeWorkspace and `packages/domain-forge`; see [06 - ForgeWorkspace walkthrough](06-forge-workspace-walkthrough.mdx).
 
-**Next:** [06 - ForgeWorkspace walkthrough](06-forge-workspace-walkthrough.md)
+**Next:** [06 - ForgeWorkspace walkthrough](06-forge-workspace-walkthrough.mdx)
