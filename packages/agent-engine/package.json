@@ -1,11 +1,31 @@
 {
   "name": "@forge/agent-engine",
-  "private": true,
-  "version": "0.0.0",
-  "types": "src/index.ts",
-  "main": "src/index.ts",
+  "private": false,
+  "version": "0.1.0",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup"
+  },
+  "publishConfig": {
+    "registry": "http://localhost:4873"
+  },
   "dependencies": {
-    "@forge/shared": "workspace:*",
-    "@forge/types": "workspace:*"
+    "@forge/shared": "^0.1.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0"
   }
 }

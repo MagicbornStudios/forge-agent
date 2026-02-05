@@ -1,5 +1,5 @@
 {
-  "name": "@forge/shared",
+  "name": "@forge/dev-kit",
   "private": false,
   "version": "0.1.0",
   "types": "dist/index.d.ts",
@@ -24,12 +24,8 @@
   },
   "dependencies": {
     "@forge/ui": "^0.1.0",
-    "clsx": "^2.1.1",
-    "tailwind-merge": "^3.4.0"
-  },
-  "peerDependencies": {
-    "react": "^19",
-    "react-dom": "^19"
+    "@forge/shared": "^0.1.0",
+    "@forge/agent-engine": "^0.1.0"
   },
   "devDependencies": {
     "tsup": "^8.5.0"

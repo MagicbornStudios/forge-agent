@@ -41,6 +41,7 @@ An AI-first studio for editing dialogue graphs: CopilotKit, React Flow, and a un
 - **Setup details:** [SETUP.md](SETUP.md).
 - **How-tos (in order):** In-app [/docs](http://localhost:3000/docs) or [docs/how-to/00-index.mdx](docs/how-to/00-index.mdx) — 01 Foundation → 02 Workspace shell → 03 Styling → 04 Data and state → 05 Building a workspace → 06 ForgeWorkspace walkthrough → 07 Copilot → 08 Adding AI → 09 Twick workspace.
 - **Architecture:** [docs/architecture/](docs/architecture/) — [01-unified-workspace](docs/architecture/01-unified-workspace.mdx), [02-workspace-editor-architecture](docs/architecture/02-workspace-editor-architecture.mdx), [03-copilotkit-and-agents](docs/architecture/03-copilotkit-and-agents.mdx).
+- **Publishing the component library:** [docs/architecture/04-component-library-and-registry.mdx](docs/architecture/04-component-library-and-registry.mdx) (includes `@forge/dev-kit`).
 - **For coding agents:** [docs/18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx) (index of agent-only docs) and root [AGENTS.md](AGENTS.md).
 
 ## Contributing: build a workspace, then PR it

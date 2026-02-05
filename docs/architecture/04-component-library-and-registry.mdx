@@ -1,0 +1,188 @@
+---
+created: 2026-02-05
+updated: 2026-02-05
+---
+
+# Component library + private registry (Verdaccio)
+
+This repo is both **the Studio app** and the **source of publishable building blocks** for other teams. We publish only **foundation packages** (UI, workspace shell, Copilot utilities). Domain packages stay private.
+
+---
+
+## What we publish (public surface)
+
+### `@forge/ui`
+- Shadcn/Radix atoms and form primitives.
+- No app or domain dependencies.
+
+### `@forge/shared`
+- Workspace shell, layout primitives, editor scaffolding.
+- Copilot helpers (`useDomainCopilot`, action config types, generative UI).
+- App/workspace/editor contracts.
+
+### `@forge/agent-engine`
+- Generic workflow runtime (steps + events + SSE helpers).
+- Public and domain-agnostic; domain workflows live in app/domain packages.
+
+### `@forge/dev-kit`
+- Convenience meta-package that re-exports `@forge/ui`, `@forge/shared`, and `@forge/agent-engine`.
+- Use this when you want a single dependency.
+
+### Not published (kept internal)
+- `@forge/domain-*` (domain logic and app-specific UI).
+- `@forge/types` (Payload-generated types tied to this repo).
+
+---
+
+## Package layout and build outputs
+
+Published packages are compiled to `dist/` and export:
+
+- `dist/index.esm.js` (ESM)
+- `dist/index.cjs.js` (CJS)
+- `dist/index.d.ts` (types)
+
+Each package has:
+
+- `exports` map for ESM/CJS/types
+- `publishConfig.registry` set to Verdaccio
+- `build` script using `tsup`
+
+---
+
+## Local registry: Verdaccio
+
+### Start Verdaccio
+
+```bash
+pnpm registry:start
+# or: verdaccio --config ./verdaccio.yaml
+```
+
+Verdaccio runs at: `http://localhost:4873`
+
+### Registry scope
+
+Repo root `.npmrc` is scoped:
+
+```ini
+@forge:registry=http://localhost:4873
+```
+
+This ensures only `@forge/*` packages go to the local registry.
+
+### Verdaccio config (repo-local)
+
+We keep a lightweight config at `verdaccio.yaml`:
+
+- Storage in `./verdaccio/storage`
+- Publishes allowed without auth (local dev)
+- Proxies public packages from npmjs
+
+---
+
+## Publish flow (local)
+
+From repo root:
+
+```bash
+pnpm --filter @forge/ui build
+pnpm --filter @forge/shared build
+pnpm --filter @forge/agent-engine build
+pnpm --filter @forge/dev-kit build
+```
+
+Then publish each package (one time or after changes):
+
+```bash
+cd packages/ui
+npm publish
+
+cd ../shared
+npm publish
+
+cd ../agent-engine
+npm publish
+
+cd ../dev-kit
+npm publish
+```
+
+> If Verdaccio requires login, run `npm adduser --registry http://localhost:4873`.
+
+---
+
+## Consume from another repo
+
+In the consumer repo root:
+
+`.npmrc`
+```ini
+@forge:registry=http://localhost:4873
+```
+
+`package.json`
+```json
+{
+  "dependencies": {
+    "@forge/dev-kit": "^0.1.0"
+  }
+}
+```
+
+Install:
+
+```bash
+pnpm install
+```
+
+Usage:
+
+```ts
+import { WorkspaceShell, WorkspaceLayoutGrid, Button } from '@forge/dev-kit';
+```
+
+---
+
+## AI out-of-the-box (OpenRouter)
+
+To use the Copilot helpers, consumers must provide:
+
+- **OpenRouter API key** (e.g. `OPENROUTER_API_KEY`) in their app runtime.
+- A CopilotKit runtime route or equivalent backend that calls OpenRouter.
+
+The contract is the same as this repo:
+
+1. Provide a CopilotKit provider (app shell).
+2. Register **domain contracts** via `useDomainCopilot()` in each workspace.
+3. Provide app-level actions using helpers like `createAppAction()`.
+
+---
+
+## Action helper prefixes (whitelabeled)
+
+We expose helpers to keep action naming consistent:
+
+- `createAppAction()` ? prefixes `app_`
+- `createWorkspaceAction()` ? prefixes `workspace_`
+- `createEditorAction()` ? prefixes `editor_`
+- `createDomainAction(domain)` ? prefixes `<domain>_`
+
+These live in `@forge/shared` and are exported alongside Copilot contracts.
+
+---
+
+## Versioning and compatibility
+
+- Start at `0.1.x` while the public surface is still settling.
+- Keep action config shapes backward compatible.
+- Avoid breaking workspace shell props without a major bump.
+
+---
+
+## Agent guidance
+
+- **Only publish foundation packages** (`@forge/ui`, `@forge/shared`).
+- Keep `domain-*` private.
+- Avoid exporting app-specific code from shared.
+- Update this doc when the public surface or registry strategy changes.

@@ -9,6 +9,10 @@
     "start": "pnpm --filter @forge/studio start",
     "lint": "pnpm --filter @forge/studio lint",
     "test": "pnpm --filter @forge/studio test",
-    "payload:types": "pnpm --filter @forge/studio payload:types"
+    "payload:types": "pnpm --filter @forge/studio payload:types",
+    "registry:start": "verdaccio --config ./verdaccio.yaml"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0"
   }
 }

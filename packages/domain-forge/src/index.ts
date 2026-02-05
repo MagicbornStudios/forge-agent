@@ -7,3 +7,4 @@ export * from './copilot/context';
 export * from './copilot/index';
 export * from './copilot/suggestions';
 export * from './copilot/generative-ui';
+export * from './workflows';

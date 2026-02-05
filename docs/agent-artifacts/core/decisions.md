@@ -58,3 +58,11 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 **Decision:** We do not split into multiple DBs or backends until product needs justify it. Collection CRUD uses Payload REST (Payload SDK) from the browser; non-CRUD uses our custom Next API and generated/manual client. No raw fetch in components or stores for server state—use hooks and the Payload SDK or custom client.
 
 **Rationale:** Single DB and a clear split (Payload REST for CRUD, custom routes for app ops) are easier to reason about; "why we don't" is in **docs/11-tech-stack.mdx**.
+
+---
+
+## Private package publishing via Verdaccio
+
+**Decision:** Foundation packages are published to a **local Verdaccio registry** under the `@forge/*` scope. We publish `@forge/ui`, `@forge/shared`, `@forge/agent-engine`, and the convenience meta-package `@forge/dev-kit`. Domain packages stay private.
+
+**Rationale:** This keeps the public surface small while enabling external apps to adopt the workspace/editor architecture and Copilot utilities quickly. Verdaccio is local-first, fast, and avoids public npm while we iterate.

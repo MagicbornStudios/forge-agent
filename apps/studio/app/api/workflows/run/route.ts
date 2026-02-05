@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getWorkflow, runWorkflow, toSse } from '@forge/agent-engine';
-import { registerForgeWorkflows } from '@forge/agent-engine/domains/forge';
+import { registerForgeWorkflows } from '@forge/domain-forge/workflows';
 import type { WorkflowRunInput } from '@forge/shared/copilot/workflows';
 
 export const runtime = 'nodejs';
