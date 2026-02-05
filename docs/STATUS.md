@@ -1,4 +1,11 @@
+---
+created: 2026-02-04
+updated: 2026-02-04
+---
+
 # Status
+
+> **For coding agents.** See [Agent artifacts index](agent-artifacts.md) for the full list.
 
 ## Current
 
@@ -40,7 +47,7 @@
 4. Track any new build warnings in `docs/errors-and-attempts.md`.
 5. Re-run `pnpm --filter @forge/studio build` to confirm (CopilotKit action render fix: `ImageGenerateRender` / `StructuredOutputRender` now return `<></>` instead of `null`).
 
-**Roadmap remaining:** Vision/image input (model registry + chat upload); co-agents (documented, not used). Optional future: agent graphs/subgraphs in runtime. See [architecture/copilotkit-and-agents.md](docs/architecture/copilotkit-and-agents.md) Section 12.
+**Roadmap remaining:** Vision/image input (model registry + chat upload); co-agents (documented, not used). Optional future: agent graphs/subgraphs in runtime. See [architecture/03-copilotkit-and-agents.mdx](architecture/03-copilotkit-and-agents.mdx) Section 12.
 
 ## What changed (recent)
 

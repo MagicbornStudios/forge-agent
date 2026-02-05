@@ -1,6 +1,13 @@
+---
+created: 2026-02-04
+updated: 2026-02-04
+---
+
 # Architecture decision records
 
-When changing persistence or the data layer, read this file and **docs/tech-stack.md**. Update these docs when accepting or rejecting a significant choice.
+> **For coding agents.** See [Agent artifacts index](agent-artifacts.md) for the full list.
+
+When changing persistence or the data layer, read this file and **docs/11-tech-stack.mdx**. Update these docs when accepting or rejecting a significant choice.
 
 ---
 
@@ -48,4 +55,4 @@ When changing persistence or the data layer, read this file and **docs/tech-stac
 
 **Decision:** We do not split into multiple DBs or backends until product needs justify it. Collection CRUD uses Payload REST (Payload SDK) from the browser; non-CRUD uses our custom Next API and generated/manual client. No raw fetch in components or stores for server state—use hooks and the Payload SDK or custom client.
 
-**Rationale:** Single DB and a clear split (Payload REST for CRUD, custom routes for app ops) are easier to reason about; “why we don’t” is in **docs/tech-stack.md**.
+**Rationale:** Single DB and a clear split (Payload REST for CRUD, custom routes for app ops) are easier to reason about; “why we don’t” is in **docs/11-tech-stack.mdx**.

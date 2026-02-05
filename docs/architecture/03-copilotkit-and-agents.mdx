@@ -5,7 +5,7 @@ updated: 2026-02-04
 
 # CopilotKit and agents architecture
 
-Single source of truth for how the AI sidebar, context, actions, and runtime work. See also [ai-workspace-integration.md](../ai-workspace-integration.md) and [unified-workspace.md](./unified-workspace.md).
+Single source of truth for how the AI sidebar, context, actions, and runtime work. See also [15-ai-workspace-integration.mdx](../15-ai-workspace-integration.mdx) and [01-unified-workspace.mdx](./01-unified-workspace.mdx).
 
 ## 1. App and workspace hierarchy
 
@@ -61,7 +61,7 @@ Single source of truth for how the AI sidebar, context, actions, and runtime wor
 ## 7. Runtime and agent
 
 - **Single agent**: One BuiltInAgent (OpenRouter) in `apps/studio/app/api/copilotkit/route.ts`. Model resolved per request via model router or `x-forge-model` override. 429/5xx trigger auto-switch cooldown.
-- **Co-agents**: Documented in [co-agents-and-multi-agent.md](../co-agents-and-multi-agent.md); not used in the app yet.
+- **Co-agents**: Documented in [17-co-agents-and-multi-agent.mdx](../17-co-agents-and-multi-agent.mdx); not used in the app yet.
 
 ## 8. Image generation
 
@@ -89,11 +89,11 @@ Single source of truth for how the AI sidebar, context, actions, and runtime wor
 | Item | Status | Notes |
 |------|--------|--------|
 | **Vision / image input** | Missing | Model registry has no `supportsVision`; chat has no image upload. Future: add flag to model def, support image parts in messages. |
-| **Co-agents** | Documented, not used | Pattern in [co-agents-and-multi-agent.md](../co-agents-and-multi-agent.md). When needed: add `useCoAgent` (or equivalent) per workspace/flow. |
+| **Co-agents** | Documented, not used | Pattern in [17-co-agents-and-multi-agent.mdx](../17-co-agents-and-multi-agent.mdx). When needed: add `useCoAgent` (or equivalent) per workspace/flow. |
 | **Workflow graphs (internal engine)** | Implemented (minimal) | `packages/agent-engine` defines steps + events; `POST /api/workflows/run` streams plan/patch/review over SSE. Used as the base pattern for plan -> propose -> review. |
 | **Graphs / subgraphs (e.g. LangGraph)** | Future | We currently use the minimal workflow engine above. If we add LangGraph, it replaces the executor, not the domain contracts. |
 
-Image generation (Section 8), structured output (Section 10), and plan-execute-review-commit (Section 11) are implemented. See [ai-workspace-integration.md](../ai-workspace-integration.md#missing--roadmap) and [STATUS.md](../STATUS.md) for status. To add more AI (actions, agents, future graphs), see [08 - Adding AI to workspaces](../how-to/08-adding-ai-to-workspaces.md).
+Image generation (Section 8), structured output (Section 10), and plan-execute-review-commit (Section 11) are implemented. See [15-ai-workspace-integration.mdx](../15-ai-workspace-integration.mdx#missing--roadmap) and [STATUS.md](../STATUS.md) for status. To add more AI (actions, agents, future graphs), see [08 - Adding AI to workspaces](../how-to/08-adding-ai-to-workspaces.mdx).
 
 ## 13. Conventions
 

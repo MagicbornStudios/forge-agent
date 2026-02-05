@@ -19,7 +19,7 @@ export default function DocsLayout({
           {DOC_ENTRIES.map(({ slug, label }) => (
             <Link
               key={slug}
-              href={slug === '00-index' ? '/docs' : `/docs/${slug}`}
+              href={slug === '00-docs-index' ? '/docs' : slug === '00-index' ? '/docs/00-index' : `/docs/${slug}`}
               className="rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
             >
               {label}

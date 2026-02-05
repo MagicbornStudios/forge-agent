@@ -1,4 +1,11 @@
+---
+created: 2026-02-04
+updated: 2026-02-04
+---
+
 # Forge Agent - Agent rules
+
+**Agent artifact index:** See [docs/agent-artifacts.md](docs/agent-artifacts.md) for the full list of agent-only docs (STATUS, decisions, errors-and-attempts, all AGENTS.md). **Strategy and conventions:** [docs/coding-agent-strategy.md](docs/coding-agent-strategy.md).
 
 ## Workspace Platform Engineer
 
@@ -41,7 +48,7 @@ When touching workspaces (Forge, Writer, etc.): use the shared shell from `@forg
 
 ## Persistence and data layer
 
-- **Read** `docs/decisions.md` and `docs/tech-stack.md` when changing persistence or the data layer (TanStack Query, Zustand drafts, API routes, localStorage).
+- **Read** `docs/decisions.md` and `docs/11-tech-stack.mdx` when changing persistence or the data layer (TanStack Query, Zustand drafts, API routes, localStorage).
 - **Update** those docs when making or rejecting a significant choice (e.g. adding a new backend, changing the client boundary).
 - **Keep one API boundary:** client talks only to our Next API routes; no direct Payload REST/GraphQL from the browser.
 - **API client:** Collection CRUD uses the **Payload SDK** (`lib/api-client/payload-sdk.ts`) against Payload REST (`/api/forge-graphs`, `/api/video-docs`). Custom endpoints (auth, settings, AI, model config, SSE) use the generated client or manual handlers (`workflows.ts`). Use the TanStack Query hooks in `apps/studio/lib/data/hooks/` for server state; do not use raw `fetch` in components or stores. Swagger UI at `/api-doc`, spec at `/api/docs` (custom routes only).

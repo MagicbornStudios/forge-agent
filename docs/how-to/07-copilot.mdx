@@ -1,6 +1,11 @@
+---
+created: 2026-02-04
+updated: 2026-02-04
+---
+
 # 07 - Copilot and AI integration
 
-Context, actions, suggestions, highlights; plan-execute-review-commit; app-level actions. Single source of truth: [architecture/copilotkit-and-agents.md](../architecture/copilotkit-and-agents.md).
+Context, actions, suggestions, highlights; plan-execute-review-commit; app-level actions. Single source of truth: [architecture/03-copilotkit-and-agents.mdx](../architecture/03-copilotkit-and-agents.mdx).
 
 ## Context (what the agent sees)
 
@@ -20,11 +25,11 @@ Context, actions, suggestions, highlights; plan-execute-review-commit; app-level
 
 ## Plan-execute-review-commit
 
-Forge (and any workspace that adopts it): create plan (no draft change) -> plan renders inline in chat via **PlanCard** with Apply/Dismiss -> execute plan (apply steps, set pending) -> **WorkspaceReviewBar** (Revert / Accept) -> commit (save). See Section 11 in [architecture/copilotkit-and-agents.md](../architecture/copilotkit-and-agents.md).
+Forge (and any workspace that adopts it): create plan (no draft change) -> plan renders inline in chat via **PlanCard** with Apply/Dismiss -> execute plan (apply steps, set pending) -> **WorkspaceReviewBar** (Revert / Accept) -> commit (save). See Section 11 in [architecture/03-copilotkit-and-agents.mdx](../architecture/03-copilotkit-and-agents.mdx).
 
 ## What the AI can do (summary)
 
-At full integration: read workspace and domain context; run shell and domain actions; for Forge, create/execute plan and commit after review; use app actions for image generation and structured output. Co-agents are documented but not used yet; see [co-agents-and-multi-agent.md](../co-agents-and-multi-agent.md).
+At full integration: read workspace and domain context; run shell and domain actions; for Forge, create/execute plan and commit after review; use app actions for image generation and structured output. Co-agents are documented but not used yet; see [17-co-agents-and-multi-agent.mdx](../17-co-agents-and-multi-agent.mdx).
 
 See also: [08 - Adding AI to workspaces](08-adding-ai-to-workspaces.md).
 

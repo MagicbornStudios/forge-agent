@@ -8,16 +8,21 @@ import { DOC_ENTRIES, type DocSlug } from '../docs-config';
 
 const VALID_SLUGS = new Set(DOC_ENTRIES.map((e) => e.slug));
 
-function getHowToPaths(slug: string): string[] {
-  const repoRoot = path.join(process.cwd(), '..', '..');
-  const base = path.join(repoRoot, 'docs', 'how-to', slug);
+const REPO_ROOT = path.join(process.cwd(), '..', '..');
+
+function getDocPaths(slug: string): string[] {
+  if (slug === '00-docs-index') {
+    const base = path.join(REPO_ROOT, 'docs', slug);
+    return [`${base}.mdx`, `${base}.md`];
+  }
+  const base = path.join(REPO_ROOT, 'docs', 'how-to', slug);
   return [`${base}.mdx`, `${base}.md`];
 }
 
 async function getMarkdown(slug: string): Promise<string | null> {
   if (!VALID_SLUGS.has(slug as DocSlug)) return null;
   try {
-    const candidates = getHowToPaths(slug);
+    const candidates = getDocPaths(slug);
     for (const filePath of candidates) {
       try {
         return await readFile(filePath, 'utf-8');
@@ -38,10 +43,15 @@ export default async function DocPage({
 }) {
   const { slug: slugSegments } = await params;
   const slug =
-    slugSegments && slugSegments.length > 0 ? slugSegments[0]! : '00-index';
+    slugSegments && slugSegments.length > 0 ? slugSegments[0]! : '00-docs-index';
 
-  const content = await getMarkdown(slug);
+  let content = await getMarkdown(slug);
   if (content == null) notFound();
+
+  if (content.startsWith('---')) {
+    const end = content.indexOf('\n---', 3);
+    if (end !== -1) content = content.slice(end + 4);
+  }
 
   return (
     <article className="doc-content max-w-3xl text-foreground [&_h1]:mb-4 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:mb-3 [&_h2]:mt-8 [&_h2]:text-xl [&_h3]:mb-2 [&_h3]:mt-4 [&_h3]:text-lg [&_p]:mb-3 [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_table]:w-full [&_th]:border [&_th]:border-border [&_th]:bg-muted/50 [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_blockquote]:border-l-4 [&_blockquote]:border-primary [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground">
@@ -57,8 +67,10 @@ export default async function DocPage({
               );
             }
             const howToMatch = href?.match(/^(?:\.\/)?(\d{2}-[a-z0-9-]+)\.(md|mdx)$/i);
-            if (howToMatch && VALID_SLUGS.has(howToMatch[1] as DocSlug)) {
-              const docHref = howToMatch[1] === '00-index' ? '/docs' : `/docs/${howToMatch[1]}`;
+            const howToPathMatch = href?.match(/^how-to\/(\d{2}-[a-z0-9-]+)\.(md|mdx)$/i);
+            const slug = howToMatch?.[1] ?? howToPathMatch?.[1];
+            if (slug && VALID_SLUGS.has(slug as DocSlug)) {
+              const docHref = slug === '00-index' ? '/docs/00-index' : slug === '00-docs-index' ? '/docs' : `/docs/${slug}`;
               return (
                 <Link href={docHref} className="text-primary hover:underline">
                   {children}

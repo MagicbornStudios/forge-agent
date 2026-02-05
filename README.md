@@ -1,72 +1,69 @@
+---
+created: 2026-02-04
+updated: 2026-02-04
+---
+
 # Forge Agent
 
-Forge Agent is an AI-first studio for editing dialogue graphs using CopilotKit and React Flow. The repo is a pnpm workspace with a single app (Studio) and shared packages.
+An AI-first studio for editing dialogue graphs: CopilotKit, React Flow, and a unified workspace shell. Build your own workspace, ship it, and contribute it back—we’re set up for that.
 
-## Structure
+## I just cloned this repo
 
-- `apps/studio/` - Next.js app (App Shell, workspaces, CopilotKit integration, Payload config).
-- `packages/shared/` - Shared workspace UI kit and headless contracts.
-- `packages/domain-forge/` - Forge domain logic (types, store, operations, copilot wiring).
-- `packages/ui/` - Shared shadcn UI atoms.
-- `packages/types/` - Payload-generated types and domain aliases used across packages.
-- `packages/agent-engine/` - Minimal workflow engine (steps + events) for plan -> patch -> review, streamed over SSE.
+**Prerequisites:** Node 20+, pnpm 9+
 
-## Setup
-
-1. Install dependencies:
-
-```bash
-pnpm install
-```
-
-2. Configure `.env.local` (example keys):
-
-```env
-OPENROUTER_API_KEY=sk-or-v1-...
-OPENAI_API_KEY=sk-or-v1-...
-PAYLOAD_SECRET=dev-secret-change-me
-```
-
-3. Generate Payload types (after any collection changes):
-
-```bash
-pnpm payload:types
-```
-
-4. Run the studio app:
-
-```bash
-pnpm dev
-```
+1. **Install**
+   ```bash
+   pnpm install
+   ```
+2. **Environment** — Create `.env.local` at repo root with API keys and secrets. See [SETUP.md](SETUP.md) for the list (e.g. `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, `PAYLOAD_SECRET`).
+3. **Payload types** (run after any collection change):
+   ```bash
+   pnpm payload:types
+   ```
+4. **Run the app**
+   ```bash
+   pnpm dev
+   ```
+5. Open **http://localhost:3000**. You’ll see the Studio app (Forge / Video tabs) and can open **[/docs](http://localhost:3000/docs)** in the app for the full how-to series.
 
 ## Key commands
 
-- `pnpm dev` - Run Studio (same as `pnpm --filter @forge/studio dev`).
-- `pnpm build` - Build Studio.
-- `pnpm test` - Run tests (Studio only).
-- `pnpm payload:types` - Regenerate Payload types in `packages/types/src/payload-types.ts`.
-
-## Notes
-
-- Forge is the primary workspace. Video is a UI showcase only (not a priority).
-- Payload types are the source of truth for persisted shapes. Domain packages should import from `@forge/types`.
-- Patch operations are the common currency for AI proposals and draft updates.
+| Command | When to run |
+|--------|-------------|
+| `pnpm dev` | Start Studio (default from repo root). |
+| `pnpm build` | Build Studio (e.g. before deploy or to verify). |
+| `pnpm test` | Run tests (Studio). |
+| `pnpm payload:types` | After changing Payload collections; regenerates `packages/types/src/payload-types.ts`. |
 
 ## Documentation
 
-- **In-app docs**: Run the app and open [/docs](http://localhost:3000/docs) for the full how-to series and sidebar.
-- **How-to guides** (in order): Foundation -> Workspace shell and slots -> Styling -> Data and state -> Building a workspace -> ForgeWorkspace walkthrough -> Copilot and AI integration -> Adding AI to workspaces -> Twick video workspace. Content lives in `docs/how-to/` (00-09) as `.mdx` or `.md`; each guide states what the AI can do at that stage.
-- **Reference**: `docs/PROJECT-OVERVIEW.md`, `docs/STATUS.md`, `docs/architecture/copilotkit-and-agents.md`, `AGENTS.md`.
+- **Start here:** [docs/00-docs-index.mdx](docs/00-docs-index.mdx) — pick **human/contributor** or **coding agent** and follow the links.
+- **Setup details:** [SETUP.md](SETUP.md).
+- **How-tos (in order):** In-app [/docs](http://localhost:3000/docs) or [docs/how-to/00-index.mdx](docs/how-to/00-index.mdx) — 01 Foundation → 02 Workspace shell → 03 Styling → 04 Data and state → 05 Building a workspace → 06 ForgeWorkspace walkthrough → 07 Copilot → 08 Adding AI → 09 Twick workspace.
+- **Architecture:** [docs/architecture/](docs/architecture/) — [01-unified-workspace](docs/architecture/01-unified-workspace.mdx), [02-workspace-editor-architecture](docs/architecture/02-workspace-editor-architecture.mdx), [03-copilotkit-and-agents](docs/architecture/03-copilotkit-and-agents.mdx).
+- **For coding agents:** [docs/agent-artifacts.md](docs/agent-artifacts.md) (index of agent-only docs) and root [AGENTS.md](AGENTS.md).
 
-## Getting started as a new contributor
+## Contributing: build a workspace, then PR it
 
-1. Read `docs/STATUS.md` for what is true today and what is next.
-2. Read `AGENTS.md` and `packages/shared/src/shared/components/workspace/AGENTS.md` for workspace rules.
-3. Walk through the how-to series in order, especially:
-   - `docs/how-to/05-building-a-workspace.md`
-   - `docs/how-to/06-forge-workspace-walkthrough.mdx`
-   - `docs/how-to/09-twick-workspace.mdx`
-4. Use the workflow engine when adding AI proposals:
-   - Server stream: `apps/studio/app/api/workflows/run/route.ts`
-   - Client hook: `apps/studio/lib/ai/use-workflow-run.ts`
-5. Keep all edits in patch operations and apply them to the draft store before commit.
+We expect every new contributor to **build their own workspace** and **submit a PR** to add it under **`packages/shared/contributor_workspaces/`** so we can showcase community workspaces.
+
+1. Follow **[05 - Building a workspace](docs/how-to/05-building-a-workspace.mdx)** (and optionally [06 - ForgeWorkspace walkthrough](docs/how-to/06-forge-workspace-walkthrough.mdx) or [09 - Twick video workspace](docs/how-to/09-twick-workspace.mdx)).
+2. Implement your workspace (shell, slots, domain contract, optional AI actions).
+3. Open a PR that adds a subfolder under `packages/shared/contributor_workspaces/` (e.g. `my-awesome-workspace/`) with your code and a short README describing what it does and how to run it.
+
+See [packages/shared/contributor_workspaces/README.md](packages/shared/contributor_workspaces/README.md) for the contribution rules.
+
+## Repo structure
+
+- **`apps/studio/`** — Next.js app: App Shell, workspaces, CopilotKit, Payload config.
+- **`packages/shared/`** — Shared workspace UI kit and headless contracts.
+- **`packages/domain-forge/`** — Forge domain logic (types, store, operations, copilot wiring).
+- **`packages/ui/`** — Shared shadcn UI atoms.
+- **`packages/types/`** — Payload-generated types and domain aliases.
+- **`packages/agent-engine/`** — Workflow engine (steps + events) for plan → patch → review over SSE.
+
+## Notes
+
+- Forge is the primary workspace; Video is a UI showcase.
+- Payload types are the source of truth for persisted shapes; domains import from `@forge/types`.
+- Patch operations are the common currency for AI proposals and draft updates.

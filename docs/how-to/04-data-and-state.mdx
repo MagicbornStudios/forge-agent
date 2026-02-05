@@ -1,3 +1,8 @@
+---
+created: 2026-02-04
+updated: 2026-02-04
+---
+
 # 04 – Data and state
 
 Draft state (Zustand), server state (TanStack Query), and the rule: **client talks only to our Next API**.
@@ -8,7 +13,7 @@ Editable document state lives in Zustand stores (e.g. `apps/studio/lib/store.ts`
 
 ## Server state (TanStack Query)
 
-List and single-document data is fetched through Next API routes and cached with TanStack Query. Keys and hooks live in `apps/studio/lib/data/`: `keys.ts`, hooks in `hooks/` (e.g. `useGraphs`, `useGraph(id)`, `useSaveGraph`, `useCreateGraph`, `useVideoDocs`, `useCreateVideoDoc`). The hooks call the **OpenAPI-generated client** in `apps/studio/lib/api-client/` (generated from the spec at `/api/docs`). Do not use raw `fetch` for API routes. See [docs/decisions.md](../decisions.md) and [docs/tech-stack.md](../tech-stack.md).
+List and single-document data is fetched through Next API routes and cached with TanStack Query. Keys and hooks live in `apps/studio/lib/data/`: `keys.ts`, hooks in `hooks/` (e.g. `useGraphs`, `useGraph(id)`, `useSaveGraph`, `useCreateGraph`, `useVideoDocs`, `useCreateVideoDoc`). The hooks call the **OpenAPI-generated client** in `apps/studio/lib/api-client/` (generated from the spec at `/api/docs`). Do not use raw `fetch` for API routes. See [docs/decisions.md](../decisions.md) and [docs/11-tech-stack.mdx](../11-tech-stack.mdx).
 
 ## API boundary
 

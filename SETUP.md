@@ -1,3 +1,8 @@
+---
+created: 2026-02-04
+updated: 2026-02-04
+---
+
 # Forge Agent Setup
 
 > Monorepo note: the Studio app lives in `apps/studio`. Use `pnpm dev` from repo root.

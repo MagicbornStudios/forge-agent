@@ -1,4 +1,11 @@
+---
+created: 2026-02-04
+updated: 2026-02-04
+---
+
 # Errors and attempts (do not repeat)
+
+> **For coding agents.** See [Agent artifacts index](agent-artifacts.md) for the full list.
 
 Log of known failures and fixes so agents and developers avoid repeating the same mistakes.
 

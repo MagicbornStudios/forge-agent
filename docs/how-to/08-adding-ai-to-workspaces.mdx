@@ -1,6 +1,11 @@
+---
+created: 2026-02-04
+updated: 2026-02-04
+---
+
 # 08 - Adding AI to workspaces
 
-How to add more AI to the app: domain actions, app-level actions, agents, and (future) graphs/subgraphs. Single source of truth for architecture: [architecture/copilotkit-and-agents.md](../architecture/copilotkit-and-agents.md).
+How to add more AI to the app: domain actions, app-level actions, agents, and (future) graphs/subgraphs. Single source of truth for architecture: [architecture/03-copilotkit-and-agents.mdx](../architecture/03-copilotkit-and-agents.mdx).
 
 ## Overview
 
@@ -14,7 +19,7 @@ How to add more AI to the app: domain actions, app-level actions, agents, and (f
 2. In the workspace component, call **useDomainCopilot(contract, { toolsEnabled })**. Only one workspace is mounted at a time, so only that domain's actions are active.
 3. **References:** Forge = [packages/domain-forge/src/copilot](../../packages/domain-forge/src/copilot), Video = [apps/studio/lib/domains/video/copilot](../../apps/studio/lib/domains/video/copilot).
 
-Step-by-step: [adding-domain-actions.md](../adding-domain-actions.md).
+Step-by-step: [14-adding-domain-actions.mdx](../14-adding-domain-actions.mdx).
 
 ## Adding app-level actions
 
@@ -25,7 +30,7 @@ Step-by-step: [adding-domain-actions.md](../adding-domain-actions.md).
 ## Agents
 
 - **Today:** Single agent in [apps/studio/app/api/copilotkit/route.ts](../../apps/studio/app/api/copilotkit/route.ts) (OpenRouter).
-- **Adding another agent** (e.g. co-agent per workspace): see [co-agents-and-multi-agent.md](../co-agents-and-multi-agent.md). No code changes in this guide.
+- **Adding another agent** (e.g. co-agent per workspace): see [17-co-agents-and-multi-agent.mdx](../17-co-agents-and-multi-agent.mdx). No code changes in this guide.
 
 ## Workflow graphs (internal engine)
 

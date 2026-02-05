@@ -87,4 +87,4 @@ Use the shared primitives so every control supports `tooltip` / `tooltipDisabled
 - **Themes**: `WorkspaceShell` accepts an optional `theme` override. If omitted, the workspace inherits the app theme.
 - **Toolbar standard**: Include File menu + Project select + Settings in workspace toolbars.
 
-See [AGENTS.md](./AGENTS.md) and **docs/architecture/workspace-editor-architecture.md** for vocabulary and contracts.
+See [AGENTS.md](./AGENTS.md) and **docs/architecture/02-workspace-editor-architecture.mdx** for vocabulary and contracts.

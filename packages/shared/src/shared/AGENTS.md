@@ -19,7 +19,7 @@ Extend the workspace types and `WorkspaceLayoutGrid` (or equivalent) in `package
 
 ## Unified workspace / Copilot
 
-- Shell-level context and actions live in `apps/studio/components/AppShell.tsx` (not in shared). Shared provides `DomainCopilotContract`, `useDomainCopilot`, and `agent-types` for per-workspace and co-agent use. See root **AGENTS.md** and **docs/co-agents-and-multi-agent.md**.
+- Shell-level context and actions live in `apps/studio/components/AppShell.tsx` (not in shared). Shared provides `DomainCopilotContract`, `useDomainCopilot`, and `agent-types` for per-workspace and co-agent use. See root **AGENTS.md** and **docs/17-co-agents-and-multi-agent.mdx**.
 
 ## Pitfalls
 

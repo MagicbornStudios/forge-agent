@@ -1,8 +1,9 @@
 /**
- * Doc slugs and labels for the how-to sidebar.
- * Files live in repo root: docs/how-to/<slug>.mdx (or .md fallback).
+ * Doc slugs and labels for the docs sidebar.
+ * Start-here index: docs/<slug>.mdx. How-tos: docs/how-to/<slug>.mdx (or .md fallback).
  */
 export const DOC_ENTRIES = [
+  { slug: '00-docs-index', label: 'Start here' },
   { slug: '00-index', label: 'How-to guides' },
   { slug: '01-foundation', label: '01 - Foundation' },
   { slug: '02-workspace-shell', label: '02 - Workspace shell and slots' },

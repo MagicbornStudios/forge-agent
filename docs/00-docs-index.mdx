@@ -1,0 +1,58 @@
+---
+created: 2026-02-04
+updated: 2026-02-04
+---
+
+# Documentation index
+
+Start here. Pick your path: **human / contributor** or **coding agent**.
+
+---
+
+## I'm human / contributing
+
+### 1. How-to guides (read in order)
+
+The numbered guides build a workspace from the ground up. In the app, open **[Docs](/docs)** in the sidebar, or read in the repo:
+
+| # | Guide | Summary |
+|---|--------|--------|
+| 1 | [Foundation](how-to/01-foundation.md) | Repo structure, packages, running the app, key concepts. |
+| 2 | [Workspace shell and slots](how-to/02-workspace-shell.md) | WorkspaceShell, Header, Toolbar, LayoutGrid, StatusBar, Overlays. |
+| 3 | [Styling and theming](how-to/03-styling.md) | Design tokens, data-theme, @forge/ui, shared styles. |
+| 4 | [Data and state](how-to/04-data-and-state.md) | Draft (Zustand), server state (TanStack Query), API boundary. |
+| 5 | [Building a workspace from scratch](how-to/05-building-a-workspace.md) | Step-by-step: shell, main, inspector, toolbar, domain contract. |
+| 6 | [ForgeWorkspace walkthrough](how-to/06-forge-workspace-walkthrough.mdx) | How ForgeWorkspace is built; plan, patch, review, commit. |
+| 7 | [Copilot and AI integration](how-to/07-copilot.md) | Context, actions, suggestions, plan-execute-review-commit. |
+| 8 | [Adding AI to workspaces](how-to/08-adding-ai-to-workspaces.md) | Domain actions, app-level actions, agents. |
+| 9 | [Twick video workspace](how-to/09-twick-workspace.mdx) | Timeline UI, Twick-inspired data flow, AI actions. |
+
+Full how-to index: [how-to/00-index.md](how-to/00-index.md).
+
+### 2. Architecture and reference
+
+- [Unified workspace](architecture/01-unified-workspace.mdx)
+- [Workspace editor architecture](architecture/02-workspace-editor-architecture.mdx)
+- [CopilotKit and agents](architecture/03-copilotkit-and-agents.mdx)
+- [Project overview](10-project-overview.mdx)
+- [Tech stack](11-tech-stack.mdx)
+- [Design: styling and theming](design/01-styling-and-theming.mdx)
+- [Workspace design](12-workspace-design.mdx)
+- [Code organization](13-code-organization.mdx)
+- [Adding domain actions](14-adding-domain-actions.mdx)
+- [AI workspace integration](15-ai-workspace-integration.mdx)
+- [CopilotKit workspace integration](16-copilotkit-workspace-integration.mdx)
+- [Co-agents and multi-agent](17-co-agents-and-multi-agent.mdx)
+
+### 3. Contributor workspace requirement
+
+We expect every new contributor to **build their own workspace** (tutorial: [05 - Building a workspace](how-to/05-building-a-workspace.mdx)) and **submit a PR** to add it under **`packages/shared/contributor_workspaces/`**. See the [README](../README.md) contributor section and [contributor_workspaces README](../packages/shared/contributor_workspaces/README.md).
+
+---
+
+## I'm a coding agent
+
+1. **Start:** [Agent artifacts index](agent-artifacts.md) and root [AGENTS.md](../AGENTS.md).
+2. **Then:** [Coding agent strategy](coding-agent-strategy.md) — how we use and extend these artifacts, and how to implement your own workflows or benchmarking.
+
+Human-facing guides under `docs/` are in MDX where possible for richer in-app reading; agent artifacts stay in `.md` for greppability and simplicity. **Documentation conventions** (human vs agent, format, number prefixes for official docs): see [agent-artifacts.md](agent-artifacts.md#documentation-conventions-human-vs-agent).

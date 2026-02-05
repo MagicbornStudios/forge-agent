@@ -53,13 +53,13 @@ Planned capabilities not yet implemented:
 | **Structured output** | Done | `app_respondWithStructure` + `/api/structured-output` with predefined schemas. |
 | **Plan → execute → review → commit** | Done (Forge) | `forge_createPlan`, `forge_executePlan`, review bar (Revert/Accept), `forge_commit`. |
 | **Vision / image input** | Missing | Model registry has no `supportsVision`; no image upload in chat. |
-| **Co-agents** | Documented, not used | See [co-agents-and-multi-agent.md](./co-agents-and-multi-agent.md). |
+| **Co-agents** | Documented, not used | See [17-co-agents-and-multi-agent.mdx](./17-co-agents-and-multi-agent.mdx). |
 
-See [architecture/copilotkit-and-agents.md](./architecture/copilotkit-and-agents.md) for full architecture, roadmap, and conventions (§13: one contract per domain, app_ prefix, new features as slices).
+See [architecture/03-copilotkit-and-agents.mdx](./architecture/03-copilotkit-and-agents.mdx) for full architecture, roadmap, and conventions (§13: one contract per domain, app_ prefix, new features as slices).
 
 ## References
 
 - **Context + actions** - `apps/studio/components/workspaces/ForgeWorkspace.tsx` (Forge), `packages/domain-forge/src/copilot`, `useDomainCopilot`.
 - **Capabilities contract** - `packages/shared/src/shared/workspace/capabilities.ts` (`getSelection`, `getContextSnapshot`, `revealSelection`).
-- **Adding a new domain** - See [adding-domain-actions.md](./adding-domain-actions.md).
-- **Architecture** - [architecture/copilotkit-and-agents.md](./architecture/copilotkit-and-agents.md), [architecture/workspace-editor-architecture.md](./architecture/workspace-editor-architecture.md) (AI-first, unified API).
+- **Adding a new domain** - See [14-adding-domain-actions.mdx](./14-adding-domain-actions.mdx).
+- **Architecture** - [architecture/03-copilotkit-and-agents.mdx](./architecture/03-copilotkit-and-agents.mdx), [architecture/02-workspace-editor-architecture.mdx](./architecture/02-workspace-editor-architecture.mdx) (AI-first, unified API).
