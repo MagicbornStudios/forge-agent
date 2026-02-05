@@ -17,6 +17,7 @@ import { useEntitlements, CAPABILITIES } from '@forge/shared/entitlements';
 import { ImageGenerateRender } from '@/components/copilot/ImageGenerateRender';
 import { StructuredOutputRender } from '@/components/copilot/StructuredOutputRender';
 import { AiService } from '@/lib/api-client';
+import { createAppAction } from '@forge/shared/copilot';
 
 export function AppShell() {
   const { route, setActiveWorkspace, openWorkspace, closeWorkspace } = useAppShellStore();
@@ -39,7 +40,7 @@ export function AppShell() {
     },
   });
 
-  useCopilotAction({
+  useCopilotAction(createAppAction({
     name: 'switchWorkspace',
     description: 'Switch the active workspace tab. Use when the user asks to go to Forge or Video.',
     parameters: [
@@ -58,9 +59,9 @@ export function AppShell() {
       }
       return { success: false, message: `Unknown workspace: ${workspaceId}. Use "forge" or "video".` };
     },
-  });
+  }));
 
-  useCopilotAction({
+  useCopilotAction(createAppAction({
     name: 'openWorkspace',
     description: 'Open a workspace tab if not already open, and switch to it.',
     parameters: [
@@ -79,9 +80,9 @@ export function AppShell() {
       }
       return { success: false, message: `Unknown workspace: ${workspaceId}.` };
     },
-  });
+  }));
 
-  useCopilotAction({
+  useCopilotAction(createAppAction({
     name: 'closeWorkspace',
     description: 'Close a workspace tab. Must have at least one open.',
     parameters: [
@@ -103,9 +104,9 @@ export function AppShell() {
       }
       return { success: false, message: `Unknown workspace: ${workspaceId}.` };
     },
-  });
+  }));
 
-  useCopilotAction({
+  useCopilotAction(createAppAction({
     name: 'app_generateImage',
     description:
       'Generate an image from a text prompt. Use when the user asks to create, draw, or generate an image.',
@@ -154,9 +155,9 @@ export function AppShell() {
     },
     render: ImageGenerateRender,
     ...(imageGenEnabled ? {} : { available: 'disabled' as const }),
-  });
+  }));
 
-  useCopilotAction({
+  useCopilotAction(createAppAction({
     name: 'app_respondWithStructure',
     description:
       'Extract or produce structured data (JSON) from a prompt. Use when the user wants a list of characters, key-value pairs, or other structured output. Choose schemaName to match the request: "characters" for character lists, "keyValue" for key-value pairs, "list" for a simple string list.',
@@ -187,7 +188,7 @@ export function AppShell() {
       }
     },
     render: StructuredOutputRender,
-  });
+  }));
 
   return (
     <AppLayout>

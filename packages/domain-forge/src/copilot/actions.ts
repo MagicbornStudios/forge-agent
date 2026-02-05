@@ -1,4 +1,5 @@
 import type { CopilotActionConfig, AIHighlightPayload } from '@forge/shared/copilot/types';
+import { createDomainAction } from '@forge/shared/copilot';
 import type { ReactNode } from 'react';
 import type { ForgeGraphDoc, ForgeGraphPatchOp, ForgeNodeType } from '@forge/types/graph';
 import { FORGE_NODE_TYPE } from '@forge/types/graph';
@@ -12,13 +13,13 @@ export interface ForgeActionsDeps {
   openOverlay: (id: string, payload?: Record<string, unknown>) => void;
   revealSelection: () => void;
   createNodeOverlayId: string;
-  /** Optional: plan API for forge_createPlan. When absent, createPlan is no-op. */
+  /** Optional: plan API for createPlan. When absent, createPlan is no-op. */
   createPlanApi?: (goal: string, graphSummary: unknown) => Promise<{ steps: unknown[] }>;
   /** Optional: set pending-from-plan flag for review UI. */
   setPendingFromPlan?: (value: boolean) => void;
-  /** Optional: persist draft (save). Used by forge_commit. */
+  /** Optional: persist draft (save). Used by commit. */
   commitGraph?: () => Promise<void>;
-  /** Optional: render plan UI in chat for forge_createPlan. */
+  /** Optional: render plan UI in chat for createPlan. */
   renderPlan?: (props: {
     status: string;
     args: Record<string, unknown>;
@@ -29,8 +30,8 @@ export interface ForgeActionsDeps {
 /**
  * Factory: produce all CopilotKit action configs for the forge domain.
  *
- * All action names are prefixed with `forge_` to prevent collisions
- * when multiple domains register simultaneously.
+ * Action names are prefixed via createDomainAction('forge', ...)
+ * to prevent collisions when multiple domains register simultaneously.
  */
 export function createForgeActions(deps: ForgeActionsDeps): CopilotActionConfig[] {
   const {
@@ -46,12 +47,12 @@ export function createForgeActions(deps: ForgeActionsDeps): CopilotActionConfig[
     renderPlan,
   } = deps;
 
-  return [
+  const actions: CopilotActionConfig[] = [
     // -----------------------------------------------------------------------
-    // forge_createNode
+    // createNode
     // -----------------------------------------------------------------------
     {
-      name: 'forge_createNode',
+      name: 'createNode',
       description:
         'Create a new node in the dialogue graph. Use this when the user wants to add a character dialogue, player choice, or conditional logic node.',
       parameters: [
@@ -99,10 +100,10 @@ export function createForgeActions(deps: ForgeActionsDeps): CopilotActionConfig[
     },
 
     // -----------------------------------------------------------------------
-    // forge_updateNode
+    // updateNode
     // -----------------------------------------------------------------------
     {
-      name: 'forge_updateNode',
+      name: 'updateNode',
       description:
         'Update properties of an existing node. Use this when the user wants to change node content, label, or other properties.',
       parameters: [
@@ -127,10 +128,10 @@ export function createForgeActions(deps: ForgeActionsDeps): CopilotActionConfig[
     },
 
     // -----------------------------------------------------------------------
-    // forge_deleteNode
+    // deleteNode
     // -----------------------------------------------------------------------
     {
-      name: 'forge_deleteNode',
+      name: 'deleteNode',
       description: 'Delete a node from the graph. This also removes connected edges.',
       parameters: [
         { name: 'nodeId', type: 'string' as const, description: 'The ID of the node to delete', required: true },
@@ -144,12 +145,12 @@ export function createForgeActions(deps: ForgeActionsDeps): CopilotActionConfig[
     },
 
     // -----------------------------------------------------------------------
-    // forge_createEdge
+    // createEdge
     // -----------------------------------------------------------------------
     {
-      name: 'forge_createEdge',
+      name: 'createEdge',
       description:
-        'Create a connection between two nodes. Call forge_getGraph to get node ids, or use nodeId from forge_createNode response.',
+        'Create a connection between two nodes. Call getGraph to get node ids, or use nodeId from createNode response.',
       parameters: [
         { name: 'sourceNodeId', type: 'string' as const, description: 'Source node id', required: true },
         { name: 'targetNodeId', type: 'string' as const, description: 'Target node id', required: true },
@@ -170,12 +171,12 @@ export function createForgeActions(deps: ForgeActionsDeps): CopilotActionConfig[
     },
 
     // -----------------------------------------------------------------------
-    // forge_getGraph
+    // getGraph
     // -----------------------------------------------------------------------
     {
-      name: 'forge_getGraph',
+      name: 'getGraph',
       description:
-        'Get the current graph state including every node id and edge. Call this before forge_createEdge to get source and target node ids.',
+        'Get the current graph state including every node id and edge. Call this before createEdge to get source and target node ids.',
       parameters: [],
       handler: async () => {
         const graph = getGraph();
@@ -206,10 +207,10 @@ export function createForgeActions(deps: ForgeActionsDeps): CopilotActionConfig[
     },
 
     // -----------------------------------------------------------------------
-    // forge_openCreateNodeModal
+    // openCreateNodeModal
     // -----------------------------------------------------------------------
     {
-      name: 'forge_openCreateNodeModal',
+      name: 'openCreateNodeModal',
       description:
         'Open the "Create node" overlay so the user can add a new node via the form. Optionally pre-fill fields.',
       parameters: [
@@ -230,10 +231,10 @@ export function createForgeActions(deps: ForgeActionsDeps): CopilotActionConfig[
     },
 
     // -----------------------------------------------------------------------
-    // forge_revealSelection
+    // revealSelection
     // -----------------------------------------------------------------------
     {
-      name: 'forge_revealSelection',
+      name: 'revealSelection',
       description:
         'Fit the viewport to the current selection (selected node or edge), or fit all nodes if nothing is selected.',
       parameters: [],
@@ -244,12 +245,12 @@ export function createForgeActions(deps: ForgeActionsDeps): CopilotActionConfig[
     },
 
     // -----------------------------------------------------------------------
-    // forge_createPlan
+    // createPlan
     // -----------------------------------------------------------------------
     {
-      name: 'forge_createPlan',
+      name: 'createPlan',
       description:
-        'Create a plan (list of graph operations) for a goal without applying them. Use when the user wants to preview or review changes before executing. Call forge_executePlan with the returned steps to apply.',
+        'Create a plan (list of graph operations) for a goal without applying them. Use when the user wants to preview or review changes before executing. Call executePlan with the returned steps to apply.',
       parameters: [
         { name: 'goal', type: 'string' as const, description: 'What to achieve (e.g. "Add 3 character nodes and connect them")', required: true },
       ],
@@ -277,17 +278,17 @@ export function createForgeActions(deps: ForgeActionsDeps): CopilotActionConfig[
     },
 
     // -----------------------------------------------------------------------
-    // forge_executePlan
+    // executePlan
     // -----------------------------------------------------------------------
     {
-      name: 'forge_executePlan',
+      name: 'executePlan',
       description:
-        'Execute a plan (list of steps from forge_createPlan). Applies each operation to the graph and highlights changes. Use after forge_createPlan when the user approves.',
+        'Execute a plan (list of steps from createPlan). Applies each operation to the graph and highlights changes. Use after createPlan when the user approves.',
       parameters: [
         {
           name: 'steps',
           type: 'object' as const,
-          description: 'Array of plan steps (from forge_createPlan result). Each has type and args.',
+          description: 'Array of plan steps (from createPlan result). Each has type and args.',
           required: true,
         },
       ],
@@ -324,10 +325,10 @@ export function createForgeActions(deps: ForgeActionsDeps): CopilotActionConfig[
     },
 
     // -----------------------------------------------------------------------
-    // forge_commit
+    // commit
     // -----------------------------------------------------------------------
     {
-      name: 'forge_commit',
+      name: 'commit',
       description: 'Save the current graph to the server (persist draft). Use after reviewing changes.',
       parameters: [],
       handler: async () => {
@@ -344,5 +345,7 @@ export function createForgeActions(deps: ForgeActionsDeps): CopilotActionConfig[
       },
     },
   ];
+
+  return actions.map((action) => createDomainAction('forge', action));
 }
 

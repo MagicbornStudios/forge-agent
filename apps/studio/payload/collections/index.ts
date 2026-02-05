@@ -4,6 +4,9 @@ import { ForgeGraphs } from './forge-graphs.ts';
 import { VideoDocs } from './video-docs.ts';
 import { SettingsOverrides } from './settings-overrides.ts';
 import { AgentSessions } from './agent-sessions.ts';
+import { Waitlist } from './waitlist.ts';
+import { NewsletterSubscribers } from './newsletter-subscribers.ts';
+import { Promotions } from './promotions.ts';
 
 export const collections = [
   Users,
@@ -12,6 +15,9 @@ export const collections = [
   VideoDocs,
   SettingsOverrides,
   AgentSessions,
+  Waitlist,
+  NewsletterSubscribers,
+  Promotions,
 ];
 
 export {
@@ -21,4 +27,7 @@ export {
   VideoDocs,
   SettingsOverrides,
   AgentSessions,
+  Waitlist,
+  NewsletterSubscribers,
+  Promotions,
 };

@@ -14,6 +14,8 @@
 @import "../../../packages/shared/src/shared/styles/contexts.css";
 @import "../../../packages/shared/src/shared/styles/graph.css";
 @import "../../../packages/shared/src/shared/styles/scrollbar.css";
+@import "@twick/timeline/dist/timeline.css";
+@import "@twick/studio/dist/studio.css";
 
 * {
   box-sizing: border-box;

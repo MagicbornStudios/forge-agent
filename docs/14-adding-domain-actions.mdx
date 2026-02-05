@@ -33,7 +33,7 @@ Keep the value minimal but enough for the agent to reason about state and select
 
 Actions are the way the agent changes the workspace. Define them in a **domain contract** that implements `DomainCopilotContract` (see `packages/shared/src/shared/copilot/types.ts`). The contract's **createActions()** returns an array of action configs. Forge: [packages/domain-forge/src/copilot/actions.ts](../../packages/domain-forge/src/copilot/actions.ts). Each action has:
 
-- **name** - Stable ID with domain prefix (e.g. `forge_createNode`, `forge_insertText`).
+- **name** - Stable ID with domain prefix. Use `createDomainAction('forge', config)` to enforce this (e.g. `createNode` → `forge_createNode`).
 - **description** - When and why the agent should use it.
 - **parameters** - Name, type, description, required/optional.
 - **handler** - Async function that performs the change (e.g. call store `applyOperations`, open overlay).

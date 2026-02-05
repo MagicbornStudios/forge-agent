@@ -1,6 +1,6 @@
 ---
 created: 2026-02-04
-updated: 2026-02-04
+updated: 2026-02-05
 ---
 
 # 06 - ForgeWorkspace walkthrough (React Flow + AI)
@@ -193,14 +193,36 @@ const handleRun = async () => {
 };
 ```
 
-Patch preview and review are shown in the same panel:
+Patch preview and review are shown in the same panel using shared UI atoms (`Card`, `Item`, `Badge`):
 
 ```tsx
 {state.patch && (
-  <div className="rounded-md border bg-muted/10 p-3 text-xs">
-    <div className="font-medium">Patch</div>
-    <pre>{JSON.stringify(state.patch.ops, null, 2)}</pre>
-  </div>
+  <Card className="bg-muted/10 text-xs shadow-none">
+    <CardHeader className="p-3 pb-2">
+      <div className="flex items-center justify-between">
+        <CardTitle className="text-xs">Patch</CardTitle>
+        <Badge variant="outline" className="text-[10px]">
+          {Array.isArray(state.patch.ops) ? state.patch.ops.length : 0} ops
+        </Badge>
+      </div>
+      <CardDescription className="text-[11px]">{state.patch.summary}</CardDescription>
+    </CardHeader>
+    <CardContent className="px-3 pb-3 pt-0">
+      <ItemGroup className="gap-2">
+        {(Array.isArray(state.patch.ops) ? state.patch.ops : []).map((op, index) => {
+          const item = describePatchOp(op as ForgeGraphPatchOp);
+          return (
+            <Item key={`${item.title}-${index}`} variant="outline" size="sm" className="bg-background/50">
+              <ItemContent>
+                <ItemTitle className="text-[11px]">{item.title}</ItemTitle>
+                {item.detail && <ItemDescription className="text-[11px]">{item.detail}</ItemDescription>}
+              </ItemContent>
+            </Item>
+          );
+        })}
+      </ItemGroup>
+    </CardContent>
+  </Card>
 )}
 ```
 
@@ -259,7 +281,7 @@ Expected behavior:
 To add a new operation:
 - Add a new `ForgeGraphPatchOp` variant in `packages/types/src/graph.ts`.
 - Update `applyPatchOperation` in `apps/studio/lib/graph-operations.ts`.
-- If AI should emit it, update `planStepToOp` in `packages/domain-forge/src/copilot/plan-utils.ts` and the workflow generator in `packages/agent-engine/src/domains/forge/plan-execute-review-commit.ts`.
+- If AI should emit it, update `planStepToOp` in `packages/domain-forge/src/copilot/plan-utils.ts` and the workflow generator in `packages/domain-forge/src/workflows/plan-execute-review-commit.ts`.
 - Add highlight mapping in `ForgeWorkflowPanel` if needed.
 
 ## What the AI can do at this stage

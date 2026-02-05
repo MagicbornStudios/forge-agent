@@ -1,14 +1,12 @@
 'use client';
 
 import React, { useEffect, useMemo, useState, createContext, useContext } from 'react';
-import { CopilotKit } from '@copilotkit/react-core';
-import { CopilotSidebar } from '@copilotkit/react-ui';
-import '@copilotkit/react-ui/styles.css';
 import { useAppShellStore } from '@/lib/app-shell/store';
 import { WORKSPACE_EDITOR_IDS, WORKSPACE_LABELS } from '@/lib/app-shell/workspace-metadata';
 import { useSettingsStore } from '@/lib/settings/store';
 import { useModelRouterStore } from '@/lib/model-router/store';
 import { CAPABILITIES, useEntitlements } from '@forge/shared/entitlements';
+import { ForgeCopilotProvider } from '@forge/shared/copilot/next';
 
 interface CopilotKitProviderProps {
   children: React.ReactNode;
@@ -145,25 +143,22 @@ export function CopilotKitProvider({
   ]);
 
   return (
-    <CopilotKit
+    <ForgeCopilotProvider
       runtimeUrl="/api/copilotkit"
       headers={headers}
       forwardedParameters={forwardedParameters}
-      {...(publicApiKey ? { publicApiKey } : {})}
+      publicApiKey={publicApiKey}
+      instructions={finalInstructions}
+      labels={{
+        title: sidebarTitle,
+        initial: sidebarInitial,
+      }}
+      open={isOpen}
+      onOpenChange={setIsOpen}
     >
       <CopilotSidebarContext.Provider value={{ isOpen, setIsOpen }}>
-        <CopilotSidebar
-          instructions={finalInstructions}
-          defaultOpen={isOpen}
-          labels={{
-            title: sidebarTitle,
-            initial: sidebarInitial,
-          }}
-          onSetOpen={setIsOpen}
-        >
-          {children}
-        </CopilotSidebar>
+        {children}
       </CopilotSidebarContext.Provider>
-    </CopilotKit>
+    </ForgeCopilotProvider>
   );
 }

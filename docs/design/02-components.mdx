@@ -1,0 +1,122 @@
+---
+created: 2026-02-05
+updated: 2026-02-05
+---
+
+# Design: components (atoms ? molecules ? organisms)
+
+This document catalogs the **shared components** we expose for consumers and contributors. It focuses on **real components in the repo** and how they map to our atomic design system.
+
+> **Rule of thumb:** import from `@forge/dev-kit` (or `@forge/ui` / `@forge/shared`) and keep domain code in your own app/workspace package.
+
+---
+
+## Atoms (`@forge/ui`)
+
+Shadcn/Radix primitives — always import from the **root** package.
+
+```ts
+import {
+  Button,
+  Input,
+  Textarea,
+  Badge,
+  Card,
+  CardHeader,
+  CardContent,
+  CardTitle,
+  CardDescription,
+  Item,
+  ItemGroup,
+  ItemContent,
+  ItemTitle,
+  ItemDescription,
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from '@forge/dev-kit';
+```
+
+### Core atoms we use constantly
+
+- **Button / Badge / Card** — structured surfaces and actions.
+- **Item / ItemGroup** — list rows and compact summaries (e.g. patch preview items).
+- **Form / FormField / FormItem** — React Hook Form helpers (see `CreateNodeModal` for the canonical pattern).
+
+---
+
+## Molecules (`@forge/shared`)
+
+Composable UI patterns built on atoms.
+
+### Workspace chrome
+
+- `WorkspaceShell`
+- `WorkspaceHeader` (Left / Center / Right slots)
+- `WorkspaceToolbar` (Menubar, Group, Button, ProjectSelect, Settings)
+- `WorkspaceLayoutGrid` (left / main / right / bottom slots)
+- `WorkspaceStatusBar`
+- `WorkspaceReviewBar`
+
+### Gating + AI
+
+- `FeatureGate` (lock/hide/disable)
+- `useDomainCopilot`, `DomainCopilotContract`
+- `PlanCard`, `PlanActionBar` (generative UI in chat)
+
+---
+
+## Organisms (app + domain)
+
+These live in the **app repo** and are not published.
+
+- `AppShell` — workspace tabs + active workspace routing.
+- `ForgeWorkspace` — React Flow editor + AI workflow panel.
+- `VideoWorkspace` — Twick editor skeleton + AI contract.
+
+---
+
+## Example: patch preview list (atoms + molecules)
+
+```tsx
+<Card className="bg-muted/10 text-xs shadow-none">
+  <CardHeader className="p-3 pb-2">
+    <div className="flex items-center justify-between">
+      <CardTitle className="text-xs">Patch</CardTitle>
+      <Badge variant="outline" className="text-[10px]">2 ops</Badge>
+    </div>
+    <CardDescription className="text-[11px]">Update node labels</CardDescription>
+  </CardHeader>
+  <CardContent className="px-3 pb-3 pt-0">
+    <ItemGroup className="gap-2">
+      <Item variant="outline" size="sm" className="bg-background/50">
+        <ItemContent>
+          <ItemTitle className="text-[11px]">Update node: start</ItemTitle>
+          <ItemDescription className="text-[11px]">Fields: label</ItemDescription>
+        </ItemContent>
+      </Item>
+    </ItemGroup>
+  </CardContent>
+</Card>
+```
+
+---
+
+## Example: modal form (atoms + molecules)
+
+See `apps/studio/components/CreateNodeModal.tsx` for the canonical form structure. The pattern:
+
+- `Form` wrapper from `@forge/ui`
+- `FormField` + `FormItem` + `FormControl`
+- `WorkspaceButton` for actions
+
+---
+
+## Consumer guidance
+
+- **Atoms:** import from `@forge/dev-kit` (or `@forge/ui`).
+- **Workspace shell + AI helpers:** import from `@forge/dev-kit` (or `@forge/shared`).
+- **Domain logic:** stays in your app/workspace package — not in the shared layer.

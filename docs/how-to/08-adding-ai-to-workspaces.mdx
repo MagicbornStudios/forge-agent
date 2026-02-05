@@ -1,6 +1,6 @@
 ---
 created: 2026-02-04
-updated: 2026-02-04
+updated: 2026-02-05
 ---
 
 # 08 - Adding AI to workspaces
@@ -11,25 +11,27 @@ How to add more AI to the app: domain actions, app-level actions, agents, and (f
 
 - **One CopilotKit provider**, one **OpenRouter** agent today. Model is resolved per request (model router or override).
 - **Context** = shell (AppShell) + active domain contract when a workspace is mounted.
-- **Actions** = shell (no prefix) + domain (`forge_` / `video_`) + app-level (`app_`). Only the active workspace's domain actions are registered.
+- **Actions** = shell + domain (`forge_` / `video_`) + app-level (`app_`). Use helper factories to prefix consistently.
 
 ## Adding domain actions
 
 1. Implement or extend a **DomainCopilotContract** ([packages/shared/src/shared/copilot/types.ts](../../packages/shared/src/shared/copilot/types.ts)): `getContextSnapshot()`, `getInstructions()`, `createActions()`, `getSuggestions()`, `onAIHighlight` / `clearAIHighlights`.
 2. In the workspace component, call **useDomainCopilot(contract, { toolsEnabled })**. Only one workspace is mounted at a time, so only that domain's actions are active.
-3. **References:** Forge = [packages/domain-forge/src/copilot](../../packages/domain-forge/src/copilot), Video = [apps/studio/lib/domains/video/copilot](../../apps/studio/lib/domains/video/copilot).
+3. Build action configs with `createDomainAction('forge', config)` (or your domain id). This keeps names consistent.
+4. **References:** Forge = [packages/domain-forge/src/copilot](../../packages/domain-forge/src/copilot), Video = [apps/studio/lib/domains/video/copilot](../../apps/studio/lib/domains/video/copilot).
 
 Step-by-step: [14-adding-domain-actions.mdx](../14-adding-domain-actions.mdx).
 
 ## Adding app-level actions
 
-1. Register in [AppShell.tsx](../../apps/studio/components/AppShell.tsx) with **useCopilotAction**: name prefix **`app_`** (e.g. `app_generateImage`, `app_respondWithStructure`).
+1. Register in [AppShell.tsx](../../apps/studio/components/AppShell.tsx) with **useCopilotAction** using `createAppAction(...)` (adds the `app_` prefix).
 2. Handler can call internal APIs (e.g. `/api/image-generate`, `/api/structured-output`). Optional **render** for chat UI; must return a **ReactElement** (no `null` -- use `<></>` as fallback).
 3. Gate by capability (e.g. `CAPABILITIES.IMAGE_GENERATION`) and pass **available: 'disabled'** when the feature is off.
 
 ## Agents
 
 - **Today:** Single agent in [apps/studio/app/api/copilotkit/route.ts](../../apps/studio/app/api/copilotkit/route.ts) (OpenRouter).
+- **Next.js wrapper:** `@forge/shared/copilot/next` exports `ForgeCopilotProvider` + `createForgeCopilotRuntime(...)` for fast adoption.
 - **Adding another agent** (e.g. co-agent per workspace): see [17-co-agents-and-multi-agent.mdx](../17-co-agents-and-multi-agent.mdx). No code changes in this guide.
 
 ## Workflow graphs (internal engine)
@@ -39,7 +41,7 @@ Step-by-step: [14-adding-domain-actions.mdx](../14-adding-domain-actions.mdx).
 
 ## Conventions recap
 
-- One contract per domain; **domain prefix** for domain actions; **`app_`** for app-level.
+- One contract per domain; use `createDomainAction()` / `createAppAction()` to prefix consistently.
 - Same number of actions every render; use **available: 'disabled'** when an action is contextually inactive.
 - **OpenRouter** is the model provider for chat, image gen, and structured output.
 

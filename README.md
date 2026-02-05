@@ -58,6 +58,7 @@ See [packages/shared/contributor_workspaces/README.md](packages/shared/contribut
 
 - **`apps/studio/`** — Next.js app: App Shell, workspaces, CopilotKit, Payload config.
 - **`packages/shared/`** — Shared workspace UI kit and headless contracts.
+- **`packages/dev-kit/`** — Meta-package that re-exports `@forge/ui`, `@forge/shared`, and `@forge/agent-engine` for consumers.
 - **`packages/domain-forge/`** — Forge domain logic (types, store, operations, copilot wiring).
 - **`packages/ui/`** — Shared shadcn UI atoms.
 - **`packages/types/`** — Payload-generated types and domain aliases.

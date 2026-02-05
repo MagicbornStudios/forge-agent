@@ -140,6 +140,7 @@ Usage:
 
 ```ts
 import { WorkspaceShell, WorkspaceLayoutGrid, Button } from '@forge/dev-kit';
+import { ForgeCopilotProvider, createForgeCopilotRuntime } from '@forge/dev-kit';
 ```
 
 ---
@@ -157,16 +158,25 @@ The contract is the same as this repo:
 2. Register **domain contracts** via `useDomainCopilot()` in each workspace.
 3. Provide app-level actions using helpers like `createAppAction()`.
 
+### Next.js runtime wrapper
+
+`@forge/shared` exports a **Next.js‑only** runtime wrapper and provider:
+
+- `createForgeCopilotRuntime(...)` — returns a `POST` handler for `/api/copilotkit`.
+- `ForgeCopilotProvider` — wraps `CopilotKit` + `CopilotSidebar` with minimal config props.
+
+This keeps adoption fast for Next apps without forcing a custom runtime.
+
 ---
 
 ## Action helper prefixes (whitelabeled)
 
 We expose helpers to keep action naming consistent:
 
-- `createAppAction()` ? prefixes `app_`
-- `createWorkspaceAction()` ? prefixes `workspace_`
-- `createEditorAction()` ? prefixes `editor_`
-- `createDomainAction(domain)` ? prefixes `<domain>_`
+- `createAppAction()` → prefixes `app_`
+- `createWorkspaceAction()` → prefixes `workspace_`
+- `createEditorAction()` → prefixes `editor_`
+- `createDomainAction(domain)` → prefixes `<domain>_`
 
 These live in `@forge/shared` and are exported alongside Copilot contracts.
 
@@ -182,7 +192,7 @@ These live in `@forge/shared` and are exported alongside Copilot contracts.
 
 ## Agent guidance
 
-- **Only publish foundation packages** (`@forge/ui`, `@forge/shared`).
+- **Only publish foundation packages** (`@forge/ui`, `@forge/shared`, `@forge/agent-engine`, `@forge/dev-kit`).
 - Keep `domain-*` private.
 - Avoid exporting app-specific code from shared.
 - Update this doc when the public surface or registry strategy changes.

@@ -34,6 +34,8 @@ Forge Agent is an AI-first studio for editing dialogue graphs. It focuses on:
 - **App Shell** (`apps/studio/components/AppShell.tsx`, `apps/studio/lib/app-shell/store.ts`): owns workspace tabs and active workspace. Only the active workspace is rendered.
 - **Workspaces**: Forge is primary. Video exists as a UI showcase only.
 - **Shared**: `packages/shared/src/shared` contains the workspace UI kit, headless contracts, and styling tokens.
+- **Agent engine**: `packages/agent-engine` provides the workflow runtime (steps + events + SSE helpers).
+- **Dev kit**: `packages/dev-kit` re-exports `@forge/ui`, `@forge/shared`, and `@forge/agent-engine` for consumers.
 - **Domains**: Forge logic lives in `packages/domain-forge` and consumes types from `packages/types`.
 - **Types**: Payload generates types into `packages/types/src/payload-types.ts`. Domain aliases live in `packages/types/src/payload.ts` and `packages/types/src/graph.ts`.
 - **Persistence**: Payload runs inside the Studio app. Collections live under `apps/studio/payload/collections`.
@@ -52,6 +54,8 @@ Note: API routes exist inside the Studio app for CopilotKit and Payload operatio
 | **apps/studio/payload/** | Payload config and collections for Studio. |
 | **apps/studio/lib/** | App logic (stores, model router, settings, graph operations, utils). |
 | **packages/shared/** | Shared workspace UI kit and headless contracts. |
+| **packages/agent-engine/** | Workflow runtime (steps + events + SSE). |
+| **packages/dev-kit/** | Meta-package that re-exports forge foundation packages for consumers. |
 | **packages/domain-forge/** | Forge domain logic (types, store, operations, copilot wiring). |
 | **packages/ui/** | Shared shadcn UI atoms (Radix-based primitives). |
 | **packages/types/** | Payload-generated types + domain aliases (source of truth). |

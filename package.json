@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "pnpm --filter @forge/studio dev",
     "dev:studio": "pnpm --filter @forge/studio dev",
+    "dev:marketing": "pnpm --filter @forge/marketing dev",
     "build": "pnpm --filter @forge/studio build",
     "start": "pnpm --filter @forge/studio start",
     "lint": "pnpm --filter @forge/studio lint",

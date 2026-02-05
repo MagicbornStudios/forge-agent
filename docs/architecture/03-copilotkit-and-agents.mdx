@@ -39,10 +39,10 @@ Single source of truth for how the AI sidebar, context, actions, and runtime wor
 
 | Layer   | Where | Actions |
 |--------|-------|--------|
-| Shell  | AppShell | `switchWorkspace`, `openWorkspace`, `closeWorkspace` (no prefix). |
+| Shell  | AppShell | `app_switchWorkspace`, `app_openWorkspace`, `app_closeWorkspace` (prefixed via `createAppAction`). |
 | Domain | `useDomainCopilotActions` | All from `contract.createActions()`; each registered with `useCopilotAction`. |
 
-- **Forge** (`packages/domain-forge/src/copilot/actions.ts`): `forge_createNode`, `forge_updateNode`, `forge_deleteNode`, `forge_createEdge`, `forge_getGraph`, `forge_openCreateNodeModal`, `forge_revealSelection`. Handlers call `applyOperations` (draft); optional `render` for generative UI in chat.
+- **Forge** (`packages/domain-forge/src/copilot/actions.ts`): `forge_createNode`, `forge_updateNode`, `forge_deleteNode`, `forge_createEdge`, `forge_getGraph`, `forge_openCreateNodeModal`, `forge_revealSelection`. Handlers call `applyOperations` (draft); optional `render` for generative UI in chat. Actions are prefixed via `createDomainAction('forge', ...)`.
 - **Video** (`apps/studio/lib/domains/video/copilot/actions.ts`): `video_*` (addTrack, addElement, setSceneOverride, etc.); same pattern.
 
 **Constraint:** Same number of actions every render; use `available: 'disabled'` for contextually inactive ones. Actions are immediate: no plan step or commit step today.
@@ -61,6 +61,7 @@ Single source of truth for how the AI sidebar, context, actions, and runtime wor
 ## 7. Runtime and agent
 
 - **Single agent**: One BuiltInAgent (OpenRouter) in `apps/studio/app/api/copilotkit/route.ts`. Model resolved per request via model router or `x-forge-model` override. 429/5xx trigger auto-switch cooldown.
+- **Next wrapper**: `@forge/shared/copilot/next` exports `createForgeCopilotRuntime(...)` and `ForgeCopilotProvider` for fast Next.js adoption.
 - **Co-agents**: Documented in [17-co-agents-and-multi-agent.mdx](../17-co-agents-and-multi-agent.mdx); not used in the app yet.
 
 ## 8. Image generation
@@ -97,6 +98,6 @@ Image generation (Section 8), structured output (Section 10), and plan-execute-r
 
 ## 13. Conventions
 
-- **One contract per domain**: All context/actions/suggestions/highlights go through `DomainCopilotContract`. App-level actions use prefix `app_` (e.g. `app_generateImage`).
+- **One contract per domain**: All context/actions/suggestions/highlights go through `DomainCopilotContract`. Use `createAppAction` / `createDomainAction` for consistent prefixes.
 - **New features as slices**: Docs -> backend (if any) -> action + handler -> UI (render/panel) -> entitlements. Update STATUS and architecture docs per slice.
 - **Highlights**: Same `AIHighlightPayload` and `useAIHighlight`; review UI uses existing highlight state plus `pendingFromPlan` and Revert/Accept.
