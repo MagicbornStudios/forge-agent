@@ -3,8 +3,35 @@ import { getPayload } from 'payload';
 import config from '@/payload.config';
 
 /**
- * GET /api/settings
- * Returns all settings-overrides records for client hydration.
+ * @swagger
+ * /api/settings:
+ *   get:
+ *     summary: Get all settings overrides for hydration
+ *     tags: [settings]
+ *     responses:
+ *       200:
+ *         description: List of settings-overrides documents
+ *       500:
+ *         description: Server error
+ *   post:
+ *     summary: Upsert settings for a scope
+ *     tags: [settings]
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               scope: { type: string, enum: [app, workspace, editor] }
+ *               scopeId: { type: string, nullable: true }
+ *               settings: { type: object }
+ *     responses:
+ *       200:
+ *         description: Created or updated settings document
+ *       400:
+ *         description: Validation error
+ *       500:
+ *         description: Server error
  */
 export async function GET() {
   try {
@@ -23,11 +50,6 @@ export async function GET() {
   }
 }
 
-/**
- * POST /api/settings
- * Body: { scope: 'app' | 'workspace' | 'editor', scopeId?: string | null, settings: Record<string, unknown> }
- * Upserts one settings-overrides record for the given scope + scopeId.
- */
 export async function POST(request: NextRequest) {
   try {
     const payload = await getPayload({ config });

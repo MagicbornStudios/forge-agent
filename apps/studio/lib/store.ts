@@ -5,6 +5,7 @@ import type { ForgeGraphDoc, ForgeGraphPatchOp } from '@forge/types/graph';
 import { applyPatchOperations } from './graph-operations';
 import { useSettingsStore } from '@/lib/settings/store';
 import { setLastGraphId } from '@/lib/persistence/local-storage';
+import { GraphsService } from '@/lib/api-client';
 
 interface GraphStore {
   graph: ForgeGraphDoc | null;
@@ -59,24 +60,13 @@ export const useGraphStore = create<GraphStore>()(
       if (!graph) return;
 
       try {
-        const response = await fetch(`/api/graphs/${graph.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ flow: graph.flow }),
+        await GraphsService.patchApiGraphs(String(graph.id), { flow: graph.flow });
+        set((state) => {
+          state.isDirty = false;
         });
-
-        if (response.ok) {
-          set((state) => {
-            state.isDirty = false;
-          });
-          if (canToast()) {
-            toast.success('Graph saved', {
-              description: graph.title ? `Saved ${graph.title}.` : undefined,
-            });
-          }
-        } else if (canToast()) {
-          toast.error('Save failed', {
-            description: 'The server rejected the save request.',
+        if (canToast()) {
+          toast.success('Graph saved', {
+            description: graph.title ? `Saved ${graph.title}.` : undefined,
           });
         }
       } catch (error) {
@@ -91,20 +81,13 @@ export const useGraphStore = create<GraphStore>()(
 
     loadGraph: async (id) => {
       try {
-        const response = await fetch(`/api/graphs/${id}`);
-        if (response.ok) {
-          const graph = await response.json();
-          set((state) => {
-            state.graph = graph;
-            state.isDirty = false;
-            state.pendingFromPlan = false;
-          });
-          setLastGraphId(id);
-        } else if (canToast()) {
-          toast.error('Load failed', {
-            description: 'The server could not load that graph.',
-          });
-        }
+        const graph = await GraphsService.getApiGraphs(String(id));
+        set((state) => {
+          state.graph = graph;
+          state.isDirty = false;
+          state.pendingFromPlan = false;
+        });
+        setLastGraphId(id);
       } catch (error) {
         console.error('Failed to load graph:', error);
         if (canToast()) {

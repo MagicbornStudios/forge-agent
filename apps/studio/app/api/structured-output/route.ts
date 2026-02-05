@@ -71,9 +71,27 @@ const NAMED_SCHEMAS: Record<string, { name: string; strict: boolean; schema: obj
 };
 
 /**
- * POST /api/structured-output
- * Body: { prompt: string, schemaName?: string, schema?: { name, strict, schema } }
- * Calls OpenRouter with response_format (json_schema) and returns parsed JSON.
+ * @swagger
+ * /api/structured-output:
+ *   post:
+ *     summary: Get structured JSON output from prompt using a named or custom schema
+ *     tags: [ai]
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               prompt: { type: string }
+ *               schemaName: { type: string }
+ *               schema: { type: object }
+ *     responses:
+ *       200:
+ *         description: Parsed JSON per schema
+ *       400:
+ *         description: prompt required or invalid schema
+ *       503:
+ *         description: OpenRouter not configured
  */
 export async function POST(request: NextRequest) {
   const config = getOpenRouterConfig();

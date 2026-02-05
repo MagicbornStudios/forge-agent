@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useSettingsStore } from '@/lib/settings/store';
 import type { SettingsOverrideRecord } from '@forge/types/payload';
+import { SettingsService } from '@/lib/api-client';
 
 /**
  * Fetches settings overrides from the API and hydrates the settings store on mount.
@@ -13,8 +14,7 @@ export function SettingsHydration() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/settings')
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('Failed to fetch settings'))))
+    SettingsService.getApiSettings()
       .then((docs: SettingsOverrideRecord[]) => {
         if (!cancelled && Array.isArray(docs)) {
           hydrateFromOverrides(docs);

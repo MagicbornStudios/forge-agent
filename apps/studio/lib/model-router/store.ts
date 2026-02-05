@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type { ModelDef, ModelHealth, SelectionMode, ModelPreferences } from './types';
 import { MODEL_REGISTRY, getDefaultEnabledIds } from './registry';
+import { ModelService } from '@/lib/api-client';
 
 // ---------------------------------------------------------------------------
 // Client-side model router store
@@ -73,17 +74,14 @@ export const useModelRouterStore = create<ModelRouterState>()(
     fetchSettings: async () => {
       set({ isLoading: true });
       try {
-        const res = await fetch('/api/model-settings');
-        if (res.ok) {
-          const data = await res.json();
-          set({
-            activeModelId: data.activeModelId,
-            mode: data.mode,
-            health: data.health ?? {},
-            enabledModelIds: data.preferences?.enabledModelIds ?? get().enabledModelIds,
-            manualModelId: data.preferences?.manualModelId ?? get().manualModelId,
-          });
-        }
+        const data = await ModelService.getApiModelSettings();
+        set({
+          activeModelId: data.activeModelId,
+          mode: data.mode,
+          health: data.health ?? {},
+          enabledModelIds: data.preferences?.enabledModelIds ?? get().enabledModelIds,
+          manualModelId: data.preferences?.manualModelId ?? get().manualModelId,
+        });
       } catch (err) {
         console.error('[ModelRouter] Failed to fetch settings:', err);
       } finally {
@@ -94,15 +92,12 @@ export const useModelRouterStore = create<ModelRouterState>()(
     savePreferences: async () => {
       const { mode, manualModelId, enabledModelIds } = get();
       try {
-        const res = await fetch('/api/model-settings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mode, manualModelId, enabledModelIds } satisfies ModelPreferences),
+        const data = await ModelService.postApiModelSettings({
+          mode,
+          manualModelId: manualModelId ?? undefined,
+          enabledModelIds,
         });
-        if (res.ok) {
-          const data = await res.json();
-          set({ activeModelId: data.activeModelId, health: data.health ?? {} });
-        }
+        set({ activeModelId: data.activeModelId, health: data.health ?? {} });
       } catch (err) {
         console.error('[ModelRouter] Failed to save preferences:', err);
       }

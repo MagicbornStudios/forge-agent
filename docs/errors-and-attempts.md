@@ -1,4 +1,4 @@
-﻿# Errors and attempts (do not repeat)
+# Errors and attempts (do not repeat)
 
 Log of known failures and fixes so agents and developers avoid repeating the same mistakes.
 
@@ -49,6 +49,16 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 **Problem**: Next build may warn about `payload/dist/utilities/dynamicImport.js` using an expression for dynamic import.
 
 **Fix**: This warning is expected from Payload and does not block the build. Treat it as informational unless it turns into a hard error.
+
+---
+
+---
+
+## Raw fetch for API routes
+
+**Problem**: Using raw `fetch('/api/graphs')`, `fetch('/api/video-docs')`, etc., bypasses the generated client and duplicates logic. It also breaks type safety and makes it easy to drift from the OpenAPI spec.
+
+**Fix**: Use the generated client (`apps/studio/lib/api-client/`) or the TanStack Query hooks in `apps/studio/lib/data/hooks/`. Do not call `fetch` for `/api/*` from components or stores. Add or update JSDoc on route handlers and run `pnpm generate-client` after API changes.
 
 ---
 

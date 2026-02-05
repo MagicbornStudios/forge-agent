@@ -4,6 +4,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { GraphEditor, type ForgeViewportHandle } from '@/components/GraphEditor';
 import { useGraphStore } from '@/lib/store';
 import { useSaveGraph } from '@/lib/data/hooks';
+import { AiService } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { useAppShellStore } from '@/lib/app-shell/store';
 import { WORKSPACE_EDITOR_IDS } from '@/lib/app-shell/workspace-metadata';
@@ -143,13 +144,7 @@ export function ForgeWorkspace() {
   }, [forgeSelection, graph]);
 
   const createPlanApi = useCallback(async (goal: string, graphSummary: unknown) => {
-    const res = await fetch('/api/forge/plan', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ goal, graphSummary }),
-    });
-    if (!res.ok) throw new Error((await res.json()).error ...... 'Plan failed');
-    return res.json();
+    return AiService.postApiForgePlan({ goal, graphSummary });
   }, []);
 
   const commitGraph = useCallback(async () => {

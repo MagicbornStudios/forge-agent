@@ -14,6 +14,7 @@ import { AppSettingsPanel } from "./AppSettingsPanel";
 import { WorkspaceSettingsPanel } from "./WorkspaceSettingsPanel";
 import { EditorSettingsPanel } from "./EditorSettingsPanel";
 import { toast } from "sonner";
+import { SettingsService } from "@/lib/api-client";
 
 const SCOPE_LABELS: Record<SettingsScope, string> = {
   app: "App settings",
@@ -25,11 +26,11 @@ export interface SettingsSheetProps {
   scope: SettingsScope;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  workspaceId...: string;
-  editorId...: string;
+  workspaceId?: string;
+  editorId?: string;
 }
 
-function getScopeId(scope: SettingsScope, workspaceId...: string, editorId...: string): string | null {
+function getScopeId(scope: SettingsScope, workspaceId?: string, editorId?: string): string | null {
   if (scope === "app") return null;
   if (scope === "workspace" && workspaceId) return workspaceId;
   if (scope === "editor" && workspaceId && editorId) return `${workspaceId}:${editorId}`;
@@ -52,19 +53,11 @@ export function SettingsSheet({
     const settings = getOverridesForScope(scope, { workspaceId, editorId });
     setSaving(true);
     try {
-      const res = await fetch("/api/settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          scope,
-          scopeId: scope === "app" ... null : scopeId,
-          settings,
-        }),
+      await SettingsService.postApiSettings({
+        scope,
+        scopeId: scope === "app" ? null : scopeId,
+        settings,
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err....error ...... res.statusText);
-      }
       toast.success("Settings saved", {
         description: "Your preferences will persist after refresh.",
       });
@@ -99,7 +92,7 @@ export function SettingsSheet({
         </div>
         <div className="mt-4 pt-4 border-t flex justify-end shrink-0">
           <Button onClick={handleSave} disabled={saving}>
-            {saving ... "Saving..." : "Save"}
+            {saving ? "Saving..." : "Save"}
           </Button>
         </div>
       </SheetContent>

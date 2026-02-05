@@ -8,18 +8,18 @@ Editable document state lives in Zustand stores (e.g. `apps/studio/lib/store.ts`
 
 ## Server state (TanStack Query)
 
-List and single-document data is fetched through Next API routes and cached with TanStack Query. Keys and hooks live in `apps/studio/lib/data/`: `keys.ts`, `studio-client.ts`, hooks like `useGraphs`, `useGraph(id)`, `useSaveGraph`. See [docs/decisions.md](../decisions.md) and [docs/tech-stack.md](../tech-stack.md).
+List and single-document data is fetched through Next API routes and cached with TanStack Query. Keys and hooks live in `apps/studio/lib/data/`: `keys.ts`, hooks in `hooks/` (e.g. `useGraphs`, `useGraph(id)`, `useSaveGraph`, `useCreateGraph`, `useVideoDocs`, `useCreateVideoDoc`). The hooks call the **OpenAPI-generated client** in `apps/studio/lib/api-client/` (generated from the spec at `/api/docs`). Do not use raw `fetch` for API routes. See [docs/decisions.md](../decisions.md) and [docs/tech-stack.md](../tech-stack.md).
 
 ## API boundary
 
-The browser never calls Payload REST/GraphQL directly. All server-state goes through routes like `/api/graphs`, `/api/video-docs`, `/api/settings`. This keeps one client contract and allows adding other backends later behind the same routes.
+The browser never calls Payload REST/GraphQL directly. All server-state goes through our Next API routes. The **typed client** is generated from the OpenAPI spec (which is built from JSDoc in `app/api/` via next-swagger-doc). Regenerate with `pnpm generate-client`. Swagger UI: `/api-doc`; spec: `/api/docs`.
 
 ## Loading and saving a document
 
-- **Load**: On app load, read `lastGraphId` from localStorage (or first from list, or create empty). Call `loadGraph(id)` which fetches `GET /api/graphs/:id` and sets the graph store.
-- **Save**: User clicks Save (or `forge_commit`); mutation sends draft to `PATCH /api/graphs/:id`, then invalidates `studioKeys.graph(id)` and `studioKeys.graphs()`.
+- **Load**: On app load, read `lastGraphId` from localStorage (or first from list, or create empty). The component uses `useGraph(id)` (and `useGraphs()` / `useCreateGraph()` as needed); server data is synced into the graph store. No raw fetch—hooks use the generated client.
+- **Save**: User clicks Save (or `forge_commit`); component calls `useSaveGraph().mutate()` which uses the generated client for `PATCH /api/graphs/:id`, then invalidates `studioKeys.graph(id)` and `studioKeys.graphs()`.
 
-Code: `apps/studio/app/page.tsx` (initial load), `apps/studio/lib/data/hooks/use-save-graph.ts` (mutation), `apps/studio/lib/store.ts` (graph store).
+Code: `apps/studio/app/page.tsx` (initial load), `apps/studio/lib/data/hooks/use-save-graph.ts` (mutation), `apps/studio/lib/store.ts` (draft state only).
 
 ## What the AI can do at this stage
 

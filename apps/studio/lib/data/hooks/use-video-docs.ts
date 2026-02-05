@@ -2,11 +2,11 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { studioKeys } from '../keys';
-import { studioClient } from '../studio-client';
+import { VideoDocsService } from '@/lib/api-client';
 
 export function useVideoDocs() {
   return useQuery({
     queryKey: studioKeys.videoDocs(),
-    queryFn: () => studioClient.getVideoDocs(),
+    queryFn: () => VideoDocsService.getApiVideoDocs1(),
   });
 }

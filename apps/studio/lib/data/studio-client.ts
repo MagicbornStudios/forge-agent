@@ -1,23 +1,22 @@
 /**
- * Fetchers for Studio-owned Next API routes. Single boundary: client -> Next API.
+ * Studio API client. All HTTP is done via the OpenAPI-generated client.
+ * Use the hooks in ./hooks (useGraphs, useGraph, useSaveGraph, useCreateGraph, etc.)
+ * or the generated services directly. Do not add hand-rolled fetch here.
  */
 
-async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(url, options);
-  if (!res.ok) {
-    const body = await res.text();
-    let message = `Request failed: ${res.status}`;
-    try {
-      const data = JSON.parse(body);
-      if (data?.error) message = data.error;
-    } catch {
-      if (body) message = body.slice(0, 200);
-    }
-    throw new Error(message);
-  }
-  return res.json() as Promise<T>;
-}
+export {
+  GraphsService,
+  VideoDocsService,
+  AuthService,
+  SettingsService,
+  ModelService,
+  AiService,
+  OpenAPI,
+  ApiError,
+} from '@/lib/api-client';
+export type { OpenAPIConfig } from '@/lib/api-client';
 
+/** Type aliases for app use; payload-types also define these. */
 export type ForgeGraphDoc = {
   id: number;
   title: string;
@@ -45,53 +44,4 @@ export type StudioUser = {
 
 export type StudioMeResponse = {
   user: StudioUser | null;
-};
-
-export const studioClient = {
-  getGraphs: () => fetchJson<ForgeGraphDoc[]>('/api/graphs'),
-  getGraph: (id: number) => fetchJson<ForgeGraphDoc>(`/api/graphs/${id}`),
-  updateGraph: (id: number, body: { flow?: unknown }) =>
-    fetchJson<ForgeGraphDoc>(`/api/graphs/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    }),
-  createGraph: (body: { title: string; flow: unknown }) =>
-    fetchJson<ForgeGraphDoc>('/api/graphs', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    }),
-
-  getVideoDocs: () => fetchJson<VideoDocRecord[]>('/api/video-docs'),
-  getVideoDoc: (id: number) => fetchJson<VideoDocRecord>(`/api/video-docs/${id}`),
-  updateVideoDoc: (id: number, body: { doc: unknown }) =>
-    fetchJson<VideoDocRecord>(`/api/video-docs/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    }),
-  createVideoDoc: (body: { title: string; doc: unknown }) =>
-    fetchJson<VideoDocRecord>('/api/video-docs', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    }),
-
-  getMe: async (): Promise<StudioMeResponse | null> => {
-    const res = await fetch('/api/me');
-    if (res.status === 401) return { user: null };
-    if (!res.ok) {
-      const body = await res.text();
-      let message = `Request failed: ${res.status}`;
-      try {
-        const data = JSON.parse(body);
-        if (data?.error) message = data.error;
-      } catch {
-        if (body) message = body.slice(0, 200);
-      }
-      throw new Error(message);
-    }
-    return res.json() as Promise<StudioMeResponse>;
-  },
 };

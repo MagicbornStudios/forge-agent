@@ -2,6 +2,20 @@ import { NextResponse } from 'next/server';
 import { getPayload } from 'payload';
 import config from '@/payload.config';
 
+/**
+ * @swagger
+ * /api/me:
+ *   get:
+ *     summary: Get current user (auth)
+ *     tags: [auth]
+ *     responses:
+ *       200:
+ *         description: User object or null
+ *       401:
+ *         description: Not authenticated (body has user null)
+ *       500:
+ *         description: Server error
+ */
 export async function GET(req: Request) {
   try {
     const payload = await getPayload({ config });

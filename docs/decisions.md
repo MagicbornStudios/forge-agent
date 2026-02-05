@@ -14,7 +14,7 @@ When changing persistence or the data layer, read this file and **docs/tech-stac
 
 ## TanStack Query for server-state
 
-**Decision:** Server-state (graphs, video docs, lists, “me”, pricing, etc.) is fetched and cached via TanStack Query. Query keys and hooks live in `apps/studio/lib/data/` (keys, studio-client, hooks). Mutations invalidate the relevant queries after save.
+**Decision:** Server-state (graphs, video docs, lists, “me”, pricing, etc.) is fetched and cached via TanStack Query. Query keys and hooks live in `apps/studio/lib/data/` (keys, hooks). Hooks call the OpenAPI-generated client in `lib/api-client/`. Mutations invalidate the relevant queries after save.
 
 **Rationale:** Caching, deduping, loading/error/retry, and invalidation are handled in one place; components stay declarative.
 
@@ -46,6 +46,6 @@ When changing persistence or the data layer, read this file and **docs/tech-stac
 
 ## Deferring multi-DB / direct Payload from browser
 
-**Decision:** We do not call Payload REST or SDK from the browser. We do not split into multiple DBs or backends until product needs justify it.
+**Decision:** We do not call Payload REST or SDK from the browser. We do not split into multiple DBs or backends until product needs justify it. All app API access goes through the OpenAPI-generated client; server state flows through TanStack Query hooks that use that client; no raw fetch in components or stores.
 
 **Rationale:** Single boundary and single DB are easier to reason about and evolve; “why we don’t” is documented in **docs/tech-stack.md**.

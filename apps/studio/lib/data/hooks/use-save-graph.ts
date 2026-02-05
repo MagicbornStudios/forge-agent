@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { studioKeys } from '../keys';
-import { studioClient } from '../studio-client';
+import { GraphsService } from '@/lib/api-client';
 import { useGraphStore } from '@/lib/store';
 
 export function useSaveGraph() {
@@ -12,7 +12,7 @@ export function useSaveGraph() {
     mutationFn: async () => {
       const graph = useGraphStore.getState().graph;
       if (!graph) throw new Error('No graph to save');
-      return studioClient.updateGraph(graph.id, { flow: graph.flow });
+      return GraphsService.patchApiGraphs(String(graph.id), { flow: graph.flow });
     },
     onSuccess: (data) => {
       if (data?.id != null) {

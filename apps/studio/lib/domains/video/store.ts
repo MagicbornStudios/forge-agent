@@ -3,6 +3,7 @@ import { immer } from 'zustand/middleware/immer';
 import type { VideoDoc, VideoPatchOp } from './types';
 import { applyVideoOperations } from './operations';
 import { setLastVideoDocId } from '@/lib/persistence/local-storage';
+import { VideoDocsService } from '@/lib/api-client';
 
 interface VideoStore {
   doc: VideoDoc | null;
@@ -42,17 +43,10 @@ export const useVideoStore = create<VideoStore>()(
       if (!doc) return;
 
       try {
-        const response = await fetch(`/api/video-docs/${doc.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ doc: doc.doc }),
+        await VideoDocsService.patchApiVideoDocs(String(doc.id), { doc: doc.doc });
+        set((state) => {
+          state.isDirty = false;
         });
-
-        if (response.ok) {
-          set((state) => {
-            state.isDirty = false;
-          });
-        }
       } catch (error) {
         console.error('Failed to save video doc:', error);
       }
@@ -60,15 +54,12 @@ export const useVideoStore = create<VideoStore>()(
 
     loadDoc: async (id) => {
       try {
-        const response = await fetch(`/api/video-docs/${id}`);
-        if (response.ok) {
-          const doc = await response.json();
-          set((state) => {
-            state.doc = doc;
-            state.isDirty = false;
-          });
-          setLastVideoDocId(id);
-        }
+        const loaded = await VideoDocsService.getApiVideoDocs(String(id));
+        set((state) => {
+          state.doc = loaded;
+          state.isDirty = false;
+        });
+        setLastVideoDocId(id);
       } catch (error) {
         console.error('Failed to load video doc:', error);
       }

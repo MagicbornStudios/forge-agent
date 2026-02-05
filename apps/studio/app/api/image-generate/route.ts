@@ -5,9 +5,27 @@ import { getOpenRouterConfig } from '@/lib/openrouter-config';
 const DEFAULT_IMAGE_MODEL = 'google/gemini-2.5-flash-image-preview';
 
 /**
- * POST /api/image-generate
- * Body: { prompt: string, aspectRatio?: string, imageSize?: string }
- * Calls OpenRouter with modalities: ["image", "text"] and returns the first generated image as base64 data URL.
+ * @swagger
+ * /api/image-generate:
+ *   post:
+ *     summary: Generate image from prompt via OpenRouter (image modality)
+ *     tags: [ai]
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               prompt: { type: string }
+ *               aspectRatio: { type: string }
+ *               imageSize: { type: string }
+ *     responses:
+ *       200:
+ *         description: Base64 data URL of generated image
+ *       400:
+ *         description: prompt required
+ *       503:
+ *         description: OpenRouter not configured
  */
 export async function POST(request: NextRequest) {
   const config = getOpenRouterConfig();

@@ -2,6 +2,34 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getPayload } from 'payload';
 import config from '@/payload.config';
 
+/**
+ * @swagger
+ * /api/video-docs:
+ *   get:
+ *     summary: List video docs
+ *     tags: [video-docs]
+ *     responses:
+ *       200:
+ *         description: List of video doc documents
+ *       500:
+ *         description: Server error
+ *   post:
+ *     summary: Create video doc
+ *     tags: [video-docs]
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title: { type: string }
+ *               doc: {}
+ *     responses:
+ *       200:
+ *         description: Created video doc document
+ *       500:
+ *         description: Server error
+ */
 export async function GET() {
   try {
     const payload = await getPayload({ config });

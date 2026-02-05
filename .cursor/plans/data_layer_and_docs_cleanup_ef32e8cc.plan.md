@@ -1,19 +1,20 @@
-# Data layer, Payload SDK, hooks, and docs (revised)
+# Data layer: next-swagger-doc, Swagger UI, generated client, and hooks
 
 ## Summary
 
-- **Use @payloadcms/sdk for all Payload entity CRUD** from the client — no hand-rolled `fetch` for forge-graphs, video-docs, or other collections. Payload exposes a type-safe REST API and an official SDK (`@payloadcms/sdk`); we use it instead of reinventing the wheel.
-- **Use the existing TanStack Query hooks everywhere** — no raw fetch or direct SDK calls in components or Zustand stores. Hooks are the single place that talk to the SDK (or custom client). Add missing hooks (e.g. `useCreateGraph`, `useCreateVideoDoc`) and refactor so page, VideoWorkspace, and stores consume hooks only.
-- **Keep a small client for non-Payload routes** (e.g. `/api/me`, `/api/settings`, `/api/forge/plan`, `/api/image-generate`, render, etc.). Either a thin hand-written client or a generated client from our Next API; no fetch in components for those either.
-- **Do we still need “studio client”?** Only as a split: (1) **Payload SDK instance** for entity CRUD (replacing current graph/video methods), (2) **Custom API client** for non-Payload routes. Hooks stay; they’re the only place that call SDK or custom client, so components/stores never get “hairy” — they just use `useGraphs()`, `useSaveVideoDoc()`, etc.
+- **Auto-generate OpenAPI from JSDoc** — use **next-swagger-doc** only; no hand-maintained spec. Annotate each API route in `app/api/` with JSDoc `@swagger` blocks; the spec is generated at runtime/build from the route files.
+- **Serve spec and Swagger UI** — `GET /api/docs` returns the OpenAPI JSON (from `createSwaggerSpec`). Swagger UI at `/api-doc` loads that spec (dynamic import of `swagger-ui-react`) so the app has browsable API docs.
+- **Generate a typed client from the spec** — feed `/api/docs` (or a generated `openapi.json` file) into **openapi-typescript-codegen** or **@hey-api/openapi-ts** to produce the TS client. One client for the whole app; no Payload SDK, no hand-rolled `studioClient`.
+- **Use the generated client everywhere** — hooks call the generated client only; no raw `fetch`. Add missing hooks (e.g. `useCreateGraph`, `useCreateVideoDoc`) and refactor page, VideoWorkspace, and stores to use hooks only.
+- **Seamless automation** — run codegen in prebuild or as a Turborepo task so the client stays in sync with API changes; no manual spec maintenance.
 
 ---
 
-## 1. Why hooks + SDK (and no raw fetch for Payload)
+## 1. Why OpenAPI + codegen (and no Payload SDK)
 
-- We already have [useGraphs](apps/studio/lib/data/hooks/use-graphs.ts), [useVideoDocs](apps/studio/lib/data/hooks/use-video-docs.ts), [useSaveGraph](apps/studio/lib/data/hooks/use-save-graph.ts), [useSaveVideoDoc](apps/studio/lib/data/hooks/use-save-video-doc.ts), etc., but **we’re not using them** in several places: [VideoWorkspace](apps/studio/components/workspaces/VideoWorkspace.tsx), [page.tsx](apps/studio/app/page.tsx), and the Zustand stores ([lib/store.ts](apps/studio/lib/store.ts), [lib/domains/video/store.ts](apps/studio/lib/domains/video/store.ts)) use raw `fetch` instead.
-- Payload provides an official **Payload REST API** (auto-generated from collections) and **@payloadcms/sdk** for type-safe CRUD. Docs: <https://payloadcms.com/docs/rest-api/overview> (see “Payload REST API SDK”). So for Payload entities we should use the SDK, not reimplement fetch in [studio-client.ts](apps/studio/lib/data/studio-client.ts).
-- **Hooks stay as the single abstraction:** All server state and mutations go through TanStack Query hooks. The hooks’ `queryFn` / `mutationFn` call the Payload SDK (for entities) or the custom API client (for non-Payload). Components and stores never call `fetch` or the SDK directly — they use hooks and pass data/callbacks down. That keeps “React hooks” from getting hairy: one clear layer (hooks) that owns caching, loading, and API shape.
+- Our API surface is **our Next.js routes**: `/api/graphs`, `/api/video-docs`, `/api/graphs/[id]`, `/api/video-docs/[id]`, `/api/me`, `/api/settings`, `/api/forge/plan`, `/api/image-generate`, `/api/structured-output`, `/api/model-settings`, etc. Payload is used only inside those route handlers. So we don’t need a separate “Payload SDK” — we need one typed client for our app’s API.
+- **OpenAPI** gives us: (1) a single spec that describes every route, (2) Swagger UI for the app, (3) generated TypeScript client so we don’t hand-write or maintain `studio-client` methods.
+- **Codegen** (e.g. `openapi-typescript` + `openapi-fetch`, or `@hey-api/openapi-ts`) produces a small, type-safe fetch client. All hooks use it; components and stores never call `fetch` or the client directly for server state — they use the hooks.
 
 ---
 
@@ -21,85 +22,139 @@
 
 | What | Current | Desired |
 |------|--------|--------|
-| Payload entity CRUD | Hand-rolled `fetch` in studio-client + custom routes `/api/graphs`, `/api/video-docs` | **@payloadcms/sdk** against Payload’s REST API (e.g. `/api/forge-graphs`, `/api/video-docs` per collection slug). Hooks call SDK. |
-| Who uses the API? | Mix: some hooks use studioClient, page/VideoWorkspace/stores use raw fetch | **Only hooks** use SDK or custom client. Page, VideoWorkspace, and stores use hooks only (e.g. `useGraphs()`, `useCreateVideoDoc()`, `useSaveGraph()`). |
-| studio-client | All-in-one: graphs, video-docs, me | **Split:** (1) Payload SDK instance for entity CRUD, (2) small custom client for `/api/me`, `/api/settings`, `/api/forge/plan`, `/api/image-generate`, etc. |
-| Custom routes | `/api/graphs`, `/api/video-docs` (custom handlers) | Either **remove** and rely on Payload’s built-in REST at `/api/forge-graphs`, `/api/video-docs`, or keep as thin proxies; in either case **client uses SDK** for those collections. |
+| API surface | Custom Next routes; hand-rolled [studio-client.ts](apps/studio/lib/data/studio-client.ts) with fetch | **Same routes**; no hand-rolled client. **OpenAPI spec** describes all routes; **generated client** is the only HTTP layer. |
+| Swagger | None | **Swagger UI** for the app (e.g. `/api-doc`) from the same OpenAPI spec. |
+| Who uses the API? | Mix: some hooks use studioClient, page/VideoWorkspace/stores use raw fetch | **Only hooks** use the generated client. Page, VideoWorkspace, and stores use hooks only. |
+| Payload SDK | Not used | **Not used.** We use our generated client against our Next routes (which internally use Payload). |
 
 ---
 
-## 3. Payload REST and collection slugs
+## 3. Implementation plan
 
-- Payload mounts REST at `routes.api` (default `/api`). Each collection is at `/api/{collection-slug}`.
-- Our slugs: `forge-graphs`, `video-docs`, `settings-overrides`, `users`, etc. So Payload REST is at `/api/forge-graphs`, `/api/video-docs`, etc.
-- We currently have **custom** Next route handlers at `/api/graphs` and `/api/video-docs` that return different shapes (e.g. `result.docs` only). With the SDK we use Payload’s native responses (e.g. `find()` returns `{ docs, totalDocs, ... }`); hooks can unwrap `.docs` or use the doc directly so existing UI types still work.
+### 3.1 Install and wire next-swagger-doc (spec from JSDoc only)
+
+- **Install (apps/studio):** `pnpm add next-swagger-doc swagger-ui-react -D`
+- **Create `lib/swagger.ts`:**
+  - Import `createSwaggerSpec` from `next-swagger-doc`.
+  - Export async `getApiDocs()` that returns `createSwaggerSpec({ apiFolder: 'app/api', definition: { openapi: '3.0.0', info: { title: 'Studio API', version: '1.0' } } })`.
+- **Add route handler** `app/api/docs/route.ts`:
+  - `GET` calls `getApiDocs()` and returns `NextResponse.json(spec)`.
+  - Visiting `/api/docs` returns the OpenAPI JSON (no hand-maintained file).
+- **Annotate every API route** with JSDoc so the spec is complete. Example pattern in each route file (e.g. `app/api/graphs/route.ts`):
+
+```ts
+/**
+ * @swagger
+ * /api/graphs:
+ *   get:
+ *     summary: List graphs
+ *     tags: [graphs]
+ *     responses:
+ *       200:
+ *         description: Success
+ *   post:
+ *     summary: Create graph
+ *     tags: [graphs]
+ *     requestBody: { content: { application/json: { schema: { ... } } } }
+ *     responses:
+ *       200:
+ *         description: Created
+ */
+export async function GET() { ... }
+export async function POST(request: NextRequest) { ... }
+```
+
+- Apply the same pattern to: `app/api/graphs/[id]/route.ts`, `app/api/video-docs/route.ts`, `app/api/video-docs/[id]/route.ts`, `app/api/me/route.ts`, `app/api/settings/route.ts`, `app/api/model-settings/route.ts`, `app/api/forge/plan/route.ts`, `app/api/image-generate/route.ts`, `app/api/structured-output/route.ts`. Tags: `graphs`, `video-docs`, `auth`, `settings`, `model`, `ai`. No separate YAML/JSON spec file.
+
+### 3.2 Swagger UI page
+
+- **Route:** `app/api-doc/page.tsx` (or `app/swagger/page.tsx`).
+- **Implementation:** Use `swagger-ui-react`; load the spec from `/api/docs` (e.g. `url: '/api/docs'`). Use **dynamic import** for `swagger-ui-react` so it only runs on the client and avoids SSR issues (e.g. `const SwaggerUI = dynamic(() => import('swagger-ui-react').then(m => m.default), { ssr: false })`).
+- Result: humans and agents can open `/api-doc` to explore and try the API.
+
+### 3.3 Generate typed client (openapi-typescript-codegen or @hey-api/openapi-ts)
+
+- **Install (apps/studio):** `pnpm add -D openapi-typescript-codegen` (or `@hey-api/openapi-ts` for Next.js–optimized output).
+- **Script in package.json:**
+  - **Option A (dev server required):** `"generate-client": "openapi-typescript-codegen --input http://localhost:3000/api/docs --output ./lib/api-client --client fetch"`. Run after `pnpm dev` is up (or in a script that starts dev, waits for ready, runs codegen).
+  - **Option B (CI/build friendly):** Add a small Node script that imports `getApiDocs` from `@/lib/swagger`, calls it, and writes the result to `openapi.json` (e.g. in project root or `lib/`). Then: `"generate-spec": "node scripts/generate-openapi.mjs"`, `"generate-client": "openapi-typescript-codegen --input ./openapi.json --output ./lib/api-client --client fetch"`. No running server needed; use in `postbuild` or Turborepo.
+- **Output:** `apps/studio/lib/api-client/` (or `./lib/api-client` relative to studio app). Generated client is the single HTTP layer; base URL can be left default (same-origin) or set via env in the generated client wrapper.
+- **Usage:** After codegen, use the client in hooks (e.g. `api.graphs.getGraphs()`, `api.graphs.createGraph(...)` — exact names depend on generator). Full autocomplete and type safety.
+
+### 3.4 Automation (seamless sync)
+
+- **Regenerate on API changes:** Run client codegen as part of build or a dedicated task so the client never drifts.
+  - **prebuild:** e.g. `"prebuild": "pnpm generate-spec && pnpm generate-client"` (if using Option B), or `"build": "pnpm generate-client && next build"` when using Option A with a script that ensures spec is available.
+  - **Turborepo:** Add a `codegen` task (or `generate-client`) that depends on route files; run it before `build`. Other packages don’t need to run it.
+- **Developer workflow:** After changing any route in `app/api/`, add/update JSDoc for that route, then run `pnpm generate-client` (or rely on prebuild). No manual spec file to edit.
+
+### 3.4 Hooks use the generated client only
+
+- Replace all usage of [studio-client.ts](apps/studio/lib/data/studio-client.ts) (graphs, video-docs, me) with calls to the generated client. For example:
+  - **useGraphs:** `queryFn: () => generatedClient.getGraphs()` (or equivalent generated method).
+  - **useGraph(id):** `queryFn: () => generatedClient.getGraphById(id)`.
+  - **useSaveGraph:** `mutationFn` calls `generatedClient.patchGraph(id, { flow })`; invalidate `studioKeys.graph(id)` and `studioKeys.graphs()`.
+  - **useCreateGraph:** Add hook; `mutationFn` calls `generatedClient.postGraph({ title, flow })`; invalidate `studioKeys.graphs()`.
+  - Same for video-docs: use generated `getVideoDocs`, `getVideoDocById`, `patchVideoDoc`, `postVideoDoc`.
+  - **useMe:** use generated `getMe` (or equivalent).
+- Add **useCreateGraph** and **useCreateVideoDoc** if not present. All hooks live in [apps/studio/lib/data/hooks/](apps/studio/lib/data/hooks/); they are the only place that import and call the generated client.
+
+### 3.5 Deprecate / remove hand-rolled studio-client
+
+- Once the generated client is wired into hooks, **remove** (or reduce) the graph/video/me methods from [studio-client.ts](apps/studio/lib/data/studio-client.ts). Either:
+  - **Remove studio-client** and have hooks import the generated client directly, or
+  - **Re-export** the generated client as `studioClient` for a single entry point and document that “studio client” is now the codegen client. No hand-written fetch for any route.
+
+### 3.6 Remove raw fetch from components and stores
+
+- **page.tsx:** Use `useGraphs()`, `useGraph(lastGraphId)`, and `useCreateGraph()`. No raw fetch; initial load and “create if empty” go through hooks.
+- **VideoWorkspace:** Use `useVideoDocs()`, `useVideoDoc(id)`, `useCreateVideoDoc()`, `useSaveVideoDoc()`. No raw fetch for list, create, or load/save.
+- **lib/store.ts (graph store):** `loadGraph(id)` and `saveGraph()` must not call fetch. Prefer: component uses hooks and syncs server data into the store; save is triggered via `useSaveGraph().mutate()`. Store holds only draft state; load/save are orchestrated by the component using the hooks (or the store receives an injected “api” that is the generated client, but still no raw fetch).
+- **lib/domains/video/store.ts:** Same: no fetch; component uses hooks and syncs to store; save via `useSaveVideoDoc().mutate()`.
+
+### 3.7 Settings, model-settings, AI routes
+
+- Document in OpenAPI: `GET/POST /api/settings`, `GET/POST /api/model-settings`, `POST /api/forge/plan`, `POST /api/image-generate`, `POST /api/structured-output`. Generate client methods for them. Any component that currently fetches these (e.g. SettingsSheet, model-router store, AppShell) should use the generated client via a hook or a small wrapper that uses the client — no raw fetch.
 
 ---
 
-## 4. Implementation plan
+## 4. Routes to annotate with JSDoc (spec scope)
 
-### 4.1 Add and wire @payloadcms/sdk
+Annotate all of these in `app/api/` so next-swagger-doc picks them up and the generated client covers them:
 
-- Install `@payloadcms/sdk` in the studio app.
-- Create a single SDK instance (e.g. in [lib/data](apps/studio/lib/data/) or a new `payload-client.ts`):
-  - `baseURL`: our app’s API base (e.g. `''` or `window.location.origin` + `/api` depending on how Payload is mounted; with Next same-origin, `/api` is typical).
-  - Use generated types from `packages/types/src/payload-types.ts` if the SDK supports a generic for config (e.g. `PayloadSDK<Config>`).
-- Ensure Payload’s REST is actually mounted for `forge-graphs` and `video-docs` (e.g. under `/api` via @payloadcms/next). If our custom `/api/graphs` and `/api/video-docs` currently shadow Payload, we either remove them and use `/api/forge-graphs` and `/api/video-docs`, or keep custom routes only for backward compatibility and have the client use SDK against Payload’s paths (if different).
+| Route | Methods | Notes |
+|-------|--------|--------|
+| `/api/graphs` | GET, POST | List; create. Response types align with ForgeGraph. |
+| `/api/graphs/{id}` | GET, PATCH | Get one; update (e.g. flow). |
+| `/api/video-docs` | GET, POST | List; create. |
+| `/api/video-docs/{id}` | GET, PATCH | Get one; update (e.g. doc). |
+| `/api/me` | GET | Auth; 401 → { user: null }. |
+| `/api/settings` | GET, POST | Settings overrides. |
+| `/api/model-settings` | GET, POST | Model router config. |
+| `/api/forge/plan` | POST | AI plan request/response. |
+| `/api/image-generate` | POST | AI image. |
+| `/api/structured-output` | POST | AI structured output. |
+| Future (render, etc.) | As needed | Add route + JSDoc, then run generate-client. |
 
-### 4.2 Hooks use SDK instead of studioClient for entities
-
-- **useGraphs:** `queryFn: () => payloadSdk.find({ collection: 'forge-graphs' }).then(r => r.docs)` (or keep full result if UI needs pagination).
-- **useGraph(id):** `queryFn: () => payloadSdk.findByID({ collection: 'forge-graphs', id })`.
-- **useSaveGraph:** `mutationFn` calls `payloadSdk.update({ collection: 'forge-graphs', id, data: { flow } })`; invalidate `studioKeys.graph(id)` and `studioKeys.graphs()`.
-- **useCreateGraph:** Add hook; `mutationFn` calls `payloadSdk.create({ collection: 'forge-graphs', data: { title, flow } })`; invalidate `studioKeys.graphs()`.
-- **useVideoDocs / useVideoDoc / useSaveVideoDoc:** Same pattern with `collection: 'video-docs'`.
-- **useCreateVideoDoc:** Add hook; `payloadSdk.create({ collection: 'video-docs', data: { title, doc } })`; invalidate list.
-- Map SDK response shapes to existing types (ForgeGraphDoc, VideoDocRecord) where needed so the rest of the app doesn’t break.
-
-### 4.3 Custom API client for non-Payload routes
-
-- Keep a small client (e.g. `custom-api-client.ts` or a reduced `studio-client.ts`) for:
-  - `GET/POST /api/settings`
-  - `GET /api/me`
-  - `POST /api/forge/plan`
-  - `POST /api/image-generate`, `POST /api/structured-output`
-  - Future: render, consolidation, etc.
-- These stay as fetch (or a thin wrapper) unless we add OpenAPI/codegen for the Next app; then we could generate a typed client for these routes. For now, a single module with typed methods is enough so that **no component or store calls fetch directly** — they use hooks or callbacks that internally use this client.
-
-### 4.4 Remove raw fetch from components and stores
-
-- **page.tsx:** Use `useGraphs()` and a new `useCreateGraph()` mutation. Initial load: if `lastGraphId` exists, use `useGraph(lastGraphId)` and pass data into graph store; else use `useGraphs().data` to pick first or run `useCreateGraph().mutateAsync()` then set that in the store.
-- **VideoWorkspace:** Use `useVideoDocs()` and `useCreateVideoDoc()` for init and “New timeline”. Use `useVideoDoc(id)` and `useSaveVideoDoc()` for load/save; sync server data into [useVideoStore](apps/studio/lib/domains/video/store.ts) for draft edits.
-- **lib/store.ts (graph store):** `loadGraph(id)` and `saveGraph()` should **not** call fetch. Either: (a) they call the Payload SDK (or custom client) from inside the store, or (b) prefer having the component call hooks and pass `loadGraph(id)` as a wrapper that uses `queryClient.fetchQuery(studioKeys.graph(id))` and then `setGraph(data)`, and `saveGraph` as a wrapper that runs `useSaveGraph().mutateAsync()`. Option (b) keeps stores as pure draft state and puts all server I/O in hooks; then the component that has the hooks is responsible for calling “load” (e.g. prefetch + setGraph) and “save” (mutation.mutate). Recommendation: **stores only hold draft state**; load/save are performed by the component using hooks and then syncing into the store (or stores call a small “data service” that uses the SDK/custom client, but not raw fetch).
-- **lib/domains/video/store.ts:** Same idea: no fetch. Component uses `useVideoDoc(id)`, `useSaveVideoDoc()`, `useCreateVideoDoc()` and syncs to store; or store receives a “save” callback that the component wires to the mutation.
-
-### 4.5 studio-client.ts evolution
-
-- **Option A:** Remove graph and video-doc methods; export only the Payload SDK instance (e.g. `payloadSdk`) and a separate `customApiClient` for me, settings, forge/plan, image-generate, etc.
-- **Option B:** Keep one file that re-exports `payloadSdk` and `customApiClient` and document that hooks are the only consumers for server state.
-
-### 4.6 Generated client for Next API (optional)
-
-- For non-Payload routes we could add OpenAPI (or similar) codegen for the Next app and generate a typed client. Then “custom client” is generated instead of hand-written. This is optional and can follow after SDK + hooks are in place.
+No separate Payload API; our routes are the contract. Annotate each route with JSDoc; the codegen “includes” those routes once they have @swagger JSDoc; regenerate client after API changes.
 
 ---
 
-## 5. Documentation and agent guidance
+## 5. Tooling (no manual spec)
 
-- **AGENTS.md (root):** Add rule: “For Payload-backed entities use @payloadcms/sdk and the TanStack Query hooks in `apps/studio/lib/data/hooks/`. Do not use raw fetch for Payload CRUD. For other API routes use the custom API client. Components and stores must not call fetch or the SDK directly — use the hooks.”
-- **docs/decisions.md or new data-and-ui-conventions doc:** State that (1) Payload entity CRUD is done via Payload SDK from the client, (2) all server state flows through TanStack Query hooks that use the SDK or custom client, (3) custom routes (AI, render, settings, me) use the small custom client.
-- **docs/how-to/04-data-and-state.md:** Update to describe Payload SDK + hooks; no raw fetch for entity CRUD.
-- **errors-and-attempts:** Add a “Don’t: raw fetch for Payload entities; don’t bypass hooks” entry.
+- **Spec:** **next-swagger-doc** only. No hand-maintained YAML/JSON; annotate routes with JSDoc; spec is generated from `app/api/` via `createSwaggerSpec({ apiFolder: 'app/api', ... })`.
+- **Spec endpoint:** `GET /api/docs` → JSON (route handler that returns `getApiDocs()`).
+- **Swagger UI:** **swagger-ui-react** (dynamic import), page at `/api-doc`, loads spec from `/api/docs`.
+- **Codegen:** **openapi-typescript-codegen** or **@hey-api/openapi-ts**; input = `http://localhost:3000/api/docs` (dev) or a generated `openapi.json` file (CI/build); output = `./lib/api-client`; client = fetch. Regenerate via `pnpm generate-client` (and optionally `pnpm generate-spec` when using file input).
 
 ---
 
-## 6. What stays as custom routes (and use custom client)
+## 6. Documentation and agent guidance
 
-- `/api/me`, `/api/settings`, `/api/model-settings`
-- `/api/forge/plan`, `/api/image-generate`, `/api/structured-output`
-- Future: Twick render, consolidation, etc.
-
-All of these: call from the client via the **custom API client** (or generated client later), not raw fetch. Hooks can wrap those calls where it helps (e.g. useMe already uses studioClient.getMe).
+- **AGENTS.md (root):** Add rule: “All API access goes through the OpenAPI-generated client. Use the TanStack Query hooks in `apps/studio/lib/data/hooks/` for server state. Do not use raw fetch or hand-rolled API methods. The OpenAPI spec is in …; regenerate the client with `pnpm generate-client` after route/JSDoc changes. Spec is auto-generated from JSDoc (next-swagger-doc). Swagger UI at `/api-doc`, spec at `/api/docs`.”
+- **docs/decisions.md or data-and-ui-conventions:** State that (1) the app API is described by OpenAPI and consumed via the generated client, (2) all server state flows through TanStack Query hooks that use that client, (3) no raw fetch in components or stores.
+- **docs/how-to/04-data-and-state.md:** Update to describe OpenAPI → generated client → hooks; no raw fetch.
+- **errors-and-attempts:** Add a “Don’t: raw fetch for API; don’t bypass the generated client or hooks” entry.
 
 ---
 
@@ -107,19 +162,20 @@ All of these: call from the client via the **custom API client** (or generated c
 
 | Area | Action |
 |------|--------|
-| Dependency | Add `@payloadcms/sdk` in apps/studio |
-| Data layer | Add Payload SDK instance; refactor [studio-client.ts](apps/studio/lib/data/studio-client.ts) to SDK + custom client |
-| Hooks | Switch [use-graphs](apps/studio/lib/data/hooks/use-graphs.ts), [use-graph](apps/studio/lib/data/hooks/use-graph.ts), [use-save-graph](apps/studio/lib/data/hooks/use-save-graph.ts), [use-video-docs](apps/studio/lib/data/hooks/use-video-docs.ts), [use-video-doc](apps/studio/lib/data/hooks/use-video-doc.ts), [use-save-video-doc](apps/studio/lib/data/hooks/use-save-video-doc.ts) to use SDK; add useCreateGraph, useCreateVideoDoc |
-| Page | [app/page.tsx](apps/studio/app/page.tsx): use useGraphs, useGraph, useCreateGraph; no fetch |
-| Video | [VideoWorkspace.tsx](apps/studio/components/workspaces/VideoWorkspace.tsx): use useVideoDocs, useVideoDoc, useCreateVideoDoc, useSaveVideoDoc; no fetch |
-| Stores | [lib/store.ts](apps/studio/lib/store.ts), [lib/domains/video/store.ts](apps/studio/lib/domains/video/store.ts): remove fetch; load/save via hooks or injected service that uses SDK/custom client |
-| API routes | Decide: remove or keep custom `/api/graphs` and `/api/video-docs`; ensure Payload REST is used at `/api/forge-graphs`, `/api/video-docs` for SDK |
-| Docs | AGENTS.md, decisions or data-and-ui-conventions, how-to 04, errors-and-attempts |
+| Spec + docs | Install `next-swagger-doc` and `swagger-ui-react`; add `lib/swagger.ts` (getApiDocs) and `app/api/docs/route.ts` (GET → spec JSON); annotate all routes in `app/api/` with @swagger JSDoc. |
+| Swagger UI | Add `app/api-doc/page.tsx`; dynamic import `swagger-ui-react`, load spec from `/api/docs`. |
+| Codegen | Install `openapi-typescript-codegen` or `@hey-api/openapi-ts`; add script `generate-client` (input: `http://localhost:3000/api/docs` or `./openapi.json`; output: `./lib/api-client`; client: fetch). Optionally `generate-spec` script that writes openapi.json for CI. Hook into prebuild or Turborepo so client stays in sync. |
+| Hooks | Refactor all hooks in [apps/studio/lib/data/hooks/](apps/studio/lib/data/hooks/) to use the generated client; add useCreateGraph, useCreateVideoDoc. |
+| studio-client | Remove or reduce to re-export of generated client; no hand-written fetch for any route. |
+| Page | [app/page.tsx](apps/studio/app/page.tsx): use useGraphs, useGraph, useCreateGraph only; no fetch. |
+| Video | [VideoWorkspace.tsx](apps/studio/components/workspaces/VideoWorkspace.tsx): use useVideoDocs, useVideoDoc, useCreateVideoDoc, useSaveVideoDoc; no fetch. |
+| Stores | [lib/store.ts](apps/studio/lib/store.ts), [lib/domains/video/store.ts](apps/studio/lib/domains/video/store.ts): no fetch; load/save via hooks or injected client. |
+| Settings / AI | [SettingsSheet.tsx](apps/studio/components/settings/SettingsSheet.tsx), [SettingsHydration.tsx](apps/studio/components/settings/SettingsHydration.tsx), [lib/model-router/store.ts](apps/studio/lib/model-router/store.ts), [AppShell.tsx](apps/studio/components/AppShell.tsx): use generated client (via hook or wrapper); no raw fetch. |
+| Docs | AGENTS.md, decisions or data-and-ui-conventions, how-to 04, errors-and-attempts. |
 
 ---
 
-## 8. Hooks “getting hairy” — recommendation
+## 8. Hooks and stores (unchanged)
 
-- **One hook layer:** useGraphs, useGraph, useCreateGraph, useSaveGraph, useVideoDocs, useVideoDoc, useCreateVideoDoc, useSaveVideoDoc, useMe, (optional useSettings). These are the only places that know about Payload SDK or custom client.
-- **Stores:** Hold only draft state and “dirty” flags. They don’t own load/save; the parent component (or a small coordinator) uses the hooks and syncs server data into the store and triggers save via mutation.
-- That way we don’t duplicate fetch/SDK logic and we don’t mix cache and draft in confusing ways — hooks = server state, stores = draft state.
+- **One hook layer:** useGraphs, useGraph, useCreateGraph, useSaveGraph, useVideoDocs, useVideoDoc, useCreateVideoDoc, useSaveVideoDoc, useMe, (optional useSettings). They are the only consumers of the generated client.
+- **Stores:** Hold only draft state and dirty flags; they don’t own HTTP. The component that has the hooks syncs server data into the store and triggers save via mutations.

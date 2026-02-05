@@ -16,6 +16,7 @@ import { useSettingsStore } from '@/lib/settings/store';
 import { useEntitlements, CAPABILITIES } from '@forge/shared/entitlements';
 import { ImageGenerateRender } from '@/components/copilot/ImageGenerateRender';
 import { StructuredOutputRender } from '@/components/copilot/StructuredOutputRender';
+import { AiService } from '@/lib/api-client';
 
 export function AppShell() {
   const { route, setActiveWorkspace, openWorkspace, closeWorkspace } = useAppShellStore();
@@ -170,25 +171,19 @@ export function AppShell() {
     ],
     handler: async ({ prompt, schemaName }) => {
       try {
-        const res = await fetch('/api/structured-output', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            prompt: String(prompt ?? ''),
-            ...(schemaName && { schemaName: String(schemaName) }),
-          }),
+        const json = await AiService.postApiStructuredOutput({
+          prompt: String(prompt ?? ''),
+          ...(schemaName && { schemaName: String(schemaName) }),
         });
-        const json = await res.json();
-        if (!res.ok) {
-          return { success: false, message: json.error ?? 'Structured output failed', data: undefined };
-        }
         return { success: true, message: 'Structured data extracted', data: json.data };
       } catch (err) {
-        return {
-          success: false,
-          message: err instanceof Error ? err.message : 'Structured output failed',
-          data: undefined,
-        };
+        const message =
+          err && typeof err === 'object' && 'body' in err
+            ? String((err as { body?: { error?: string } }).body?.error ?? 'Structured output failed')
+            : err instanceof Error
+              ? err.message
+              : 'Structured output failed';
+        return { success: false, message, data: undefined };
       }
     },
     render: StructuredOutputRender,

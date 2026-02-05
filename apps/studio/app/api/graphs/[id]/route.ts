@@ -2,6 +2,44 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getPayload } from 'payload';
 import config from '@/payload.config';
 
+/**
+ * @swagger
+ * /api/graphs/{id}:
+ *   get:
+ *     summary: Get graph by ID
+ *     tags: [graphs]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Graph document
+ *       500:
+ *         description: Server error
+ *   patch:
+ *     summary: Update graph
+ *     tags: [graphs]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title: { type: string }
+ *               flow: {}
+ *     responses:
+ *       200:
+ *         description: Updated graph document
+ *       500:
+ *         description: Server error
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

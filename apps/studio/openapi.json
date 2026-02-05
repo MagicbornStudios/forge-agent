@@ -1,0 +1,468 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Studio API",
+    "version": "1.0"
+  },
+  "paths": {
+    "/api/forge/plan": {
+      "post": {
+        "summary": "Generate a plan (steps) for a goal using LLM structured output",
+        "tags": [
+          "ai"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "goal": {
+                    "type": "string"
+                  },
+                  "graphSummary": {}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Plan with steps array"
+          },
+          "400": {
+            "description": "Invalid request (e.g. goal required)"
+          },
+          "503": {
+            "description": "OpenRouter not configured"
+          }
+        }
+      }
+    },
+    "/api/graphs/{id}": {
+      "get": {
+        "summary": "Get graph by ID",
+        "tags": [
+          "graphs"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Graph document"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update graph",
+        "tags": [
+          "graphs"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "flow": {}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated graph document"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/graphs": {
+      "get": {
+        "summary": "List graphs",
+        "tags": [
+          "graphs"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of forge graph documents"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create graph",
+        "tags": [
+          "graphs"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "flow": {}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Created graph document"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/image-generate": {
+      "post": {
+        "summary": "Generate image from prompt via OpenRouter (image modality)",
+        "tags": [
+          "ai"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "prompt": {
+                    "type": "string"
+                  },
+                  "aspectRatio": {
+                    "type": "string"
+                  },
+                  "imageSize": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Base64 data URL of generated image"
+          },
+          "400": {
+            "description": "prompt required"
+          },
+          "503": {
+            "description": "OpenRouter not configured"
+          }
+        }
+      }
+    },
+    "/api/me": {
+      "get": {
+        "summary": "Get current user (auth)",
+        "tags": [
+          "auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "User object or null"
+          },
+          "401": {
+            "description": "Not authenticated (body has user null)"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/model-settings": {
+      "get": {
+        "summary": "Get model router state (active model, mode, registry, preferences, health)",
+        "tags": [
+          "model"
+        ],
+        "responses": {
+          "200": {
+            "description": "Model settings and health snapshot"
+          }
+        }
+      },
+      "post": {
+        "summary": "Update model preferences (mode, manualModelId, enabledModelIds)",
+        "tags": [
+          "model"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string"
+                  },
+                  "manualModelId": {
+                    "type": "string"
+                  },
+                  "enabledModelIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "New resolved model and health"
+          }
+        }
+      }
+    },
+    "/api/settings": {
+      "get": {
+        "summary": "Get all settings overrides for hydration",
+        "tags": [
+          "settings"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of settings-overrides documents"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Upsert settings for a scope",
+        "tags": [
+          "settings"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "scope": {
+                    "type": "string",
+                    "enum": [
+                      "app",
+                      "workspace",
+                      "editor"
+                    ]
+                  },
+                  "scopeId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "settings": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Created or updated settings document"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/structured-output": {
+      "post": {
+        "summary": "Get structured JSON output from prompt using a named or custom schema",
+        "tags": [
+          "ai"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "prompt": {
+                    "type": "string"
+                  },
+                  "schemaName": {
+                    "type": "string"
+                  },
+                  "schema": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Parsed JSON per schema"
+          },
+          "400": {
+            "description": "prompt required or invalid schema"
+          },
+          "503": {
+            "description": "OpenRouter not configured"
+          }
+        }
+      }
+    },
+    "/api/video-docs/{id}": {
+      "get": {
+        "summary": "Get video doc by ID",
+        "tags": [
+          "video-docs"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Video doc document"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update video doc",
+        "tags": [
+          "video-docs"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "doc": {}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated video doc document"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/video-docs": {
+      "get": {
+        "summary": "List video docs",
+        "tags": [
+          "video-docs"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of video doc documents"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create video doc",
+        "tags": [
+          "video-docs"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "doc": {}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Created video doc document"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    }
+  },
+  "components": {},
+  "tags": []
+}

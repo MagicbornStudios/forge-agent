@@ -10,7 +10,7 @@ import {
 } from '@forge/shared/components/workspace';
 import { ModelSwitcher } from '@/components/model-switcher';
 import { useVideoStore } from '@/lib/domains/video/store';
-import { useSaveVideoDoc } from '@/lib/data/hooks';
+import { useSaveVideoDoc, useVideoDocs, useVideoDoc, useCreateVideoDoc } from '@/lib/data/hooks';
 import { useAppShellStore } from '@/lib/app-shell/store';
 import { WORKSPACE_EDITOR_IDS } from '@/lib/app-shell/workspace-metadata';
 import { useSettingsStore } from '@/lib/settings/store';
@@ -26,10 +26,15 @@ import { CAPABILITIES, useEntitlements } from '@forge/shared/entitlements';
 import { TwickTimeline, TwickTrackList } from '@/components/video';
 
 export function VideoWorkspace() {
-  const { doc, setDoc, applyOperations, loadDoc, isDirty } = useVideoStore();
+  const { doc, setDoc, applyOperations, isDirty } = useVideoStore();
+  const [lastId, setLastId] = useState<number | null>(null);
   const saveVideoDocMutation = useSaveVideoDoc();
   const save = () => saveVideoDocMutation.mutate();
   const initialLoadDone = useRef(false);
+
+  const videoDocsQuery = useVideoDocs();
+  const videoDocQuery = useVideoDoc(lastId);
+  const createVideoDocMutation = useCreateVideoDoc();
   const workspaceTheme = useAppShellStore((s) => s.workspaceThemes.video);
   const editorId = WORKSPACE_EDITOR_IDS.video;
   const agentName = useSettingsStore((s) =>
@@ -54,39 +59,45 @@ export function VideoWorkspace() {
   }, [doc?.id]);
 
   useEffect(() => {
+    setLastId(getLastVideoDocId());
+  }, []);
+
+  useEffect(() => {
     if (initialLoadDone.current) return;
-    initialLoadDone.current = true;
 
-    const run = async () => {
-      const lastId = getLastVideoDocId();
-      if (lastId != null) {
-        await loadDoc(lastId);
-        return;
-      }
-      const listRes = await fetch('/api/video-docs');
-      if (!listRes.ok) return;
-      const docs = await listRes.json();
-      if (Array.isArray(docs) && docs.length > 0) {
-        const id = docs[0].id != null ? Number(docs[0].id) : docs[0].id;
-        await loadDoc(id);
-        return;
-      }
-      const createRes = await fetch('/api/video-docs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: 'Untitled timeline',
-          doc: { ...DEFAULT_VIDEO_DOC_DATA },
-        }),
-      });
-      if (createRes.ok) {
-        const created = await createRes.json();
-        setDoc(created);
-      }
-    };
+    if (lastId != null && videoDocQuery.data) {
+      setDoc(videoDocQuery.data);
+      setLastVideoDocId(videoDocQuery.data.id);
+      initialLoadDone.current = true;
+      return;
+    }
 
-    run();
-  }, [loadDoc, setDoc]);
+    if (lastId === null && videoDocsQuery.data !== undefined) {
+      if (Array.isArray(videoDocsQuery.data) && videoDocsQuery.data.length > 0) {
+        const first = videoDocsQuery.data[0];
+        setDoc(first);
+        setLastVideoDocId(first.id);
+      } else {
+        createVideoDocMutation
+          .mutateAsync({
+            title: 'Untitled timeline',
+            doc: { ...DEFAULT_VIDEO_DOC_DATA },
+          })
+          .then((created) => {
+            setDoc(created);
+            setLastVideoDocId(created.id);
+          })
+          .catch(() => {});
+      }
+      initialLoadDone.current = true;
+    }
+  }, [
+    lastId,
+    videoDocQuery.data,
+    videoDocsQuery.data,
+    setDoc,
+    createVideoDocMutation,
+  ]);
 
   const videoContract = useVideoContract({
     doc,
@@ -136,16 +147,16 @@ export function VideoWorkspace() {
     {
       id: 'new',
       label: 'New timeline',
-      onSelect: async () => {
-        const res = await fetch('/api/video-docs', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+      onSelect: () => {
+        createVideoDocMutation
+          .mutateAsync({
             title: 'Untitled timeline',
             doc: { ...DEFAULT_VIDEO_DOC_DATA },
-          }),
-        });
-        if (res.ok) setDoc(await res.json());
+          })
+          .then((created) => {
+            setDoc(created);
+            setLastVideoDocId(created.id);
+          });
       },
     },
     {

@@ -2,6 +2,34 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getPayload } from 'payload';
 import config from '@/payload.config';
 
+/**
+ * @swagger
+ * /api/graphs:
+ *   get:
+ *     summary: List graphs
+ *     tags: [graphs]
+ *     responses:
+ *       200:
+ *         description: List of forge graph documents
+ *       500:
+ *         description: Server error
+ *   post:
+ *     summary: Create graph
+ *     tags: [graphs]
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title: { type: string }
+ *               flow: {}
+ *     responses:
+ *       200:
+ *         description: Created graph document
+ *       500:
+ *         description: Server error
+ */
 export async function GET() {
   try {
     const payload = await getPayload({ config });

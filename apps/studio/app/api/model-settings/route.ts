@@ -8,10 +8,29 @@ import {
 import { MODEL_REGISTRY } from '@/lib/model-router/registry';
 
 /**
- * GET /api/model-settings
- *
- * Returns current model selection state: active model, mode,
- * registry, preferences, and health snapshot.
+ * @swagger
+ * /api/model-settings:
+ *   get:
+ *     summary: Get model router state (active model, mode, registry, preferences, health)
+ *     tags: [model]
+ *     responses:
+ *       200:
+ *         description: Model settings and health snapshot
+ *   post:
+ *     summary: Update model preferences (mode, manualModelId, enabledModelIds)
+ *     tags: [model]
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               mode: { type: string }
+ *               manualModelId: { type: string }
+ *               enabledModelIds: { type: array, items: { type: string } }
+ *     responses:
+ *       200:
+ *         description: New resolved model and health
  */
 export async function GET() {
   const { modelId, mode } = resolveModel();
@@ -27,12 +46,6 @@ export async function GET() {
   });
 }
 
-/**
- * POST /api/model-settings
- *
- * Update user preferences (mode, manual model, enabled models).
- * Returns the new resolved model.
- */
 export async function POST(req: Request) {
   const body = await req.json();
 

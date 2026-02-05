@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { studioKeys } from '../keys';
-import { studioClient } from '../studio-client';
+import { VideoDocsService } from '@/lib/api-client';
 import { useVideoStore } from '@/lib/domains/video/store';
 
 export function useSaveVideoDoc() {
@@ -12,7 +12,7 @@ export function useSaveVideoDoc() {
     mutationFn: async () => {
       const doc = useVideoStore.getState().doc;
       if (!doc) throw new Error('No video doc to save');
-      return studioClient.updateVideoDoc(doc.id, { doc: doc.doc });
+      return VideoDocsService.patchApiVideoDocs(String(doc.id), { doc: doc.doc });
     },
     onSuccess: (data) => {
       if (data?.id != null) {

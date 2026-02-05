@@ -3,9 +3,26 @@ import { getOpenRouterConfig } from '@/lib/openrouter-config';
 import { resolveModel } from '@/lib/model-router/server-state';
 
 /**
- * POST /api/forge/plan
- * Body: { goal: string, graphSummary?: { title, nodeCount, nodes: { id, type, label }[], edges: { id, source, target }[] } }
- * Returns a plan: { steps: ForgeGraphPatchOp[] } using LLM structured output.
+ * @swagger
+ * /api/forge/plan:
+ *   post:
+ *     summary: Generate a plan (steps) for a goal using LLM structured output
+ *     tags: [ai]
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               goal: { type: string }
+ *               graphSummary: {}
+ *     responses:
+ *       200:
+ *         description: Plan with steps array
+ *       400:
+ *         description: Invalid request (e.g. goal required)
+ *       503:
+ *         description: OpenRouter not configured
  */
 export async function POST(request: NextRequest) {
   const config = getOpenRouterConfig();
