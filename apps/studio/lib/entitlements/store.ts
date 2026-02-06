@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { devtools } from 'zustand/middleware';
 import { CAPABILITIES, type CapabilityId } from '@forge/shared/entitlements/capabilities';
 import type { EntitlementStatus } from '@forge/shared/entitlements/types';
 
@@ -31,26 +32,31 @@ export interface EntitlementsState {
   getStatus: (capability: CapabilityId) => EntitlementStatus;
 }
 
-export const useEntitlementsStore = create<EntitlementsState>((set, get) => ({
-  plan: 'free',
-  overrides: {},
+export const useEntitlementsStore = create<EntitlementsState>()(
+  devtools(
+    (set, get) => ({
+      plan: 'free',
+      overrides: {},
 
-  setPlan: (plan) => set({ plan }),
-  setOverride: (capability, status) =>
-    set((state) => ({
-      overrides: { ...state.overrides, [capability]: status },
-    })),
-  clearOverride: (capability) =>
-    set((state) => {
-      const next = { ...state.overrides };
-      delete next[capability];
-      return { overrides: next };
+      setPlan: (plan) => set({ plan }),
+      setOverride: (capability, status) =>
+        set((state) => ({
+          overrides: { ...state.overrides, [capability]: status },
+        })),
+      clearOverride: (capability) =>
+        set((state) => {
+          const next = { ...state.overrides };
+          delete next[capability];
+          return { overrides: next };
+        }),
+
+      getStatus: (capability) => {
+        const { plan, overrides } = get();
+        const override = overrides[capability];
+        if (override) return override;
+        return PLAN_CAPABILITIES[plan]?.includes(capability) ? 'allowed' : 'locked';
+      },
     }),
-
-  getStatus: (capability) => {
-    const { plan, overrides } = get();
-    const override = overrides[capability];
-    if (override) return override;
-    return PLAN_CAPABILITIES[plan]?.includes(capability) ? 'allowed' : 'locked';
-  },
-}));
+    { name: 'Entitlements' },
+  ),
+);

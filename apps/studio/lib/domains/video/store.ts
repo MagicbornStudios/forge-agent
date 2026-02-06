@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { devtools, persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 import type { VideoDoc, VideoPatchOp } from './types';
 import { applyVideoOperations } from './operations';
@@ -21,8 +21,9 @@ interface VideoStore {
 export const VIDEO_DRAFT_KEY = 'forge:video-draft:v1';
 
 export const useVideoStore = create<VideoStore>()(
-  persist(
-    immer((set, get) => ({
+  devtools(
+    persist(
+      immer((set, get) => ({
     doc: null,
     isDirty: false,
 
@@ -82,9 +83,13 @@ export const useVideoStore = create<VideoStore>()(
         }
       },
     })),
-  {
-    name: VIDEO_DRAFT_KEY,
-    partialize: (s) =>
-      s.doc && s.isDirty ? { documentId: s.doc.id, doc: s.doc, isDirty: s.isDirty } : {},
-    skipHydration: true,
-  } ) );
+      {
+        name: VIDEO_DRAFT_KEY,
+        partialize: (s) =>
+          s.doc && s.isDirty ? { documentId: s.doc.id, doc: s.doc, isDirty: s.isDirty } : {},
+        skipHydration: true,
+      },
+    ),
+    { name: 'Video' },
+  ),
+);

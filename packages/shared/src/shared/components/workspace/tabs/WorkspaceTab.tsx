@@ -78,33 +78,32 @@ export function WorkspaceTab({
     >
       <span className="truncate">{label}</span>
       {onClose && (
-        <WorkspaceTooltip
-          tooltip={closeTooltip ?? 'Close tab'}
-          tooltipDisabled={closeTooltipDisabled}
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            onClose();
+          }}
+          aria-label={closeLabel ?? 'Close tab'}
+          title={closeTooltipDisabled ? undefined : (typeof closeTooltip === 'string' ? closeTooltip : 'Close tab')}
+          className={cn(
+            'ml-1 rounded p-0.5 text-muted-foreground/70 transition',
+            'hover:text-foreground hover:bg-muted/70',
+          )}
         >
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              onClose();
-            }}
-            aria-label={closeLabel ?? 'Close tab'}
-            className={cn(
-              'ml-1 rounded p-0.5 text-muted-foreground/70 transition',
-              'hover:text-foreground hover:bg-muted/70',
-            )}
-          >
-            <span aria-hidden>x</span>
-          </button>
-        </WorkspaceTooltip>
+          <span aria-hidden>x</span>
+        </button>
       )}
     </div>
   );
 
+  const hasTooltip = tooltip && !tooltipDisabled;
+  if (!hasTooltip) {
+    return tab;
+  }
   return (
     <WorkspaceTooltip
       tooltip={tooltip}
-      tooltipDisabled={tooltipDisabled}
       tooltipSide={tooltipSide}
       tooltipAlign={tooltipAlign}
       tooltipClassName={tooltipClassName}

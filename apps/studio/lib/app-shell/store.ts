@@ -1,7 +1,7 @@
 'use client';
 
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { devtools, persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 
 /** Workspace identifier for the unified app. */
@@ -39,8 +39,9 @@ const DEFAULT_OPEN: AppShellWorkspaceId[] = ['forge'];
 const APP_SESSION_KEY = 'forge:app-session:v1';
 
 export const useAppShellStore = create<AppShellState>()(
-  persist(
-    immer((set) => ({
+  devtools(
+    persist(
+      immer((set) => ({
       route: {
         activeWorkspaceId: 'forge',
         openWorkspaceIds: DEFAULT_OPEN,
@@ -134,5 +135,7 @@ export const useAppShellStore = create<AppShellState>()(
     }),
     skipHydration: true,
   },
+    ),
+    { name: 'AppShell' },
   ),
 );

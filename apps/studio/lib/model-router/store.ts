@@ -1,6 +1,7 @@
 'use client';
 
 import { create } from 'zustand';
+import { devtools } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 import type { ModelDef, ModelHealth, SelectionMode, ModelPreferences } from './types';
 import { MODEL_REGISTRY, getDefaultEnabledIds } from './registry';
@@ -37,7 +38,8 @@ interface ModelRouterState {
 }
 
 export const useModelRouterStore = create<ModelRouterState>()(
-  immer((set, get) => ({
+  devtools(
+    immer((set, get) => ({
     registry: MODEL_REGISTRY,
     mode: 'auto',
     manualModelId: null,
@@ -103,4 +105,6 @@ export const useModelRouterStore = create<ModelRouterState>()(
       }
     },
   })),
+    { name: 'ModelRouter' },
+  ),
 );

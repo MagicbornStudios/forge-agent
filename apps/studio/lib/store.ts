@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { devtools, persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 import { toast } from 'sonner';
 import type { ForgeGraphDoc, ForgeGraphPatchOp } from '@forge/types/graph';
@@ -32,8 +32,9 @@ function canToast() {
 export const GRAPH_DRAFT_KEY = 'forge:graph-draft:v1';
 
 export const useGraphStore = create<GraphStore>()(
-  persist(
-    immer((set, get) => ({
+  devtools(
+    persist(
+      immer((set, get) => ({
       graph: null,
       isDirty: false,
       pendingFromPlan: false,
@@ -116,17 +117,21 @@ export const useGraphStore = create<GraphStore>()(
         }
       },
     })),
-  {
-    name: GRAPH_DRAFT_KEY,
-    partialize: (s) =>
-      s.graph && s.isDirty
-        ? {
-            documentId: s.graph.id,
-            graph: s.graph,
-            isDirty: s.isDirty,
-            pendingFromPlan: s.pendingFromPlan ?? false,
-          }
-        : {},
-    skipHydration: true,
-  } ) );
+      {
+        name: GRAPH_DRAFT_KEY,
+        partialize: (s) =>
+          s.graph && s.isDirty
+            ? {
+                documentId: s.graph.id,
+                graph: s.graph,
+                isDirty: s.isDirty,
+                pendingFromPlan: s.pendingFromPlan ?? false,
+              }
+            : {},
+        skipHydration: true,
+      },
+    ),
+    { name: 'Graph' },
+  ),
+);
 

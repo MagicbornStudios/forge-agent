@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import { devtools } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import type { SettingsOverrideRecord } from "@forge/types/payload";
 import { SETTINGS_CONFIG, getEditorDefaults, getWorkspaceDefaults } from "./config";
@@ -68,7 +69,8 @@ function buildInitialState() {
 }
 
 export const useSettingsStore = create<SettingsState>()(
-  immer((set, get) => ({
+  devtools(
+    immer((set, get) => ({
     ...buildInitialState(),
 
     setSetting: (scope, key, value, ids) => {
@@ -231,5 +233,7 @@ export const useSettingsStore = create<SettingsState>()(
         state.editorSettings = { ...initial.editorSettings };
       });
     },
-  }))
+  })),
+    { name: 'Settings' },
+  ),
 );

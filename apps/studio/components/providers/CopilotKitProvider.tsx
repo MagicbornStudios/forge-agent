@@ -45,18 +45,17 @@ export function CopilotKitProvider({
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const activeWorkspaceId = useAppShellStore((s) => s.route.activeWorkspaceId);
   const editorId = WORKSPACE_EDITOR_IDS[activeWorkspaceId];
-  const mergedSettings = useSettingsStore(
-    React.useCallback(
-      (state) => state.getMergedSettings({ workspaceId: activeWorkspaceId, editorId }),
-      [activeWorkspaceId, editorId],
-    ),
+  const ids = useMemo(
+    () => ({ workspaceId: activeWorkspaceId, editorId }),
+    [activeWorkspaceId, editorId],
   );
-  const modelSource = useSettingsStore(
-    React.useCallback(
-      (state) => state.getSettingSource('ai.model', { workspaceId: activeWorkspaceId, editorId }),
-      [activeWorkspaceId, editorId],
-    ),
-  );
+  // Primitive selectors only — avoid getMergedSettings() which returns a new object every time (getSnapshot loop).
+  const agentNameRaw = useSettingsStore((s) => s.getSettingValue('ai.agentName', ids));
+  const instructionsRaw = useSettingsStore((s) => s.getSettingValue('ai.instructions', ids));
+  const toolsEnabledRaw = useSettingsStore((s) => s.getSettingValue('ai.toolsEnabled', ids));
+  const temperatureRaw = useSettingsStore((s) => s.getSettingValue('ai.temperature', ids));
+  const modelPreferenceRaw = useSettingsStore((s) => s.getSettingValue('ai.model', ids));
+  const modelSource = useSettingsStore((s) => s.getSettingSource('ai.model', ids));
   const appModelPreference = useSettingsStore((state) => state.getSettingValue('ai.model')) as
     | string
     | undefined;
@@ -91,16 +90,15 @@ export function CopilotKitProvider({
   // publicApiKey is optional when using self-hosted runtime
   const publicApiKey = process.env.NEXT_PUBLIC_COPILOTKIT_API_KEY;
   const agentName =
-    typeof mergedSettings['ai.agentName'] === 'string' ? mergedSettings['ai.agentName'] : 'AI Assistant';
+    typeof agentNameRaw === 'string' ? agentNameRaw : 'AI Assistant';
   const settingsInstructions =
-    typeof mergedSettings['ai.instructions'] === 'string' ? mergedSettings['ai.instructions'] : '';
+    typeof instructionsRaw === 'string' ? instructionsRaw : '';
   const toolsEnabled =
-    mergedSettings['ai.toolsEnabled'] !== false && entitlements.has(CAPABILITIES.STUDIO_AI_TOOLS);
-  const temperatureSetting = mergedSettings['ai.temperature'];
+    toolsEnabledRaw !== false && entitlements.has(CAPABILITIES.STUDIO_AI_TOOLS);
   const temperature =
-    typeof temperatureSetting === 'number' ? temperatureSetting : Number(temperatureSetting);
+    typeof temperatureRaw === 'number' ? temperatureRaw : Number(temperatureRaw);
   const modelPreference =
-    typeof mergedSettings['ai.model'] === 'string' ? mergedSettings['ai.model'] : 'auto';
+    typeof modelPreferenceRaw === 'string' ? modelPreferenceRaw : 'auto';
   const shouldOverrideModel =
     modelSource !== 'app' && modelSource !== 'unset' && modelPreference !== 'auto';
 
