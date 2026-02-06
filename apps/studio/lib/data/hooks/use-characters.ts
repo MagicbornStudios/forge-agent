@@ -29,6 +29,7 @@ export function useCreateCharacter() {
       name: string;
       description?: string;
       imageUrl?: string;
+      voiceId?: string | null;
       project: number;
     }) => payloadSdk.create({ collection: CHARACTERS_SLUG, data: body }),
     onSuccess: (data) => {
@@ -54,6 +55,7 @@ export function useUpdateCharacter() {
       name?: string;
       description?: string;
       imageUrl?: string;
+      voiceId?: string | null;
     }) => payloadSdk.update({ collection: CHARACTERS_SLUG, id, data }),
     onSuccess: (data) => {
       if (data?.id != null) {

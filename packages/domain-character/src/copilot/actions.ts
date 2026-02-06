@@ -24,10 +24,11 @@ export interface CharacterActionsDeps {
     name: string;
     description?: string;
     imageUrl?: string;
+    voiceId?: string | null;
   }) => Promise<CharacterDoc>;
   updateCharacter: (
     id: number,
-    updates: Partial<Pick<CharacterDoc, 'name' | 'description' | 'imageUrl'>>,
+    updates: Partial<Pick<CharacterDoc, 'name' | 'description' | 'imageUrl' | 'voiceId'>>,
   ) => Promise<void>;
   createRelationship: (data: {
     source: number;

@@ -969,9 +969,8 @@ export function ForgeWorkspace() {
   ];
 
   const leftSidebar = (
-    <div className="h-full bg-[var(--color-df-sidebar-bg)] border-r border-[var(--color-df-sidebar-border)]">
       <GraphSidebar
-        className="h-full"
+        className="h-full bg-[var(--color-df-sidebar-bg)]"
         tabs={[
           {
             id: 'narratives',
@@ -1029,7 +1028,6 @@ export function ForgeWorkspace() {
           },
         ]}
       />
-    </div>
   );
 
   const mainContent = (

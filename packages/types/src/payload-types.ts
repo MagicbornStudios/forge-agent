@@ -234,6 +234,10 @@ export interface Character {
    * URL to a character portrait (external or AI-generated). UI falls back to initials when empty.
    */
   imageUrl?: string | null;
+  /**
+   * ElevenLabs voice ID for this character; used for text-to-speech preview and generation.
+   */
+  voiceId?: string | null;
   avatar?: (number | null) | Media;
   project: number | Project;
   /**
@@ -628,6 +632,7 @@ export interface CharactersSelect<T extends boolean = true> {
   name?: T;
   description?: T;
   imageUrl?: T;
+  voiceId?: T;
   avatar?: T;
   project?: T;
   meta?: T;

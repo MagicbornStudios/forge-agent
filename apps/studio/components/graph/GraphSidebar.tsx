@@ -3,6 +3,11 @@
 import React, { useMemo, useState } from 'react';
 import { ToggleGroup, ToggleGroupItem } from '@forge/ui/toggle-group';
 import { cn } from '@forge/shared/lib/utils';
+import {
+  WorkspaceSidebar,
+  SidebarHeader,
+  SidebarContent,
+} from '@forge/shared/components/workspace';
 
 export interface GraphSidebarTab {
   id: string;
@@ -18,14 +23,23 @@ export interface GraphSidebarProps {
   defaultTabId?: string;
   activeTabId?: string;
   onTabChange?: (id: string) => void;
+  side?: 'left' | 'right';
   className?: string;
 }
 
+/**
+ * GraphSidebar — a tabbed sidebar for graph editors.
+ *
+ * Composes `WorkspaceSidebar` (which uses shadcn Sidebar primitives internally)
+ * and places the tab bar in `SidebarHeader` and active tab content in
+ * `SidebarContent`.
+ */
 export function GraphSidebar({
   tabs,
   defaultTabId,
   activeTabId,
   onTabChange,
+  side = 'left',
   className,
 }: GraphSidebarProps) {
   const initialTab = useMemo(() => defaultTabId ?? tabs[0]?.id, [defaultTabId, tabs]);
@@ -40,47 +54,49 @@ export function GraphSidebar({
   const active = tabs.find((tab) => tab.id === currentTab) ?? tabs[0];
 
   return (
-    <div className={cn('h-full w-full flex flex-col', className)}>
-      <ToggleGroup
-        type="single"
-        value={currentTab}
-        onValueChange={(value) => value && setTab(value)}
-        variant="outline"
-        className="w-full flex rounded-none bg-transparent h-8 px-0 gap-0 m-0 min-w-0 overflow-hidden border-b border-border"
-      >
-        {tabs.map((tab) => {
-          const isActive = tab.id === currentTab;
-          const accent = tab.accentColor ?? 'var(--color-df-border-hover)';
-          const accentMuted =
-            tab.accentMutedColor ?? 'color-mix(in oklab, var(--color-df-border-hover) 40%, transparent)';
+    <WorkspaceSidebar side={side} className={cn('h-full', className)}>
+      <SidebarHeader className="p-0">
+        <ToggleGroup
+          type="single"
+          value={currentTab}
+          onValueChange={(value) => value && setTab(value)}
+          variant="outline"
+          className="w-full flex rounded-none bg-transparent h-8 px-0 gap-0 m-0 min-w-0 overflow-hidden border-b border-border"
+        >
+          {tabs.map((tab) => {
+            const isActive = tab.id === currentTab;
+            const accent = tab.accentColor ?? 'var(--color-df-border-hover)';
+            const accentMuted =
+              tab.accentMutedColor ?? 'color-mix(in oklab, var(--color-df-border-hover) 40%, transparent)';
 
-          return (
-            <ToggleGroupItem
-              key={tab.id}
-              value={tab.id}
-              aria-label={tab.label}
-              className={cn(
-                'min-w-0 flex-1 text-xs rounded-none px-1 py-0.5 truncate leading-tight relative',
-                'text-muted-foreground hover:text-foreground transition-colors',
-                'data-[state=on]:bg-muted data-[state=on]:text-foreground',
-                'border-l-2'
-              )}
-              style={{
-                borderLeftColor: isActive ? accent : accentMuted,
-              }}
-            >
-              <span className="mr-1 shrink-0" style={{ color: isActive ? accent : accentMuted }}>
-                {tab.icon}
-              </span>
-              <span className="truncate">{tab.label}</span>
-            </ToggleGroupItem>
-          );
-        })}
-      </ToggleGroup>
+            return (
+              <ToggleGroupItem
+                key={tab.id}
+                value={tab.id}
+                aria-label={tab.label}
+                className={cn(
+                  'min-w-0 flex-1 text-xs rounded-none px-1 py-0.5 truncate leading-tight relative',
+                  'text-muted-foreground hover:text-foreground transition-colors',
+                  'data-[state=on]:bg-muted data-[state=on]:text-foreground',
+                  'border-l-2'
+                )}
+                style={{
+                  borderLeftColor: isActive ? accent : accentMuted,
+                }}
+              >
+                <span className="mr-1 shrink-0" style={{ color: isActive ? accent : accentMuted }}>
+                  {tab.icon}
+                </span>
+                <span className="truncate">{tab.label}</span>
+              </ToggleGroupItem>
+            );
+          })}
+        </ToggleGroup>
+      </SidebarHeader>
 
-      <div className="flex-1 min-h-0 overflow-hidden">
+      <SidebarContent className="px-0">
         {active?.content}
-      </div>
-    </div>
+      </SidebarContent>
+    </WorkspaceSidebar>
   );
 }

@@ -2,7 +2,7 @@
 title: 08 - Adding AI to workspaces
 
 created: 2026-02-04
-updated: 2026-02-05
+updated: 2026-02-06
 ---
 
 # 08 - Adding AI to workspaces
@@ -46,5 +46,9 @@ Step-by-step: [14-adding-domain-actions.mdx](../14-adding-domain-actions.mdx).
 - One contract per domain; use `createDomainAction()` / `createAppAction()` to prefix consistently.
 - Same number of actions every render; use **available: 'disabled'** when an action is contextually inactive.
 - **OpenRouter** is the model provider for chat, image gen, and structured output.
+
+## Character voice (ElevenLabs)
+
+Character voice selection + preview uses **ElevenLabs** (TTS). Configure `ELEVENLABS_API_KEY` in the Studio environment. The Character create/edit forms expose a voice dropdown and a preview play button that call `/api/elevenlabs/voices` and `/api/elevenlabs/speech`.
 
 **Next:** Back to [00 - Index](00-index.md) or [07 - Copilot and AI integration](07-copilot.md).

@@ -50,6 +50,7 @@ updated: 2026-02-06
 - Other agents: None reported.
 - Done: CopilotKit architecture doc + roadmap implementation (image gen, structured output, plan-execute-review-commit).
 - Done (2026-02-06): Fixed docs sidebar keys + MDX rendering; added forge dual narrative/storylet editors, shared graph chrome + project switcher; aligned character workspace chrome and drag-drop creation; added `@forge/domain-character` to Next transpile packages and fixed project slug fallback in switchers.
+- Done (2026-02-06): Added ElevenLabs character voice support (voiceId field + API routes + create/edit voice select + preview), updated env example and docs.
 - Done: Twick required; @forge/* deps in packages use workspace:* so install works without Verdaccio; lockfile updated; full VideoWorkspace + Twick CSS (studio only) restored; @twick/timeline dist/timeline.css not on npm, omitted.
 - Next slice: Map Twick timeline state to our `VideoDoc` draft and add plan/commit UI for video proposals.
 

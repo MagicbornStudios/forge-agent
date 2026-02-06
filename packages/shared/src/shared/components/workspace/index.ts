@@ -16,7 +16,23 @@ export {
   WorkspaceBottomPanel,
   WorkspaceSidebar,
   WorkspaceMain,
+  // shadcn sidebar primitives (re-exported via WorkspaceSidebar)
+  SidebarContent,
+  SidebarHeader,
+  SidebarFooter,
+  SidebarSeparator,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupAction,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarTrigger,
+  SidebarInset,
+  useSidebar,
 } from './panels';
+export type { WorkspaceSidebarProps } from './panels';
 export { WorkspaceStatusBar } from './status/WorkspaceStatusBar';
 export { WorkspaceReviewBar } from './review/WorkspaceReviewBar';
 export type { WorkspaceReviewBarProps } from './review/WorkspaceReviewBar';

@@ -30,6 +30,14 @@ export const Characters: CollectionConfig = {
       },
     },
     {
+      name: 'voiceId',
+      type: 'text',
+      admin: {
+        description:
+          'ElevenLabs voice ID for this character; used for text-to-speech preview and generation.',
+      },
+    },
+    {
       name: 'avatar',
       type: 'upload',
       relationTo: 'media',

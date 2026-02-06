@@ -18,7 +18,7 @@ import { isEntity } from '@forge/shared/workspace';
 // Copilot
 import { useAIHighlight } from '@forge/shared/copilot/use-ai-highlight';
 import { useDomainCopilot } from '@forge/shared/copilot/use-domain-copilot';
-import { useCharacterContract } from '@forge/domain-character/copilot';
+import { useCharacterContract } from '@forge/domain-character';
 
 // AppShell
 import { useAppShellStore } from '@/lib/app-shell/store';
@@ -172,7 +172,7 @@ export function CharacterWorkspace() {
 
   // ---- CRUD callbacks (for copilot contract) ----
   const handleCreateCharacter = useCallback(
-    async (data: { name: string; description?: string; imageUrl?: string }): Promise<CharacterDoc> => {
+    async (data: { name: string; description?: string; imageUrl?: string; voiceId?: string | null }): Promise<CharacterDoc> => {
       const result = await createCharMutation.mutateAsync({ ...data, project: projectId! });
       addCharacter(result as CharacterDoc);
       setActiveCharacter(result.id);
@@ -182,7 +182,7 @@ export function CharacterWorkspace() {
   );
 
   const handleUpdateCharacter = useCallback(
-    async (id: number, updates: Partial<Pick<CharacterDoc, 'name' | 'description' | 'imageUrl'>>) => {
+    async (id: number, updates: Partial<Pick<CharacterDoc, 'name' | 'description' | 'imageUrl' | 'voiceId'>>) => {
       await updateCharMutation.mutateAsync({ id, ...updates });
       updateCharacterLocal(id, updates);
     },
@@ -469,11 +469,7 @@ export function CharacterWorkspace() {
         </WorkspaceToolbar>
 
         <WorkspaceLayoutGrid
-          left={
-            <div className="h-full bg-[var(--color-df-sidebar-bg)] border-r border-[var(--color-df-sidebar-border)]">
-              {leftContent}
-            </div>
-          }
+          left={leftContent}
           main={mainContent}
           right={rightContent}
           editor={{ editorId, editorType: 'react-flow' }}

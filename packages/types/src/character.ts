@@ -15,6 +15,7 @@ export interface CharacterDoc {
   name: string;
   description?: string | null;
   imageUrl?: string | null;
+  voiceId?: string | null;
   avatar?: number | { id: number; url?: string; sizes?: { thumbnail?: { url?: string }; medium?: { url?: string } } } | null;
   project: number | { id: number };
   meta?: Record<string, unknown> | null;
@@ -54,12 +55,13 @@ export type CharacterPatchOp =
       name: string;
       description?: string;
       imageUrl?: string;
+      voiceId?: string;
       projectId: number;
     }
   | {
       type: typeof CHARACTER_PATCH_OP.UPDATE_CHARACTER;
       characterId: number;
-      updates: Partial<Pick<CharacterDoc, 'name' | 'description' | 'imageUrl'>>;
+      updates: Partial<Pick<CharacterDoc, 'name' | 'description' | 'imageUrl' | 'voiceId'>>;
     }
   | {
       type: typeof CHARACTER_PATCH_OP.DELETE_CHARACTER;

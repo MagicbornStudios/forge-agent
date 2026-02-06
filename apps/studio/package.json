@@ -23,6 +23,7 @@
     "@copilotkit/runtime": "^1.51.2",
     "@copilotkit/shared": "^1.51.2",
     "@forge/agent-engine": "workspace:*",
+    "@forge/domain-character": "workspace:*",
     "@forge/domain-forge": "workspace:*",
     "@forge/shared": "workspace:*",
     "@forge/types": "workspace:*",
