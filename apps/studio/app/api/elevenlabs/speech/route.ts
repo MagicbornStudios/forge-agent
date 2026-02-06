@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 
 const DEFAULT_MODEL_ID = 'eleven_multilingual_v2';
 
@@ -30,40 +31,23 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-      method: 'POST',
-      headers: {
-        'xi-api-key': apiKey,
-        'Content-Type': 'application/json',
-        Accept: 'audio/mpeg',
-      },
-      body: JSON.stringify({
-        text,
-        model_id: modelId || DEFAULT_MODEL_ID,
-      }),
+    const client = new ElevenLabsClient({ apiKey });
+    const audioStream = await client.textToSpeech.convert(voiceId, {
+      text,
+      modelId: modelId || DEFAULT_MODEL_ID,
     });
-
-    if (!res.ok) {
-      const textBody = await res.text();
-      return NextResponse.json(
-        { error: 'Speech generation failed', details: textBody.slice(0, 200) },
-        { status: 502 }
-      );
-    }
-
-    const audioBuffer = await res.arrayBuffer();
-    const contentType = res.headers.get('content-type') ?? 'audio/mpeg';
-    return new NextResponse(audioBuffer, {
+    return new NextResponse(audioStream, {
       status: 200,
       headers: {
-        'Content-Type': contentType,
+        'Content-Type': 'audio/mpeg',
         'Cache-Control': 'no-store',
       },
     });
   } catch (err) {
+    const message = err instanceof Error ? err.message : 'Speech generation failed';
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Speech generation failed' },
-      { status: 500 }
+      { error: message },
+      { status: 502 }
     );
   }
 }

@@ -128,18 +128,13 @@ export function AppShell() {
     ],
     handler: async ({ prompt, aspectRatio, imageSize }) => {
       try {
-        const res = await fetch('/api/image-generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            prompt: String(prompt ?? ''),
-            ...(aspectRatio && { aspectRatio: String(aspectRatio) }),
-            ...(imageSize && { imageSize: String(imageSize) }),
-          }),
+        const data = await AiService.postApiImageGenerate({
+          prompt: String(prompt ?? ''),
+          ...(aspectRatio && { aspectRatio: String(aspectRatio) }),
+          ...(imageSize && { imageSize: String(imageSize) }),
         });
-        const data = await res.json();
-        if (!res.ok) {
-          return { success: false, message: data.error ?? 'Image generation failed', data: {} };
+        if (!data?.imageUrl) {
+          return { success: false, message: 'Image generation failed', data: {} };
         }
         return {
           success: true,

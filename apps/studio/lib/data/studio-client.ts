@@ -1,12 +1,16 @@
 /**
  * Studio API client. Collection CRUD uses Payload SDK (payloadSdk); custom endpoints
- * use the OpenAPI-generated services (Auth, Settings, Model, AI). SSE (e.g. workflows)
- * is handled manually in lib/api-client/workflows.ts. Use the hooks in ./hooks for
- * server state; do not add hand-rolled fetch for /api/*.
+ * use the OpenAPI-generated services (Auth, Settings, Model, AI) or manual client
+ * modules (elevenlabs, media). SSE (e.g. workflows) is in lib/api-client/workflows.ts.
+ * Use the hooks in ./hooks for server state; do not add hand-rolled fetch for /api/*.
  */
 
 export { payloadSdk, FORGE_GRAPHS_SLUG, VIDEO_DOCS_SLUG } from '@/lib/api-client/payload-sdk';
 export { streamWorkflowRun } from '@/lib/api-client/workflows';
+export { getVoices, synthesizeSpeech } from '@/lib/api-client/elevenlabs';
+export type { ElevenLabsVoice } from '@/lib/api-client/elevenlabs';
+export { uploadFile } from '@/lib/api-client/media';
+export type { MediaUploadResult } from '@/lib/api-client/media';
 export {
   AuthService,
   SettingsService,

@@ -46,6 +46,7 @@ Add components via: `npx shadcn@latest add <name>`. Use shadcn atoms from `packa
 - **Feature gates**: Use `FeatureGate` at the call site (toolbar or slot) to wrap gated controls. `WorkspaceButton` does not accept gate props.
 - **Themes**: `WorkspaceShell` accepts `theme` to override `data-theme` for a workspace. Omit to inherit app theme.
 - **Toolbar standard**: Menubar (File/Edit/View), Project combobox, and Settings are expected in workspace toolbars.
+- **Sidebars**: Use `WorkspaceSidebar` (shadcn Sidebar wrapper) for embedded left/right panels. `GraphSidebar` composes it for tabbed palettes.
 
 ## Anti-patterns
 

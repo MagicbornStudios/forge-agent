@@ -1,11 +1,18 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ImageIcon, Sparkles, Trash2 } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Sparkles, Trash2 } from 'lucide-react';
 import { Button } from '@forge/ui/button';
 import { Input } from '@forge/ui/input';
 import { Textarea } from '@forge/ui/textarea';
 import { Separator } from '@forge/ui/separator';
+import {
+  AudioPlayerProvider,
+  AudioPlayerButton,
+  AudioPlayerProgress,
+  AudioPlayerTime,
+  AudioPlayerDuration,
+} from '@forge/ui/audio-player';
 import {
   Select,
   SelectContent,
@@ -18,6 +25,7 @@ import { GenerateMediaModal } from '@forge/shared/components/media';
 import { getInitials } from '@/lib/domains/character/operations';
 import type { CharacterDoc } from '@/lib/domains/character/types';
 import { AiService } from '@/lib/api-client';
+import { useElevenLabsVoices, useGenerateSpeech } from '@/lib/data/hooks';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -35,65 +43,31 @@ interface Props {
 const NO_VOICE_VALUE = '__none__';
 const DEFAULT_MODEL_ID = 'eleven_multilingual_v2';
 
-type VoiceOption = {
-  voice_id: string;
-  name: string;
-  labels?: Record<string, string>;
-};
-
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 export function ActiveCharacterPanel({ character, onUpdate }: Props) {
   const [showGenerateModal, setShowGenerateModal] = useState(false);
-  const [voices, setVoices] = useState<VoiceOption[]>([]);
-  const [voicesLoading, setVoicesLoading] = useState(false);
-  const [voicesError, setVoicesError] = useState<string | null>(null);
   const [previewText, setPreviewText] = useState('');
-  const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // ---- Fetch voices -------------------------------------------------------
+  const voicesQuery = useElevenLabsVoices();
+  const generateSpeechMutation = useGenerateSpeech();
+  const voices = voicesQuery.data ?? [];
+  const voicesLoading = voicesQuery.isLoading;
+  const voicesError = voicesQuery.error
+    ? voicesQuery.error instanceof Error
+      ? voicesQuery.error.message
+      : 'Unable to load voices'
+    : null;
+  const previewLoading = generateSpeechMutation.isPending;
+
+  // ---- Audio preview cleanup ---------------------------------------------
   useEffect(() => {
-    let active = true;
-    setVoicesLoading(true);
-    setVoicesError(null);
-    fetch('/api/elevenlabs/voices')
-      .then(async (res) => {
-        if (!res.ok) {
-          const data = await res.json().catch(() => null);
-          throw new Error(data?.error ?? 'Voice service unavailable');
-        }
-        return res.json() as Promise<{ voices?: VoiceOption[] }>;
-      })
-      .then((data) => {
-        if (!active) return;
-        setVoices(data.voices ?? []);
-      })
-      .catch((err) => {
-        if (!active) return;
-        setVoicesError(err instanceof Error ? err.message : 'Unable to load voices');
-      })
-      .finally(() => {
-        if (!active) return;
-        setVoicesLoading(false);
-      });
-
     return () => {
-      active = false;
-    };
-  }, []);
-
-  // ---- Audio preview ------------------------------------------------------
-  useEffect(() => {
-    if (!previewUrl || !audioRef.current) return;
-    audioRef.current.src = previewUrl;
-    audioRef.current.play().catch(() => {});
-    return () => {
-      URL.revokeObjectURL(previewUrl);
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
   }, [previewUrl]);
 
@@ -133,31 +107,18 @@ export function ActiveCharacterPanel({ character, onUpdate }: Props) {
 
   const handlePreview = useCallback(async () => {
     if (!character?.voiceId || !previewText.trim()) return;
-    setPreviewLoading(true);
     setPreviewError(null);
     try {
-      const res = await fetch('/api/elevenlabs/speech', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          voiceId: character.voiceId,
-          text: previewText.trim(),
-          modelId: DEFAULT_MODEL_ID,
-        }),
+      const result = await generateSpeechMutation.mutateAsync({
+        voiceId: character.voiceId,
+        text: previewText.trim(),
+        modelId: DEFAULT_MODEL_ID,
       });
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.error ?? 'Voice preview failed');
-      }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      setPreviewUrl(url);
+      setPreviewUrl(result.audioUrl);
     } catch (err) {
       setPreviewError(err instanceof Error ? err.message : 'Voice preview failed');
-    } finally {
-      setPreviewLoading(false);
     }
-  }, [character, previewText]);
+  }, [character, previewText, generateSpeechMutation]);
 
   const handleGenerateImage = useCallback(
     async (prompt: string, opts?: { aspectRatio?: string }) => {
@@ -309,7 +270,23 @@ export function ActiveCharacterPanel({ character, onUpdate }: Props) {
         {previewError && (
           <p className="text-xs text-destructive">{previewError}</p>
         )}
-        <audio ref={audioRef} className="hidden" />
+        {previewUrl && (
+          <AudioPlayerProvider>
+            <div className="flex items-center gap-2 rounded-md border border-border bg-muted/40 px-2 py-1.5">
+              <AudioPlayerButton
+                item={{ id: 'preview', src: previewUrl }}
+                variant="ghost"
+                size="icon"
+              />
+              <AudioPlayerProgress className="flex-1" />
+              <div className="flex items-center gap-1 text-xs">
+                <AudioPlayerTime className="text-xs" />
+                <span className="text-muted-foreground">/</span>
+                <AudioPlayerDuration className="text-xs" />
+              </div>
+            </div>
+          </AudioPlayerProvider>
+        )}
       </div>
     </div>
   );

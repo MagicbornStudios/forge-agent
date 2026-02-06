@@ -219,7 +219,7 @@ export const RelationshipGraphEditor = forwardRef<CharacterViewportHandle, Props
           edgeTypes={edgeTypes}
           fitView
           proOptions={{ hideAttribution: true }}
-          className="bg-[var(--color-df-canvas-bg)]"
+          className="bg-canvas"
         >
           <FlowBackground />
           <GraphLeftToolbar

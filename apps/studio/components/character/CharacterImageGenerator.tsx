@@ -3,6 +3,7 @@
 import React, { useCallback, useState } from 'react';
 import { Button } from '@forge/ui/button';
 import { Textarea } from '@forge/ui/textarea';
+import { AiService } from '@/lib/api-client';
 import type { CharacterDoc } from '@/lib/domains/character/types';
 
 interface Props {
@@ -23,17 +24,8 @@ export function CharacterImageGenerator({ character, onImageGenerated }: Props) 
     setError(null);
     setPreview(null);
     try {
-      const res = await fetch('/api/image-generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, aspectRatio: '3:4' }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? 'Image generation failed');
-        return;
-      }
-      if (data.imageUrl) {
+      const data = await AiService.postApiImageGenerate({ prompt, aspectRatio: '3:4' });
+      if (data?.imageUrl) {
         setPreview(data.imageUrl);
       } else {
         setError('No image returned');

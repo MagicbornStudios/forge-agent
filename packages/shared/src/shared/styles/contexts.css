@@ -14,6 +14,14 @@
 [data-domain] {
   --context-glow: color-mix(in oklab, var(--context-accent) 35%, transparent);
   --context-ring: color-mix(in oklab, var(--context-accent) 60%, transparent);
+  /* Map domain accent into shadcn semantic tokens */
+  --primary: var(--context-accent);
+  --primary-foreground: var(--color-df-text-primary);
+  --accent: color-mix(in oklab, var(--context-accent) 20%, var(--color-df-control-bg));
+  --accent-foreground: var(--color-df-text-primary);
+  --ring: var(--context-accent);
+  --sidebar-primary: var(--context-accent);
+  --sidebar-ring: var(--context-accent);
 }
 
 [data-domain][data-focused="false"] {

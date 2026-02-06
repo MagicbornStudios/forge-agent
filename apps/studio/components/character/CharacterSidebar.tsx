@@ -93,7 +93,7 @@ export function CharacterSidebar({
 
   return (
     <GraphSidebar
-      className="h-full bg-[var(--color-df-sidebar-bg)]"
+      className="h-full"
       tabs={[
         {
           id: 'characters',

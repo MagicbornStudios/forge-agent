@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-
-const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1/voices';
+import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 
 export async function GET() {
   const apiKey = process.env.ELEVENLABS_API_KEY?.trim();
@@ -12,35 +11,21 @@ export async function GET() {
   }
 
   try {
-    const res = await fetch(ELEVENLABS_API_URL, {
-      headers: {
-        'xi-api-key': apiKey,
-      },
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      return NextResponse.json(
-        { error: 'Failed to fetch voices', details: text.slice(0, 200) },
-        { status: 502 }
-      );
-    }
-
-    const data = (await res.json()) as {
-      voices?: Array<{ voice_id: string; name: string; labels?: Record<string, string> }>;
-    };
-
+    const client = new ElevenLabsClient({ apiKey });
+    const response = await client.voices.getAll();
+    const voices = response.voices ?? [];
     return NextResponse.json({
-      voices: (data.voices ?? []).map((voice) => ({
-        voice_id: voice.voice_id,
-        name: voice.name,
-        labels: voice.labels,
+      voices: voices.map((v) => ({
+        voice_id: v.voiceId ?? '',
+        name: v.name ?? '',
+        labels: v.labels,
       })),
     });
   } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to fetch voices';
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Failed to fetch voices' },
-      { status: 500 }
+      { error: message },
+      { status: 502 }
     );
   }
 }

@@ -1,10 +1,17 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Button } from '@forge/ui/button';
 import { Input } from '@forge/ui/input';
 import { Textarea } from '@forge/ui/textarea';
 import { Label } from '@forge/ui/label';
+import {
+  AudioPlayerProvider,
+  AudioPlayerButton,
+  AudioPlayerProgress,
+  AudioPlayerTime,
+  AudioPlayerDuration,
+} from '@forge/ui/audio-player';
 import {
   Select,
   SelectContent,
@@ -12,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@forge/ui/select';
+import { useElevenLabsVoices, useGenerateSpeech } from '@/lib/data/hooks';
 
 interface Props {
   onSubmit: (data: { name: string; description?: string; imageUrl?: string; voiceId?: string | null }) => void;
@@ -21,93 +29,47 @@ interface Props {
 const NO_VOICE_VALUE = '__none__';
 const DEFAULT_MODEL_ID = 'eleven_multilingual_v2';
 
-type VoiceOption = {
-  voice_id: string;
-  name: string;
-  labels?: Record<string, string>;
-};
-
 export function CreateCharacterModal({ onSubmit, onClose }: Props) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [voiceId, setVoiceId] = useState<string | null>(null);
-  const [voices, setVoices] = useState<VoiceOption[]>([]);
-  const [voicesLoading, setVoicesLoading] = useState(false);
-  const [voicesError, setVoicesError] = useState<string | null>(null);
   const [previewText, setPreviewText] = useState('');
-  const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    let active = true;
-    setVoicesLoading(true);
-    setVoicesError(null);
-    fetch('/api/elevenlabs/voices')
-      .then(async (res) => {
-        if (!res.ok) {
-          const data = await res.json().catch(() => null);
-          throw new Error(data?.error ?? 'Voice service unavailable');
-        }
-        return res.json() as Promise<{ voices?: VoiceOption[] }>;
-      })
-      .then((data) => {
-        if (!active) return;
-        setVoices(data.voices ?? []);
-      })
-      .catch((err) => {
-        if (!active) return;
-        setVoicesError(err instanceof Error ? err.message : 'Unable to load voices');
-      })
-      .finally(() => {
-        if (!active) return;
-        setVoicesLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
+  const voicesQuery = useElevenLabsVoices();
+  const generateSpeechMutation = useGenerateSpeech();
+  const voices = voicesQuery.data ?? [];
+  const voicesLoading = voicesQuery.isLoading;
+  const voicesError = voicesQuery.error
+    ? voicesQuery.error instanceof Error
+      ? voicesQuery.error.message
+      : 'Unable to load voices'
+    : null;
+  const previewLoading = generateSpeechMutation.isPending;
 
   useEffect(() => {
-    if (!previewUrl || !audioRef.current) return;
-    audioRef.current.src = previewUrl;
-    audioRef.current.play().catch(() => {});
     return () => {
-      URL.revokeObjectURL(previewUrl);
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
   }, [previewUrl]);
 
   const handlePreview = useCallback(async () => {
     if (!voiceId || !previewText.trim()) return;
-    setPreviewLoading(true);
     setPreviewError(null);
     try {
-      const res = await fetch('/api/elevenlabs/speech', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          voiceId,
-          text: previewText.trim(),
-          modelId: DEFAULT_MODEL_ID,
-        }),
+      const result = await generateSpeechMutation.mutateAsync({
+        voiceId,
+        text: previewText.trim(),
+        modelId: DEFAULT_MODEL_ID,
       });
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.error ?? 'Voice preview failed');
-      }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      setPreviewUrl(url);
+      setPreviewUrl(result.audioUrl);
     } catch (err) {
       setPreviewError(err instanceof Error ? err.message : 'Voice preview failed');
-    } finally {
-      setPreviewLoading(false);
     }
-  }, [voiceId, previewText]);
+  }, [voiceId, previewText, generateSpeechMutation]);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -125,7 +87,7 @@ export function CreateCharacterModal({ onSubmit, onClose }: Props) {
         setSubmitting(false);
       }
     },
-    [name, description, imageUrl, onSubmit],
+    [name, description, imageUrl, voiceId, onSubmit],
   );
 
   return (
@@ -211,7 +173,23 @@ export function CreateCharacterModal({ onSubmit, onClose }: Props) {
         {previewError && (
           <p className="text-xs text-destructive">{previewError}</p>
         )}
-        <audio ref={audioRef} className="hidden" />
+        {previewUrl && (
+          <AudioPlayerProvider>
+            <div className="flex items-center gap-2 rounded-md border border-border bg-muted/40 px-2 py-1.5">
+              <AudioPlayerButton
+                item={{ id: 'preview', src: previewUrl }}
+                variant="ghost"
+                size="icon"
+              />
+              <AudioPlayerProgress className="flex-1" />
+              <div className="flex items-center gap-1 text-xs">
+                <AudioPlayerTime className="text-xs" />
+                <span className="text-muted-foreground">/</span>
+                <AudioPlayerDuration className="text-xs" />
+              </div>
+            </div>
+          </AudioPlayerProvider>
+        )}
       </div>
 
       <div className="flex gap-2 justify-end pt-2">

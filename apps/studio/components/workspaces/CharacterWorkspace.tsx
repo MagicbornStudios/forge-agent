@@ -36,6 +36,7 @@ import {
   useDeleteRelationship,
   useProjects,
   useCreateProject,
+  useGenerateSpeech,
 } from '@/lib/data/hooks';
 
 // Store
@@ -59,6 +60,7 @@ import { AiService } from '@/lib/api-client';
 // Overlay IDs
 // ---------------------------------------------------------------------------
 const CREATE_CHARACTER_OVERLAY_ID = 'create-character';
+const DEFAULT_VOICE_MODEL_ID = 'eleven_multilingual_v2';
 
 // ---------------------------------------------------------------------------
 // Selection helper
@@ -151,6 +153,7 @@ export function CharacterWorkspace() {
   const updateCharMutation = useUpdateCharacter();
   const createRelMutation = useCreateRelationship();
   const deleteRelMutation = useDeleteRelationship();
+  const generateSpeechMutation = useGenerateSpeech();
 
   // Selection state
   const [selectedCharId, setSelectedCharId] = useState<number | null>(null);
@@ -210,6 +213,18 @@ export function CharacterWorkspace() {
     return { imageUrl: data.imageUrl };
   }, []);
 
+  const handleGenerateSpeech = useCallback(
+    async (voiceId: string, text: string) => {
+      const result = await generateSpeechMutation.mutateAsync({
+        voiceId,
+        text,
+        modelId: DEFAULT_VOICE_MODEL_ID,
+      });
+      return { audioUrl: result.audioUrl };
+    },
+    [generateSpeechMutation],
+  );
+
   const handleDeleteRelationship = useCallback(
     async (id: number) => {
       await deleteRelMutation.mutateAsync(id);
@@ -256,6 +271,7 @@ export function CharacterWorkspace() {
     updateCharacter: handleUpdateCharacter,
     createRelationship: handleCreateRelationship,
     generateImage: handleGenerateImage,
+    generateSpeech: handleGenerateSpeech,
     setActiveCharacter,
     onAIHighlight,
     clearAIHighlights: clearHighlights,
@@ -390,7 +406,7 @@ export function CharacterWorkspace() {
         subtitle={activeChar?.name}
         domain="character"
         theme={workspaceTheme}
-        className="flex flex-col h-full min-h-0 bg-[var(--color-df-canvas-bg)]"
+        className="flex flex-col h-full min-h-0 bg-canvas"
       >
         <WorkspaceHeader>
           <WorkspaceHeader.Left>
@@ -403,7 +419,7 @@ export function CharacterWorkspace() {
           </WorkspaceHeader.Center>
         </WorkspaceHeader>
 
-        <WorkspaceToolbar className="bg-[var(--color-df-sidebar-bg)] border-b border-[var(--color-df-sidebar-border)]">
+        <WorkspaceToolbar className="bg-sidebar border-b border-sidebar-border">
         <WorkspaceToolbar.Left>
           <WorkspaceToolbar.Group className="gap-2">
             <ProjectSwitcher

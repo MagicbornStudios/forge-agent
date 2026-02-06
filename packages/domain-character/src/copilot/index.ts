@@ -40,6 +40,7 @@ export interface CharacterCopilotDeps {
     description?: string;
   }) => Promise<RelationshipDoc>;
   generateImage: (prompt: string) => Promise<{ imageUrl: string }>;
+  generateSpeech?: (voiceId: string, text: string) => Promise<{ audioUrl: string }>;
   setActiveCharacter: (id: number | null) => void;
   onAIHighlight: (payload: AIHighlightPayload) => void;
   clearAIHighlights: () => void;
@@ -70,6 +71,7 @@ export function useCharacterContract(deps: CharacterCopilotDeps): DomainCopilotC
     updateCharacter,
     createRelationship,
     generateImage,
+    generateSpeech,
     setActiveCharacter,
     onAIHighlight,
     clearAIHighlights,
@@ -93,7 +95,7 @@ export function useCharacterContract(deps: CharacterCopilotDeps): DomainCopilotC
         'You are helping manage characters and their relationships. ' +
         'Use character_getCharacters to see the current state. ' +
         'Use character_createCharacter to add characters, character_generatePortrait to create AI portraits, ' +
-        'and character_createRelationship to connect characters. ' +
+        'character_generateVoiceSample to create a voice preview, and character_createRelationship to connect characters. ' +
         'Use character_suggestRelationships to analyze characters before suggesting relationships. ' +
         'Always call character_getCharacters first when the user asks about existing characters.',
 
@@ -107,6 +109,7 @@ export function useCharacterContract(deps: CharacterCopilotDeps): DomainCopilotC
           updateCharacter,
           createRelationship,
           generateImage,
+          generateSpeech,
           setActiveCharacter,
           onAIHighlight,
         }),

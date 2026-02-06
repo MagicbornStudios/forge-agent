@@ -36,7 +36,7 @@ Reference for agents and humans. Update when adding or removing major choices.
 ## Where things live
 
 - **Payload SDK (collection CRUD):** `apps/studio/lib/api-client/payload-sdk.ts`; hooks use it for forge-graphs and video-docs.
-- **Custom endpoints / SSE:** Generated services in `lib/api-client/services/` (Auth, Settings, Model, AI); `lib/api-client/workflows.ts` for SSE.
+- **Custom endpoints / SSE:** OpenAPI/Swagger spec is for documentation only. Use generated services in `lib/api-client/services/` (Auth, Settings, Model, AI) where present; manual client modules (elevenlabs, media, workflows); or vendor SDKs. Do not extend the spec for new clients—add manual modules or use vendor SDKs. `lib/api-client/workflows.ts` for SSE.
 - **Query keys and hooks:** `apps/studio/lib/data/keys.ts`, `apps/studio/lib/data/hooks/`
 - **Persisted client state:** Zustand persist on app-shell store (`apps/studio/lib/app-shell/store.ts`) and graph/video stores (draft partialize); see **docs/decisions.md**.
 - **Decisions and rationale:** **docs/decisions.md**

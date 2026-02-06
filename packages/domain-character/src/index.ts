@@ -8,4 +8,5 @@ export {
   renderCharacterCreated,
   renderPortraitGenerated,
   renderRelationshipCreated,
+  renderVoiceSampleGenerated,
 } from './copilot/generative-ui';

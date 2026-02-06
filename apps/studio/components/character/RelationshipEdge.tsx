@@ -42,7 +42,7 @@ export function RelationshipEdge({
         path={edgePath}
         markerEnd={markerEnd}
         style={{
-          stroke: selected ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
+          stroke: selected ? 'var(--primary)' : 'var(--muted-foreground)',
           strokeWidth: selected ? 2.5 : 1.5,
         }}
       />

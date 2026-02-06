@@ -16,6 +16,12 @@ export const studioKeys = {
   character: (id: number) => ['studio', 'character', id] as const,
   relationships: (projectId: number) => ['studio', 'relationships', projectId] as const,
   characterProjects: () => ['studio', 'character-projects'] as const,
+  elevenlabsVoices: () => ['studio', 'elevenlabs', 'voices'] as const,
+  // AI generation mutation keys
+  generateImage: () => ['studio', 'ai', 'generate-image'] as const,
+  structuredOutput: () => ['studio', 'ai', 'structured-output'] as const,
+  createForgePlan: () => ['studio', 'ai', 'forge-plan'] as const,
+  generateVideo: () => ['studio', 'ai', 'generate-video'] as const,
 };
 
 export const platformKeys = {

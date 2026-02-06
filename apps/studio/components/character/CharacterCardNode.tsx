@@ -24,7 +24,7 @@ export const CharacterCardNode = memo(function CharacterCardNode({
         data.isActive
           ? 'border-primary ring-2 ring-primary/30'
           : 'border-border',
-        selected && !data.isActive && 'ring-2 ring-blue-400 ring-offset-1',
+        selected && !data.isActive && 'ring-2 ring-ring ring-offset-1',
       )}
     >
       <Handle

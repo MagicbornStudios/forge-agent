@@ -28,6 +28,29 @@
   --input: var(--color-df-control-border);
   --ring: var(--color-df-node-selected);
 
+  /* Canvas/editor + sidebar tokens (Tailwind color aliases) */
+  --canvas: var(--color-df-canvas-bg);
+  --canvas-grid: var(--color-df-canvas-grid);
+  --editor: var(--color-df-editor-bg);
+  --editor-border: var(--color-df-editor-border);
+
+  --sidebar-background: var(--color-df-sidebar-bg);
+  --sidebar-foreground: var(--color-df-text-primary);
+  --sidebar-primary: var(--color-df-border-active);
+  --sidebar-primary-foreground: var(--color-df-text-primary);
+  --sidebar-accent: var(--color-df-control-hover);
+  --sidebar-accent-foreground: var(--color-df-text-primary);
+  --sidebar-border: var(--color-df-sidebar-border);
+  --sidebar-ring: var(--color-df-border-active);
+  --sidebar: var(--sidebar-background);
+
+  /* Charts */
+  --chart-1: var(--color-df-edge-choice-1);
+  --chart-2: var(--color-df-edge-choice-2);
+  --chart-3: var(--color-df-edge-choice-3);
+  --chart-4: var(--color-df-edge-choice-4);
+  --chart-5: var(--color-df-edge-choice-5);
+
   --scrollbar-track: transparent;
   --scrollbar-thumb: var(--color-df-control-border);
   --scrollbar-thumb-hover: var(--color-df-border-hover);

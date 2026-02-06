@@ -194,8 +194,8 @@ function ForgeGraphList({
                   className={cn(
                     'w-full px-2 py-1.5 text-left text-xs transition-colors duration-200',
                     isSelected
-                      ? 'bg-muted text-foreground border-l-2 border-[var(--color-df-border-active)]'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground hover:border-l-2 hover:border-[var(--color-df-border-hover)]'
+                      ? 'bg-muted text-foreground border-l-2 border-primary'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground hover:border-l-2 hover:border-accent'
                   )}
                 >
                   <span className="flex items-center gap-1.5 truncate">
@@ -258,14 +258,14 @@ function ForgeGraphPanel({
   return (
     <div
       className={cn(
-        'flex min-h-0 flex-1 flex-col border border-[var(--color-df-control-border)] bg-[var(--color-df-canvas-bg)]',
+        'flex min-h-0 flex-1 flex-col border border-editor-border bg-editor',
         isActive && 'ring-1 ring-inset'
       )}
       style={isActive ? { borderColor: accentColor, boxShadow: `0 0 0 1px ${accentColor} inset` } : undefined}
       onMouseDown={onFocus}
       data-editor-scope={scope}
     >
-      <div className="flex items-center justify-between px-3 py-1.5 border-b border-[var(--color-df-control-border)] bg-[var(--color-df-sidebar-bg)]">
+      <div className="flex items-center justify-between px-3 py-1.5 border-b border-editor-border bg-card">
         <div className="flex items-center gap-2 text-xs">
           <span className="text-muted-foreground">{icon}</span>
           <span className="font-semibold text-foreground">{label}</span>
@@ -970,7 +970,7 @@ export function ForgeWorkspace() {
 
   const leftSidebar = (
       <GraphSidebar
-        className="h-full bg-[var(--color-df-sidebar-bg)]"
+        className="h-full"
         tabs={[
           {
             id: 'narratives',
@@ -1087,7 +1087,7 @@ export function ForgeWorkspace() {
         subtitle={activeGraph?.title}
         domain="forge"
         theme={workspaceTheme}
-        className="flex flex-col h-full min-h-0 bg-[var(--color-df-canvas-bg)]"
+        className="flex flex-col h-full min-h-0 bg-canvas"
       >
         <WorkspaceHeader>
           <WorkspaceHeader.Left>
@@ -1098,7 +1098,7 @@ export function ForgeWorkspace() {
           </WorkspaceHeader.Center>
         </WorkspaceHeader>
 
-        <WorkspaceToolbar className="bg-[var(--color-df-sidebar-bg)] border-b border-[var(--color-df-sidebar-border)]">
+        <WorkspaceToolbar className="bg-sidebar border-b border-sidebar-border">
           <WorkspaceToolbar.Left>
             <WorkspaceToolbar.Group className="gap-2">
               <ProjectSwitcher

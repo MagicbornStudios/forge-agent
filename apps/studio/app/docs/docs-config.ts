@@ -14,6 +14,7 @@ export const DOC_ENTRIES = [
   { slug: '07-copilot', label: '07 - Copilot and AI integration' },
   { slug: '08-adding-ai-to-workspaces', label: '08 - Adding AI to workspaces' },
   { slug: '09-twick-workspace', label: '09 - Twick video workspace' },
+  { slug: '20-create-a-workspace', label: '20 - Create a workspace' },
   { slug: '18-agent-artifacts-index', label: 'Agent artifacts index' },
   { slug: '19-coding-agent-strategy', label: 'Coding agent strategy' },
 ] as const;

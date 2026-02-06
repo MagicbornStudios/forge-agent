@@ -65,9 +65,9 @@ export function GraphSidebar({
         >
           {tabs.map((tab) => {
             const isActive = tab.id === currentTab;
-            const accent = tab.accentColor ?? 'var(--color-df-border-hover)';
+            const accent = tab.accentColor ?? 'var(--context-accent)';
             const accentMuted =
-              tab.accentMutedColor ?? 'color-mix(in oklab, var(--color-df-border-hover) 40%, transparent)';
+              tab.accentMutedColor ?? 'color-mix(in oklab, var(--context-accent) 40%, transparent)';
 
             return (
               <ToggleGroupItem

@@ -12,6 +12,7 @@ Workspace Platform Engineer: owns `packages/shared/src/shared` (workspace compon
 - **Styles**: Single source in `packages/shared/src/shared/styles/`. Themes are data-driven (`data-theme` on `<html>` or workspace root). Do not duplicate theme tokens elsewhere.
 - **No cross-domain imports**: Shared should not import from app routes or domain-specific code (e.g. Forge, Writer). UI atoms are imported from `@forge/ui`.
 - **Workspace UI primitives**: Use `WorkspaceButton`, `WorkspaceTabGroup`, `WorkspaceTab`, and `WorkspaceTooltip` for tooltip-enabled UI.
+- **Media components**: Reusable `MediaCard` and `GenerateMediaModal` live under `shared/components/media` for entity media slots.
 
 ## Adding a new slot or panel
 
@@ -24,4 +25,3 @@ Extend the workspace types and `WorkspaceLayoutGrid` (or equivalent) in `package
 ## Pitfalls
 
 - Do not duplicate theme tokens in `apps/studio/app/globals.css`; see **docs/agent-artifacts/core/errors-and-attempts.md**.
-

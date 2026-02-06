@@ -9,6 +9,7 @@ import {
   renderCharacterCreated,
   renderPortraitGenerated,
   renderRelationshipCreated,
+  renderVoiceSampleGenerated,
 } from './generative-ui';
 
 // ---------------------------------------------------------------------------
@@ -37,6 +38,7 @@ export interface CharacterActionsDeps {
     description?: string;
   }) => Promise<RelationshipDoc>;
   generateImage: (prompt: string) => Promise<{ imageUrl: string }>;
+  generateSpeech?: (voiceId: string, text: string) => Promise<{ audioUrl: string }>;
   setActiveCharacter: (id: number | null) => void;
   onAIHighlight: (payload: AIHighlightPayload) => void;
 }
@@ -60,6 +62,7 @@ export function createCharacterActions(deps: CharacterActionsDeps): CopilotActio
     updateCharacter,
     createRelationship,
     generateImage,
+    generateSpeech,
     setActiveCharacter,
     onAIHighlight,
   } = deps;
@@ -201,6 +204,62 @@ export function createCharacterActions(deps: CharacterActionsDeps): CopilotActio
         }
       },
       render: renderPortraitGenerated,
+    },
+
+    // -----------------------------------------------------------------
+    // generateVoiceSample
+    // -----------------------------------------------------------------
+    {
+      name: 'generateVoiceSample',
+      description:
+        'Generate a voice sample for a character using ElevenLabs. Requires the character to have a voiceId set.',
+      parameters: [
+        {
+          name: 'characterId',
+          type: 'number' as const,
+          description: 'ID of the character to generate a voice sample for',
+          required: true,
+        },
+        {
+          name: 'text',
+          type: 'string' as const,
+          description: 'Text to speak (optional; defaults to a short intro)',
+          required: false,
+        },
+      ],
+      handler: async (args: Record<string, unknown>) => {
+        const id = Number(args.characterId);
+        const chars = getCharacters();
+        const char = chars.find((c) => c.id === id);
+        if (!char) return { success: false, message: `Character ${id} not found.` };
+        if (!char.voiceId) {
+          return { success: false, message: `${char.name} does not have a voice selected.` };
+        }
+        if (!generateSpeech) {
+          return { success: false, message: 'Voice generation is not configured.' };
+        }
+
+        const text =
+          typeof args.text === 'string' && args.text.trim()
+            ? String(args.text).trim()
+            : `Hello, I'm ${char.name}. ${char.description ?? ''}`.trim();
+
+        try {
+          const { audioUrl } = await generateSpeech(char.voiceId, text);
+          onAIHighlight({ entities: { 'character.node': [String(id)] } });
+          return {
+            success: true,
+            message: `Generated voice sample for ${char.name}.`,
+            data: { audioUrl, characterName: char.name, text },
+          };
+        } catch (err) {
+          return {
+            success: false,
+            message: err instanceof Error ? err.message : 'Voice generation failed.',
+          };
+        }
+      },
+      render: renderVoiceSampleGenerated,
     },
 
     // -----------------------------------------------------------------

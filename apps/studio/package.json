@@ -22,6 +22,7 @@
     "@copilotkit/react-ui": "^1.51.2",
     "@copilotkit/runtime": "^1.51.2",
     "@copilotkit/shared": "^1.51.2",
+    "@elevenlabs/elevenlabs-js": "^2.34.0",
     "@forge/agent-engine": "workspace:*",
     "@forge/domain-character": "workspace:*",
     "@forge/domain-forge": "workspace:*",

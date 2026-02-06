@@ -55,3 +55,25 @@ export function renderRelationshipCreated(props: { status: string; result?: { da
     </div>
   );
 }
+
+export function renderVoiceSampleGenerated(props: { status: string; result?: { data?: { audioUrl?: string; characterName?: string; text?: string } } }) {
+  const { status, result } = props;
+  if (status === 'inProgress') {
+    return <div className="text-sm text-muted-foreground animate-pulse">Generating voice sample...</div>;
+  }
+  const url = result?.data?.audioUrl;
+  return (
+    <div className="rounded-md border bg-card p-3 text-sm space-y-2">
+      <div>
+        <span className="font-medium text-green-600">Voice sample</span>
+        {result?.data?.characterName && <span> for {result.data.characterName}</span>}
+      </div>
+      {result?.data?.text && (
+        <div className="text-xs text-muted-foreground">“{result.data.text}”</div>
+      )}
+      {url && (
+        <audio src={url} controls className="w-full" />
+      )}
+    </div>
+  );
+}
