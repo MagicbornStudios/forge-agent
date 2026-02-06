@@ -25,16 +25,21 @@ function isFolder(node: Node): node is Folder {
   return node.type === 'folder';
 }
 
+function getNodeKey(node: Node, fallback: string) {
+  if (node.$id) return node.$id;
+  return fallback;
+}
+
 function NavNodes({ nodes }: { nodes: Node[] }) {
   const pathname = usePathname();
   return (
     <>
-      {nodes.map((node) => {
+      {nodes.map((node, index) => {
         if (node.type === 'separator') return null;
         if (isItem(node)) {
           const active = pathname === node.url || (node.url !== '/docs' && pathname.startsWith(node.url + '/'));
           return (
-            <SidebarMenuItem key={node.url}>
+            <SidebarMenuItem key={getNodeKey(node, node.url)}>
               <SidebarMenuButton asChild isActive={active}>
                 <Link href={node.url}>{node.name}</Link>
               </SidebarMenuButton>
@@ -44,7 +49,7 @@ function NavNodes({ nodes }: { nodes: Node[] }) {
         if (isFolder(node)) {
           const label = typeof node.name === 'string' ? node.name : 'Section';
           return (
-            <SidebarGroup key={label}>
+            <SidebarGroup key={getNodeKey(node, `folder-${label}-${index}`)}>
               <SidebarGroupLabel>{label}</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>

@@ -6,9 +6,12 @@
 export const studioKeys = {
   graphs: () => ['studio', 'graphs'] as const,
   graph: (id: number) => ['studio', 'graph', id] as const,
+  forgeGraphs: (projectId: number, kind: string) => ['studio', 'forge-graphs', projectId, kind] as const,
+  forgeGraph: (id: number) => ['studio', 'forge-graph', id] as const,
   videoDocs: () => ['studio', 'video-docs'] as const,
   videoDoc: (id: number) => ['studio', 'video-doc', id] as const,
   settingsOverrides: () => ['studio', 'settings-overrides'] as const,
+  projects: (domain?: string) => ['studio', 'projects', domain ?? 'all'] as const,
   characters: (projectId: number) => ['studio', 'characters', projectId] as const,
   character: (id: number) => ['studio', 'character', id] as const,
   relationships: (projectId: number) => ['studio', 'relationships', projectId] as const,

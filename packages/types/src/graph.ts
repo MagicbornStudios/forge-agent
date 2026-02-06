@@ -9,6 +9,13 @@ export const FORGE_NODE_TYPE = {
 
 export type ForgeNodeType = typeof FORGE_NODE_TYPE[keyof typeof FORGE_NODE_TYPE];
 
+export const FORGE_GRAPH_KIND = {
+  NARRATIVE: 'NARRATIVE',
+  STORYLET: 'STORYLET',
+} as const;
+
+export type ForgeGraphKind = typeof FORGE_GRAPH_KIND[keyof typeof FORGE_GRAPH_KIND];
+
 export type ForgeNode = {
   id: string;
   type: ForgeNodeType;

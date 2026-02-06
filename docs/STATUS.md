@@ -1,7 +1,7 @@
 ---
 title: Status
 created: 2026-02-04
-updated: 2026-02-05
+updated: 2026-02-06
 ---
 
 # Status
@@ -24,6 +24,8 @@ updated: 2026-02-05
 - **App shell**: `AppSpace` is the semantic root for AppLayout; Studio composes providers via `AppProviders` for drop-in usage.
 - **Consumer example**: `examples/consumer` shows a minimal Next app using `@forge/dev-kit` with Copilot runtime.
 - **Docs**: In-app docs now render MDX with JSX components (next-mdx-remote/rsc).
+- **Forge workspace**: Dual narrative/storylet graphs per project with legacy-style chrome and a project switcher.
+- **Character workspace**: Aligned chrome with sidebar tabs + node palette; drag-drop creates characters; project switcher added.
 - **Payload + types**: Collections live in `apps/studio/payload/collections` (users, projects, forge-graphs, video-docs, settings-overrides, agent-sessions). Payload generates types into `packages/types/src/payload-types.ts`; domain aliases live in `packages/types/src/payload.ts` and `packages/types/src/graph.ts`.
 - **Seeded data**: Payload seeds an admin user, a basic user, a demo graph, and a demo project on init (`apps/studio/payload/seed.ts`).
 - **Settings overrides persisted**: Yes. Overrides are stored in `settings-overrides`; loaded on init via `GET /api/settings` and `hydrateFromOverrides`; saved explicitly via Save button and `POST /api/settings`.
@@ -47,6 +49,7 @@ updated: 2026-02-05
 - In progress: None.
 - Other agents: None reported.
 - Done: CopilotKit architecture doc + roadmap implementation (image gen, structured output, plan-execute-review-commit).
+- Done (2026-02-06): Fixed docs sidebar keys + MDX rendering; added forge dual narrative/storylet editors, shared graph chrome + project switcher; aligned character workspace chrome and drag-drop creation; added `@forge/domain-character` to Next transpile packages and fixed project slug fallback in switchers.
 - Done: Twick required; @forge/* deps in packages use workspace:* so install works without Verdaccio; lockfile updated; full VideoWorkspace + Twick CSS (studio only) restored; @twick/timeline dist/timeline.css not on npm, omitted.
 - Next slice: Map Twick timeline state to our `VideoDoc` draft and add plan/commit UI for video proposals.
 

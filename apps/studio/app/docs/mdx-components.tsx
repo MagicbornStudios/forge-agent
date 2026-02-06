@@ -58,6 +58,17 @@ export function Step({ number, title, className, children, ...props }: StepProps
 }
 
 export function createMdxComponents(validSlugs: Set<string>) {
+  const slugAliases = new Map<string, string>();
+  for (const slug of validSlugs) {
+    slugAliases.set(slug, slug);
+    const base = slug.split('/').pop();
+    if (base && !slugAliases.has(base)) {
+      slugAliases.set(base, slug);
+    }
+  }
+
+  const resolveSlug = (input: string) => slugAliases.get(input);
+
   const DocLink = ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
     if (!href) {
       return <a {...props}>{children}</a>;
@@ -70,12 +81,12 @@ export function createMdxComponents(validSlugs: Set<string>) {
       );
     }
 
-    const howToMatch = href.match(/^(?:\.\/)?(\d{2}-[a-z0-9-]+)\.(md|mdx)$/i);
-    const howToPathMatch = href.match(/^how-to\/(\d{2}-[a-z0-9-]+)\.(md|mdx)$/i);
-    const slug = howToMatch?.[1] ?? howToPathMatch?.[1];
+    const mdxMatch = href.match(/^(?:\.\/)?([a-z0-9-/]+)\.(md|mdx)$/i);
+    const slug = mdxMatch?.[1];
+    const resolved = slug ? resolveSlug(slug) : null;
 
-    if (slug && validSlugs.has(slug)) {
-      const docHref = slug === '00-docs-index' ? '/docs' : `/docs/${slug}`;
+    if (resolved) {
+      const docHref = resolved === '00-docs-index' ? '/docs' : `/docs/${resolved}`;
       return (
         <Link href={docHref} className="text-primary hover:underline">
           {children}

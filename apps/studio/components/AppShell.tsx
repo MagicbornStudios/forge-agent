@@ -8,7 +8,7 @@ import {
   WORKSPACE_LABELS,
   WORKSPACE_EDITOR_SUMMARY,
 } from '@/lib/app-shell/workspace-metadata';
-import { ForgeWorkspace, VideoWorkspace } from '@/components/workspaces';
+import { ForgeWorkspace, VideoWorkspace, CharacterWorkspace } from '@/components/workspaces';
 import { WorkspaceButton } from '@forge/shared/components/workspace';
 import { AppSpace } from '@forge/shared/components/app';
 import { SettingsMenu } from '@/components/settings/SettingsMenu';
@@ -37,7 +37,7 @@ export function AppShell() {
       workspaceNames: WORKSPACE_LABELS,
       openWorkspaceIds,
       editorSummary: WORKSPACE_EDITOR_SUMMARY[activeWorkspaceId],
-      hint: 'Say "switch to Video" or "open Forge" to change workspace. Forge has the graph editor; Video has the timeline.',
+      hint: 'Say "switch to Video", "open Forge", or "open Characters" to change workspace.',
     },
   });
 
@@ -48,17 +48,17 @@ export function AppShell() {
       {
         name: 'workspaceId',
         type: 'string',
-        description: 'Workspace to switch to: "forge" or "video"',
+        description: 'Workspace to switch to: "forge", "video", or "character"',
         required: true,
       },
     ],
     handler: async ({ workspaceId }) => {
       const id = workspaceId as AppShellWorkspaceId;
-      if (id === 'forge' || id === 'video') {
+      if (id === 'forge' || id === 'video' || id === 'character') {
         setActiveWorkspace(id);
         return { success: true, message: `Switched to ${WORKSPACE_LABELS[id]}.` };
       }
-      return { success: false, message: `Unknown workspace: ${workspaceId}. Use "forge" or "video".` };
+      return { success: false, message: `Unknown workspace: ${workspaceId}. Use "forge", "video", or "character".` };
     },
   }));
 
@@ -69,13 +69,13 @@ export function AppShell() {
       {
         name: 'workspaceId',
         type: 'string',
-        description: 'Workspace to open: "forge" or "video"',
+        description: 'Workspace to open: "forge", "video", or "character"',
         required: true,
       },
     ],
     handler: async ({ workspaceId }) => {
       const id = workspaceId as AppShellWorkspaceId;
-      if (id === 'forge' || id === 'video') {
+      if (id === 'forge' || id === 'video' || id === 'character') {
         openWorkspace(id);
         return { success: true, message: `Opened ${WORKSPACE_LABELS[id]}.` };
       }
@@ -90,13 +90,13 @@ export function AppShell() {
       {
         name: 'workspaceId',
         type: 'string',
-        description: 'Workspace to close: "forge" or "video"',
+        description: 'Workspace to close: "forge", "video", or "character"',
         required: true,
       },
     ],
     handler: async ({ workspaceId }) => {
       const id = workspaceId as AppShellWorkspaceId;
-      if (id === 'forge' || id === 'video') {
+      if (id === 'forge' || id === 'video' || id === 'character') {
         if (openWorkspaceIds.length <= 1) {
           return { success: false, message: 'Cannot close the last workspace.' };
         }
@@ -218,6 +218,16 @@ export function AppShell() {
             >
               + Video
             </WorkspaceButton>
+            <WorkspaceButton
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => openWorkspace('character')}
+              tooltip="Open Character workspace"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              + Characters
+            </WorkspaceButton>
             <SettingsMenu tooltip="App settings" defaultScope="app" />
           </>
         }
@@ -240,6 +250,7 @@ export function AppShell() {
       <AppSpace.Content>
         {activeWorkspaceId === 'forge' && <ForgeWorkspace />}
         {activeWorkspaceId === 'video' && <VideoWorkspace />}
+        {activeWorkspaceId === 'character' && <CharacterWorkspace />}
       </AppSpace.Content>
       {toastsEnabled !== false && <Toaster />}
     </AppSpace>

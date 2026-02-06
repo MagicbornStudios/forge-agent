@@ -4,7 +4,6 @@ import { useCallback, useMemo, useRef } from 'react';
 import ReactFlow, {
   applyNodeChanges,
   applyEdgeChanges,
-  addEdge,
   type NodeChange,
   type EdgeChange,
   type Connection,
@@ -12,7 +11,8 @@ import ReactFlow, {
   type FitViewOptions,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { useGraphStore } from '@/lib/store';
+import type { ForgeGraphDoc, ForgeGraphPatchOp, ForgeNodeType } from '@forge/types/graph';
+import { FORGE_NODE_TYPE } from '@forge/types/graph';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -23,12 +23,15 @@ import {
 import { CharacterNode } from './nodes/CharacterNode';
 import { PlayerNode } from './nodes/PlayerNode';
 import { ConditionalNode } from './nodes/ConditionalNode';
-import { FlowBackground, FlowControls, FlowMiniMap, FlowPanel } from './forge';
+import { FlowBackground } from './forge';
 
 const nodeTypes = {
   character: CharacterNode,
   player: PlayerNode,
   conditional: ConditionalNode,
+  CHARACTER: CharacterNode,
+  PLAYER: PlayerNode,
+  CONDITIONAL: ConditionalNode,
 };
 
 const AI_NODE_HIGHLIGHT_CLASS = 'ring-2 ring-amber-400 ring-offset-2';
@@ -46,6 +49,8 @@ export interface AIHighlightIds {
 }
 
 export interface GraphEditorProps {
+  graph: ForgeGraphDoc | null;
+  applyOperations: (ops: ForgeGraphPatchOp[]) => void;
   selectedNodeIds?: string[];
   selectedEdgeIds?: string[];
   /** @deprecated Use `isHighlighted` callback instead. */
@@ -55,9 +60,15 @@ export interface GraphEditorProps {
   onSelectionChange?: (selectedNodeIds: string[], selectedEdgeIds: string[]) => void;
   onViewportReady?: (handle: ForgeViewportHandle) => void;
   onRequestCreateNode?: () => void;
+  onDropCreateNode?: (nodeType: ForgeNodeType, position: { x: number; y: number }) => void;
+  nodeTypes?: Record<string, React.ComponentType<any>>;
+  edgeTypes?: Record<string, React.ComponentType<any>>;
+  children?: React.ReactNode;
 }
 
 export function GraphEditor({
+  graph,
+  applyOperations,
   selectedNodeIds = [],
   selectedEdgeIds = [],
   aiHighlightIds = { nodeIds: [], edgeIds: [] },
@@ -65,8 +76,11 @@ export function GraphEditor({
   onSelectionChange,
   onViewportReady,
   onRequestCreateNode,
+  onDropCreateNode,
+  nodeTypes: nodeTypesProp,
+  edgeTypes: edgeTypesProp,
+  children,
 }: GraphEditorProps) {
-  const { graph, applyOperations } = useGraphStore();
   const viewportRef = useRef<ReactFlowInstance | null>(null);
 
   const onNodesChange = useCallback(
@@ -186,6 +200,26 @@ export function GraphEditor({
     onSelectionChange?.([], []);
   }, [onSelectionChange]);
 
+  const handleDragOver = useCallback((event: React.DragEvent) => {
+    if (!onDropCreateNode) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }, [onDropCreateNode]);
+
+  const handleDrop = useCallback(
+    (event: React.DragEvent) => {
+      if (!onDropCreateNode) return;
+      event.preventDefault();
+      const nodeType = event.dataTransfer.getData('application/reactflow') as ForgeNodeType;
+      if (!nodeType || !Object.values(FORGE_NODE_TYPE).includes(nodeType)) return;
+      const instance = viewportRef.current;
+      if (!instance) return;
+      const position = instance.screenToFlowPosition({ x: event.clientX, y: event.clientY });
+      onDropCreateNode(nodeType, position);
+    },
+    [onDropCreateNode]
+  );
+
   if (!graph) {
     return (
       <div className="flex items-center justify-center h-full text-muted-foreground">
@@ -223,15 +257,14 @@ export function GraphEditor({
             onConnect={onConnect}
             onSelectionChange={handleSelectionChange}
             onInit={handleInit}
-            nodeTypes={nodeTypes}
+            nodeTypes={nodeTypesProp ?? nodeTypes}
+            edgeTypes={edgeTypesProp}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
             fitView
           >
             <FlowBackground />
-            <FlowControls />
-            <FlowMiniMap />
-            <FlowPanel position="top-left">
-              <span className="text-xs text-muted-foreground">Forge editor</span>
-            </FlowPanel>
+            {children}
           </ReactFlow>
         </ContextMenuTrigger>
         <ContextMenuContent className="w-56">

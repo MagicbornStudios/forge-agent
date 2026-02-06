@@ -1,10 +1,7 @@
 'use client';
 
-import React, { useCallback, useImperativeHandle, useMemo, useRef, forwardRef } from 'react';
+import React, { useCallback, useImperativeHandle, useMemo, useRef, forwardRef, useState } from 'react';
 import ReactFlow, {
-  Background,
-  Controls,
-  MiniMap,
   useNodesState,
   useEdgesState,
   type Connection,
@@ -19,6 +16,9 @@ import { CharacterCardNode } from './CharacterCardNode';
 import { RelationshipEdge } from './RelationshipEdge';
 import { computeCircularLayout, getInitials, resolveRelId } from '@/lib/domains/character/operations';
 import type { CharacterDoc, RelationshipDoc, CharacterCardNodeData, RelationshipEdgeData } from '@/lib/domains/character/types';
+import { FlowBackground, FlowMiniMap } from '@/components/forge';
+import { GraphLeftToolbar } from '@/components/graph/GraphLeftToolbar';
+import { GraphLayoutControls } from '@/components/graph/GraphLayoutControls';
 
 // ---------------------------------------------------------------------------
 // Node / edge type registries (stable references)
@@ -49,6 +49,8 @@ interface Props {
   onRelationshipSelect: (id: number | null) => void;
   /** Called when the user drags a new edge between two character nodes. */
   onConnect: (sourceId: number, targetId: number) => void;
+  /** Called when the user drops a palette item onto the canvas. */
+  onDropCreateCharacter?: () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -65,9 +67,11 @@ export const RelationshipGraphEditor = forwardRef<CharacterViewportHandle, Props
       onCharacterSelect,
       onRelationshipSelect,
       onConnect,
+      onDropCreateCharacter,
     } = props;
 
     const rfInstanceRef = useRef<ReactFlowInstance | null>(null);
+    const [showMiniMap, setShowMiniMap] = useState(true);
 
     // ----- Derive nodes from characters + layout algorithm -----------------
     const positions = useMemo(
@@ -170,6 +174,35 @@ export const RelationshipGraphEditor = forwardRef<CharacterViewportHandle, Props
       setTimeout(() => instance.fitView({ padding: 0.2 }), 100);
     }, []);
 
+    const handleFitView = useCallback(() => {
+      rfInstanceRef.current?.fitView({ padding: 0.2 });
+    }, []);
+
+    const handleFitSelection = useCallback(() => {
+      const instance = rfInstanceRef.current;
+      if (!instance) return;
+      const selectedNodes = instance.getNodes().filter((node) => node.selected);
+      if (selectedNodes.length === 0) {
+        instance.fitView({ padding: 0.2 });
+        return;
+      }
+      instance.fitView({ nodes: selectedNodes.map((node) => ({ id: node.id })), padding: 0.3 });
+    }, []);
+
+    const handleDragOver = useCallback((event: React.DragEvent) => {
+      if (!onDropCreateCharacter) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+    }, [onDropCreateCharacter]);
+
+    const handleDrop = useCallback((event: React.DragEvent) => {
+      if (!onDropCreateCharacter) return;
+      event.preventDefault();
+      const dragType = event.dataTransfer.getData('application/reactflow');
+      if (dragType !== 'character') return;
+      onDropCreateCharacter();
+    }, [onDropCreateCharacter]);
+
     return (
       <div className="w-full h-full">
         <ReactFlow
@@ -180,20 +213,27 @@ export const RelationshipGraphEditor = forwardRef<CharacterViewportHandle, Props
           onConnect={handleConnect}
           onSelectionChange={handleSelectionChange}
           onInit={handleInit}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           fitView
           proOptions={{ hideAttribution: true }}
-          className="bg-muted/30"
+          className="bg-[var(--color-df-canvas-bg)]"
         >
-          <Background />
-          <Controls />
-          <MiniMap
-            nodeStrokeWidth={3}
-            zoomable
-            pannable
-            className="!bg-background !border"
+          <FlowBackground />
+          <GraphLeftToolbar
+            showMiniMap={showMiniMap}
+            onToggleMiniMap={() => setShowMiniMap((prev) => !prev)}
+            onFitView={handleFitView}
           />
+          <GraphLayoutControls
+            onFitView={handleFitView}
+            onFitSelection={handleFitSelection}
+          />
+          {showMiniMap && (
+            <FlowMiniMap className="!bg-background !border !shadow-lg" />
+          )}
         </ReactFlow>
       </div>
     );

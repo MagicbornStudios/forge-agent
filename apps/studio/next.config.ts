@@ -4,7 +4,14 @@ import { createMDX } from "fumadocs-mdx/next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  transpilePackages: ["@forge/shared", "@forge/domain-forge", "@forge/types", "@forge/ui", "@forge/agent-engine"],
+  transpilePackages: [
+    "@forge/shared",
+    "@forge/domain-forge",
+    "@forge/domain-character",
+    "@forge/types",
+    "@forge/ui",
+    "@forge/agent-engine",
+  ],
   experimental: {
     reactCompiler: false,
   },

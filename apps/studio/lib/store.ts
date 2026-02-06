@@ -5,7 +5,6 @@ import { toast } from 'sonner';
 import type { ForgeGraphDoc, ForgeGraphPatchOp } from '@forge/types/graph';
 import { applyPatchOperations } from './graph-operations';
 import { useSettingsStore } from '@/lib/settings/store';
-import { useAppShellStore } from '@/lib/app-shell/store';
 import { payloadSdk, FORGE_GRAPHS_SLUG } from '@/lib/api-client/payload-sdk';
 
 interface GraphStore {
@@ -106,7 +105,7 @@ export const useGraphStore = create<GraphStore>()(
             state.isDirty = false;
             state.pendingFromPlan = false;
           });
-          useAppShellStore.getState().setLastGraphId(id);
+          // Legacy graph store does not manage project selection anymore.
         } catch (error) {
           console.error('Failed to load graph:', error);
           if (canToast()) {

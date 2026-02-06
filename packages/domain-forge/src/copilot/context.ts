@@ -29,6 +29,7 @@ export function buildForgeContext(deps: ForgeContextDeps): DomainContextSnapshot
     domainState: {
       editorType: 'reactflow',
       graphTitle: graph?.title ?? null,
+      graphKind: graph?.kind ?? null,
       nodeCount: graph?.flow.nodes.length ?? 0,
       edgeCount: graph?.flow.edges.length ?? 0,
       nodeIds: graph?.flow.nodes.map((n) => n.id) ?? [],

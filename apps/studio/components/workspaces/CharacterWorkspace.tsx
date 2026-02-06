@@ -31,10 +31,11 @@ import {
   useCharacters,
   useCreateCharacter,
   useUpdateCharacter,
-  useDeleteCharacter,
   useRelationships,
   useCreateRelationship,
   useDeleteRelationship,
+  useProjects,
+  useCreateProject,
 } from '@/lib/data/hooks';
 
 // Store
@@ -50,6 +51,9 @@ import { SettingsMenu } from '@/components/settings/SettingsMenu';
 import { Badge } from '@forge/ui/badge';
 import { Card } from '@forge/ui/card';
 import type { CharacterDoc, RelationshipDoc } from '@/lib/domains/character/types';
+import { NodeDragProvider } from '@/components/graph/useNodeDrag';
+import { ProjectSwitcher } from '@/components/ProjectSwitcher';
+import { AiService } from '@/lib/api-client';
 
 // ---------------------------------------------------------------------------
 // Overlay IDs
@@ -108,22 +112,27 @@ export function CharacterWorkspace() {
     setRelationships,
     setActiveCharacter,
     addCharacter,
-    removeCharacter,
     updateCharacterLocal,
     addRelationship,
     removeRelationship,
   } = store;
 
-  // Auto-set project on mount (use last or default to project 1)
+  const projectsQuery = useProjects('character');
+  const createProjectMutation = useCreateProject();
+
+  // Auto-set project on mount (use last or first available)
   useEffect(() => {
-    if (!projectId && lastProjectId) {
+    if (projectId != null) return;
+    const projects = projectsQuery.data ?? [];
+    if (lastProjectId && projects.some((p) => p.id === lastProjectId)) {
       setProject(lastProjectId);
-    } else if (!projectId) {
-      // Default: first project
-      setProject(1);
-      setLastProjectId(1);
+      return;
     }
-  }, [projectId, lastProjectId, setProject, setLastProjectId]);
+    if (projects.length > 0) {
+      setProject(projects[0].id);
+      setLastProjectId(projects[0].id);
+    }
+  }, [projectId, lastProjectId, projectsQuery.data, setProject, setLastProjectId]);
 
   // Data fetching
   const { data: fetchedChars } = useCharacters(projectId);
@@ -140,7 +149,6 @@ export function CharacterWorkspace() {
   // Mutations
   const createCharMutation = useCreateCharacter();
   const updateCharMutation = useUpdateCharacter();
-  const deleteCharMutation = useDeleteCharacter();
   const createRelMutation = useCreateRelationship();
   const deleteRelMutation = useDeleteRelationship();
 
@@ -197,13 +205,8 @@ export function CharacterWorkspace() {
   );
 
   const handleGenerateImage = useCallback(async (prompt: string) => {
-    const res = await fetch('/api/image-generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error ?? 'Image generation failed');
+    const data = await AiService.postApiImageGenerate({ prompt });
+    if (!data?.imageUrl) throw new Error('Image generation failed');
     return { imageUrl: data.imageUrl };
   }, []);
 
@@ -228,6 +231,18 @@ export function CharacterWorkspace() {
     },
     [handleCreateRelationship],
   );
+
+  const handleDropCreateCharacter = useCallback(() => {
+    if (!projectId) return;
+    handleCreateCharacter({ name: 'New Character' })
+      .then((created) => {
+        setSelectedCharId(created.id);
+        setSelectedRelId(null);
+      })
+      .catch((err) => {
+        toast.error('Failed to create character', { description: err.message });
+      });
+  }, [handleCreateCharacter, projectId, setSelectedCharId, setSelectedRelId]);
 
   // ---- Copilot contract ----
   const contract = useCharacterContract({
@@ -304,7 +319,23 @@ export function CharacterWorkspace() {
   const activeChar = characters.find((c) => c.id === activeCharacterId) ?? null;
 
   const leftContent = (
-    <ActiveCharacterPanel character={activeChar} onUpdate={handleUpdateCharacter} />
+    <CharacterSidebar
+      characters={characters}
+      relationships={relationships}
+      activeCharacterId={activeCharacterId}
+      onSelectCharacter={(id) => {
+        setActiveCharacter(id);
+        setSelectedCharId(id);
+        setSelectedRelId(null);
+        clearHighlights();
+      }}
+      onSelectRelationship={(id) => {
+        setSelectedRelId(id);
+        setSelectedCharId(null);
+      }}
+      onDeleteRelationship={handleDeleteRelationship}
+      onCreateCharacter={() => openOverlay(CREATE_CHARACTER_OVERLAY_ID)}
+    />
   );
 
   const mainContent =
@@ -327,6 +358,7 @@ export function CharacterWorkspace() {
           clearHighlights();
         }}
         onConnect={handleConnect}
+        onDropCreateCharacter={handleDropCreateCharacter}
       />
     ) : (
       <div className="flex items-center justify-center h-full">
@@ -347,100 +379,125 @@ export function CharacterWorkspace() {
     );
 
   const rightContent = (
-    <CharacterSidebar
-      characters={characters}
-      relationships={relationships}
-      activeCharacterId={activeCharacterId}
-      onSelectCharacter={(id) => {
-        setActiveCharacter(id);
-        setSelectedCharId(id);
-        setSelectedRelId(null);
-        clearHighlights();
-      }}
-      onSelectRelationship={(id) => {
-        setSelectedRelId(id);
-        setSelectedCharId(null);
-      }}
-      onDeleteRelationship={handleDeleteRelationship}
-      onCreateCharacter={() => openOverlay(CREATE_CHARACTER_OVERLAY_ID)}
-    />
+    <ActiveCharacterPanel character={activeChar} onUpdate={handleUpdateCharacter} />
   );
 
   return (
-    <WorkspaceShell
-      workspaceId="character"
-      title="Characters"
-      subtitle={activeChar?.name}
-      domain="character"
-      theme={workspaceTheme}
-      className="flex flex-col h-full min-h-0 bg-background"
-    >
-      <WorkspaceHeader>
-        <WorkspaceHeader.Left>
-          <h1 className="text-lg font-bold">Characters</h1>
-        </WorkspaceHeader.Left>
-        <WorkspaceHeader.Center>
-          {activeChar && (
-            <span className="text-sm text-muted-foreground">{activeChar.name}</span>
-          )}
-        </WorkspaceHeader.Center>
-      </WorkspaceHeader>
+    <NodeDragProvider>
+      <WorkspaceShell
+        workspaceId="character"
+        title="Characters"
+        subtitle={activeChar?.name}
+        domain="character"
+        theme={workspaceTheme}
+        className="flex flex-col h-full min-h-0 bg-[var(--color-df-canvas-bg)]"
+      >
+        <WorkspaceHeader>
+          <WorkspaceHeader.Left>
+            <h1 className="text-lg font-bold">Characters</h1>
+          </WorkspaceHeader.Left>
+          <WorkspaceHeader.Center>
+            {activeChar && (
+              <span className="text-sm text-muted-foreground">{activeChar.name}</span>
+            )}
+          </WorkspaceHeader.Center>
+        </WorkspaceHeader>
 
-      <WorkspaceToolbar>
+        <WorkspaceToolbar className="bg-[var(--color-df-sidebar-bg)] border-b border-[var(--color-df-sidebar-border)]">
         <WorkspaceToolbar.Left>
           <WorkspaceToolbar.Group className="gap-2">
+            <ProjectSwitcher
+              projects={projectsQuery.data ?? []}
+              selectedProjectId={projectId}
+              onProjectChange={(id) => {
+                setProject(id);
+                setLastProjectId(id);
+              }}
+              onCreateProject={async ({ name, description }) => {
+                const baseSlug = name
+                  .toLowerCase()
+                  .trim()
+                  .replace(/[^a-z0-9]+/g, '-')
+                  .replace(/(^-|-$)+/g, '');
+                const existingSlugs = new Set((projectsQuery.data ?? []).map((p) => p.slug));
+                const rootSlug = baseSlug || `character-${Date.now()}`;
+                let slug = rootSlug;
+                let suffix = 2;
+                while (existingSlugs.has(slug)) {
+                  slug = `${rootSlug}-${suffix}`;
+                  suffix += 1;
+                }
+                const created = await createProjectMutation.mutateAsync({
+                  title: name,
+                  slug,
+                  description,
+                  domain: 'character',
+                });
+                setProject(created.id);
+                setLastProjectId(created.id);
+                return { id: created.id, name: created.title };
+              }}
+              isLoading={projectsQuery.isLoading}
+              error={projectsQuery.error ? 'Failed to load projects' : null}
+              variant="compact"
+            />
             <WorkspaceToolbar.Menubar menus={menubarMenus} />
           </WorkspaceToolbar.Group>
           <span className="text-xs text-muted-foreground">
             {characters.length} character{characters.length !== 1 ? 's' : ''} &middot;{' '}
-            {relationships.length} relationship{relationships.length !== 1 ? 's' : ''}
-          </span>
-        </WorkspaceToolbar.Left>
-        <WorkspaceToolbar.Right>
-          {showAgentName !== false && (
-            <Badge variant="secondary" className="text-xs">
-              Agent: {agentName ?? 'Default'}
-            </Badge>
+              {relationships.length} relationship{relationships.length !== 1 ? 's' : ''}
+            </span>
+          </WorkspaceToolbar.Left>
+          <WorkspaceToolbar.Right>
+            {showAgentName !== false && (
+              <Badge variant="secondary" className="text-xs">
+                Agent: {agentName ?? 'Default'}
+              </Badge>
+            )}
+            <ModelSwitcher />
+            <WorkspaceToolbar.Separator />
+            <SettingsMenu workspaceId="character" editorId={editorId} />
+            <WorkspaceToolbar.Button
+              onClick={() => openOverlay(CREATE_CHARACTER_OVERLAY_ID)}
+              variant="outline"
+              size="sm"
+              tooltip="Add a new character"
+            >
+              Add Character
+            </WorkspaceToolbar.Button>
+          </WorkspaceToolbar.Right>
+        </WorkspaceToolbar>
+
+        <WorkspaceLayoutGrid
+          left={
+            <div className="h-full bg-[var(--color-df-sidebar-bg)] border-r border-[var(--color-df-sidebar-border)]">
+              {leftContent}
+            </div>
+          }
+          main={mainContent}
+          right={rightContent}
+          editor={{ editorId, editorType: 'react-flow' }}
+        />
+
+        <WorkspaceStatusBar>
+          {characters.length > 0
+            ? `${characters.length} character${characters.length !== 1 ? 's' : ''}`
+            : 'Ready'}
+          {charSelection && isEntity(charSelection) && (
+            <span className="ml-2 text-muted-foreground">
+              &mdash;{' '}
+              {charSelection.entityType === 'character.node' ? 'Character' : 'Relationship'}:{' '}
+              {charSelection.id}
+            </span>
           )}
-          <ModelSwitcher />
-          <WorkspaceToolbar.Separator />
-          <SettingsMenu workspaceId="character" editorId={editorId} />
-          <WorkspaceToolbar.Button
-            onClick={() => openOverlay(CREATE_CHARACTER_OVERLAY_ID)}
-            variant="outline"
-            size="sm"
-            tooltip="Add a new character"
-          >
-            Add Character
-          </WorkspaceToolbar.Button>
-        </WorkspaceToolbar.Right>
-      </WorkspaceToolbar>
+        </WorkspaceStatusBar>
 
-      <WorkspaceLayoutGrid
-        left={leftContent}
-        main={mainContent}
-        right={rightContent}
-        editor={{ editorId, editorType: 'react-flow' }}
-      />
-
-      <WorkspaceStatusBar>
-        {characters.length > 0
-          ? `${characters.length} character${characters.length !== 1 ? 's' : ''}`
-          : 'Ready'}
-        {charSelection && isEntity(charSelection) && (
-          <span className="ml-2 text-muted-foreground">
-            &mdash;{' '}
-            {charSelection.entityType === 'character.node' ? 'Character' : 'Relationship'}:{' '}
-            {charSelection.id}
-          </span>
-        )}
-      </WorkspaceStatusBar>
-
-      <WorkspaceOverlaySurface
-        overlays={overlays}
-        activeOverlay={activeOverlay}
-        onDismiss={dismissOverlay}
-      />
-    </WorkspaceShell>
+        <WorkspaceOverlaySurface
+          overlays={overlays}
+          activeOverlay={activeOverlay}
+          onDismiss={dismissOverlay}
+        />
+      </WorkspaceShell>
+    </NodeDragProvider>
   );
 }

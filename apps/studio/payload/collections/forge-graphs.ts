@@ -34,6 +34,23 @@ export const ForgeGraphs: CollectionConfig = {
   },
   fields: [
     {
+      name: 'project',
+      type: 'relationship',
+      relationTo: 'projects',
+      required: true,
+      index: true,
+    },
+    {
+      name: 'kind',
+      type: 'select',
+      required: true,
+      index: true,
+      options: [
+        { label: 'Narrative', value: 'NARRATIVE' },
+        { label: 'Storylet', value: 'STORYLET' },
+      ],
+    },
+    {
       name: 'title',
       type: 'text',
       required: true,

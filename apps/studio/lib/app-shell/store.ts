@@ -15,8 +15,8 @@ export interface AppShellRoute {
 
 interface AppShellState {
   route: AppShellRoute;
-  /** Last opened graph id (for refetch on load). */
-  lastGraphId: number | null;
+  /** Last opened Forge project id (for refetch on load). */
+  lastForgeProjectId: number | null;
   /** Last opened video doc id (for refetch on load). */
   lastVideoDocId: number | null;
   /** Last opened character project id (for refetch on load). */
@@ -25,7 +25,7 @@ interface AppShellState {
   /** Bottom drawer (workbench/console) open per workspace. */
   bottomDrawerOpen: Partial<Record<AppShellWorkspaceId, boolean>>;
   setRoute: (route: Partial<Pick<AppShellRoute, 'activeWorkspaceId' | 'openWorkspaceIds'>>) => void;
-  setLastGraphId: (id: number | null) => void;
+  setLastForgeProjectId: (id: number | null) => void;
   setLastVideoDocId: (id: number | null) => void;
   setLastCharacterProjectId: (id: number | null) => void;
   setActiveWorkspace: (id: AppShellWorkspaceId) => void;
@@ -50,7 +50,7 @@ export const useAppShellStore = create<AppShellState>()(
         openWorkspaceIds: DEFAULT_OPEN,
         globalModals: [],
       },
-      lastGraphId: null,
+      lastForgeProjectId: null,
       lastVideoDocId: null,
       lastCharacterProjectId: null,
       workspaceThemes: { video: 'darcula' },
@@ -63,9 +63,9 @@ export const useAppShellStore = create<AppShellState>()(
       });
     },
 
-    setLastGraphId: (id) => {
+    setLastForgeProjectId: (id) => {
       set((state) => {
-        state.lastGraphId = id;
+        state.lastForgeProjectId = id;
       });
     },
 
@@ -140,7 +140,7 @@ export const useAppShellStore = create<AppShellState>()(
     name: APP_SESSION_KEY,
     partialize: (s) => ({
       route: s.route,
-      lastGraphId: s.lastGraphId,
+      lastForgeProjectId: s.lastForgeProjectId,
       lastVideoDocId: s.lastVideoDocId,
       lastCharacterProjectId: s.lastCharacterProjectId,
     }),

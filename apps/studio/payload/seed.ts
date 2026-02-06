@@ -16,7 +16,8 @@ const DEFAULT_USER = {
   plan: 'free',
 };
 
-const DEMO_GRAPH_TITLE = 'Demo Graph';
+const DEMO_NARRATIVE_GRAPH_TITLE = 'Demo Narrative';
+const DEMO_STORYLET_GRAPH_TITLE = 'Demo Storylet';
 const DEMO_PROJECT_SLUG = 'demo-project';
 
 const demoFlow = {
@@ -51,23 +52,35 @@ async function ensureUser(payload: Payload, data: typeof DEFAULT_ADMIN) {
   });
 }
 
-async function ensureGraph(payload: Payload) {
+async function ensureGraph(
+  payload: Payload,
+  projectId: string | number,
+  kind: 'NARRATIVE' | 'STORYLET',
+  title: string,
+) {
   const existing = await payload.find({
     collection: 'forge-graphs',
-    where: { title: { equals: DEMO_GRAPH_TITLE } },
+    where: {
+      and: [
+        { project: { equals: projectId } },
+        { kind: { equals: kind } },
+      ],
+    },
     limit: 1,
   });
   if (existing.docs.length > 0) return existing.docs[0];
   return payload.create({
     collection: 'forge-graphs',
     data: {
-      title: DEMO_GRAPH_TITLE,
+      title,
+      kind,
+      project: projectId as number,
       flow: demoFlow,
     },
   });
 }
 
-async function ensureProject(payload: Payload, ownerId: string | number, graphId: string | number) {
+async function ensureProject(payload: Payload, ownerId: string | number) {
   const existing = await payload.find({
     collection: 'projects',
     where: { slug: { equals: DEMO_PROJECT_SLUG } },
@@ -83,7 +96,6 @@ async function ensureProject(payload: Payload, ownerId: string | number, graphId
       domain: 'forge',
       status: 'active',
       owner: ownerId as number,
-      forgeGraph: graphId as number,
     },
   });
 }
@@ -236,8 +248,26 @@ export async function seedStudio(payload: Payload) {
   try {
     const admin = await ensureUser(payload, DEFAULT_ADMIN);
     await ensureUser(payload, DEFAULT_USER);
-    const graph = await ensureGraph(payload);
-    await ensureProject(payload, admin.id, graph.id);
+    const project = await ensureProject(payload, admin.id);
+    const narrative = await ensureGraph(
+      payload,
+      project.id,
+      'NARRATIVE',
+      DEMO_NARRATIVE_GRAPH_TITLE,
+    );
+    await ensureGraph(
+      payload,
+      project.id,
+      'STORYLET',
+      DEMO_STORYLET_GRAPH_TITLE,
+    );
+    if (!project.forgeGraph) {
+      await payload.update({
+        collection: 'projects',
+        id: project.id,
+        data: { forgeGraph: narrative.id },
+      });
+    }
     await ensurePromotion(payload);
     await ensureWaitlistEntry(payload);
     await ensureNewsletterEntry(payload);

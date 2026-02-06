@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAppShellStore } from '@/lib/app-shell/store';
 
-/** Rehydrates app-shell persisted state before rendering children so lastGraphId/lastVideoDocId are available on first meaningful render. */
+/** Rehydrates app-shell persisted state before rendering children so lastForgeProjectId/lastVideoDocId are available on first meaningful render. */
 export function AppShellPersistGate({ children }: { children: React.ReactNode }) {
   const [rehydrated, setRehydrated] = useState(false);
 

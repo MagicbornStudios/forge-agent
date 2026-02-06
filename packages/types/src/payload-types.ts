@@ -71,6 +71,9 @@ export interface Config {
     projects: Project;
     'forge-graphs': ForgeGraph;
     'video-docs': VideoDoc;
+    characters: Character;
+    relationships: Relationship;
+    media: Media;
     'settings-overrides': SettingsOverride;
     'agent-sessions': AgentSession;
     waitlist: Waitlist;
@@ -88,6 +91,9 @@ export interface Config {
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     'forge-graphs': ForgeGraphsSelect<false> | ForgeGraphsSelect<true>;
     'video-docs': VideoDocsSelect<false> | VideoDocsSelect<true>;
+    characters: CharactersSelect<false> | CharactersSelect<true>;
+    relationships: RelationshipsSelect<false> | RelationshipsSelect<true>;
+    media: MediaSelect<false> | MediaSelect<true>;
     'settings-overrides': SettingsOverridesSelect<false> | SettingsOverridesSelect<true>;
     'agent-sessions': AgentSessionsSelect<false> | AgentSessionsSelect<true>;
     waitlist: WaitlistSelect<false> | WaitlistSelect<true>;
@@ -168,7 +174,7 @@ export interface Project {
   title: string;
   slug: string;
   description?: string | null;
-  domain: 'forge' | 'video';
+  domain: 'forge' | 'video' | 'character';
   status: 'active' | 'archived';
   owner?: (number | null) | User;
   forgeGraph?: (number | null) | ForgeGraph;
@@ -181,6 +187,8 @@ export interface Project {
  */
 export interface ForgeGraph {
   id: number;
+  project: number | Project;
+  kind: 'NARRATIVE' | 'STORYLET';
   title: string;
   flow:
     | {
@@ -211,6 +219,87 @@ export interface VideoDoc {
     | number
     | boolean
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "characters".
+ */
+export interface Character {
+  id: number;
+  name: string;
+  description?: string | null;
+  /**
+   * URL to a character portrait (external or AI-generated). UI falls back to initials when empty.
+   */
+  imageUrl?: string | null;
+  avatar?: (number | null) | Media;
+  project: number | Project;
+  /**
+   * Extensible metadata (traits, tags, etc.).
+   */
+  meta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  archivedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media".
+ */
+export interface Media {
+  id: number;
+  alt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    medium?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "relationships".
+ */
+export interface Relationship {
+  id: number;
+  project: number | Project;
+  sourceCharacter: number | Character;
+  targetCharacter: number | Character;
+  label: string;
+  description?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -391,6 +480,18 @@ export interface PayloadLockedDocument {
         value: number | VideoDoc;
       } | null)
     | ({
+        relationTo: 'characters';
+        value: number | Character;
+      } | null)
+    | ({
+        relationTo: 'relationships';
+        value: number | Relationship;
+      } | null)
+    | ({
+        relationTo: 'media';
+        value: number | Media;
+      } | null)
+    | ({
         relationTo: 'settings-overrides';
         value: number | SettingsOverride;
       } | null)
@@ -501,6 +602,8 @@ export interface ProjectsSelect<T extends boolean = true> {
  * via the `definition` "forge-graphs_select".
  */
 export interface ForgeGraphsSelect<T extends boolean = true> {
+  project?: T;
+  kind?: T;
   title?: T;
   flow?: T;
   updatedAt?: T;
@@ -516,6 +619,76 @@ export interface VideoDocsSelect<T extends boolean = true> {
   doc?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "characters_select".
+ */
+export interface CharactersSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  imageUrl?: T;
+  avatar?: T;
+  project?: T;
+  meta?: T;
+  archivedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "relationships_select".
+ */
+export interface RelationshipsSelect<T extends boolean = true> {
+  project?: T;
+  sourceCharacter?: T;
+  targetCharacter?: T;
+  label?: T;
+  description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media_select".
+ */
+export interface MediaSelect<T extends boolean = true> {
+  alt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        medium?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

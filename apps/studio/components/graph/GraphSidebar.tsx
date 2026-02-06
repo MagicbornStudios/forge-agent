@@ -1,0 +1,86 @@
+'use client';
+
+import React, { useMemo, useState } from 'react';
+import { ToggleGroup, ToggleGroupItem } from '@forge/ui/toggle-group';
+import { cn } from '@forge/shared/lib/utils';
+
+export interface GraphSidebarTab {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  content: React.ReactNode;
+  accentColor?: string;
+  accentMutedColor?: string;
+}
+
+export interface GraphSidebarProps {
+  tabs: GraphSidebarTab[];
+  defaultTabId?: string;
+  activeTabId?: string;
+  onTabChange?: (id: string) => void;
+  className?: string;
+}
+
+export function GraphSidebar({
+  tabs,
+  defaultTabId,
+  activeTabId,
+  onTabChange,
+  className,
+}: GraphSidebarProps) {
+  const initialTab = useMemo(() => defaultTabId ?? tabs[0]?.id, [defaultTabId, tabs]);
+  const [internalTab, setInternalTab] = useState(initialTab);
+  const currentTab = activeTabId ?? internalTab;
+
+  const setTab = (id: string) => {
+    if (onTabChange) onTabChange(id);
+    if (!activeTabId) setInternalTab(id);
+  };
+
+  const active = tabs.find((tab) => tab.id === currentTab) ?? tabs[0];
+
+  return (
+    <div className={cn('h-full w-full flex flex-col', className)}>
+      <ToggleGroup
+        type="single"
+        value={currentTab}
+        onValueChange={(value) => value && setTab(value)}
+        variant="outline"
+        className="w-full flex rounded-none bg-transparent h-8 px-0 gap-0 m-0 min-w-0 overflow-hidden border-b border-border"
+      >
+        {tabs.map((tab) => {
+          const isActive = tab.id === currentTab;
+          const accent = tab.accentColor ?? 'var(--color-df-border-hover)';
+          const accentMuted =
+            tab.accentMutedColor ?? 'color-mix(in oklab, var(--color-df-border-hover) 40%, transparent)';
+
+          return (
+            <ToggleGroupItem
+              key={tab.id}
+              value={tab.id}
+              aria-label={tab.label}
+              className={cn(
+                'min-w-0 flex-1 text-xs rounded-none px-1 py-0.5 truncate leading-tight relative',
+                'text-muted-foreground hover:text-foreground transition-colors',
+                'data-[state=on]:bg-muted data-[state=on]:text-foreground',
+                'border-l-2'
+              )}
+              style={{
+                borderLeftColor: isActive ? accent : accentMuted,
+              }}
+            >
+              <span className="mr-1 shrink-0" style={{ color: isActive ? accent : accentMuted }}>
+                {tab.icon}
+              </span>
+              <span className="truncate">{tab.label}</span>
+            </ToggleGroupItem>
+          );
+        })}
+      </ToggleGroup>
+
+      <div className="flex-1 min-h-0 overflow-hidden">
+        {active?.content}
+      </div>
+    </div>
+  );
+}

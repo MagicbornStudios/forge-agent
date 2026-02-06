@@ -18,6 +18,9 @@ export const FORGE_GRAPHS_SLUG = 'forge-graphs';
 /** Collection slug for video docs (Payload REST: /api/video-docs). */
 export const VIDEO_DOCS_SLUG = 'video-docs';
 
+/** Collection slug for projects (Payload REST: /api/projects). */
+export const PROJECTS_SLUG = 'projects';
+
 /** Collection slug for characters (Payload REST: /api/characters). */
 export const CHARACTERS_SLUG = 'characters';
 
