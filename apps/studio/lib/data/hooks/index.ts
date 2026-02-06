@@ -7,3 +7,6 @@ export { useVideoDoc } from './use-video-doc';
 export { useSaveVideoDoc } from './use-save-video-doc';
 export { useCreateVideoDoc } from './use-create-video-doc';
 export { useMe } from './use-me';
+export { useCharacters, useCreateCharacter, useUpdateCharacter, useDeleteCharacter } from './use-characters';
+export { useRelationships, useCreateRelationship, useUpdateRelationship, useDeleteRelationship } from './use-relationships';
+export { useUploadMedia } from './use-character-media';

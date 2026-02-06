@@ -32,6 +32,7 @@ export const Projects: CollectionConfig = {
       options: [
         { label: 'Forge', value: 'forge' },
         { label: 'Video', value: 'video' },
+        { label: 'Character', value: 'character' },
       ],
     },
     {

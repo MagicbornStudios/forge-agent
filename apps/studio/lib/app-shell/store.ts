@@ -5,7 +5,7 @@ import { devtools, persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 
 /** Workspace identifier for the unified app. */
-export type AppShellWorkspaceId = 'forge' | 'video';
+export type AppShellWorkspaceId = 'forge' | 'video' | 'character';
 
 export interface AppShellRoute {
   activeWorkspaceId: AppShellWorkspaceId;
@@ -19,12 +19,15 @@ interface AppShellState {
   lastGraphId: number | null;
   /** Last opened video doc id (for refetch on load). */
   lastVideoDocId: number | null;
+  /** Last opened character project id (for refetch on load). */
+  lastCharacterProjectId: number | null;
   workspaceThemes: Partial<Record<AppShellWorkspaceId, string>>;
   /** Bottom drawer (workbench/console) open per workspace. */
   bottomDrawerOpen: Partial<Record<AppShellWorkspaceId, boolean>>;
   setRoute: (route: Partial<Pick<AppShellRoute, 'activeWorkspaceId' | 'openWorkspaceIds'>>) => void;
   setLastGraphId: (id: number | null) => void;
   setLastVideoDocId: (id: number | null) => void;
+  setLastCharacterProjectId: (id: number | null) => void;
   setActiveWorkspace: (id: AppShellWorkspaceId) => void;
   openWorkspace: (id: AppShellWorkspaceId) => void;
   closeWorkspace: (id: AppShellWorkspaceId) => void;
@@ -49,6 +52,7 @@ export const useAppShellStore = create<AppShellState>()(
       },
       lastGraphId: null,
       lastVideoDocId: null,
+      lastCharacterProjectId: null,
       workspaceThemes: { video: 'darcula' },
       bottomDrawerOpen: {},
 
@@ -68,6 +72,12 @@ export const useAppShellStore = create<AppShellState>()(
     setLastVideoDocId: (id) => {
       set((state) => {
         state.lastVideoDocId = id;
+      });
+    },
+
+    setLastCharacterProjectId: (id) => {
+      set((state) => {
+        state.lastCharacterProjectId = id;
       });
     },
 
@@ -132,6 +142,7 @@ export const useAppShellStore = create<AppShellState>()(
       route: s.route,
       lastGraphId: s.lastGraphId,
       lastVideoDocId: s.lastVideoDocId,
+      lastCharacterProjectId: s.lastCharacterProjectId,
     }),
     skipHydration: true,
   },

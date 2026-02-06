@@ -17,3 +17,12 @@ export const FORGE_GRAPHS_SLUG = 'forge-graphs';
 
 /** Collection slug for video docs (Payload REST: /api/video-docs). */
 export const VIDEO_DOCS_SLUG = 'video-docs';
+
+/** Collection slug for characters (Payload REST: /api/characters). */
+export const CHARACTERS_SLUG = 'characters';
+
+/** Collection slug for character relationships (Payload REST: /api/relationships). */
+export const RELATIONSHIPS_SLUG = 'relationships';
+
+/** Collection slug for media uploads (Payload REST: /api/media). */
+export const MEDIA_SLUG = 'media';

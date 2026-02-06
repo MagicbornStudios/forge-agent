@@ -8,12 +8,18 @@ import { Waitlist } from './waitlist.ts';
 import { NewsletterSubscribers } from './newsletter-subscribers.ts';
 import { Promotions } from './promotions.ts';
 import { Posts } from './posts.ts';
+import { Characters } from './characters.ts';
+import { Relationships } from './relationships.ts';
+import { Media } from './media.ts';
 
 export const collections = [
   Users,
   Projects,
   ForgeGraphs,
   VideoDocs,
+  Characters,
+  Relationships,
+  Media,
   SettingsOverrides,
   AgentSessions,
   Waitlist,
@@ -27,6 +33,9 @@ export {
   Projects,
   ForgeGraphs,
   VideoDocs,
+  Characters,
+  Relationships,
+  Media,
   SettingsOverrides,
   AgentSessions,
   Waitlist,
