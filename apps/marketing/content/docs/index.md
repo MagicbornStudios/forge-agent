@@ -1,3 +1,7 @@
+---
+title: Forge documentation
+---
+
 # Forge documentation
 
 Welcome to Forge: AI-encapsulated editors and workspaces for professional apps.

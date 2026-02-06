@@ -1,23 +1,28 @@
 'use client';
 
 import type { SerializedPageTree } from 'fumadocs-core/source/client';
-import { SidebarProvider, SidebarInset } from '@forge/ui/sidebar';
-import { SidebarTrigger } from '@forge/ui/sidebar';
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@forge/ui/sidebar';
 import { DocsSidebar } from './DocsSidebar';
 import { RightToc, type TableOfContents } from './RightToc';
 
-export function DocsLayout({
-  serializedTree,
-  toc,
-  children,
-}: {
+export type { TableOfContents } from './RightToc';
+
+export interface DocsLayoutShellProps {
   serializedTree: SerializedPageTree;
   toc: TableOfContents;
   children: React.ReactNode;
-}) {
+  baseUrl?: string;
+}
+
+export function DocsLayoutShell({
+  serializedTree,
+  toc,
+  children,
+  baseUrl = '/docs',
+}: DocsLayoutShellProps) {
   return (
     <SidebarProvider>
-      <DocsSidebar serializedTree={serializedTree} />
+      <DocsSidebar serializedTree={serializedTree} baseUrl={baseUrl} />
       <SidebarInset>
         <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border px-4 lg:px-6">
           <SidebarTrigger className="-ml-1" />

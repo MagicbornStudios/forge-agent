@@ -60,7 +60,12 @@ function NavNodes({ nodes }: { nodes: Node[] }) {
   );
 }
 
-export function DocsSidebar({ serializedTree }: { serializedTree: SerializedPageTree }) {
+export interface DocsSidebarProps {
+  serializedTree: SerializedPageTree;
+  baseUrl?: string;
+}
+
+export function DocsSidebar({ serializedTree, baseUrl = '/docs' }: DocsSidebarProps) {
   const tree = deserializePageTree(serializedTree) as Root;
   return (
     <Sidebar>
@@ -68,7 +73,7 @@ export function DocsSidebar({ serializedTree }: { serializedTree: SerializedPage
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <Link href="/docs">Documentation</Link>
+              <Link href={baseUrl}>Documentation</Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

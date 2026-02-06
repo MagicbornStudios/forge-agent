@@ -36,7 +36,9 @@
     "@copilotkit/shared": "^1.51.2",
     "@copilotkit/runtime": "^1.51.2",
     "@ai-sdk/openai": "^3.0.25",
-    "openai": "^5.23.2"
+    "openai": "^5.23.2",
+    "next": ">=14",
+    "fumadocs-core": ">=16"
   },
   "devDependencies": {
     "tsup": "^8.5.0"

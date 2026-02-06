@@ -1,3 +1,7 @@
+---
+title: Getting started
+---
+
 # Getting started
 
 ## 1. Create an account

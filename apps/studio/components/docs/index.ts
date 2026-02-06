@@ -1,4 +1,2 @@
-export { DocsLayout } from './DocsLayout';
-export { DocsSidebar } from './DocsSidebar';
-export { RightToc } from './RightToc';
+export { DocsLayoutShell, DocsSidebar, RightToc, type TableOfContents } from '@forge/shared';
 export { ComponentPreview } from './ComponentPreview';

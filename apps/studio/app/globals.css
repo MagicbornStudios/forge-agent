@@ -1,5 +1,10 @@
-
+/* All @import must come first (CSS spec); dependencies may contain font @import url() */
 @import "tw-animate-css";
+@import "../../../packages/shared/src/shared/styles/themes.css";
+@import "../../../packages/shared/src/shared/styles/contexts.css";
+@import "../../../packages/shared/src/shared/styles/graph.css";
+@import "../../../packages/shared/src/shared/styles/scrollbar.css";
+@import "@twick/studio/dist/studio.css";
 
 @plugin "tailwindcss-animate";
 
@@ -8,14 +13,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Shared workspace/editor styles (themes, contexts, graph, scrollbar) */
-@import "../../../packages/shared/src/shared/styles/themes.css";
-@import "../../../packages/shared/src/shared/styles/contexts.css";
-@import "../../../packages/shared/src/shared/styles/graph.css";
-@import "../../../packages/shared/src/shared/styles/scrollbar.css";
-/* @twick/timeline does not ship dist/timeline.css on npm; studio bundles timeline styles */
-@import "@twick/studio/dist/studio.css";
 
 * {
   box-sizing: border-box;
