@@ -78,6 +78,14 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ---
 
+## Vendor CLI: npx is not available (ElevenLabs, etc.)
+
+**Problem**: Running `npx @elevenlabs/cli@latest components add audio-player` (or similar) can fail with "Error: npx is not available. Please install Node.js/npm." even when `npx --version` works in the same shell. The CLI often spawns a subprocess that doesn't inherit PATH correctly (e.g. on Windows or with pnpm).
+
+**Fix**: Use **`pnpm dlx @elevenlabs/cli@latest components add <component-name>`** from the directory that has `components.json` (e.g. `cd packages/ui` for shared). If that still fails, install the CLI globally: `npm i -g @elevenlabs/cli`, then run `elevenlabs components add <name>` from that directory.
+
+---
+
 ## Twick CSS/JS resolution (build)
 
 **Problem**: Build fails with "Can't resolve '@twick/timeline/dist/timeline.css'" or "Can't resolve '@twick/live-player'" / "Can't resolve '@twick/studio'". Twick packages may be missing from the lockfile, or the registry was unreachable.

@@ -64,6 +64,19 @@ Examples from `packages/ui`:
 
 After adding to `packages/ui`, export the new component from `packages/ui/src/index.ts`.
 
+## Third-party component sources
+
+- **Shadcn registries:** Use the `components.json` registries (see table above). Install with `pnpm dlx shadcn@latest add @namespace/component-name` from the directory that has `components.json`. Shared = `packages/ui`; app-only = `apps/studio` or `apps/marketing`.
+- **Vendor CLIs (e.g. ElevenLabs):** Some libraries use their own CLI. Example: [ElevenLabs UI](https://ui.elevenlabs.io/docs/setup) — install with `pnpm dlx @elevenlabs/cli@latest components add <component-name>` (e.g. `audio-player`, `orb`, `voice-picker`). **Run from the directory that owns the component tree** (e.g. `packages/ui` for shared, so the CLI writes into our structure). Prefer **`pnpm dlx`** instead of `npx` to avoid the "npx is not available" error (see Troubleshooting below).
+
+## Troubleshooting
+
+- **"npx is not available" when using ElevenLabs (or similar) CLI:** The vendor CLI may spawn a process that doesn't see `npx`. Use **`pnpm dlx @elevenlabs/cli@latest components add <name>`** instead of `npx @elevenlabs/cli@latest ...`. If that still fails, install the CLI globally (`npm i -g @elevenlabs/cli`) and run from the project (e.g. `cd packages/ui && elevenlabs components add audio-player`).
+
+## Where components live / how agents find them
+
+Shared atoms and shared registry components live in `packages/ui` and are exported from `packages/ui/src/index.ts`. The list of registries is in `packages/ui/components.json`. For vendor CLIs, use the vendor's docs and install command (ElevenLabs: run from `packages/ui` for shared).
+
 ## Component strategy overview
 
 ```mermaid

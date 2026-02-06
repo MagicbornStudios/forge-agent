@@ -37,6 +37,7 @@ import {
   useProjects,
   useCreateProject,
   useGenerateSpeech,
+  useGenerateImage,
 } from '@/lib/data/hooks';
 
 // Store
@@ -54,7 +55,6 @@ import { Card } from '@forge/ui/card';
 import type { CharacterDoc, RelationshipDoc } from '@/lib/domains/character/types';
 import { NodeDragProvider } from '@/components/graph/useNodeDrag';
 import { ProjectSwitcher } from '@/components/ProjectSwitcher';
-import { AiService } from '@/lib/api-client';
 
 // ---------------------------------------------------------------------------
 // Overlay IDs
@@ -154,6 +154,7 @@ export function CharacterWorkspace() {
   const createRelMutation = useCreateRelationship();
   const deleteRelMutation = useDeleteRelationship();
   const generateSpeechMutation = useGenerateSpeech();
+  const generateImageMutation = useGenerateImage();
 
   // Selection state
   const [selectedCharId, setSelectedCharId] = useState<number | null>(null);
@@ -208,10 +209,8 @@ export function CharacterWorkspace() {
   );
 
   const handleGenerateImage = useCallback(async (prompt: string) => {
-    const data = await AiService.postApiImageGenerate({ prompt });
-    if (!data?.imageUrl) throw new Error('Image generation failed');
-    return { imageUrl: data.imageUrl };
-  }, []);
+    return generateImageMutation.mutateAsync({ prompt });
+  }, [generateImageMutation]);
 
   const handleGenerateSpeech = useCallback(
     async (voiceId: string, text: string) => {

@@ -29,7 +29,7 @@ import { useSettingsStore } from '@/lib/settings/store';
 import { useAIHighlight } from '@forge/shared/copilot/use-ai-highlight';
 import { useDomainCopilot } from '@forge/shared/copilot/use-domain-copilot';
 import { useForgeContract } from '@forge/domain-forge/copilot';
-import { AiService } from '@/lib/api-client';
+import { useCreateForgePlan } from '@/lib/data/hooks';
 import {
   WorkspaceShell,
   WorkspaceHeader,
@@ -338,6 +338,7 @@ export function ForgeWorkspace() {
   const storyletGraphsQuery = useForgeGraphs(projectId, FORGE_GRAPH_KIND.STORYLET);
   const createForgeGraphMutation = useCreateForgeGraph();
   const updateForgeGraphMutation = useUpdateForgeGraph();
+  const createForgePlanMutation = useCreateForgePlan();
 
   const narrativeGraphs = narrativeGraphsQuery.data ?? [];
   const storyletGraphs = storyletGraphsQuery.data ?? [];
@@ -713,8 +714,8 @@ export function ForgeWorkspace() {
   }, [saveGraph, activeScope]);
 
   const createPlanApi = useCallback(async (goal: string, graphSummary: unknown) => {
-    return AiService.postApiForgePlan({ goal, graphSummary });
-  }, []);
+    return createForgePlanMutation.mutateAsync({ goal, graphSummary });
+  }, [createForgePlanMutation]);
 
   const forgeContract = useForgeContract({
     graph: activeGraph,

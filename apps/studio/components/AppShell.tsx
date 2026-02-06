@@ -17,7 +17,7 @@ import { useSettingsStore } from '@/lib/settings/store';
 import { useEntitlements, CAPABILITIES } from '@forge/shared/entitlements';
 import { ImageGenerateRender } from '@/components/copilot/ImageGenerateRender';
 import { StructuredOutputRender } from '@/components/copilot/StructuredOutputRender';
-import { AiService } from '@/lib/api-client';
+import { useGenerateImage, useStructuredOutput } from '@/lib/data/hooks';
 import { createAppAction } from '@forge/shared/copilot';
 
 export function AppShell() {
@@ -26,6 +26,8 @@ export function AppShell() {
   const toastsEnabled = useSettingsStore((s) => s.getSettingValue('ui.toastsEnabled')) as boolean | undefined;
   const entitlements = useEntitlements();
   const imageGenEnabled = entitlements.has(CAPABILITIES.IMAGE_GENERATION);
+  const generateImageMutation = useGenerateImage();
+  const structuredOutputMutation = useStructuredOutput();
 
   // Shell-level context for the agent and user (workspace names, active workspace, editor summary)
   useCopilotReadable({
@@ -128,18 +130,15 @@ export function AppShell() {
     ],
     handler: async ({ prompt, aspectRatio, imageSize }) => {
       try {
-        const data = await AiService.postApiImageGenerate({
+        const result = await generateImageMutation.mutateAsync({
           prompt: String(prompt ?? ''),
           ...(aspectRatio && { aspectRatio: String(aspectRatio) }),
           ...(imageSize && { imageSize: String(imageSize) }),
         });
-        if (!data?.imageUrl) {
-          return { success: false, message: 'Image generation failed', data: {} };
-        }
         return {
           success: true,
           message: 'Image generated',
-          data: { imageUrl: data.imageUrl },
+          data: { imageUrl: result.imageUrl },
         };
       } catch (err) {
         return {
@@ -168,11 +167,11 @@ export function AppShell() {
     ],
     handler: async ({ prompt, schemaName }) => {
       try {
-        const json = await AiService.postApiStructuredOutput({
+        const data = await structuredOutputMutation.mutateAsync({
           prompt: String(prompt ?? ''),
           ...(schemaName && { schemaName: String(schemaName) }),
         });
-        return { success: true, message: 'Structured data extracted', data: json.data };
+        return { success: true, message: 'Structured data extracted', data };
       } catch (err) {
         const message =
           err && typeof err === 'object' && 'body' in err
