@@ -24,3 +24,7 @@ import { HeroSection, FeatureCard, PricingCard } from '@/components/molecules';
 import { MarketingHeader, PromotionsBanner } from '@/components/organisms';
 import { AuthProvider, useAuth } from '@/components/providers';
 ```
+
+## Registries and shared UI
+
+Marketing has its own `components.json` and app-level registries for app-only components; shared UI (including shared billing components) comes from `@forge/ui`. See [How-to 15 – Shadcn registries and UI components](../../../docs/how-to/15-shadcn-registries-and-components.mdx) for details.

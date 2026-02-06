@@ -1,4 +1,5 @@
 ---
+title: Component library and private registry
 created: 2026-02-05
 updated: 2026-02-05
 ---
@@ -32,6 +33,18 @@ This repo is both **the Studio app** and the **source of publishable building bl
 ### Not published (kept internal)
 - `@forge/domain-*` (domain logic and app-specific UI).
 - `@forge/types` (Payload-generated types tied to this repo).
+
+---
+
+## Shadcn registries and components.json
+
+We have three `components.json` files (no config at repo root):
+
+- **packages/ui** — shared atoms and **shared registries**; components here are published as `@forge/ui`. Shared registries: `@lucide-animated`, `@billingsdk`.
+- **apps/studio** — Studio-only; uses `@forge/ui` for base UI; add app-only registries here if needed.
+- **apps/marketing** — Marketing-only; has its own registries (e.g. magicui, aceternity) for app-level components.
+
+To add a new shared registry or install components from a registry, see [How-to 15 – Shadcn registries and UI components](../how-to/15-shadcn-registries-and-components.mdx).
 
 ---
 

@@ -32,7 +32,8 @@
       "@forge/ui/*": ["../../packages/ui/src/components/ui/*", "../../packages/ui/src/*"],
       "@forge/types": ["../../packages/types/src/index.ts"],
       "@forge/types/*": ["../../packages/types/src/*"],
-      "payload/generated-types": ["../../packages/types/src/payload-types.ts"]
+      "payload/generated-types": ["../../packages/types/src/payload-types.ts"],
+      "fumadocs-mdx:collections/*": ["./.source/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

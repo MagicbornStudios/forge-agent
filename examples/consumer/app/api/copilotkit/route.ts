@@ -1,4 +1,4 @@
-import { createForgeCopilotRuntime } from '@forge/dev-kit';
+import { createForgeCopilotRuntime } from '@forge/shared/copilot/next/runtime';
 
 const handler = createForgeCopilotRuntime({
   apiKey: process.env.OPENROUTER_API_KEY ?? '',

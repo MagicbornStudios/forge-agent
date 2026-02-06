@@ -1,7 +1,9 @@
 import type { TaskHandler } from 'payload';
 
-export const activatePromotion: TaskHandler = async ({ input, req }) => {
-  const promotionId = (input as { promotionId: number }).promotionId;
+type PromotionTaskIO = { input: { promotionId: number }; output: { updated: boolean } };
+
+export const activatePromotion: TaskHandler<PromotionTaskIO> = async ({ input, req }) => {
+  const promotionId = input.promotionId;
   const doc = await req.payload.findByID({
     collection: 'promotions',
     id: promotionId,

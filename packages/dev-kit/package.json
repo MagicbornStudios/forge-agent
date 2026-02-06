@@ -23,9 +23,9 @@
     "registry": "http://localhost:4873"
   },
   "dependencies": {
-    "@forge/ui": "^0.1.0",
-    "@forge/shared": "^0.1.0",
-    "@forge/agent-engine": "^0.1.0"
+    "@forge/ui": "workspace:*",
+    "@forge/shared": "workspace:*",
+    "@forge/agent-engine": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.5.0"

@@ -1,4 +1,5 @@
 ---
+title: Architecture decision records
 created: 2026-02-04
 updated: 2026-02-04
 ---

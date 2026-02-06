@@ -1,4 +1,5 @@
 ---
+title: 09 - Twick video workspace (minimal skeleton)
 created: 2026-02-04
 updated: 2026-02-05
 ---
@@ -8,6 +9,10 @@ updated: 2026-02-05
 This guide shows how to build a **minimal** Video workspace using the shared workspace shell and Twick's canonical provider stack. The goal is to get Twick rendering inside our app shell, wire basic AI context/actions, and leave room for full persistence later.
 
 > **License note:** Twick is under the SUL license. We **do not** publish Twick dependencies as part of `@forge/dev-kit`. They stay app-level only.
+
+## Requirements
+
+The Video workspace requires `@twick/canvas`, `@twick/live-player`, `@twick/timeline`, `@twick/studio`, and `@twick/video-editor`. Install with `pnpm install` from the repo root (internal `@forge/*` deps use `workspace:*`, so no local registry is needed). In `globals.css` only `@twick/studio/dist/studio.css` is imported; `@twick/timeline/dist/timeline.css` is not shipped on npm. See `docs/agent-artifacts/core/errors-and-attempts.md` if resolution fails.
 
 ## Goal
 

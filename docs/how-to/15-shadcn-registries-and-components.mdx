@@ -1,0 +1,103 @@
+---
+title: 15 – Shadcn registries and UI components
+
+created: 2026-02-05
+updated: 2026-02-05
+---
+
+# 15 – Shadcn registries and UI components
+
+How we use shadcn’s `components.json`, where to add registries, and how to add or build components so they live in the right place (shared vs Studio vs Marketing).
+
+## What is components.json?
+
+`components.json` is the shadcn CLI config for a “project” that owns its own component tree. It defines:
+
+- **Style** (e.g. `new-york`), **RSC**, **Tailwind** paths, **aliases** (where components, utils, lib live).
+- **Registries** — named URLs like `@lucide-animated`, `@billingsdk` that the CLI uses to fetch and install components with `shadcn add @namespace/component-name`.
+
+The CLI looks for `components.json` in the **current working directory**. There is no `components.json` at the repo root; each app or package that owns components has its own file.
+
+## Where we have components.json
+
+| Location | Role | Registries |
+|----------|------|------------|
+| **packages/ui** | Shared atoms and shared registries; output goes into `@forge/ui`. Consumed by apps and by external consumers. | `@lucide-animated`, `@billingsdk` |
+| **apps/studio** | Studio-only. Uses `@forge/ui` for base UI. Add app-only registries here if a component is only for Studio. | (none currently) |
+| **apps/marketing** | Marketing-only (docs, landing, billing, etc.). Its own molecules/organisms and app-level registries. | magicui, aceternity, tailark, shadcnblocks |
+
+## When to add a registry where
+
+- **Shared** (used across apps or by consumers): Add the registry in **packages/ui**, run the shadcn CLI from `packages/ui`, install the component there, and export it from `packages/ui/src/index.ts`.
+- **App-only** (Studio or Marketing only): Add the registry in that app’s `components.json`, run the shadcn CLI from that app’s directory; installed components stay in that app (e.g. `apps/marketing/components/...`).
+
+## How to add a new registry
+
+From the directory that has the `components.json` you want to update:
+
+```bash
+cd packages/ui   # for shared
+# or: cd apps/studio | cd apps/marketing
+pnpm dlx shadcn@latest registry add @namespace
+```
+
+Example (shared):
+
+```bash
+cd packages/ui && pnpm dlx shadcn@latest registry add @lucide-animated
+```
+
+You can also add registries by editing the `registries` object in `components.json` (e.g. `"@namespace": "https://example.com/r/{name}.json"`).
+
+## How to add a component from a registry
+
+From the **same** directory that has the `components.json`:
+
+```bash
+pnpm dlx shadcn@latest add @namespace/component-name
+```
+
+Examples from `packages/ui`:
+
+- `pnpm dlx shadcn@latest add @lucide-animated/icon-name`
+- `pnpm dlx shadcn@latest add @billingsdk/pricing-table-one`
+
+After adding to `packages/ui`, export the new component from `packages/ui/src/index.ts`.
+
+## Component strategy overview
+
+```mermaid
+flowchart LR
+  subgraph shared [Shared - packages/ui]
+    UI[components.json]
+    UI --> Atoms[Atoms]
+    UI --> LucideAnim[@lucide-animated]
+    UI --> Billing[@billingsdk]
+    Atoms --> Export[Export from index.ts]
+    LucideAnim --> Export
+    Billing --> Export
+  end
+  subgraph internal [Internal apps]
+    Studio[apps/studio]
+    Marketing[apps/marketing]
+  end
+  Export --> Studio
+  Export --> Marketing
+  Export --> Consumers[Consumers]
+  Studio --> StudioReg[Studio-only registries]
+  Marketing --> MarketingReg[Marketing registries]
+```
+
+- **Atoms (and shared “enhanced” components):** Built in `packages/ui`, published as `@forge/ui`. Consumers and internal apps (Studio, Marketing) import from here.
+- **Molecules/organisms for product:** `packages/shared` (e.g. WorkspaceShell) — published; **apps/studio** — internal-only (ForgeWorkspace, VideoWorkspace, AppShell, etc.), not shipped.
+- **Molecules/organisms for go-to-market:** **apps/marketing** — internal-only (HeroSection, MarketingSidebar, billing pages, docs, etc.); not shipped; can use app-level registries for one-off marketing/docs/billing UI.
+
+## Summary: which components.json to use
+
+| Goal | Use components.json in | Where installed components live |
+|------|------------------------|----------------------------------|
+| Shared UI (atoms, animated icons, billing components) | **packages/ui** | `packages/ui/src/components/ui/`; export from `index.ts` |
+| Studio-only component | **apps/studio** | `apps/studio/components/...` |
+| Marketing-only component (landing, docs, billing page UI) | **apps/marketing** | `apps/marketing/components/...` |
+
+**Back to index:** [00 – How-to index](00-index.mdx)

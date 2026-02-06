@@ -1,4 +1,5 @@
 ---
+title: Design components (atoms to organisms)
 created: 2026-02-05
 updated: 2026-02-05
 ---
@@ -114,6 +115,12 @@ See `apps/studio/components/CreateNodeModal.tsx` for the canonical form structur
 - `Form` wrapper from `@forge/ui`
 - `FormField` + `FormItem` + `FormControl`
 - `WorkspaceButton` for actions
+
+---
+
+## Adding components and registries
+
+To add a new shadcn registry or install components from a registry (e.g. `@lucide-animated`, `@billingsdk`), use the correct `components.json`: **packages/ui** for shared components, **apps/studio** or **apps/marketing** for app-only. See [How-to 15 – Shadcn registries and UI components](../how-to/15-shadcn-registries-and-components.mdx) for step-by-step instructions and where components live (shared vs app).
 
 ---
 

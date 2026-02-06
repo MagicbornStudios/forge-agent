@@ -1,4 +1,5 @@
 ---
+title: Status
 created: 2026-02-04
 updated: 2026-02-05
 ---
@@ -19,7 +20,7 @@ updated: 2026-02-05
 - **Plan UI**: Forge plans render in chat with `PlanCard` + `PlanActionBar` and `ForgePlanCard`, then review in the workspace via `WorkspaceReviewBar`.
 - **Workflow runtime**: `packages/agent-engine` provides a minimal workflow engine (steps + events), SSE route at `POST /api/workflows/run`, and a streaming hook in `apps/studio/lib/ai/use-workflow-run.ts`.
 - **Forge domain**: `packages/domain-forge` contains Forge logic and copilot wiring. Video remains a UI showcase under `apps/studio/lib/domains/video` (not a focus).
-- **Video workspace**: `VideoWorkspace` now renders a minimal Twick Studio surface (LivePlayerProvider + TimelineProvider + TwickStudio); persistence integration is pending.
+- **Video workspace**: `VideoWorkspace` uses Twick (LivePlayerProvider + TimelineProvider + TwickStudio); persistence integration is pending. Both Forge and Video are first-class domains.
 - **App shell**: `AppSpace` is the semantic root for AppLayout; Studio composes providers via `AppProviders` for drop-in usage.
 - **Consumer example**: `examples/consumer` shows a minimal Next app using `@forge/dev-kit` with Copilot runtime.
 - **Docs**: In-app docs now render MDX with JSX components (next-mdx-remote/rsc).
@@ -46,6 +47,7 @@ updated: 2026-02-05
 - In progress: None.
 - Other agents: None reported.
 - Done: CopilotKit architecture doc + roadmap implementation (image gen, structured output, plan-execute-review-commit).
+- Done: Twick required; @forge/* deps in packages use workspace:* so install works without Verdaccio; lockfile updated; full VideoWorkspace + Twick CSS (studio only) restored; @twick/timeline dist/timeline.css not on npm, omitted.
 - Next slice: Map Twick timeline state to our `VideoDoc` draft and add plan/commit UI for video proposals.
 
 ## Next
@@ -60,7 +62,8 @@ updated: 2026-02-05
 
 ## What changed (recent)
 
+- Twick required: internal @forge deps in packages (agent-engine, shared, dev-kit) switched to `workspace:*` so `pnpm install` works without Verdaccio; lockfile updated; full VideoWorkspace with Twick restored; only `@twick/studio/dist/studio.css` imported (npm @twick/timeline does not ship dist/timeline.css).
 - Studio app moved to `apps/studio` and workspace packages to `packages/*`, including new `packages/ui` for shared shadcn atoms.
 - Payload types now flow from the app config into a shared `packages/types` package.
 - Docs updated to reflect single-app focus and new paths.
-- Studio build succeeds; Payload emits a known dynamic import warning (documented in `docs/errors-and-attempts.md`).
+- Studio build succeeds (aside from unrelated Stripe resolution when lockfile/env differs); Payload emits a known dynamic import warning (documented in `docs/errors-and-attempts.md`).

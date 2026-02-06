@@ -1,4 +1,8 @@
-import type { CopilotActionConfig, AIHighlightPayload } from '@forge/shared/copilot/types';
+import type {
+  CopilotActionConfig,
+  AIHighlightPayload,
+  CopilotActionParameter,
+} from '@forge/shared/copilot/types';
 import { createDomainAction } from '@forge/shared/copilot';
 import { getVideoDocData, type VideoDoc, type VideoPatchOp } from '../types';
 
@@ -16,7 +20,7 @@ export interface VideoActionsDeps {
 export function createVideoActions(deps: VideoActionsDeps): CopilotActionConfig[] {
   const { getDoc, applyOperations, onAIHighlight } = deps;
 
-  const actions: CopilotActionConfig[] = [
+  const actions = [
     // -----------------------------------------------------------------------
     // video_addTrack
     // -----------------------------------------------------------------------
@@ -235,5 +239,7 @@ export function createVideoActions(deps: VideoActionsDeps): CopilotActionConfig[
     },
   ];
 
-  return actions.map((action) => createDomainAction('video', action));
+  return actions.map((action) =>
+    createDomainAction('video', action as CopilotActionConfig<CopilotActionParameter[]>),
+  ) as CopilotActionConfig[];
 }

@@ -2,8 +2,9 @@
 # Forge Agent – pnpm monorepo (apps/*, packages/*)
 # -----------------------------------------------------------------------------
 
-# Dependencies (root + every workspace)
+# Dependencies (root + every workspace) – use pnpm only
 node_modules/
+package-lock.json
 .pnp
 .pnp.*
 .yarn/*

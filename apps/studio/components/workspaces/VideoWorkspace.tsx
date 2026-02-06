@@ -54,7 +54,6 @@ export function VideoWorkspace() {
     toolsEnabledSetting !== false && entitlements.has(CAPABILITIES.STUDIO_AI_TOOLS);
   const { onAIHighlight, clearHighlights } = useAIHighlight();
 
-  // Apply persisted video draft only when it matches current doc (after app-shell has rehydrated).
   useEffect(() => {
     if (draftRestored.current || lastVideoDocId == null || typeof window === 'undefined') return;
     try {

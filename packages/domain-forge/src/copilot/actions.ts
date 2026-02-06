@@ -1,5 +1,6 @@
 import type {
   CopilotActionConfig,
+  CopilotActionParameter,
   CopilotActionRenderProps,
   AIHighlightPayload,
 } from '@forge/shared/copilot/types';
@@ -47,7 +48,7 @@ export function createForgeActions(deps: ForgeActionsDeps): CopilotActionConfig[
     renderPlan,
   } = deps;
 
-  const actions: CopilotActionConfig[] = [
+  const actions = [
     // -----------------------------------------------------------------------
     // createNode
     // -----------------------------------------------------------------------
@@ -346,6 +347,8 @@ export function createForgeActions(deps: ForgeActionsDeps): CopilotActionConfig[
     },
   ];
 
-  return actions.map((action) => createDomainAction('forge', action));
+  return actions.map((action) =>
+    createDomainAction('forge', action as CopilotActionConfig<CopilotActionParameter[]>),
+  ) as CopilotActionConfig[];
 }
 

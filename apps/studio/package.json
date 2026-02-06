@@ -12,14 +12,16 @@
     "payload:types": "node ../../scripts/generate-payload-types.mjs",
     "generate-spec": "node scripts/generate-openapi.mjs",
     "generate-client": "pnpm run generate-spec && openapi -i ./openapi.json -o ./lib/api-client -c fetch",
-    "prebuild": "pnpm run generate-spec && openapi -i ./openapi.json -o ./lib/api-client -c fetch"
+    "prebuild": "pnpm run generate-spec && openapi -i ./openapi.json -o ./lib/api-client -c fetch",
+    "build:registry": "node scripts/build-registry.mjs",
+    "predev": "pnpm run build:registry"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.25",
     "@copilotkit/react-core": "^1.51.2",
     "@copilotkit/react-ui": "^1.51.2",
-    "@copilotkit/shared": "^1.51.2",
     "@copilotkit/runtime": "^1.51.2",
+    "@copilotkit/shared": "^1.51.2",
     "@forge/agent-engine": "workspace:*",
     "@forge/domain-forge": "workspace:*",
     "@forge/shared": "workspace:*",
@@ -67,6 +69,9 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "fumadocs-core": "^16.5.0",
+    "fumadocs-mdx": "^14.2.6",
+    "fumadocs-ui": "^16.5.0",
     "graphql": "^16.10.0",
     "immer": "^11.1.3",
     "lucide-react": "^0.563.0",

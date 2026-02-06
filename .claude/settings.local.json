@@ -12,7 +12,8 @@
       "WebFetch(domain:ncounterspecialist.github.io)",
       "WebFetch(domain:docs.copilotkit.ai)",
       "Bash(dir:*)",
-      "WebFetch(domain:openrouter.ai)"
+      "WebFetch(domain:openrouter.ai)",
+      "Bash(ls:*)"
     ]
   }
 }

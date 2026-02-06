@@ -23,7 +23,7 @@
     "registry": "http://localhost:4873"
   },
   "dependencies": {
-    "@forge/shared": "^0.1.0"
+    "@forge/shared": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.5.0"

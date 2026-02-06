@@ -10,7 +10,8 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.esm.js",
       "require": "./dist/index.cjs.js"
-    }
+    },
+    "./copilot/next/runtime": "./src/shared/copilot/next/runtime.ts"
   },
   "files": [
     "dist"
@@ -23,7 +24,7 @@
     "registry": "http://localhost:4873"
   },
   "dependencies": {
-    "@forge/ui": "^0.1.0",
+    "@forge/ui": "workspace:*",
     "clsx": "^2.1.1",
     "tailwind-merge": "^3.4.0"
   },

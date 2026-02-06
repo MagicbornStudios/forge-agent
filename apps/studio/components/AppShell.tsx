@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useCopilotReadable, useCopilotAction } from '@copilotkit/react-core';
+import type { Parameter } from '@copilotkit/shared';
 import { useAppShellStore, type AppShellWorkspaceId } from '@/lib/app-shell/store';
 import {
   WORKSPACE_LABELS,
@@ -40,7 +41,7 @@ export function AppShell() {
     },
   });
 
-  useCopilotAction(createAppAction({
+  useCopilotAction(createAppAction<[Parameter]>({
     name: 'switchWorkspace',
     description: 'Switch the active workspace tab. Use when the user asks to go to Forge or Video.',
     parameters: [
@@ -61,7 +62,7 @@ export function AppShell() {
     },
   }));
 
-  useCopilotAction(createAppAction({
+  useCopilotAction(createAppAction<[Parameter]>({
     name: 'openWorkspace',
     description: 'Open a workspace tab if not already open, and switch to it.',
     parameters: [
@@ -82,7 +83,7 @@ export function AppShell() {
     },
   }));
 
-  useCopilotAction(createAppAction({
+  useCopilotAction(createAppAction<[Parameter]>({
     name: 'closeWorkspace',
     description: 'Close a workspace tab. Must have at least one open.',
     parameters: [
@@ -106,7 +107,7 @@ export function AppShell() {
     },
   }));
 
-  useCopilotAction(createAppAction({
+  useCopilotAction(createAppAction<[Parameter, Parameter, Parameter]>({
     name: 'app_generateImage',
     description:
       'Generate an image from a text prompt. Use when the user asks to create, draw, or generate an image.',
@@ -157,7 +158,7 @@ export function AppShell() {
     ...(imageGenEnabled ? {} : { available: 'disabled' as const }),
   }));
 
-  useCopilotAction(createAppAction({
+  useCopilotAction(createAppAction<[Parameter, Parameter]>({
     name: 'app_respondWithStructure',
     description:
       'Extract or produce structured data (JSON) from a prompt. Use when the user wants a list of characters, key-value pairs, or other structured output. Choose schemaName to match the request: "characters" for character lists, "keyValue" for key-value pairs, "list" for a simple string list.',
