@@ -1,4 +1,4 @@
 'use client';
 
-/** Legacy export: single Forge workspace. Prefer AppShell + ForgeWorkspace for unified app. */
-export { ForgeWorkspace as Workspace } from '@/components/workspaces';
+/** Legacy export: single Dialogue mode. Prefer AppShell + Editor modes for unified app. */
+export { DialogueMode as Workspace } from '@/components/modes';

@@ -22,7 +22,8 @@ export interface ForgeCopilotRuntimeOptions {
 }
 
 /**
- * Create a Next.js App Router handler for CopilotKit using OpenRouter.
+ * Create a Next.js App Router handler for CopilotKit using OpenRouter via OpenAI SDK + baseURL.
+ * CopilotKit requires openai and @ai-sdk/openai interfaces; we do not use @openrouter/ai-sdk-provider.
  */
 export function createForgeCopilotRuntime(options: ForgeCopilotRuntimeOptions) {
   const {
@@ -38,6 +39,12 @@ export function createForgeCopilotRuntime(options: ForgeCopilotRuntimeOptions) {
     throw new Error('OpenRouter API key is required. Set OPENROUTER_API_KEY.');
   }
 
+  const openRouterHeaders = {
+    'HTTP-Referer': headers?.['HTTP-Referer'] ?? process.env.NEXT_PUBLIC_APP_URL ?? '',
+    'X-Title': headers?.['X-Title'] ?? 'Forge App',
+    ...headers,
+  };
+
   return async function handleRequest(req: Request) {
     const resolved = resolveModel ? resolveModel(req) : null;
     const selectedModel = resolved ?? modelId;
@@ -49,7 +56,7 @@ export function createForgeCopilotRuntime(options: ForgeCopilotRuntimeOptions) {
     const openaiClient = new OpenAI({
       apiKey,
       baseURL: baseUrl,
-      defaultHeaders: headers,
+      defaultHeaders: openRouterHeaders,
     });
 
     const serviceAdapter = new OpenAIAdapter({
@@ -57,11 +64,12 @@ export function createForgeCopilotRuntime(options: ForgeCopilotRuntimeOptions) {
       openai: openaiClient as any,
     });
 
-    const openRouter = createOpenAI({
+    const openRouterAiSdk = createOpenAI({
       apiKey,
       baseURL: baseUrl,
+      headers: openRouterHeaders,
     });
-    const languageModel = openRouter(selectedModel);
+    const languageModel = openRouterAiSdk(selectedModel);
     const defaultAgent = new BuiltInAgent({ model: languageModel as any });
 
     const runtime = new CopilotRuntime({

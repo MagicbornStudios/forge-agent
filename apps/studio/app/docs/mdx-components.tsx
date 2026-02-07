@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { cn } from '@forge/ui/lib/utils';
 import { Badge } from '@forge/ui/badge';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@forge/ui/card';
+import { ComponentPreview } from '@/components/docs';
 
 export interface CalloutProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'info' | 'note' | 'warning' | 'danger';
@@ -121,6 +122,7 @@ export function createMdxComponents(validSlugs: Set<string>) {
     },
     Callout,
     Step,
+    ComponentPreview,
     Badge,
     Card,
     CardHeader,

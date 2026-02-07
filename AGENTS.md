@@ -1,29 +1,29 @@
 ---
 created: 2026-02-04
-updated: 2026-02-04
+updated: 2026-02-07
 ---
 
 # Forge Agent - Agent rules
 
-**Agent artifact index:** See [docs/18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx) for the full list of agent-only docs (agent-artifacts/core: STATUS, decisions, errors-and-attempts; all AGENTS.md). **Strategy and conventions:** [docs/19-coding-agent-strategy.mdx](docs/19-coding-agent-strategy.mdx).
+**Agent artifact index:** See [docs/18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx) for the full list of agent-only docs (agent-artifacts/core: STATUS, decisions, errors-and-attempts, tool-usage, compacting; all AGENTS.md). **Strategy and conventions:** [docs/19-coding-agent-strategy.mdx](docs/19-coding-agent-strategy.mdx). For **current state** and **failures**, read docs/agent-artifacts (index + core); for **area rules**, read this file and the relevant per-package AGENTS.md. Prefer **rg**/list_dir/Read to search and confirm - see [docs/agent-artifacts/core/tool-usage.md](docs/agent-artifacts/core/tool-usage.md).
 
 ## Workspace Platform Engineer
 
-Owns **packages/shared/src/shared**: workspace components, shared styles, and workspace types/contracts.
+Owns **packages/shared/src/shared**: editor components, shared styles, and workspace types/contracts.
 
-- **Loop**: Read **docs/STATUS.md** -> read **AGENTS.md** (root + `packages/shared/src/shared/AGENTS.md` + `packages/shared/src/shared/components/workspace/AGENTS.md`) -> implement one vertical slice -> update STATUS (including **Ralph Wiggum loop**) and relevant AGENTS/README.
-- **Naming**: Use **WorkspaceShell** for the declarative root (layout + slots). Do not introduce a separate "container" name for the same concept.
+- **Loop**: Read **docs/agent-artifacts/core/STATUS.md** (see [18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx)) and **AGENTS.md** (root + `packages/shared/src/shared/AGENTS.md` + `packages/shared/src/shared/components/workspace/AGENTS.md`) -> implement one vertical slice -> update STATUS (including **Ralph Wiggum loop**) and relevant AGENTS/README.
+- **Naming**: Use **EditorShell** for the declarative root (layout + slots). Do not introduce a separate "container" name for the same concept.
 - No imperative toolbar API; timeline is optional; no cross-domain imports in shared. Capabilities live in `packages/shared/src/shared/workspace/capabilities.ts` (contracts only).
 
-## Unified workspace (App Shell)
+## Unified editor (App Shell)
 
-- **App Shell** (`apps/studio/components/AppShell.tsx`, `apps/studio/lib/app-shell/store.ts`) owns workspace tabs and active workspace. Forge and Video are sub-workspaces; only the active one is rendered.
-- **Agent layers**: (1) Shell: context (activeWorkspace, workspaceNames) and actions (switchWorkspace, openWorkspace, closeWorkspace). (2) Per-workspace: domain contract (context + actions + suggestions) when that workspace is active. (3) Optional co-agents: see **docs/17-co-agents-and-multi-agent.mdx**.
-- **Do not repeat**: Before changing styling, model routing, or multi-workspace registration, check **docs/agent-artifacts/core/errors-and-attempts.md** for known failures and fixes.
+- **App Shell** (`apps/studio/components/AppShell.tsx`, `apps/studio/lib/app-shell/store.ts`) owns mode tabs and the active mode. Dialogue, Video, Character, and Strategy are sub-modes; only the active one is rendered.
+- **Agent layers**: (1) Shell: context (activeWorkspace, workspaceNames) and actions (switchMode, openMode, closeMode). (2) Per-mode: domain contract (context + actions + suggestions) when that mode is active. (3) Optional co-agents: see **docs/17-co-agents-and-multi-agent.mdx**.
+- **Do not repeat**: Before changing styling, model routing, or multi-mode registration, check **docs/agent-artifacts/core/errors-and-attempts.md** for known failures and fixes. For CopilotKit + OpenRouter use **OpenAI SDK** and **@ai-sdk/openai** with **baseURL** only; do not use `@openrouter/ai-sdk-provider`. See [errors-and-attempts.md](docs/agent-artifacts/core/errors-and-attempts.md) (BuiltInAgent/OpenRouter SDK) and [06-model-routing-and-openrouter.mdx](docs/architecture/06-model-routing-and-openrouter.mdx).
 
 ## Other agents
 
-When touching workspaces (Forge, Writer, etc.): use the shared shell from `@forge/shared/components/workspace`. Do not invent new layout patterns; extend via slots and document in shared AGENTS.
+When touching modes (Dialogue, Character, Video, Strategy): use the shared shell from `@forge/shared/components/editor`. Do not invent new layout patterns; extend via slots and document in shared AGENTS.
 
 ## UI atoms
 
@@ -51,4 +51,4 @@ When touching workspaces (Forge, Writer, etc.): use the shared shell from `@forg
 - **Read** `docs/agent-artifacts/core/decisions.md` and `docs/11-tech-stack.mdx` when changing persistence or the data layer (TanStack Query, Zustand drafts, API routes, localStorage).
 - **Update** those docs when making or rejecting a significant choice (e.g. adding a new backend, changing the client boundary).
 - **Keep one API boundary:** client talks only to our Next API routes; no direct Payload REST/GraphQL from the browser.
-- **API client:** Collection CRUD uses the **Payload SDK** (`lib/api-client/payload-sdk.ts`) against Payload REST. Custom endpoints use the **generated** client where it exists (Auth, Settings, Model, Ai), **manual client modules** in `lib/api-client/` (elevenlabs, media, workflows), or **vendor SDKs** (e.g. ElevenLabs server SDK in route handlers). Do not add raw `fetch` for `/api/*` in components, hooks, or stores—**extend the client** (add a new module under `lib/api-client/` or use a vendor SDK) instead. The OpenAPI/Swagger spec is for **documentation only** (no streaming support); do not direct agents to add new endpoints to the spec to get a client. Use the TanStack Query hooks in `apps/studio/lib/data/hooks/` for server state. Swagger UI at `/api-doc`, spec at `/api/docs`.
+- **API client:** Collection CRUD uses the **Payload SDK** (`lib/api-client/payload-sdk.ts`) against Payload REST. Custom endpoints use the **generated** client where it exists (Auth, Settings, Model, Ai), **manual client modules** in `lib/api-client/` (elevenlabs, media, workflows), or **vendor SDKs** (e.g. ElevenLabs server SDK in route handlers). Do not add raw `fetch` for `/api/*` in components, hooks, or stores - **extend the client** (add a new module under `lib/api-client/` or use a vendor SDK) instead. The OpenAPI/Swagger spec is for **documentation only** (no streaming support); do not direct agents to add new endpoints to the spec to get a client. Use the TanStack Query hooks in `apps/studio/lib/data/hooks/` for server state. Swagger UI at `/api-doc`, spec at `/api/docs`.

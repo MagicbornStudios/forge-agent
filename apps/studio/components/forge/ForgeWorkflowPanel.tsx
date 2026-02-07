@@ -20,6 +20,7 @@ export interface ForgeWorkflowPanelProps {
   applyOperations: (ops: ForgeGraphPatchOp[]) => void;
   commitGraph: () => Promise<void>;
   onAIHighlight: (payload: AIHighlightPayload) => void;
+  onApplyingChange?: (isApplying: boolean) => void;
 }
 
 function parsePlanSteps(markdown: string): PlanStepItem[] {
@@ -40,6 +41,7 @@ export function ForgeWorkflowPanel({
   applyOperations,
   commitGraph,
   onAIHighlight,
+  onApplyingChange,
 }: ForgeWorkflowPanelProps) {
   const [intent, setIntent] = useState('');
   const [isApplying, setIsApplying] = useState(false);
@@ -72,6 +74,7 @@ export function ForgeWorkflowPanel({
     if (!state.patch || state.patch.kind !== 'reactflow' || !Array.isArray(state.patch.ops)) return;
     if (state.review && state.review.ok === false) return;
     setIsApplying(true);
+    onApplyingChange?.(true);
     try {
       const ops = state.patch.ops as ForgeGraphPatchOp[];
       applyOperations(ops);
@@ -81,6 +84,7 @@ export function ForgeWorkflowPanel({
       reset();
     } finally {
       setIsApplying(false);
+      onApplyingChange?.(false);
     }
   };
 

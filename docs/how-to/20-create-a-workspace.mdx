@@ -1,12 +1,14 @@
 ---
-title: 20 - Create a workspace
+title: 20 - Create an editor mode
 created: 2026-02-06
-updated: 2026-02-06
+updated: 2026-02-07
 ---
 
-# 20 - Create a workspace
+# 20 - Create an editor mode
 
-This guide is a practical walkthrough for adding a new workspace in Studio. It uses **CharacterWorkspace** as the reference implementation (React Flow + Copilot + Payload-backed CRUD).
+This guide is a practical walkthrough for adding a new **editor mode** in
+Studio. It uses **CharacterMode** as the reference implementation
+(React Flow + Copilot + Payload-backed CRUD).
 
 ## 1. Payload collections + types
 
@@ -18,7 +20,7 @@ This guide is a practical walkthrough for adding a new workspace in Studio. It u
 
 1. Add query keys in `apps/studio/lib/data/keys.ts`.
 2. Implement hooks in `apps/studio/lib/data/hooks/` and export from the barrel.
-3. Use hooks from the workspace (no raw fetch inside components).
+3. Use hooks from the mode (no raw fetch inside components).
 
 ## 3. Domain store (Zustand)
 
@@ -32,12 +34,12 @@ This guide is a practical walkthrough for adding a new workspace in Studio. It u
 2. Expose a `use<Domain>Contract` hook in `packages/domain-<domain>/src/index.ts`.
 3. Actions must be created via `createDomainAction('<domain>', ...)`.
 
-## 5. Workspace shell composition
+## 5. Editor shell composition
 
-Use shared workspace primitives:
+Use shared editor primitives:
 
-- `WorkspaceShell` ? `WorkspaceHeader` ? `WorkspaceToolbar` ? `WorkspaceLayoutGrid` ? `WorkspaceStatusBar` ? `WorkspaceOverlaySurface`.
-- Left sidebars should use `WorkspaceSidebar` (shadcn Sidebar wrapper). For graph editors, use `GraphSidebar`.
+- `EditorShell` -> `ModeHeader` -> `ModeToolbar` -> `DockLayout` -> `ModeStatusBar` -> `ModeOverlaySurface`.
+- Sidebars should use `DockPanel` + `PanelTabs` (or `DockSidebar` if you need shadcn Sidebar).
 
 ## 6. Graph editor + palette
 
@@ -47,27 +49,27 @@ Use shared workspace primitives:
 
 ## 7. AppShell integration
 
-1. Extend `AppShellWorkspaceId` in `apps/studio/lib/app-shell/store.ts`.
-2. Add workspace metadata in `apps/studio/lib/app-shell/workspace-metadata.ts`.
-3. Render the workspace in `apps/studio/components/AppShell.tsx`.
+1. Extend `EditorModeId` in `apps/studio/lib/app-shell/store.ts`.
+2. Add mode metadata in `apps/studio/lib/app-shell/mode-metadata.ts`.
+3. Render the mode in `apps/studio/components/AppShell.tsx`.
 
 ## 8. Theming standards (shadcn + context)
 
 - Use shadcn semantic classes: `bg-background`, `text-foreground`, `bg-card`, `border-border`, `bg-sidebar`, `text-muted-foreground`.
 - Graph surfaces can use the extended tokens: `bg-canvas`, `bg-editor`, `border-editor-border`.
-- Workspace context accent is applied via `data-domain` (see `contexts.css`). This wires `--primary`, `--ring`, and `--accent` to the domain accent.
+- Mode context accent is applied via `data-domain` (see `contexts.css`). This wires `--primary`, `--ring`, and `--accent` to the domain accent.
 
 ## 9. Optional UI components
 
 - **ElevenLabs audio player** (used for voice preview): see `packages/ui/src/components/ui/audio-player.tsx`.
-- **shadcn AI components** (image, chain-of-thought, plan cards) can be added manually or via CLI when needed; keep them in `packages/ui` so all apps can import `@forge/ui/*`. To add more third-party components (e.g. ElevenLabs), see [15 – Shadcn registries and UI components](15-shadcn-registries-and-components.mdx); use `pnpm dlx` for vendor CLIs to avoid npx errors.
+- **shadcn AI components** (image, chain-of-thought, plan cards) can be added manually or via CLI when needed; keep them in `packages/ui` so all apps can import `@forge/ui/*`. To add more third-party components (e.g. ElevenLabs), see [15 - Shadcn registries and UI components](15-shadcn-registries-and-components.mdx); use `pnpm dlx` for vendor CLIs to avoid npx errors.
 
 ## 10. Verification
 
-- Workspace renders without console errors.
+- Mode renders without console errors.
 - CRUD hooks load data and updates persist.
 - Copilot actions work against the active selection.
 - Drag-and-drop from the palette creates nodes at the drop location.
 - Theming respects `data-theme` and `data-domain` changes.
 
-Next: See `06-forge-workspace-walkthrough.mdx` for a full end-to-end example.
+Next: See [06 - DialogueMode walkthrough](06-forge-workspace-walkthrough.mdx) for a full end-to-end example.

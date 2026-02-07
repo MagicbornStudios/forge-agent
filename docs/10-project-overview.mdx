@@ -2,7 +2,7 @@
 title: Forge Agent - Project overview
 
 created: 2026-02-04
-updated: 2026-02-04
+updated: 2026-02-07
 ---
 
 # Forge Agent - Project overview
@@ -11,7 +11,7 @@ updated: 2026-02-04
 
 Forge Agent is an AI-first studio for editing dialogue graphs. It focuses on:
 
-- Unified workspace shell with multiple sub-workspaces (Forge is primary; Video is a UI showcase).
+- Editor shell with multiple modes (Dialogue is primary; Character, Video, and Strategy are additional modes).
 - CopilotKit for in-app AI context, actions, and suggestions.
 - Payload CMS (SQLite) for local-first persistence.
 - Payload-generated types used across domains for consistent schemas.
@@ -25,7 +25,7 @@ Forge Agent is an AI-first studio for editing dialogue graphs. It focuses on:
 - shadcn/ui (Radix UI)
 - Zustand
 - CopilotKit
-- OpenRouter (AI SDK + OpenAI provider)
+- OpenRouter via OpenAI SDK + baseURL; ElevenLabs for audio; video (Sora) planned - see [06 - Model routing and OpenRouter](architecture/06-model-routing-and-openrouter.mdx)
 - React Flow
 - Payload CMS (SQLite)
 
@@ -33,17 +33,17 @@ Forge Agent is an AI-first studio for editing dialogue graphs. It focuses on:
 
 ## Architecture (high level)
 
-- **App Shell** (`apps/studio/components/AppShell.tsx`, `apps/studio/lib/app-shell/store.ts`): owns workspace tabs and active workspace. Only the active workspace is rendered.
-- **Workspaces**: Forge is primary. Video exists as a UI showcase only.
-- **Shared**: `packages/shared/src/shared` contains the workspace UI kit, headless contracts, and styling tokens.
+- **App Shell** (`apps/studio/components/AppShell.tsx`, `apps/studio/lib/app-shell/store.ts`): owns mode tabs and the active mode. Only the active mode is rendered.
+- **Modes**: Dialogue is primary. Character and Video are editors; Strategy is the assistant-ui strategy editor.
+- **Shared**: `packages/shared/src/shared` contains the editor UI kit, headless contracts, assistant-ui/tool-ui components, and styling tokens.
 - **Agent engine**: `packages/agent-engine` provides the workflow runtime (steps + events + SSE helpers).
 - **Dev kit**: `packages/dev-kit` re-exports `@forge/ui`, `@forge/shared`, and `@forge/agent-engine` for consumers.
-- **Domains**: Forge logic lives in `packages/domain-forge` and consumes types from `packages/types`.
+- **Domains**: Dialogue logic lives in `packages/domain-forge` and consumes types from `packages/types`.
 - **Types**: Payload generates types into `packages/types/src/payload-types.ts`. Domain aliases live in `packages/types/src/payload.ts` and `packages/types/src/graph.ts`.
 - **Persistence**: Payload runs inside the Studio app. Collections live under `apps/studio/payload/collections`.
 - **Settings**: Config-based defaults in `apps/studio/lib/settings/config.ts`. Overrides are loaded from Payload (`settings-overrides`) on app init via `GET /api/settings` and `hydrateFromOverrides`; saved explicitly via the settings sheet Save button and `POST /api/settings`.
 
-Note: API routes exist inside the Studio app for CopilotKit and Payload operations, but they are internal to the app and not treated as separate services.
+Note: API routes exist inside the Studio app for CopilotKit, assistant-chat, and Payload operations, but they are internal to the app and not treated as separate services.
 
 ---
 
@@ -52,16 +52,16 @@ Note: API routes exist inside the Studio app for CopilotKit and Payload operatio
 | Path | Purpose |
 |------|---------|
 | **apps/studio/app/** | Next.js App Router: layout, page, globals.css, internal API routes. |
-| **apps/studio/components/** | Studio UI (AppShell, workspaces, settings, providers, shadcn UI). |
+| **apps/studio/components/** | Studio UI (AppShell, modes, settings, providers, shadcn UI). |
 | **apps/studio/payload/** | Payload config and collections for Studio. |
 | **apps/studio/lib/** | App logic (stores, model router, settings, graph operations, utils). |
-| **packages/shared/** | Shared workspace UI kit and headless contracts. |
+| **packages/shared/** | Shared editor UI kit and headless contracts. |
 | **packages/agent-engine/** | Workflow runtime (steps + events + SSE). |
 | **packages/dev-kit/** | Meta-package that re-exports forge foundation packages for consumers. |
-| **packages/domain-forge/** | Forge domain logic (types, store, operations, copilot wiring). |
+| **packages/domain-forge/** | Dialogue domain logic (types, store, operations, copilot wiring). |
 | **packages/ui/** | Shared shadcn UI atoms (Radix-based primitives). |
 | **packages/types/** | Payload-generated types + domain aliases (source of truth). |
-| **docs/** | Documentation (STATUS, architecture, design, guides). How-to guides live in `docs/how-to/` (numbered 00-09) and are also served in-app at `/docs`. |
+| **docs/** | Documentation (STATUS, architecture, design, guides). How-to guides live in `docs/how-to/` (numbered 00-09, 21-22) and are also served in-app at `/docs`. |
 | **__tests__/** | Jest tests. |
 | **__mocks__/** | Jest mocks (server-only, etc.). |
 
@@ -82,6 +82,7 @@ apps/
       layout.tsx
       page.tsx
       api/
+        assistant-chat/route.ts
         copilotkit/route.ts
         graphs/route.ts
         graphs/[id]/route.ts
@@ -93,10 +94,13 @@ apps/
       CreateNodeModal.tsx
       copilot/
       forge/
+      media/
+      modes/
       providers/
       settings/
       video/
       workspaces/
+        legacy/
     lib/
       app-shell/
       domains/
@@ -114,7 +118,6 @@ apps/
       collections/index.ts
     payload.config.ts
     next.config.ts
-    tailwind.config.ts
     postcss.config.mjs
     tsconfig.json
     components.json
@@ -126,6 +129,9 @@ packages/
       shared/
         components/
           app/
+          assistant-ui/
+          editor/
+          tool-ui/
           workspace/
         copilot/
         styles/
@@ -156,12 +162,19 @@ packages/
       index.ts
     package.json
 
+examples/
+  consumer/
+    app/
+      api/
+        assistant-chat/route.ts
+      page.tsx
+
 docs/
   agent-artifacts/core/
   10-project-overview.mdx
   architecture/
   design/
-  guides/
+  how-to/
 
 scripts/
   generate-payload-types.mjs
@@ -183,7 +196,6 @@ types/
 | **apps/studio/package.json** | Studio app deps and scripts. |
 | **apps/studio/tsconfig.json** | Studio TS config and path aliases. |
 | **apps/studio/next.config.ts** | Next config + transpile workspace packages. |
-| **apps/studio/tailwind.config.ts** | Tailwind v4 content includes Studio and packages. |
 | **apps/studio/payload.config.ts** | Payload config; generates types into `packages/types`. |
 | **packages/types/src/payload-types.ts** | Generated Payload types (do not edit). |
 | **packages/types/src/payload.ts** | Domain aliases for payload-generated types. |
@@ -195,16 +207,16 @@ types/
 ## Entry and data flow
 
 - **Entry**: `apps/studio/app/layout.tsx` -> `apps/studio/app/page.tsx`.
-- **AppShell**: Reads app-shell store and renders the active workspace. Workspace tabs use shared components from `@forge/shared`.
-- **Forge workspace**: Composes `WorkspaceShell` and `WorkspaceLayoutGrid` from `@forge/shared` with the GraphEditor as the main surface.
-- **CopilotKit**: Workspace registers context + actions from Forge domain wiring; the chat uses those to propose edits.
+- **AppShell**: Reads app-shell store and renders the active mode. Mode tabs use shared components from `@forge/shared`.
+- **Dialogue mode**: Composes `EditorShell` and `DockLayout` from `@forge/shared` with the GraphEditor as the main surface.
+- **CopilotKit**: The active mode registers context + actions from domain wiring; the chat uses those to propose edits.
 - **Payload**: Collections define persisted shapes; generated types are used by domain logic for type safety.
 
 ---
 
 ## How-to guides
 
-Numbered guides in `docs/how-to/` build a workspace from the ground up. They are served in the Studio app at **/docs** (sidebar + article). Order: 01 Foundation -> 02 Workspace shell and slots -> 03 Styling -> 04 Data and state -> 05 Building a workspace -> 06 ForgeWorkspace walkthrough -> 07 Copilot and AI integration -> 08 Adding AI to workspaces -> 09 Twick video workspace. Each guide includes "What the AI can do at this stage" and points to real code.
+Numbered guides in `docs/how-to/` build an editor mode from the ground up. They are served in the Studio app at **/docs** (sidebar + article). Order: 01 Foundation -> 02 Editor shell and slots -> 03 Styling -> 04 Data and state -> 05 Building an editor mode -> 06 DialogueMode walkthrough -> 07 Copilot and AI integration -> 08 Adding AI to modes -> 09 VideoMode walkthrough -> 21 Workspace -> Editor migration -> 22 AI generation components. Each guide includes "What the AI can do at this stage" and points to real code.
 
 ---
 

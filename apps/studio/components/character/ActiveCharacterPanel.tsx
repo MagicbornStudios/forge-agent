@@ -21,10 +21,9 @@ import {
   SelectValue,
 } from '@forge/ui/select';
 import { MediaCard } from '@forge/shared/components/media';
-import { GenerateMediaModal } from '@forge/shared/components/media';
+import { ConnectedGenerateMediaModal } from '@/components/media/ConnectedGenerateMediaModal';
 import { getInitials } from '@/lib/domains/character/operations';
 import type { CharacterDoc } from '@/lib/domains/character/types';
-import { AiService } from '@/lib/api-client';
 import { useElevenLabsVoices, useGenerateSpeech } from '@/lib/data/hooks';
 
 // ---------------------------------------------------------------------------
@@ -120,18 +119,6 @@ export function ActiveCharacterPanel({ character, onUpdate }: Props) {
     }
   }, [character, previewText, generateSpeechMutation]);
 
-  const handleGenerateImage = useCallback(
-    async (prompt: string, opts?: { aspectRatio?: string }) => {
-      const data = await AiService.postApiImageGenerate({
-        prompt,
-        aspectRatio: opts?.aspectRatio ?? '3:4',
-      });
-      if (!data?.imageUrl) throw new Error('Image generation failed');
-      return { imageUrl: data.imageUrl };
-    },
-    [],
-  );
-
   // ---- Empty state --------------------------------------------------------
   if (!character) {
     return (
@@ -174,7 +161,7 @@ export function ActiveCharacterPanel({ character, onUpdate }: Props) {
       />
 
       {/* Generate Media Modal */}
-      <GenerateMediaModal
+      <ConnectedGenerateMediaModal
         open={showGenerateModal}
         onOpenChange={setShowGenerateModal}
         defaultTab="text-to-image"
@@ -184,7 +171,6 @@ export function ActiveCharacterPanel({ character, onUpdate }: Props) {
           description: character.description ?? undefined,
           existingImageUrl: character.imageUrl ?? undefined,
         }}
-        generateImage={handleGenerateImage}
         onGenerated={(result) => {
           if (result.type === 'image') {
             onUpdate(character.id, { imageUrl: result.url });

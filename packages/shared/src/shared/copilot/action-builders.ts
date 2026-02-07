@@ -15,18 +15,6 @@ export function createAppAction<T extends Parameter[] | []>(
   return withPrefix('app_', config);
 }
 
-export function createWorkspaceAction<T extends Parameter[] | []>(
-  config: CopilotActionConfig<T>,
-): CopilotActionConfig<T> {
-  return withPrefix('workspace_', config);
-}
-
-export function createEditorAction<T extends Parameter[] | []>(
-  config: CopilotActionConfig<T>,
-): CopilotActionConfig<T> {
-  return withPrefix('editor_', config);
-}
-
 export function createDomainAction<T extends Parameter[] | []>(
   domain: string,
   config: CopilotActionConfig<T>,

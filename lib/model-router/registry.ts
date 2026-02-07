@@ -1,3 +1,4 @@
+/** Canonical model router: apps/studio/lib/model-router (registry, server-state, fallbacks). */
 import type { ModelDef } from './types';
 
 /**

@@ -1,0 +1,64 @@
+---
+title: Model routing and OpenRouter
+---
+
+# Model routing and OpenRouter
+
+We use **OpenRouter** for chat, structured output, plan generation, and image generation. The model list is **fetched from OpenRouter's API**; we only maintain **static defaults** for the free fallback chain, image model, and task model.
+
+## SDK and API
+
+- **OpenAI SDK + @ai-sdk/openai**: We use OpenAI SDK with `baseURL` for OpenRouter and `createOpenAI` from `@ai-sdk/openai` (no OpenRouter SDK). We inject fallbacks via a custom fetch that adds `models: [primary, ...fallbacks]` to the request body. See `apps/studio/lib/model-router/openrouter-fetch.ts`.
+- **Model list**: Fetched from OpenRouter `GET /api/v1/models` (see `apps/studio/lib/openrouter-models.ts`). Cached for 5 minutes. Returned by `GET /api/model-settings` as `registry` so the ModelSwitcher and settings can show the current list without maintaining it in code.
+- **Static defaults** (only list we maintain): `apps/studio/lib/model-router/defaults.ts` defines:
+  - **DEFAULT_FREE_CHAT_MODEL_IDS**: default fallback chain for chat (free models, order = preference). Used when the user has not set preferences.
+  - **DEFAULT_IMAGE_MODEL**: default for image generation; override with env `OPENROUTER_IMAGE_MODEL`.
+  - **DEFAULT_TASK_MODEL**: default for forge/plan and structured-output (same as first free chat default).
+
+## Modes and switching
+
+- **Auto**: Primary = first in the user's enabled list (or default free chain); fallbacks = rest of that list. OpenRouter receives `models: [primary, ...fallbacks]` and retries on rate limit / 5xx within the same request.
+- **Manual**: User picks one model; no fallbacks.
+- **Override**: Client can send header `x-forge-model` (e.g. from workspace/editor/user setting for `ai.model`). When set, we use that model as primary and no fallbacks for that request.
+
+## ModelSwitcher component
+
+- **Location**: `apps/studio/components/model-switcher/ModelSwitcher.tsx`.
+- **Data**: Gets `registry` (OpenRouter model list) and preferences from `GET /api/model-settings`. Store: `apps/studio/lib/model-router/store.ts`.
+- **UI**: Auto vs Manual; in Auto, user enables/disables models and order = primary then fallbacks; in Manual, user picks one. When `FREE_ONLY` is true (default), only free-tier models from the OpenRouter list are shown. If the registry is empty (e.g. no API key), a short message is shown.
+
+## Where model is chosen
+
+| Use case | Source | Override |
+|----------|--------|----------|
+| Chat / CopilotKit | Preferences (primary + fallbacks) or `x-forge-model` | Header `x-forge-model` from settings |
+| forge/plan | Preferences (primary + fallbacks) | None today |
+| structured-output | Preferences (primary + fallbacks) | None today |
+| image-generate | Env `OPENROUTER_IMAGE_MODEL` or `DEFAULT_IMAGE_MODEL` | Env only |
+
+## How to avoid auto-switching (single model)
+
+- **Manual mode**: In ModelSwitcher, choose "Manual" and select one model. All chat requests use that model with no fallbacks.
+- **Per-request**: Set `ai.model` at workspace/editor/user level to a specific model ID (not "auto"); the client sends `x-forge-model` and we use that model only for that request.
+- **Image**: Uses a single model (env or default); no fallbacks.
+
+## Provider stack (text / image / audio / video)
+
+| Capability | Provider | Status / notes |
+|------------|----------|----------------|
+| Chat / streaming | OpenRouter | Primary + fallbacks via custom fetch |
+| Structured output | OpenRouter | Same model resolution |
+| Plan (forge) | OpenRouter | Same model resolution |
+| Image generation | OpenRouter | Dedicated model (env or default) |
+| Image vision | OpenRouter | Model-dependent |
+| Audio TTS | ElevenLabs | Character voices, preview. Configure `ELEVENLABS_API_KEY`. |
+| Audio STT | - | Not implemented (e.g. Whisper when we add it) |
+| Video generation | OpenAI Sora | Planned. OpenRouter does not offer video. |
+
+OpenRouter covers text LLMs and limited image; we use **ElevenLabs** for audio TTS and plan **OpenAI Sora** (or equivalent) for video when we add it.
+
+## References
+
+- [03-copilotkit-and-agents.mdx](./03-copilotkit-and-agents.mdx) - Runtime and agent (Section 7).
+- [01-unified-workspace.mdx](./01-unified-workspace.mdx) - Model routing and OpenRouter (short section).
+- OpenRouter: [List models](https://openrouter.ai/docs/api-reference/list-available-models), [Model fallbacks](https://openrouter.ai/docs/guides/routing/model-fallbacks).

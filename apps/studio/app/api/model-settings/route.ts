@@ -1,21 +1,20 @@
 import { NextResponse } from 'next/server';
 import {
-  resolveModel,
+  resolvePrimaryAndFallbacks,
   getPreferences,
   updatePreferences,
-  getHealthSnapshot,
 } from '@/lib/model-router/server-state';
-import { MODEL_REGISTRY } from '@/lib/model-router/registry';
+import { getOpenRouterModels } from '@/lib/openrouter-models';
 
 /**
  * @swagger
  * /api/model-settings:
  *   get:
- *     summary: Get model router state (active model, mode, registry, preferences, health)
+ *     summary: Get model router state (active model, mode, registry from OpenRouter, preferences, primary + fallbacks)
  *     tags: [model]
  *     responses:
  *       200:
- *         description: Model settings and health snapshot
+ *         description: Model settings and preferences; registry is from OpenRouter API
  *   post:
  *     summary: Update model preferences (mode, manualModelId, enabledModelIds)
  *     tags: [model]
@@ -30,19 +29,20 @@ import { MODEL_REGISTRY } from '@/lib/model-router/registry';
  *               enabledModelIds: { type: array, items: { type: string } }
  *     responses:
  *       200:
- *         description: New resolved model and health
+ *         description: New resolved primary and fallbacks
  */
 export async function GET() {
-  const { modelId, mode } = resolveModel();
+  const registry = await getOpenRouterModels();
+  const { primary, fallbacks, mode } = resolvePrimaryAndFallbacks();
   const preferences = getPreferences();
-  const health = getHealthSnapshot();
 
   return NextResponse.json({
-    activeModelId: modelId,
+    activeModelId: primary,
     mode,
-    registry: MODEL_REGISTRY,
+    registry,
     preferences,
-    health,
+    primaryId: primary,
+    fallbackIds: fallbacks,
   });
 }
 
@@ -56,8 +56,12 @@ export async function POST(req: Request) {
 
   updatePreferences(patch);
 
-  const { modelId, mode } = resolveModel();
-  const health = getHealthSnapshot();
+  const { primary, fallbacks, mode } = resolvePrimaryAndFallbacks();
 
-  return NextResponse.json({ activeModelId: modelId, mode, health });
+  return NextResponse.json({
+    activeModelId: primary,
+    mode,
+    primaryId: primary,
+    fallbackIds: fallbacks,
+  });
 }

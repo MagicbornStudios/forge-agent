@@ -1,0 +1,41 @@
+---
+title: Product roadmap
+created: 2026-02-06
+updated: 2026-02-07
+---
+
+# Product roadmap
+
+Upcoming editor modes and initiatives. Each follows the same **Ralph Wiggum loop**: read STATUS (or equivalent) and relevant artifacts -> implement a slice -> update STATUS and artifacts. Strategy is **per mode**; each mode has its own strategy/artifacts, but the loop pattern is consistent.
+
+## Dialogue mode (YarnSpinner)
+
+**Status:** In progress.
+
+**Focus:**
+
+- YarnSpinner dialogue graph editing (narratives + storylets).
+- Plan -> patch -> review -> commit workflow with DockLayout.
+- Domain copilot actions and highlights for dialogue graphs.
+
+## CodebaseAgentStrategyEditor
+
+**Status:** In progress.
+
+**Focus:**
+
+- Assistant UI and tool UI based chat editor.
+- Streaming AI SDK chat endpoint (`/api/assistant-chat`).
+- Shared component exported from `@forge/shared` and showcased in the consumer example.
+
+**Scope:** Help users define and refine **per-mode strategies** for their codebases and produce plans and agent artifacts for any coding agent (Cursor, Codex, Claude, etc.). Support for standard Unity and Unreal codebase structures is in scope; deeper investigation (folder layout, build systems, common patterns) is a follow-on task.
+
+## Writer mode
+
+**Status:** Planned.
+
+Same loop pattern (artifacts + strategy) as other modes. When implemented, it will have its own STATUS/decisions/errors-and-attempts or equivalent for that domain.
+
+## Other roadmap items
+
+Vision/image input (model registry + chat upload), co-agents (documented, not used), optional agent graphs/subgraphs in runtime - see [agent-artifacts/core/STATUS.md](../agent-artifacts/core/STATUS.md) "Next" and "Roadmap remaining," and [03 - CopilotKit and agents](../architecture/03-copilotkit-and-agents.mdx) Section 12.

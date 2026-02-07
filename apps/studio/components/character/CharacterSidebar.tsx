@@ -7,7 +7,7 @@ import { Input } from '@forge/ui/input';
 import { CharacterList } from './CharacterList';
 import { RelationshipsList } from './RelationshipsList';
 import type { CharacterDoc, RelationshipDoc } from '@/lib/domains/character/types';
-import { GraphSidebar } from '@/components/graph/GraphSidebar';
+import { PanelTabs, type PanelTabDef } from '@forge/shared/components/editor';
 import { NodePalette, type NodePaletteItem } from '@/components/graph/NodePalette';
 
 interface Props {
@@ -91,35 +91,29 @@ export function CharacterSidebar({
     />
   );
 
-  return (
-    <GraphSidebar
-      className="h-full"
-      tabs={[
-        {
-          id: 'characters',
-          label: 'Characters',
-          icon: <Users size={12} />,
-          content: charactersTab,
-          accentColor: 'var(--color-df-info)',
-          accentMutedColor: 'color-mix(in oklab, var(--color-df-info) 40%, transparent)',
-        },
-        {
-          id: 'relationships',
-          label: 'Relations',
-          icon: <Link2 size={12} />,
-          content: relationshipsTab,
-          accentColor: 'var(--color-df-edge-choice-1)',
-          accentMutedColor: 'color-mix(in oklab, var(--color-df-edge-choice-1) 40%, transparent)',
-        },
-        {
-          id: 'nodes',
-          label: 'Nodes',
-          icon: <Boxes size={12} />,
-          content: nodesTab,
-          accentColor: 'var(--color-df-warning)',
-          accentMutedColor: 'color-mix(in oklab, var(--color-df-warning) 40%, transparent)',
-        },
-      ]}
-    />
-  );
+  const tabs: PanelTabDef[] = [
+    {
+      id: 'characters',
+      label: 'Characters',
+      icon: <Users size={12} />,
+      content: charactersTab,
+      accentColor: 'var(--status-info)',
+    },
+    {
+      id: 'relationships',
+      label: 'Relations',
+      icon: <Link2 size={12} />,
+      content: relationshipsTab,
+      accentColor: 'var(--graph-edge-choice-1)',
+    },
+    {
+      id: 'nodes',
+      label: 'Nodes',
+      icon: <Boxes size={12} />,
+      content: nodesTab,
+      accentColor: 'var(--status-warning)',
+    },
+  ];
+
+  return <PanelTabs tabs={tabs} className="h-full" />;
 }

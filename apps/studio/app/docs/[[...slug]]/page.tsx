@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import type { ComponentType } from 'react';
 import { source } from '@/lib/source';
 import { DocsLayoutShell } from '@forge/shared';
 import type { Node, Root } from 'fumadocs-core/page-tree';
@@ -52,7 +53,7 @@ export default async function DocPage({
   validSlugs.add('00-docs-index');
 
   const mdxComponents = createMdxComponents(validSlugs);
-  const MdxBody = typeof body === 'function' ? body : null;
+  const MdxBody = (typeof body === 'function' ? body : null) as ComponentType<{ components: typeof mdxComponents }> | null;
 
   return (
     <DocsLayoutShell serializedTree={serializedTree} toc={toc}>

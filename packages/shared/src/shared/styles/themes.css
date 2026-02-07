@@ -1,60 +1,141 @@
 :root {
-  /* Base shadcn/ui semantic variables */
-  --background: var(--color-df-base);
-  --foreground: var(--color-df-text-primary);
+  /* Shadcn semantic (primary theme surface) */
+  --background: oklch(0.18 0 0);
+  --foreground: oklch(1.0 0 0);
+  --card: oklch(0.22 0 0);
+  --card-foreground: oklch(1.0 0 0);
+  --popover: oklch(0.28 0 0);
+  --popover-foreground: oklch(1.0 0 0);
+  --primary: oklch(0.45 0.12 15);
+  --primary-foreground: oklch(1.0 0 0);
+  --secondary: oklch(0.22 0 0);
+  --secondary-foreground: oklch(1.0 0 0);
+  --muted: oklch(0.22 0 0);
+  --muted-foreground: oklch(0.50 0 0);
+  --accent: oklch(0.26 0 0);
+  --accent-foreground: oklch(1.0 0 0);
+  --destructive: oklch(0.65 0.20 25);
+  --destructive-foreground: oklch(1.0 0 0);
+  --border: oklch(0.32 0 0);
+  --input: oklch(0.32 0 0);
+  --ring: oklch(0.45 0.12 15);
 
-  --card: var(--color-df-surface);
-  --card-foreground: var(--color-df-text-primary);
-
-  --popover: var(--color-df-elevated);
-  --popover-foreground: var(--color-df-text-primary);
-
-  --primary: var(--color-df-node-selected);
-  --primary-foreground: var(--color-df-text-primary);
-
-  --secondary: var(--color-df-control-bg);
-  --secondary-foreground: var(--color-df-text-primary);
-
-  --muted: var(--color-df-control-bg);
-  --muted-foreground: var(--color-df-text-tertiary);
-
-  --accent: var(--color-df-control-hover);
-  --accent-foreground: var(--color-df-text-primary);
-
-  --destructive: var(--color-df-error);
-  --destructive-foreground: var(--color-df-text-primary);
-
-  --border: var(--color-df-control-border);
-  --input: var(--color-df-control-border);
-  --ring: var(--color-df-node-selected);
-
-  /* Canvas/editor + sidebar tokens (Tailwind color aliases) */
-  --canvas: var(--color-df-canvas-bg);
-  --canvas-grid: var(--color-df-canvas-grid);
-  --editor: var(--color-df-editor-bg);
-  --editor-border: var(--color-df-editor-border);
-
-  --sidebar-background: var(--color-df-sidebar-bg);
-  --sidebar-foreground: var(--color-df-text-primary);
-  --sidebar-primary: var(--color-df-border-active);
-  --sidebar-primary-foreground: var(--color-df-text-primary);
-  --sidebar-accent: var(--color-df-control-hover);
-  --sidebar-accent-foreground: var(--color-df-text-primary);
-  --sidebar-border: var(--color-df-sidebar-border);
-  --sidebar-ring: var(--color-df-border-active);
+  /* Canvas/editor + sidebar (aliases for Tailwind) */
+  --canvas: var(--graph-canvas);
+  --canvas-grid: var(--graph-grid);
+  --editor: var(--graph-editor);
+  --editor-border: var(--graph-editor-border);
+  --sidebar-background: var(--graph-sidebar-bg);
+  --sidebar-foreground: var(--text-primary);
+  --sidebar-primary: var(--border-active);
+  --sidebar-primary-foreground: var(--text-primary);
+  --sidebar-accent: var(--control-hover);
+  --sidebar-accent-foreground: var(--text-primary);
+  --sidebar-border: var(--graph-sidebar-border);
+  --sidebar-ring: var(--border-active);
   --sidebar: var(--sidebar-background);
 
-  /* Charts */
-  --chart-1: var(--color-df-edge-choice-1);
-  --chart-2: var(--color-df-edge-choice-2);
-  --chart-3: var(--color-df-edge-choice-3);
-  --chart-4: var(--color-df-edge-choice-4);
-  --chart-5: var(--color-df-edge-choice-5);
+  /* Graph tokens */
+  --graph-canvas: oklch(0.16 0 0);
+  --graph-grid: oklch(0.22 0 0);
+  --graph-editor: oklch(0.18 0 0);
+  --graph-editor-border: oklch(0.30 0 0);
+  --graph-node-bg: oklch(0.20 0.03 240);
+  --graph-node-border: oklch(0.35 0.05 220);
+  --graph-node-selected: oklch(0.45 0.12 15);
+  --graph-node-dimmed: oklch(0.15 0.02 250);
+  --graph-edge-default: oklch(0.42 0 0);
+  --graph-edge-default-hover: oklch(0.72 0.22 150);
+  --graph-edge-choice-1: oklch(0.55 0.12 15);
+  --graph-edge-choice-2: oklch(0.60 0.15 280);
+  --graph-edge-choice-3: oklch(0.58 0.12 200);
+  --graph-edge-choice-4: oklch(0.62 0.12 120);
+  --graph-edge-choice-5: oklch(0.55 0.10 45);
+  --graph-edge-loop: oklch(0.60 0.12 60);
+  --graph-edge-dimmed: oklch(0.32 0 0);
+  --graph-sidebar-bg: oklch(0.22 0 0);
+  --graph-sidebar-border: oklch(0.32 0 0);
+
+  /* Node-type tokens */
+  --graph-node-npc-bg: oklch(0.26 0.02 45);
+  --graph-node-npc-border: oklch(0.38 0.03 35);
+  --graph-node-npc-header: oklch(0.30 0.04 25);
+  --graph-node-npc-text: oklch(1.0 0 0);
+  --graph-node-npc-selected: oklch(0.72 0.22 150);
+  --graph-node-player-bg: oklch(0.26 0.02 280);
+  --graph-node-player-border: oklch(0.38 0.04 300);
+  --graph-node-player-header: oklch(0.30 0.05 290);
+  --graph-node-player-text: oklch(1.0 0 0);
+  --graph-node-player-selected: oklch(0.72 0.22 150);
+  --graph-node-conditional-bg: oklch(0.26 0.02 150);
+  --graph-node-conditional-border: oklch(0.38 0.04 140);
+  --graph-node-conditional-header: oklch(0.30 0.05 145);
+  --graph-node-conditional-text: oklch(1.0 0 0);
+  --graph-node-conditional-selected: oklch(0.72 0.22 150);
+
+  /* Chart + edge choice (aligned) */
+  --chart-1: var(--graph-edge-choice-1);
+  --chart-2: var(--graph-edge-choice-2);
+  --chart-3: var(--graph-edge-choice-3);
+  --chart-4: var(--graph-edge-choice-4);
+  --chart-5: var(--graph-edge-choice-5);
+  --edge-choice-1: var(--graph-edge-choice-1);
+  --edge-choice-2: var(--graph-edge-choice-2);
+  --edge-choice-3: var(--graph-edge-choice-3);
+  --edge-choice-4: var(--graph-edge-choice-4);
+  --edge-choice-5: var(--graph-edge-choice-5);
+
+  /* Status tokens */
+  --status-error: oklch(0.65 0.20 25);
+  --status-error-bg: oklch(0.28 0.08 25);
+  --status-warning: oklch(0.70 0.18 70);
+  --status-warning-bg: oklch(0.28 0.08 70);
+  --status-success: oklch(0.72 0.22 150);
+  --status-success-bg: oklch(0.28 0.08 150);
+  --status-info: oklch(0.65 0.15 220);
+  --status-info-bg: oklch(0.28 0.06 220);
+
+  /* Text/control tokens */
+  --text-primary: oklch(1.0 0 0);
+  --text-secondary: oklch(0.70 0 0);
+  --text-tertiary: oklch(0.50 0 0);
+  --text-muted: oklch(0.45 0 0);
+  --control-bg: oklch(0.22 0 0);
+  --control-border: oklch(0.32 0 0);
+  --control-hover: oklch(0.26 0 0);
+  --control-active: oklch(0.72 0.22 150);
+
+  /* Flags */
+  --flag-dialogue: oklch(0.50 0 0);
+  --flag-dialogue-bg: oklch(0.24 0 0);
+  --flag-quest: oklch(0.60 0.15 220);
+  --flag-quest-bg: oklch(0.26 0.05 220);
+  --flag-achievement: oklch(0.70 0.18 70);
+  --flag-achievement-bg: oklch(0.28 0.06 70);
+  --flag-item: oklch(0.72 0.22 150);
+  --flag-item-bg: oklch(0.28 0.06 150);
+  --flag-stat: oklch(0.65 0.18 280);
+  --flag-stat-bg: oklch(0.28 0.06 280);
+  --flag-title: oklch(0.65 0.18 330);
+  --flag-title-bg: oklch(0.28 0.06 330);
+  --flag-global: oklch(0.60 0.15 45);
+  --flag-global-bg: oklch(0.28 0.05 45);
+
+  /* Accent borders */
+  --border-active: oklch(0.72 0.22 150);
+  --border-hover: oklch(0.50 0.12 150);
+
+  /* Domain accents (used by contexts.css) */
+  --domain-forge: oklch(0.72 0.22 150);
+  --domain-dialogue: var(--domain-forge);
+  --domain-writer: oklch(0.65 0.15 220);
+  --domain-ai: oklch(0.72 0.22 150);
+  --domain-video: oklch(0.60 0.15 280);
+  --domain-character: oklch(0.55 0.12 15);
 
   --scrollbar-track: transparent;
-  --scrollbar-thumb: var(--color-df-control-border);
-  --scrollbar-thumb-hover: var(--color-df-border-hover);
-
+  --scrollbar-thumb: var(--control-border);
+  --scrollbar-thumb-hover: var(--border-hover);
   --radius: 0.6rem;
 
   /* Shadows */
@@ -62,759 +143,490 @@
   --shadow-df-md: 0 4px 8px oklch(0 0 0 / 0.4);
   --shadow-df-lg: 0 8px 16px oklch(0 0 0 / 0.5);
   --shadow-df-glow: 0 0 12px oklch(0.72 0.22 150 / 0.3);
-
-  /* Default theme (dark-fantasy) domain tokens */
-  --color-df-base: oklch(0.18 0 0);
-  --color-df-surface: oklch(0.22 0 0);
-  --color-df-elevated: oklch(0.28 0 0);
-
-  --color-df-node-bg: oklch(0.20 0.03 240);
-  --color-df-node-border: oklch(0.35 0.05 220);
-  --color-df-node-selected: oklch(0.45 0.12 15);
-  --color-df-node-dimmed: oklch(0.15 0.02 250);
-
-  --color-df-npc-bg: oklch(0.26 0.02 45);
-  --color-df-npc-border: oklch(0.38 0.03 35);
-  --color-df-npc-header: oklch(0.30 0.04 25);
-  --color-df-npc-text: oklch(1.0 0 0);
-  --color-df-npc-selected: oklch(0.72 0.22 150);
-
-  --color-df-player-bg: oklch(0.26 0.02 280);
-  --color-df-player-border: oklch(0.38 0.04 300);
-  --color-df-player-header: oklch(0.30 0.05 290);
-  --color-df-player-text: oklch(1.0 0 0);
-  --color-df-player-selected: oklch(0.72 0.22 150);
-
-  --color-df-conditional-bg: oklch(0.26 0.02 150);
-  --color-df-conditional-border: oklch(0.38 0.04 140);
-  --color-df-conditional-header: oklch(0.30 0.05 145);
-  --color-df-conditional-text: oklch(1.0 0 0);
-
-  --color-df-start: oklch(0.72 0.22 150);
-  --color-df-start-bg: oklch(0.28 0.06 150);
-  --color-df-end: oklch(0.65 0.18 25);
-  --color-df-end-bg: oklch(0.28 0.05 25);
-
-  --color-df-edge-default: oklch(0.42 0 0);
-  --color-df-edge-default-hover: oklch(0.72 0.22 150);
-  --color-df-edge-choice-1: oklch(0.55 0.12 15);
-  --color-df-edge-choice-2: oklch(0.60 0.15 280);
-  --color-df-edge-choice-3: oklch(0.58 0.12 200);
-  --color-df-edge-choice-4: oklch(0.62 0.12 120);
-  --color-df-edge-choice-5: oklch(0.55 0.10 45);
-  --color-df-edge-loop: oklch(0.60 0.12 60);
-  --color-df-edge-dimmed: oklch(0.32 0 0);
-  --edge-choice-1: var(--color-df-edge-choice-1);
-  --edge-choice-2: var(--color-df-edge-choice-2);
-  --edge-choice-3: var(--color-df-edge-choice-3);
-  --edge-choice-4: var(--color-df-edge-choice-4);
-  --edge-choice-5: var(--color-df-edge-choice-5);
-
-  --color-df-error: oklch(0.65 0.20 25);
-  --color-df-error-bg: oklch(0.28 0.08 25);
-  --color-df-warning: oklch(0.70 0.18 70);
-  --color-df-warning-bg: oklch(0.28 0.08 70);
-  --color-df-success: oklch(0.72 0.22 150);
-  --color-df-success-bg: oklch(0.28 0.08 150);
-  --color-df-info: oklch(0.65 0.15 220);
-  --color-df-info-bg: oklch(0.28 0.06 220);
-
-  --color-df-text-primary: oklch(1.0 0 0);
-  --color-df-text-secondary: oklch(0.70 0 0);
-  --color-df-text-tertiary: oklch(0.50 0 0);
-  --color-df-text-muted: oklch(0.45 0 0);
-
-  --color-df-control-bg: oklch(0.22 0 0);
-  --color-df-control-border: oklch(0.32 0 0);
-  --color-df-control-hover: oklch(0.26 0 0);
-  --color-df-control-active: oklch(0.72 0.22 150);
-
-  --color-df-flag-dialogue: oklch(0.50 0 0);
-  --color-df-flag-dialogue-bg: oklch(0.24 0 0);
-  --color-df-flag-quest: oklch(0.60 0.15 220);
-  --color-df-flag-quest-bg: oklch(0.26 0.05 220);
-  --color-df-flag-achievement: oklch(0.70 0.18 70);
-  --color-df-flag-achievement-bg: oklch(0.28 0.06 70);
-  --color-df-flag-item: oklch(0.72 0.22 150);
-  --color-df-flag-item-bg: oklch(0.28 0.06 150);
-  --color-df-flag-stat: oklch(0.65 0.18 280);
-  --color-df-flag-stat-bg: oklch(0.28 0.06 280);
-  --color-df-flag-title: oklch(0.65 0.18 330);
-  --color-df-flag-title-bg: oklch(0.28 0.06 330);
-  --color-df-flag-global: oklch(0.60 0.15 45);
-  --color-df-flag-global-bg: oklch(0.28 0.05 45);
-
-  --color-df-canvas-bg: oklch(0.16 0 0);
-  --color-df-canvas-grid: oklch(0.22 0 0);
-
-  --color-df-sidebar-bg: oklch(0.22 0 0);
-  --color-df-sidebar-border: oklch(0.32 0 0);
-  --color-df-sidebar-border-active: oklch(0.72 0.22 150);
-  --color-df-editor-bg: oklch(0.18 0 0);
-  --color-df-editor-border: oklch(0.30 0 0);
-  --color-df-editor-border-active: oklch(0.72 0.22 150);
-
-  --color-df-border-active: oklch(0.72 0.22 150);
-  --color-df-border-hover: oklch(0.50 0.12 150);
-
-  /* Domain accent colors (used by contexts.css) */
-  --color-df-domain-forge: var(--color-df-start);
-  --color-df-domain-writer: var(--color-df-info);
-  --color-df-domain-ai: var(--color-df-success);
-  --color-df-domain-video: var(--color-df-edge-choice-2);
-  --color-df-domain-character: var(--color-df-edge-choice-1);
 }
 
 :is(html[data-theme='dark-fantasy'], [data-theme='dark-fantasy']) {
-  /* Base Colors - Spotify style with darker shades */
-  --color-df-base: oklch(0.18 0 0);
-  --color-df-surface: oklch(0.22 0 0);
-  --color-df-elevated: oklch(0.28 0 0);
-
-  /* Node Colors - General */
-  --color-df-node-bg: oklch(0.20 0.03 240);
-  --color-df-node-border: oklch(0.35 0.05 220);
-  --color-df-node-selected: oklch(0.45 0.12 15);
-  --color-df-node-dimmed: oklch(0.15 0.02 250);
-
-  /* NPC Node Colors - Subtle warm tones */
-  --color-df-npc-bg: oklch(0.26 0.02 45);
-  --color-df-npc-border: oklch(0.38 0.03 35);
-  --color-df-npc-header: oklch(0.30 0.04 25);
-  --color-df-npc-text: oklch(1.0 0 0);
-  --color-df-npc-selected: oklch(0.72 0.22 150);
-
-  /* Player Node Colors - Subtle cool tones */
-  --color-df-player-bg: oklch(0.26 0.02 280);
-  --color-df-player-border: oklch(0.38 0.04 300);
-  --color-df-player-header: oklch(0.30 0.05 290);
-  --color-df-player-text: oklch(1.0 0 0);
-  --color-df-player-selected: oklch(0.72 0.22 150);
-
-  /* Conditional Node Colors - Subtle green */
-  --color-df-conditional-bg: oklch(0.26 0.02 150);
-  --color-df-conditional-border: oklch(0.38 0.04 140);
-  --color-df-conditional-header: oklch(0.30 0.05 145);
-  --color-df-conditional-text: oklch(1.0 0 0);
-
-  /* Start/End Badges */
-  --color-df-start: oklch(0.72 0.22 150);
-  --color-df-start-bg: oklch(0.28 0.06 150);
-  --color-df-end: oklch(0.65 0.18 25);
-  --color-df-end-bg: oklch(0.28 0.05 25);
-
-  /* Edge Colors */
-  --color-df-edge-default: oklch(0.42 0 0);
-  --color-df-edge-default-hover: oklch(0.72 0.22 150);
-  --color-df-edge-choice-1: oklch(0.55 0.12 15);
-  --color-df-edge-choice-2: oklch(0.60 0.15 280);
-  --color-df-edge-choice-3: oklch(0.58 0.12 200);
-  --color-df-edge-choice-4: oklch(0.62 0.12 120);
-  --color-df-edge-choice-5: oklch(0.55 0.10 45);
-  --color-df-edge-loop: oklch(0.60 0.12 60);
-  --color-df-edge-dimmed: oklch(0.32 0 0);
-  --edge-choice-1: var(--color-df-edge-choice-1);
-  --edge-choice-2: var(--color-df-edge-choice-2);
-  --edge-choice-3: var(--color-df-edge-choice-3);
-  --edge-choice-4: var(--color-df-edge-choice-4);
-  --edge-choice-5: var(--color-df-edge-choice-5);
-
-  /* Status Colors */
-  --color-df-error: oklch(0.65 0.20 25);
-  --color-df-error-bg: oklch(0.28 0.08 25);
-  --color-df-warning: oklch(0.70 0.18 70);
-  --color-df-warning-bg: oklch(0.28 0.08 70);
-  --color-df-success: oklch(0.72 0.22 150);
-  --color-df-success-bg: oklch(0.28 0.08 150);
-  --color-df-info: oklch(0.65 0.15 220);
-  --color-df-info-bg: oklch(0.28 0.06 220);
-
-  /* Text Colors */
-  --color-df-text-primary: oklch(1.0 0 0);
-  --color-df-text-secondary: oklch(0.70 0 0);
-  --color-df-text-tertiary: oklch(0.50 0 0);
-  --color-df-text-muted: oklch(0.45 0 0);
-
-  /* UI Control Colors */
-  --color-df-control-bg: oklch(0.22 0 0);
-  --color-df-control-border: oklch(0.32 0 0);
-  --color-df-control-hover: oklch(0.26 0 0);
-  --color-df-control-active: oklch(0.72 0.22 150);
-
-  /* Flag Colors */
-  --color-df-flag-dialogue: oklch(0.50 0 0);
-  --color-df-flag-dialogue-bg: oklch(0.24 0 0);
-  --color-df-flag-quest: oklch(0.60 0.15 220);
-  --color-df-flag-quest-bg: oklch(0.26 0.05 220);
-  --color-df-flag-achievement: oklch(0.70 0.18 70);
-  --color-df-flag-achievement-bg: oklch(0.28 0.06 70);
-  --color-df-flag-item: oklch(0.72 0.22 150);
-  --color-df-flag-item-bg: oklch(0.28 0.06 150);
-  --color-df-flag-stat: oklch(0.65 0.18 280);
-  --color-df-flag-stat-bg: oklch(0.28 0.06 280);
-  --color-df-flag-title: oklch(0.65 0.18 330);
-  --color-df-flag-title-bg: oklch(0.28 0.06 330);
-  --color-df-flag-global: oklch(0.60 0.15 45);
-  --color-df-flag-global-bg: oklch(0.28 0.05 45);
-
-  /* Canvas/Background */
-  --color-df-canvas-bg: oklch(0.16 0 0);
-  --color-df-canvas-grid: oklch(0.22 0 0);
-
-  /* Sidebar/Editor */
-  --color-df-sidebar-bg: oklch(0.22 0 0);
-  --color-df-sidebar-border: oklch(0.32 0 0);
-  --color-df-sidebar-border-active: oklch(0.72 0.22 150);
-  --color-df-editor-bg: oklch(0.18 0 0);
-  --color-df-editor-border: oklch(0.30 0 0);
-  --color-df-editor-border-active: oklch(0.72 0.22 150);
-
-  /* Accent borders */
-  --color-df-border-active: oklch(0.72 0.22 150);
-  --color-df-border-hover: oklch(0.50 0.12 150);
+  --background: oklch(0.18 0 0);
+  --foreground: oklch(1.0 0 0);
+  --card: oklch(0.22 0 0);
+  --popover: oklch(0.28 0 0);
+  --primary: oklch(0.45 0.12 15);
+  --secondary: oklch(0.22 0 0);
+  --muted: oklch(0.22 0 0);
+  --muted-foreground: oklch(0.50 0 0);
+  --accent: oklch(0.26 0 0);
+  --destructive: oklch(0.65 0.20 25);
+  --border: oklch(0.32 0 0);
+  --input: oklch(0.32 0 0);
+  --ring: oklch(0.45 0.12 15);
+  --graph-canvas: oklch(0.16 0 0);
+  --graph-grid: oklch(0.22 0 0);
+  --graph-editor: oklch(0.18 0 0);
+  --graph-editor-border: oklch(0.30 0 0);
+  --graph-node-bg: oklch(0.20 0.03 240);
+  --graph-node-border: oklch(0.35 0.05 220);
+  --graph-node-selected: oklch(0.45 0.12 15);
+  --graph-node-dimmed: oklch(0.15 0.02 250);
+  --graph-node-npc-bg: oklch(0.26 0.02 45);
+  --graph-node-npc-border: oklch(0.38 0.03 35);
+  --graph-node-npc-header: oklch(0.30 0.04 25);
+  --graph-node-npc-text: oklch(1.0 0 0);
+  --graph-node-npc-selected: oklch(0.72 0.22 150);
+  --graph-node-player-bg: oklch(0.26 0.02 280);
+  --graph-node-player-border: oklch(0.38 0.04 300);
+  --graph-node-player-header: oklch(0.30 0.05 290);
+  --graph-node-player-text: oklch(1.0 0 0);
+  --graph-node-player-selected: oklch(0.72 0.22 150);
+  --graph-node-conditional-bg: oklch(0.26 0.02 150);
+  --graph-node-conditional-border: oklch(0.38 0.04 140);
+  --graph-node-conditional-header: oklch(0.30 0.05 145);
+  --graph-node-conditional-text: oklch(1.0 0 0);
+  --graph-edge-default: oklch(0.42 0 0);
+  --graph-edge-default-hover: oklch(0.72 0.22 150);
+  --graph-edge-choice-1: oklch(0.55 0.12 15);
+  --graph-edge-choice-2: oklch(0.60 0.15 280);
+  --graph-edge-choice-3: oklch(0.58 0.12 200);
+  --graph-edge-choice-4: oklch(0.62 0.12 120);
+  --graph-edge-choice-5: oklch(0.55 0.10 45);
+  --graph-edge-loop: oklch(0.60 0.12 60);
+  --graph-edge-dimmed: oklch(0.32 0 0);
+  --graph-sidebar-bg: oklch(0.22 0 0);
+  --graph-sidebar-border: oklch(0.32 0 0);
+  --status-error: oklch(0.65 0.20 25);
+  --status-error-bg: oklch(0.28 0.08 25);
+  --status-warning: oklch(0.70 0.18 70);
+  --status-warning-bg: oklch(0.28 0.08 70);
+  --status-success: oklch(0.72 0.22 150);
+  --status-success-bg: oklch(0.28 0.08 150);
+  --status-info: oklch(0.65 0.15 220);
+  --status-info-bg: oklch(0.28 0.06 220);
+  --text-primary: oklch(1.0 0 0);
+  --text-secondary: oklch(0.70 0 0);
+  --text-tertiary: oklch(0.50 0 0);
+  --text-muted: oklch(0.45 0 0);
+  --control-bg: oklch(0.22 0 0);
+  --control-border: oklch(0.32 0 0);
+  --control-hover: oklch(0.26 0 0);
+  --control-active: oklch(0.72 0.22 150);
+  --flag-dialogue: oklch(0.50 0 0);
+  --flag-dialogue-bg: oklch(0.24 0 0);
+  --flag-quest: oklch(0.60 0.15 220);
+  --flag-quest-bg: oklch(0.26 0.05 220);
+  --flag-achievement: oklch(0.70 0.18 70);
+  --flag-achievement-bg: oklch(0.28 0.06 70);
+  --flag-item: oklch(0.72 0.22 150);
+  --flag-item-bg: oklch(0.28 0.06 150);
+  --flag-stat: oklch(0.65 0.18 280);
+  --flag-stat-bg: oklch(0.28 0.06 280);
+  --flag-title: oklch(0.65 0.18 330);
+  --flag-title-bg: oklch(0.28 0.06 330);
+  --flag-global: oklch(0.60 0.15 45);
+  --flag-global-bg: oklch(0.28 0.05 45);
+  --border-active: oklch(0.72 0.22 150);
+  --border-hover: oklch(0.50 0.12 150);
 }
 
 :is(html[data-theme='light'], [data-theme='light']) {
-  /* Base Colors */
-  --color-df-base: oklch(0.98 0.01 250);
-  --color-df-surface: oklch(0.95 0.01 260);
-  --color-df-elevated: oklch(0.92 0.01 270);
-
-  /* Node Colors - General */
-  --color-df-node-bg: var(--color-df-surface);
-  --color-df-node-border: var(--color-df-control-border);
-  --color-df-node-selected: var(--color-df-player-selected);
-  --color-df-node-dimmed: var(--color-df-control-hover);
-
-  /* NPC Node Colors */
-  --color-df-npc-bg: oklch(0.90 0.03 45);
-  --color-df-npc-border: oklch(0.60 0.08 35);
-  --color-df-npc-header: oklch(0.85 0.05 25);
-  --color-df-npc-text: var(--color-df-text-primary);
-  --color-df-npc-selected: oklch(0.55 0.15 15);
-
-  /* Player Node Colors */
-  --color-df-player-bg: oklch(0.92 0.05 300);
-  --color-df-player-border: oklch(0.55 0.15 310);
-  --color-df-player-header: oklch(0.88 0.08 290);
-  --color-df-player-text: var(--color-df-text-primary);
-  --color-df-player-selected: oklch(0.45 0.20 280);
-
-  /* Conditional Node */
-  --color-df-conditional-bg: oklch(0.91 0.04 150);
-  --color-df-conditional-border: oklch(0.58 0.12 140);
-  --color-df-conditional-header: oklch(0.88 0.06 145);
-  --color-df-conditional-text: var(--color-df-text-primary);
-
-  /* Start/End */
-  --color-df-start: oklch(0.45 0.15 140);
-  --color-df-start-bg: oklch(0.90 0.05 140);
-  --color-df-end: oklch(0.50 0.15 45);
-  --color-df-end-bg: oklch(0.90 0.05 45);
-
-  /* Edges */
-  --color-df-edge-default: oklch(0.60 0.03 250);
-  --color-df-edge-default-hover: oklch(0.50 0.05 250);
-  --color-df-edge-choice-1: oklch(0.50 0.18 15);
-  --color-df-edge-choice-2: oklch(0.45 0.20 280);
-  --color-df-edge-choice-3: oklch(0.48 0.18 200);
-  --color-df-edge-choice-4: oklch(0.42 0.16 120);
-  --color-df-edge-choice-5: oklch(0.50 0.15 45);
-  --color-df-edge-loop: oklch(0.45 0.15 60);
-  --color-df-edge-dimmed: oklch(0.75 0.02 250);
-  --edge-choice-1: var(--color-df-edge-choice-1);
-  --edge-choice-2: var(--color-df-edge-choice-2);
-  --edge-choice-3: var(--color-df-edge-choice-3);
-  --edge-choice-4: var(--color-df-edge-choice-4);
-  --edge-choice-5: var(--color-df-edge-choice-5);
-
-  /* Status */
-  --color-df-error: oklch(0.45 0.22 25);
-  --color-df-error-bg: oklch(0.92 0.08 25);
-  --color-df-warning: oklch(0.35 0.18 70);
-  --color-df-warning-bg: oklch(0.92 0.08 70);
-  --color-df-success: oklch(0.40 0.18 150);
-  --color-df-success-bg: oklch(0.92 0.08 150);
-  --color-df-info: oklch(0.45 0.15 220);
-  --color-df-info-bg: oklch(0.92 0.06 220);
-
-  /* Text */
-  --color-df-text-primary: oklch(0.15 0.02 250);
-  --color-df-text-secondary: oklch(0.35 0.02 250);
-  --color-df-text-tertiary: oklch(0.55 0.02 250);
-  --color-df-text-muted: var(--color-df-text-tertiary);
-
-  /* UI Controls */
-  --color-df-control-bg: oklch(0.95 0.01 260);
-  --color-df-control-border: oklch(0.70 0.03 250);
-  --color-df-control-hover: oklch(0.88 0.02 250);
-  --color-df-control-active: var(--color-df-start);
-
-  /* Flags */
-  --color-df-flag-dialogue: oklch(0.55 0.03 250);
-  --color-df-flag-dialogue-bg: oklch(0.90 0.01 250);
-  --color-df-flag-quest: oklch(0.50 0.15 220);
-  --color-df-flag-quest-bg: oklch(0.88 0.05 220);
-  --color-df-flag-achievement: oklch(0.40 0.18 70);
-  --color-df-flag-achievement-bg: oklch(0.90 0.08 70);
-  --color-df-flag-item: oklch(0.45 0.15 150);
-  --color-df-flag-item-bg: oklch(0.90 0.05 150);
-  --color-df-flag-stat: oklch(0.45 0.18 280);
-  --color-df-flag-stat-bg: oklch(0.90 0.08 280);
-  --color-df-flag-title: oklch(0.45 0.18 330);
-  --color-df-flag-title-bg: oklch(0.90 0.08 330);
-  --color-df-flag-global: oklch(0.50 0.15 45);
-  --color-df-flag-global-bg: oklch(0.90 0.05 45);
-
-  /* Canvas */
-  --color-df-canvas-bg: oklch(0.98 0.01 250);
-  --color-df-canvas-grid: oklch(0.85 0.01 250);
-
-  /* Sidebar */
-  --color-df-sidebar-bg: oklch(0.95 0.01 260);
-  --color-df-sidebar-border: oklch(0.65 0.05 250);
-  --color-df-sidebar-border-active: var(--color-df-border-active);
-  --color-df-editor-bg: oklch(0.98 0.01 240);
-  --color-df-editor-border: oklch(0.70 0.03 250);
-  --color-df-editor-border-active: var(--color-df-border-active);
-
-  /* Accent borders */
-  --color-df-border-active: var(--color-df-start);
-  --color-df-border-hover: var(--color-df-edge-default-hover);
+  --background: oklch(0.98 0.01 250);
+  --foreground: oklch(0.15 0.02 250);
+  --card: oklch(0.95 0.01 260);
+  --popover: oklch(0.92 0.01 270);
+  --primary: oklch(0.45 0.20 280);
+  --secondary: oklch(0.95 0.01 260);
+  --muted: oklch(0.95 0.01 260);
+  --muted-foreground: oklch(0.55 0.02 250);
+  --accent: oklch(0.88 0.02 250);
+  --destructive: oklch(0.45 0.22 25);
+  --border: oklch(0.70 0.03 250);
+  --input: oklch(0.70 0.03 250);
+  --ring: oklch(0.45 0.20 280);
+  --graph-canvas: oklch(0.98 0.01 250);
+  --graph-grid: oklch(0.85 0.01 250);
+  --graph-editor: oklch(0.98 0.01 240);
+  --graph-editor-border: oklch(0.70 0.03 250);
+  --graph-node-bg: var(--card);
+  --graph-node-border: var(--control-border);
+  --graph-node-selected: oklch(0.45 0.20 280);
+  --graph-node-dimmed: var(--control-hover);
+  --graph-node-npc-bg: oklch(0.90 0.03 45);
+  --graph-node-npc-border: oklch(0.60 0.08 35);
+  --graph-node-npc-header: oklch(0.85 0.05 25);
+  --graph-node-npc-text: var(--text-primary);
+  --graph-node-npc-selected: oklch(0.55 0.15 15);
+  --graph-node-player-bg: oklch(0.92 0.05 300);
+  --graph-node-player-border: oklch(0.55 0.15 310);
+  --graph-node-player-header: oklch(0.88 0.08 290);
+  --graph-node-player-text: var(--text-primary);
+  --graph-node-player-selected: oklch(0.45 0.20 280);
+  --graph-node-conditional-bg: oklch(0.91 0.04 150);
+  --graph-node-conditional-border: oklch(0.58 0.12 140);
+  --graph-node-conditional-header: oklch(0.88 0.06 145);
+  --graph-node-conditional-text: var(--text-primary);
+  --graph-edge-default: oklch(0.60 0.03 250);
+  --graph-edge-default-hover: oklch(0.50 0.05 250);
+  --graph-edge-choice-1: oklch(0.50 0.18 15);
+  --graph-edge-choice-2: oklch(0.45 0.20 280);
+  --graph-edge-choice-3: oklch(0.48 0.18 200);
+  --graph-edge-choice-4: oklch(0.42 0.16 120);
+  --graph-edge-choice-5: oklch(0.50 0.15 45);
+  --graph-edge-loop: oklch(0.45 0.15 60);
+  --graph-edge-dimmed: oklch(0.75 0.02 250);
+  --graph-sidebar-bg: oklch(0.95 0.01 260);
+  --graph-sidebar-border: oklch(0.65 0.05 250);
+  --status-error: oklch(0.45 0.22 25);
+  --status-error-bg: oklch(0.92 0.08 25);
+  --status-warning: oklch(0.35 0.18 70);
+  --status-warning-bg: oklch(0.92 0.08 70);
+  --status-success: oklch(0.40 0.18 150);
+  --status-success-bg: oklch(0.92 0.08 150);
+  --status-info: oklch(0.45 0.15 220);
+  --status-info-bg: oklch(0.92 0.06 220);
+  --text-primary: oklch(0.15 0.02 250);
+  --text-secondary: oklch(0.35 0.02 250);
+  --text-tertiary: oklch(0.55 0.02 250);
+  --text-muted: var(--text-tertiary);
+  --control-bg: oklch(0.95 0.01 260);
+  --control-border: oklch(0.70 0.03 250);
+  --control-hover: oklch(0.88 0.02 250);
+  --control-active: oklch(0.45 0.15 140);
+  --flag-dialogue: oklch(0.55 0.03 250);
+  --flag-dialogue-bg: oklch(0.90 0.01 250);
+  --flag-quest: oklch(0.50 0.15 220);
+  --flag-quest-bg: oklch(0.88 0.05 220);
+  --flag-achievement: oklch(0.40 0.18 70);
+  --flag-achievement-bg: oklch(0.90 0.08 70);
+  --flag-item: oklch(0.45 0.15 150);
+  --flag-item-bg: oklch(0.90 0.05 150);
+  --flag-stat: oklch(0.45 0.18 280);
+  --flag-stat-bg: oklch(0.90 0.08 280);
+  --flag-title: oklch(0.45 0.18 330);
+  --flag-title-bg: oklch(0.90 0.08 330);
+  --flag-global: oklch(0.50 0.15 45);
+  --flag-global-bg: oklch(0.90 0.05 45);
+  --border-active: oklch(0.45 0.15 140);
+  --border-hover: var(--graph-edge-default-hover);
 }
 
 :is(html[data-theme='cyberpunk'], [data-theme='cyberpunk']) {
-  /* Base Colors */
-  --color-df-base: oklch(0.10 0.02 280);
-  --color-df-surface: oklch(0.12 0.03 280);
-  --color-df-elevated: oklch(0.15 0.04 280);
-
-  /* Node Colors - General */
-  --color-df-node-bg: var(--color-df-surface);
-  --color-df-node-border: var(--color-df-control-border);
-  --color-df-node-selected: var(--color-df-player-selected);
-  --color-df-node-dimmed: var(--color-df-edge-dimmed);
-
-  /* NPC Node Colors */
-  --color-df-npc-bg: oklch(0.15 0.08 200);
-  --color-df-npc-border: oklch(0.50 0.20 200);
-  --color-df-npc-header: oklch(0.18 0.10 200);
-  --color-df-npc-text: var(--color-df-text-primary);
-  --color-df-npc-selected: oklch(0.60 0.25 200);
-
-  /* Player Node Colors */
-  --color-df-player-bg: oklch(0.15 0.08 320);
-  --color-df-player-border: oklch(0.55 0.25 320);
-  --color-df-player-header: oklch(0.18 0.12 320);
-  --color-df-player-text: var(--color-df-text-primary);
-  --color-df-player-selected: oklch(0.65 0.30 320);
-
-  /* Conditional Node */
-  --color-df-conditional-bg: oklch(0.15 0.08 150);
-  --color-df-conditional-border: oklch(0.55 0.20 150);
-  --color-df-conditional-header: oklch(0.18 0.10 150);
-  --color-df-conditional-text: var(--color-df-text-primary);
-
-  /* Start/End */
-  --color-df-start: oklch(0.60 0.25 150);
-  --color-df-start-bg: oklch(0.20 0.10 150);
-  --color-df-end: oklch(0.55 0.25 30);
-  --color-df-end-bg: oklch(0.20 0.10 30);
-
-  /* Edges */
-  --color-df-edge-default: oklch(0.45 0.15 280);
-  --color-df-edge-default-hover: oklch(0.55 0.20 280);
-  --color-df-edge-choice-1: oklch(0.60 0.25 0);
-  --color-df-edge-choice-2: oklch(0.65 0.30 320);
-  --color-df-edge-choice-3: oklch(0.60 0.25 200);
-  --color-df-edge-choice-4: oklch(0.65 0.25 150);
-  --color-df-edge-choice-5: oklch(0.60 0.25 60);
-  --color-df-edge-loop: oklch(0.65 0.25 30);
-  --color-df-edge-dimmed: oklch(0.25 0.05 280);
-  --edge-choice-1: var(--color-df-edge-choice-1);
-  --edge-choice-2: var(--color-df-edge-choice-2);
-  --edge-choice-3: var(--color-df-edge-choice-3);
-  --edge-choice-4: var(--color-df-edge-choice-4);
-  --edge-choice-5: var(--color-df-edge-choice-5);
-
-  /* Status */
-  --color-df-error: oklch(0.60 0.25 25);
-  --color-df-error-bg: oklch(0.18 0.10 25);
-  --color-df-warning: oklch(0.65 0.25 70);
-  --color-df-warning-bg: oklch(0.18 0.10 70);
-  --color-df-success: oklch(0.60 0.25 150);
-  --color-df-success-bg: oklch(0.18 0.10 150);
-  --color-df-info: oklch(0.60 0.25 220);
-  --color-df-info-bg: oklch(0.18 0.08 220);
-
-  /* Text */
-  --color-df-text-primary: oklch(0.90 0.02 280);
-  --color-df-text-secondary: oklch(0.70 0.03 280);
-  --color-df-text-tertiary: oklch(0.50 0.03 280);
-  --color-df-text-muted: var(--color-df-text-tertiary);
-
-  /* UI Controls */
-  --color-df-control-bg: oklch(0.12 0.03 280);
-  --color-df-control-border: oklch(0.40 0.10 280);
-  --color-df-control-hover: oklch(0.18 0.05 280);
-  --color-df-control-active: var(--color-df-start);
-
-  /* Flags */
-  --color-df-flag-dialogue: oklch(0.50 0.15 280);
-  --color-df-flag-dialogue-bg: oklch(0.15 0.05 280);
-  --color-df-flag-quest: oklch(0.60 0.25 220);
-  --color-df-flag-quest-bg: oklch(0.18 0.08 220);
-  --color-df-flag-achievement: oklch(0.65 0.25 70);
-  --color-df-flag-achievement-bg: oklch(0.20 0.10 70);
-  --color-df-flag-item: oklch(0.60 0.25 150);
-  --color-df-flag-item-bg: oklch(0.18 0.08 150);
-  --color-df-flag-stat: oklch(0.65 0.30 320);
-  --color-df-flag-stat-bg: oklch(0.18 0.12 320);
-  --color-df-flag-title: oklch(0.65 0.30 330);
-  --color-df-flag-title-bg: oklch(0.18 0.12 330);
-  --color-df-flag-global: oklch(0.60 0.25 30);
-  --color-df-flag-global-bg: oklch(0.18 0.10 30);
-
-  /* Canvas */
-  --color-df-canvas-bg: oklch(0.08 0.01 280);
-  --color-df-canvas-grid: oklch(0.15 0.03 280);
-
-  /* Sidebar */
-  --color-df-sidebar-bg: oklch(0.12 0.03 280);
-  --color-df-sidebar-border: oklch(0.40 0.10 280);
-  --color-df-sidebar-border-active: var(--color-df-border-active);
-  --color-df-editor-bg: oklch(0.10 0.02 280);
-  --color-df-editor-border: oklch(0.35 0.08 280);
-  --color-df-editor-border-active: var(--color-df-border-active);
-
-  /* Accent borders */
-  --color-df-border-active: var(--color-df-start);
-  --color-df-border-hover: var(--color-df-edge-default-hover);
+  --background: oklch(0.10 0.02 280);
+  --foreground: oklch(0.90 0.02 280);
+  --card: oklch(0.12 0.03 280);
+  --popover: oklch(0.15 0.04 280);
+  --primary: oklch(0.65 0.30 320);
+  --secondary: oklch(0.12 0.03 280);
+  --muted: oklch(0.12 0.03 280);
+  --muted-foreground: oklch(0.50 0.03 280);
+  --accent: oklch(0.18 0.05 280);
+  --destructive: oklch(0.60 0.25 25);
+  --border: oklch(0.40 0.10 280);
+  --input: oklch(0.40 0.10 280);
+  --ring: oklch(0.65 0.30 320);
+  --graph-canvas: oklch(0.08 0.01 280);
+  --graph-grid: oklch(0.15 0.03 280);
+  --graph-editor: oklch(0.10 0.02 280);
+  --graph-editor-border: oklch(0.35 0.08 280);
+  --graph-node-bg: var(--card);
+  --graph-node-border: var(--control-border);
+  --graph-node-selected: oklch(0.65 0.30 320);
+  --graph-node-dimmed: var(--graph-edge-dimmed);
+  --graph-node-npc-bg: oklch(0.15 0.08 200);
+  --graph-node-npc-border: oklch(0.50 0.20 200);
+  --graph-node-npc-header: oklch(0.18 0.10 200);
+  --graph-node-npc-text: var(--text-primary);
+  --graph-node-npc-selected: oklch(0.60 0.25 200);
+  --graph-node-player-bg: oklch(0.15 0.08 320);
+  --graph-node-player-border: oklch(0.55 0.25 320);
+  --graph-node-player-header: oklch(0.18 0.12 320);
+  --graph-node-player-text: var(--text-primary);
+  --graph-node-player-selected: oklch(0.65 0.30 320);
+  --graph-node-conditional-bg: oklch(0.15 0.08 150);
+  --graph-node-conditional-border: oklch(0.55 0.20 150);
+  --graph-node-conditional-header: oklch(0.18 0.10 150);
+  --graph-node-conditional-text: var(--text-primary);
+  --graph-edge-default: oklch(0.45 0.15 280);
+  --graph-edge-default-hover: oklch(0.55 0.20 280);
+  --graph-edge-choice-1: oklch(0.60 0.25 0);
+  --graph-edge-choice-2: oklch(0.65 0.30 320);
+  --graph-edge-choice-3: oklch(0.60 0.25 200);
+  --graph-edge-choice-4: oklch(0.65 0.25 150);
+  --graph-edge-choice-5: oklch(0.60 0.25 60);
+  --graph-edge-loop: oklch(0.65 0.25 30);
+  --graph-edge-dimmed: oklch(0.25 0.05 280);
+  --graph-sidebar-bg: oklch(0.12 0.03 280);
+  --graph-sidebar-border: oklch(0.40 0.10 280);
+  --status-error: oklch(0.60 0.25 25);
+  --status-error-bg: oklch(0.18 0.10 25);
+  --status-warning: oklch(0.65 0.25 70);
+  --status-warning-bg: oklch(0.18 0.10 70);
+  --status-success: oklch(0.60 0.25 150);
+  --status-success-bg: oklch(0.18 0.10 150);
+  --status-info: oklch(0.60 0.25 220);
+  --status-info-bg: oklch(0.18 0.08 220);
+  --text-primary: oklch(0.90 0.02 280);
+  --text-secondary: oklch(0.70 0.03 280);
+  --text-tertiary: oklch(0.50 0.03 280);
+  --text-muted: var(--text-tertiary);
+  --control-bg: oklch(0.12 0.03 280);
+  --control-border: oklch(0.40 0.10 280);
+  --control-hover: oklch(0.18 0.05 280);
+  --control-active: oklch(0.60 0.25 150);
+  --flag-dialogue: oklch(0.50 0.15 280);
+  --flag-dialogue-bg: oklch(0.15 0.05 280);
+  --flag-quest: oklch(0.60 0.25 220);
+  --flag-quest-bg: oklch(0.18 0.08 220);
+  --flag-achievement: oklch(0.65 0.25 70);
+  --flag-achievement-bg: oklch(0.20 0.10 70);
+  --flag-item: oklch(0.60 0.25 150);
+  --flag-item-bg: oklch(0.18 0.08 150);
+  --flag-stat: oklch(0.65 0.30 320);
+  --flag-stat-bg: oklch(0.18 0.12 320);
+  --flag-title: oklch(0.65 0.30 330);
+  --flag-title-bg: oklch(0.18 0.12 330);
+  --flag-global: oklch(0.60 0.25 30);
+  --flag-global-bg: oklch(0.18 0.10 30);
+  --border-active: oklch(0.60 0.25 150);
+  --border-hover: var(--graph-edge-default-hover);
 }
 
 :is(html[data-theme='darcula'], [data-theme='darcula']) {
-  /* Base Colors */
-  --color-df-base: oklch(0.20 0.01 250);
-  --color-df-surface: oklch(0.22 0.01 260);
-  --color-df-elevated: oklch(0.25 0.01 270);
-
-  /* Node Colors - General */
-  --color-df-node-bg: var(--color-df-surface);
-  --color-df-node-border: var(--color-df-control-border);
-  --color-df-node-selected: var(--color-df-npc-selected);
-  --color-df-node-dimmed: var(--color-df-edge-dimmed);
-
-  /* NPC Node Colors - Muted Red */
-  --color-df-npc-bg: oklch(0.22 0.03 20);
-  --color-df-npc-border: oklch(0.35 0.05 20);
-  --color-df-npc-header: oklch(0.25 0.04 20);
-  --color-df-npc-text: var(--color-df-text-primary);
-  --color-df-npc-selected: oklch(0.60 0.15 20);
-
-  /* Player Node Colors - Muted Blue */
-  --color-df-player-bg: oklch(0.22 0.03 240);
-  --color-df-player-border: oklch(0.35 0.05 240);
-  --color-df-player-header: oklch(0.25 0.04 240);
-  --color-df-player-text: var(--color-df-text-primary);
-  --color-df-player-selected: oklch(0.60 0.15 240);
-
-  /* Conditional Node - Muted Green */
-  --color-df-conditional-bg: oklch(0.22 0.03 150);
-  --color-df-conditional-border: oklch(0.35 0.05 150);
-  --color-df-conditional-header: oklch(0.25 0.04 150);
-  --color-df-conditional-text: var(--color-df-text-primary);
-
-  /* Start/End */
-  --color-df-start: oklch(0.55 0.12 150);
-  --color-df-start-bg: oklch(0.25 0.04 150);
-  --color-df-end: oklch(0.50 0.12 30);
-  --color-df-end-bg: oklch(0.25 0.04 30);
-
-  /* Edges */
-  --color-df-edge-default: oklch(0.35 0.02 250);
-  --color-df-edge-default-hover: oklch(0.50 0.05 250);
-  --color-df-edge-choice-1: oklch(0.50 0.12 20);
-  --color-df-edge-choice-2: oklch(0.50 0.12 240);
-  --color-df-edge-choice-3: oklch(0.50 0.12 150);
-  --color-df-edge-choice-4: oklch(0.50 0.12 60);
-  --color-df-edge-choice-5: oklch(0.50 0.12 300);
-  --color-df-edge-loop: oklch(0.50 0.12 30);
-  --color-df-edge-dimmed: oklch(0.25 0.01 250);
-  --edge-choice-1: var(--color-df-edge-choice-1);
-  --edge-choice-2: var(--color-df-edge-choice-2);
-  --edge-choice-3: var(--color-df-edge-choice-3);
-  --edge-choice-4: var(--color-df-edge-choice-4);
-  --edge-choice-5: var(--color-df-edge-choice-5);
-
-  /* Status */
-  --color-df-error: oklch(0.55 0.18 25);
-  --color-df-error-bg: oklch(0.25 0.08 25);
-  --color-df-warning: oklch(0.60 0.15 70);
-  --color-df-warning-bg: oklch(0.25 0.08 70);
-  --color-df-success: oklch(0.55 0.12 150);
-  --color-df-success-bg: oklch(0.25 0.08 150);
-  --color-df-info: oklch(0.55 0.12 220);
-  --color-df-info-bg: oklch(0.25 0.06 220);
-
-  /* Text */
-  --color-df-text-primary: oklch(0.85 0.01 250);
-  --color-df-text-secondary: oklch(0.60 0.01 250);
-  --color-df-text-tertiary: oklch(0.45 0.01 250);
-  --color-df-text-muted: var(--color-df-text-tertiary);
-
-  /* UI Controls */
-  --color-df-control-bg: oklch(0.22 0.01 260);
-  --color-df-control-border: oklch(0.30 0.02 250);
-  --color-df-control-hover: oklch(0.28 0.02 250);
-  --color-df-control-active: var(--color-df-start);
-
-  /* Flags */
-  --color-df-flag-dialogue: oklch(0.50 0.02 250);
-  --color-df-flag-dialogue-bg: oklch(0.22 0.01 250);
-  --color-df-flag-quest: oklch(0.55 0.12 220);
-  --color-df-flag-quest-bg: oklch(0.24 0.04 220);
-  --color-df-flag-achievement: oklch(0.60 0.15 70);
-  --color-df-flag-achievement-bg: oklch(0.25 0.05 70);
-  --color-df-flag-item: oklch(0.55 0.12 150);
-  --color-df-flag-item-bg: oklch(0.24 0.04 150);
-  --color-df-flag-stat: oklch(0.55 0.12 280);
-  --color-df-flag-stat-bg: oklch(0.24 0.04 280);
-  --color-df-flag-title: oklch(0.55 0.12 330);
-  --color-df-flag-title-bg: oklch(0.24 0.04 330);
-  --color-df-flag-global: oklch(0.50 0.12 30);
-  --color-df-flag-global-bg: oklch(0.24 0.04 30);
-
-  /* Canvas */
-  --color-df-canvas-bg: oklch(0.18 0.01 250);
-  --color-df-canvas-grid: oklch(0.22 0.01 250);
-
-  /* Sidebar */
-  --color-df-sidebar-bg: oklch(0.22 0.01 260);
-  --color-df-sidebar-border: oklch(0.30 0.02 250);
-  --color-df-sidebar-border-active: var(--color-df-border-active);
-  --color-df-editor-bg: oklch(0.20 0.01 240);
-  --color-df-editor-border: oklch(0.30 0.02 250);
-  --color-df-editor-border-active: var(--color-df-border-active);
-
-  /* Accent borders */
-  --color-df-border-active: var(--color-df-start);
-  --color-df-border-hover: var(--color-df-edge-default-hover);
+  --background: oklch(0.20 0.01 250);
+  --foreground: oklch(0.85 0.01 250);
+  --card: oklch(0.22 0.01 260);
+  --popover: oklch(0.25 0.01 270);
+  --primary: oklch(0.60 0.15 20);
+  --secondary: oklch(0.22 0.01 260);
+  --muted: oklch(0.22 0.01 260);
+  --muted-foreground: oklch(0.45 0.01 250);
+  --accent: oklch(0.28 0.02 250);
+  --destructive: oklch(0.55 0.18 25);
+  --border: oklch(0.30 0.02 250);
+  --input: oklch(0.30 0.02 250);
+  --ring: oklch(0.60 0.15 20);
+  --graph-canvas: oklch(0.18 0.01 250);
+  --graph-grid: oklch(0.22 0.01 250);
+  --graph-editor: oklch(0.20 0.01 240);
+  --graph-editor-border: oklch(0.30 0.02 250);
+  --graph-node-bg: var(--card);
+  --graph-node-border: var(--control-border);
+  --graph-node-selected: oklch(0.60 0.15 20);
+  --graph-node-dimmed: var(--graph-edge-dimmed);
+  --graph-node-npc-bg: oklch(0.22 0.03 20);
+  --graph-node-npc-border: oklch(0.35 0.05 20);
+  --graph-node-npc-header: oklch(0.25 0.04 20);
+  --graph-node-npc-text: var(--text-primary);
+  --graph-node-npc-selected: oklch(0.60 0.15 20);
+  --graph-node-player-bg: oklch(0.22 0.03 240);
+  --graph-node-player-border: oklch(0.35 0.05 240);
+  --graph-node-player-header: oklch(0.25 0.04 240);
+  --graph-node-player-text: var(--text-primary);
+  --graph-node-player-selected: oklch(0.60 0.15 240);
+  --graph-node-conditional-bg: oklch(0.22 0.03 150);
+  --graph-node-conditional-border: oklch(0.35 0.05 150);
+  --graph-node-conditional-header: oklch(0.25 0.04 150);
+  --graph-node-conditional-text: var(--text-primary);
+  --graph-edge-default: oklch(0.35 0.02 250);
+  --graph-edge-default-hover: oklch(0.50 0.05 250);
+  --graph-edge-choice-1: oklch(0.50 0.12 20);
+  --graph-edge-choice-2: oklch(0.50 0.12 240);
+  --graph-edge-choice-3: oklch(0.50 0.12 150);
+  --graph-edge-choice-4: oklch(0.50 0.12 60);
+  --graph-edge-choice-5: oklch(0.50 0.12 300);
+  --graph-edge-loop: oklch(0.50 0.12 30);
+  --graph-edge-dimmed: oklch(0.25 0.01 250);
+  --graph-sidebar-bg: oklch(0.22 0.01 260);
+  --graph-sidebar-border: oklch(0.30 0.02 250);
+  --status-error: oklch(0.55 0.18 25);
+  --status-error-bg: oklch(0.25 0.08 25);
+  --status-warning: oklch(0.60 0.15 70);
+  --status-warning-bg: oklch(0.25 0.08 70);
+  --status-success: oklch(0.55 0.12 150);
+  --status-success-bg: oklch(0.25 0.08 150);
+  --status-info: oklch(0.55 0.12 220);
+  --status-info-bg: oklch(0.25 0.06 220);
+  --text-primary: oklch(0.85 0.01 250);
+  --text-secondary: oklch(0.60 0.01 250);
+  --text-tertiary: oklch(0.45 0.01 250);
+  --text-muted: var(--text-tertiary);
+  --control-bg: oklch(0.22 0.01 260);
+  --control-border: oklch(0.30 0.02 250);
+  --control-hover: oklch(0.28 0.02 250);
+  --control-active: oklch(0.55 0.12 150);
+  --flag-dialogue: oklch(0.50 0.02 250);
+  --flag-dialogue-bg: oklch(0.22 0.01 250);
+  --flag-quest: oklch(0.55 0.12 220);
+  --flag-quest-bg: oklch(0.24 0.04 220);
+  --flag-achievement: oklch(0.60 0.15 70);
+  --flag-achievement-bg: oklch(0.25 0.05 70);
+  --flag-item: oklch(0.55 0.12 150);
+  --flag-item-bg: oklch(0.24 0.04 150);
+  --flag-stat: oklch(0.55 0.12 280);
+  --flag-stat-bg: oklch(0.24 0.04 280);
+  --flag-title: oklch(0.55 0.12 330);
+  --flag-title-bg: oklch(0.24 0.04 330);
+  --flag-global: oklch(0.50 0.12 30);
+  --flag-global-bg: oklch(0.24 0.04 30);
+  --border-active: oklch(0.55 0.12 150);
+  --border-hover: var(--graph-edge-default-hover);
 }
 
 :is(html[data-theme='high-contrast'], [data-theme='high-contrast']) {
-  /* Base Colors */
-  --color-df-base: oklch(0.10 0.01 250);
-  --color-df-surface: oklch(0.12 0.01 260);
-  --color-df-elevated: oklch(0.15 0.01 270);
-
-  /* Node Colors - General */
-  --color-df-node-bg: var(--color-df-surface);
-  --color-df-node-border: var(--color-df-control-border);
-  --color-df-node-selected: var(--color-df-start);
-  --color-df-node-dimmed: var(--color-df-edge-dimmed);
-
-  /* NPC Node Colors - Bright Red */
-  --color-df-npc-bg: oklch(0.15 0.05 20);
-  --color-df-npc-border: oklch(0.50 0.20 20);
-  --color-df-npc-header: oklch(0.20 0.08 20);
-  --color-df-npc-text: var(--color-df-text-primary);
-  --color-df-npc-selected: oklch(0.70 0.25 20);
-
-  /* Player Node Colors - Bright Blue */
-  --color-df-player-bg: oklch(0.15 0.05 240);
-  --color-df-player-border: oklch(0.50 0.20 240);
-  --color-df-player-header: oklch(0.20 0.08 240);
-  --color-df-player-text: var(--color-df-text-primary);
-  --color-df-player-selected: oklch(0.70 0.25 240);
-
-  /* Conditional Node - Bright Green */
-  --color-df-conditional-bg: oklch(0.15 0.05 150);
-  --color-df-conditional-border: oklch(0.50 0.20 150);
-  --color-df-conditional-header: oklch(0.20 0.08 150);
-  --color-df-conditional-text: var(--color-df-text-primary);
-
-  /* Start/End */
-  --color-df-start: oklch(0.70 0.20 150);
-  --color-df-start-bg: oklch(0.20 0.08 150);
-  --color-df-end: oklch(0.70 0.20 30);
-  --color-df-end-bg: oklch(0.20 0.08 30);
-
-  /* Edges */
-  --color-df-edge-default: oklch(0.60 0.05 250);
-  --color-df-edge-default-hover: oklch(0.75 0.10 250);
-  --color-df-edge-choice-1: oklch(0.70 0.25 20);
-  --color-df-edge-choice-2: oklch(0.70 0.25 240);
-  --color-df-edge-choice-3: oklch(0.70 0.25 150);
-  --color-df-edge-choice-4: oklch(0.70 0.25 60);
-  --color-df-edge-choice-5: oklch(0.70 0.25 300);
-  --color-df-edge-loop: oklch(0.70 0.25 30);
-  --color-df-edge-dimmed: oklch(0.40 0.02 250);
-  --edge-choice-1: var(--color-df-edge-choice-1);
-  --edge-choice-2: var(--color-df-edge-choice-2);
-  --edge-choice-3: var(--color-df-edge-choice-3);
-  --edge-choice-4: var(--color-df-edge-choice-4);
-  --edge-choice-5: var(--color-df-edge-choice-5);
-
-  /* Status */
-  --color-df-error: oklch(0.70 0.25 25);
-  --color-df-error-bg: oklch(0.20 0.10 25);
-  --color-df-warning: oklch(0.75 0.20 70);
-  --color-df-warning-bg: oklch(0.20 0.10 70);
-  --color-df-success: oklch(0.70 0.25 150);
-  --color-df-success-bg: oklch(0.20 0.10 150);
-  --color-df-info: oklch(0.70 0.25 220);
-  --color-df-info-bg: oklch(0.20 0.10 220);
-
-  /* Text */
-  --color-df-text-primary: oklch(0.95 0.01 250);
-  --color-df-text-secondary: oklch(0.80 0.01 250);
-  --color-df-text-tertiary: oklch(0.65 0.01 250);
-  --color-df-text-muted: var(--color-df-text-tertiary);
-
-  /* UI Controls */
-  --color-df-control-bg: oklch(0.12 0.01 260);
-  --color-df-control-border: oklch(0.50 0.05 250);
-  --color-df-control-hover: oklch(0.18 0.02 250);
-  --color-df-control-active: var(--color-df-start);
-
-  /* Flags */
-  --color-df-flag-dialogue: oklch(0.60 0.05 250);
-  --color-df-flag-dialogue-bg: oklch(0.15 0.02 250);
-  --color-df-flag-quest: oklch(0.70 0.25 220);
-  --color-df-flag-quest-bg: oklch(0.20 0.08 220);
-  --color-df-flag-achievement: oklch(0.75 0.20 70);
-  --color-df-flag-achievement-bg: oklch(0.20 0.10 70);
-  --color-df-flag-item: oklch(0.70 0.25 150);
-  --color-df-flag-item-bg: oklch(0.20 0.08 150);
-  --color-df-flag-stat: oklch(0.70 0.25 280);
-  --color-df-flag-stat-bg: oklch(0.20 0.10 280);
-  --color-df-flag-title: oklch(0.70 0.25 330);
-  --color-df-flag-title-bg: oklch(0.20 0.10 330);
-  --color-df-flag-global: oklch(0.70 0.25 30);
-  --color-df-flag-global-bg: oklch(0.20 0.08 30);
-
-  /* Canvas */
-  --color-df-canvas-bg: oklch(0.08 0.01 250);
-  --color-df-canvas-grid: oklch(0.25 0.01 250);
-
-  /* Sidebar */
-  --color-df-sidebar-bg: oklch(0.12 0.01 260);
-  --color-df-sidebar-border: oklch(0.50 0.05 250);
-  --color-df-sidebar-border-active: var(--color-df-border-active);
-  --color-df-editor-bg: oklch(0.10 0.01 240);
-  --color-df-editor-border: oklch(0.50 0.05 250);
-  --color-df-editor-border-active: var(--color-df-border-active);
-
-  /* Accent borders */
-  --color-df-border-active: var(--color-df-start);
-  --color-df-border-hover: var(--color-df-edge-default-hover);
+  --background: oklch(0.10 0.01 250);
+  --foreground: oklch(0.95 0.01 250);
+  --card: oklch(0.12 0.01 260);
+  --popover: oklch(0.15 0.01 270);
+  --primary: oklch(0.70 0.20 150);
+  --secondary: oklch(0.12 0.01 260);
+  --muted: oklch(0.12 0.01 260);
+  --muted-foreground: oklch(0.65 0.01 250);
+  --accent: oklch(0.18 0.02 250);
+  --destructive: oklch(0.70 0.25 25);
+  --border: oklch(0.50 0.05 250);
+  --input: oklch(0.50 0.05 250);
+  --ring: oklch(0.70 0.20 150);
+  --graph-canvas: oklch(0.08 0.01 250);
+  --graph-grid: oklch(0.25 0.01 250);
+  --graph-editor: oklch(0.10 0.01 240);
+  --graph-editor-border: oklch(0.50 0.05 250);
+  --graph-node-bg: var(--card);
+  --graph-node-border: var(--control-border);
+  --graph-node-selected: oklch(0.70 0.20 150);
+  --graph-node-dimmed: var(--graph-edge-dimmed);
+  --graph-node-npc-bg: oklch(0.15 0.05 20);
+  --graph-node-npc-border: oklch(0.50 0.20 20);
+  --graph-node-npc-header: oklch(0.20 0.08 20);
+  --graph-node-npc-text: var(--text-primary);
+  --graph-node-npc-selected: oklch(0.70 0.25 20);
+  --graph-node-player-bg: oklch(0.15 0.05 240);
+  --graph-node-player-border: oklch(0.50 0.20 240);
+  --graph-node-player-header: oklch(0.20 0.08 240);
+  --graph-node-player-text: var(--text-primary);
+  --graph-node-player-selected: oklch(0.70 0.25 240);
+  --graph-node-conditional-bg: oklch(0.15 0.05 150);
+  --graph-node-conditional-border: oklch(0.50 0.20 150);
+  --graph-node-conditional-header: oklch(0.20 0.08 150);
+  --graph-node-conditional-text: var(--text-primary);
+  --graph-edge-default: oklch(0.60 0.05 250);
+  --graph-edge-default-hover: oklch(0.75 0.10 250);
+  --graph-edge-choice-1: oklch(0.70 0.25 20);
+  --graph-edge-choice-2: oklch(0.70 0.25 240);
+  --graph-edge-choice-3: oklch(0.70 0.25 150);
+  --graph-edge-choice-4: oklch(0.70 0.25 60);
+  --graph-edge-choice-5: oklch(0.70 0.25 300);
+  --graph-edge-loop: oklch(0.70 0.25 30);
+  --graph-edge-dimmed: oklch(0.40 0.02 250);
+  --graph-sidebar-bg: oklch(0.12 0.01 260);
+  --graph-sidebar-border: oklch(0.50 0.05 250);
+  --status-error: oklch(0.70 0.25 25);
+  --status-error-bg: oklch(0.20 0.10 25);
+  --status-warning: oklch(0.75 0.20 70);
+  --status-warning-bg: oklch(0.20 0.10 70);
+  --status-success: oklch(0.70 0.25 150);
+  --status-success-bg: oklch(0.20 0.10 150);
+  --status-info: oklch(0.70 0.25 220);
+  --status-info-bg: oklch(0.20 0.10 220);
+  --text-primary: oklch(0.95 0.01 250);
+  --text-secondary: oklch(0.80 0.01 250);
+  --text-tertiary: oklch(0.65 0.01 250);
+  --text-muted: var(--text-tertiary);
+  --control-bg: oklch(0.12 0.01 260);
+  --control-border: oklch(0.50 0.05 250);
+  --control-hover: oklch(0.18 0.02 250);
+  --control-active: oklch(0.70 0.20 150);
+  --flag-dialogue: oklch(0.60 0.05 250);
+  --flag-dialogue-bg: oklch(0.15 0.02 250);
+  --flag-quest: oklch(0.70 0.25 220);
+  --flag-quest-bg: oklch(0.20 0.08 220);
+  --flag-achievement: oklch(0.75 0.20 70);
+  --flag-achievement-bg: oklch(0.20 0.10 70);
+  --flag-item: oklch(0.70 0.25 150);
+  --flag-item-bg: oklch(0.20 0.08 150);
+  --flag-stat: oklch(0.70 0.25 280);
+  --flag-stat-bg: oklch(0.20 0.10 280);
+  --flag-title: oklch(0.70 0.25 330);
+  --flag-title-bg: oklch(0.20 0.10 330);
+  --flag-global: oklch(0.70 0.25 30);
+  --flag-global-bg: oklch(0.20 0.08 30);
+  --border-active: oklch(0.70 0.20 150);
+  --border-hover: var(--graph-edge-default-hover);
 }
 
 :is(html[data-theme='girly'], [data-theme='girly']) {
-  /* Base Colors */
-  --color-df-base: oklch(0.18 0.02 330);
-  --color-df-surface: oklch(0.20 0.02 340);
-  --color-df-elevated: oklch(0.23 0.02 350);
-
-  /* Node Colors - General */
-  --color-df-node-bg: var(--color-df-surface);
-  --color-df-node-border: var(--color-df-control-border);
-  --color-df-node-selected: var(--color-df-npc-selected);
-  --color-df-node-dimmed: var(--color-df-edge-dimmed);
-
-  /* NPC Node Colors - Soft Pink */
-  --color-df-npc-bg: oklch(0.25 0.05 350);
-  --color-df-npc-border: oklch(0.45 0.12 350);
-  --color-df-npc-header: oklch(0.28 0.08 350);
-  --color-df-npc-text: var(--color-df-text-primary);
-  --color-df-npc-selected: oklch(0.65 0.20 350);
-
-  /* Player Node Colors - Soft Purple */
-  --color-df-player-bg: oklch(0.25 0.05 300);
-  --color-df-player-border: oklch(0.45 0.12 300);
-  --color-df-player-header: oklch(0.28 0.08 300);
-  --color-df-player-text: var(--color-df-text-primary);
-  --color-df-player-selected: oklch(0.65 0.20 300);
-
-  /* Conditional Node - Soft Mint */
-  --color-df-conditional-bg: oklch(0.25 0.05 180);
-  --color-df-conditional-border: oklch(0.45 0.12 180);
-  --color-df-conditional-header: oklch(0.28 0.08 180);
-  --color-df-conditional-text: var(--color-df-text-primary);
-
-  /* Start/End */
-  --color-df-start: oklch(0.65 0.18 180);
-  --color-df-start-bg: oklch(0.28 0.08 180);
-  --color-df-end: oklch(0.60 0.18 20);
-  --color-df-end-bg: oklch(0.28 0.08 20);
-
-  /* Edges */
-  --color-df-edge-default: oklch(0.45 0.05 330);
-  --color-df-edge-default-hover: oklch(0.55 0.10 330);
-  --color-df-edge-choice-1: oklch(0.60 0.18 350);
-  --color-df-edge-choice-2: oklch(0.60 0.18 300);
-  --color-df-edge-choice-3: oklch(0.60 0.18 180);
-  --color-df-edge-choice-4: oklch(0.60 0.18 60);
-  --color-df-edge-choice-5: oklch(0.60 0.18 20);
-  --color-df-edge-loop: oklch(0.60 0.18 30);
-  --color-df-edge-dimmed: oklch(0.30 0.02 330);
-  --edge-choice-1: var(--color-df-edge-choice-1);
-  --edge-choice-2: var(--color-df-edge-choice-2);
-  --edge-choice-3: var(--color-df-edge-choice-3);
-  --edge-choice-4: var(--color-df-edge-choice-4);
-  --edge-choice-5: var(--color-df-edge-choice-5);
-
-  /* Status */
-  --color-df-error: oklch(0.60 0.20 20);
-  --color-df-error-bg: oklch(0.25 0.08 20);
-  --color-df-warning: oklch(0.70 0.18 70);
-  --color-df-warning-bg: oklch(0.25 0.08 70);
-  --color-df-success: oklch(0.60 0.18 150);
-  --color-df-success-bg: oklch(0.25 0.08 150);
-  --color-df-info: oklch(0.60 0.18 220);
-  --color-df-info-bg: oklch(0.25 0.08 220);
-
-  /* Text */
-  --color-df-text-primary: oklch(0.85 0.02 330);
-  --color-df-text-secondary: oklch(0.65 0.02 330);
-  --color-df-text-tertiary: oklch(0.50 0.02 330);
-  --color-df-text-muted: var(--color-df-text-tertiary);
-
-  /* UI Controls */
-  --color-df-control-bg: oklch(0.20 0.02 340);
-  --color-df-control-border: oklch(0.40 0.05 330);
-  --color-df-control-hover: oklch(0.25 0.03 330);
-  --color-df-control-active: var(--color-df-start);
-
-  /* Flags */
-  --color-df-flag-dialogue: oklch(0.50 0.05 330);
-  --color-df-flag-dialogue-bg: oklch(0.22 0.02 330);
-  --color-df-flag-quest: oklch(0.60 0.18 220);
-  --color-df-flag-quest-bg: oklch(0.25 0.08 220);
-  --color-df-flag-achievement: oklch(0.70 0.18 70);
-  --color-df-flag-achievement-bg: oklch(0.28 0.10 70);
-  --color-df-flag-item: oklch(0.60 0.18 150);
-  --color-df-flag-item-bg: oklch(0.25 0.08 150);
-  --color-df-flag-stat: oklch(0.60 0.18 300);
-  --color-df-flag-stat-bg: oklch(0.25 0.08 300);
-  --color-df-flag-title: oklch(0.60 0.18 350);
-  --color-df-flag-title-bg: oklch(0.25 0.08 350);
-  --color-df-flag-global: oklch(0.60 0.18 20);
-  --color-df-flag-global-bg: oklch(0.25 0.08 20);
-
-  /* Canvas */
-  --color-df-canvas-bg: oklch(0.15 0.01 330);
-  --color-df-canvas-grid: oklch(0.22 0.02 330);
-
-  /* Sidebar */
-  --color-df-sidebar-bg: oklch(0.20 0.02 340);
-  --color-df-sidebar-border: oklch(0.40 0.05 330);
-  --color-df-sidebar-border-active: var(--color-df-border-active);
-  --color-df-editor-bg: oklch(0.18 0.02 330);
-  --color-df-editor-border: oklch(0.40 0.05 330);
-  --color-df-editor-border-active: var(--color-df-border-active);
-
-  /* Accent borders */
-  --color-df-border-active: var(--color-df-start);
-  --color-df-border-hover: var(--color-df-edge-default-hover);
+  --background: oklch(0.18 0.02 330);
+  --foreground: oklch(0.85 0.02 330);
+  --card: oklch(0.20 0.02 340);
+  --popover: oklch(0.23 0.02 350);
+  --primary: oklch(0.65 0.20 350);
+  --secondary: oklch(0.20 0.02 340);
+  --muted: oklch(0.20 0.02 340);
+  --muted-foreground: oklch(0.50 0.02 330);
+  --accent: oklch(0.25 0.03 330);
+  --destructive: oklch(0.60 0.20 20);
+  --border: oklch(0.40 0.05 330);
+  --input: oklch(0.40 0.05 330);
+  --ring: oklch(0.65 0.20 350);
+  --graph-canvas: oklch(0.15 0.01 330);
+  --graph-grid: oklch(0.22 0.02 330);
+  --graph-editor: oklch(0.18 0.02 330);
+  --graph-editor-border: oklch(0.40 0.05 330);
+  --graph-node-bg: var(--card);
+  --graph-node-border: var(--control-border);
+  --graph-node-selected: oklch(0.65 0.20 350);
+  --graph-node-dimmed: var(--graph-edge-dimmed);
+  --graph-node-npc-bg: oklch(0.25 0.05 350);
+  --graph-node-npc-border: oklch(0.45 0.12 350);
+  --graph-node-npc-header: oklch(0.28 0.08 350);
+  --graph-node-npc-text: var(--text-primary);
+  --graph-node-npc-selected: oklch(0.65 0.20 350);
+  --graph-node-player-bg: oklch(0.25 0.05 300);
+  --graph-node-player-border: oklch(0.45 0.12 300);
+  --graph-node-player-header: oklch(0.28 0.08 300);
+  --graph-node-player-text: var(--text-primary);
+  --graph-node-player-selected: oklch(0.65 0.20 300);
+  --graph-node-conditional-bg: oklch(0.25 0.05 180);
+  --graph-node-conditional-border: oklch(0.45 0.12 180);
+  --graph-node-conditional-header: oklch(0.28 0.08 180);
+  --graph-node-conditional-text: var(--text-primary);
+  --graph-edge-default: oklch(0.45 0.05 330);
+  --graph-edge-default-hover: oklch(0.55 0.10 330);
+  --graph-edge-choice-1: oklch(0.60 0.18 350);
+  --graph-edge-choice-2: oklch(0.60 0.18 300);
+  --graph-edge-choice-3: oklch(0.60 0.18 180);
+  --graph-edge-choice-4: oklch(0.60 0.18 60);
+  --graph-edge-choice-5: oklch(0.60 0.18 20);
+  --graph-edge-loop: oklch(0.60 0.18 30);
+  --graph-edge-dimmed: oklch(0.30 0.02 330);
+  --graph-sidebar-bg: oklch(0.20 0.02 340);
+  --graph-sidebar-border: oklch(0.40 0.05 330);
+  --status-error: oklch(0.60 0.20 20);
+  --status-error-bg: oklch(0.25 0.08 20);
+  --status-warning: oklch(0.70 0.18 70);
+  --status-warning-bg: oklch(0.25 0.08 70);
+  --status-success: oklch(0.60 0.18 150);
+  --status-success-bg: oklch(0.25 0.08 150);
+  --status-info: oklch(0.60 0.18 220);
+  --status-info-bg: oklch(0.25 0.08 220);
+  --text-primary: oklch(0.85 0.02 330);
+  --text-secondary: oklch(0.65 0.02 330);
+  --text-tertiary: oklch(0.50 0.02 330);
+  --text-muted: var(--text-tertiary);
+  --control-bg: oklch(0.20 0.02 340);
+  --control-border: oklch(0.40 0.05 330);
+  --control-hover: oklch(0.25 0.03 330);
+  --control-active: oklch(0.65 0.18 180);
+  --flag-dialogue: oklch(0.50 0.05 330);
+  --flag-dialogue-bg: oklch(0.22 0.02 330);
+  --flag-quest: oklch(0.60 0.18 220);
+  --flag-quest-bg: oklch(0.25 0.08 220);
+  --flag-achievement: oklch(0.70 0.18 70);
+  --flag-achievement-bg: oklch(0.28 0.10 70);
+  --flag-item: oklch(0.60 0.18 150);
+  --flag-item-bg: oklch(0.25 0.08 150);
+  --flag-stat: oklch(0.60 0.18 300);
+  --flag-stat-bg: oklch(0.25 0.08 300);
+  --flag-title: oklch(0.60 0.18 350);
+  --flag-title-bg: oklch(0.25 0.08 350);
+  --flag-global: oklch(0.60 0.18 20);
+  --flag-global-bg: oklch(0.25 0.08 20);
+  --border-active: oklch(0.65 0.18 180);
+  --border-hover: var(--graph-edge-default-hover);
 }

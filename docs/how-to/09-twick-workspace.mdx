@@ -1,124 +1,72 @@
 ---
-title: 09 - Twick video workspace (minimal skeleton)
+title: 09 - VideoMode walkthrough (Twick)
 created: 2026-02-04
-updated: 2026-02-05
+updated: 2026-02-07
 ---
 
-# 09 - Twick video workspace (minimal skeleton)
+# 09 - VideoMode walkthrough (Twick)
 
-This guide shows how to build a **minimal** Video workspace using the shared workspace shell and Twick's canonical provider stack. The goal is to get Twick rendering inside our app shell, wire basic AI context/actions, and leave room for full persistence later.
-
-> **License note:** Twick is under the SUL license. We **do not** publish Twick dependencies as part of `@forge/dev-kit`. They stay app-level only.
-
-## Requirements
-
-The Video workspace requires `@twick/canvas`, `@twick/live-player`, `@twick/timeline`, `@twick/studio`, and `@twick/video-editor`. Install with `pnpm install` from the repo root (internal `@forge/*` deps use `workspace:*`, so no local registry is needed). In `globals.css` only `@twick/studio/dist/studio.css` is imported; `@twick/timeline/dist/timeline.css` is not shipped on npm. See `docs/agent-artifacts/core/errors-and-attempts.md` if resolution fails.
+This guide shows how **VideoMode** embeds Twick Studio inside the editor
+platform, using DockLayout for resizable panels and the same Copilot contract
+shape as other modes.
 
 ## Goal
 
-Build a VideoWorkspace that:
-- Renders Twick Studio inside the shared workspace shell.
-- Uses the standard provider stack: `LivePlayerProvider` + `TimelineProvider`.
-- Keeps the domain contract pattern (AI context/actions) wired.
-- Leaves persistence as a later phase (draft and AI ops can remain internal for now).
+- Render Twick Studio in the main panel.
+- Provide a right panel for tracks and a bottom panel for the timeline.
+- Keep AI tooling consistent with other modes (domain contract + highlights).
 
-App-level note: VideoWorkspace is mounted inside the AppShell, which uses `AppSpace` for layout and `AppProviders` for the runtime/provider stack (Copilot, tooltips, entitlements).
+## 1. Editor shell + toolbar
 
-## 1. Install Twick packages (app-level only)
-
-```bash
-pnpm add @twick/canvas @twick/live-player @twick/timeline @twick/video-editor @twick/studio
-```
-
-## 2. Global CSS imports
-
-Twick CSS is global. Import in `apps/studio/app/globals.css`:
-
-```css
-@import "@twick/timeline/dist/timeline.css";
-@import "@twick/studio/dist/studio.css";
-```
-
-## 3. Workspace shell + layout
-
-Use the same shell and slots as Forge. Keep `WorkspaceLayoutGrid` and render Twick in the main slot.
+VideoMode uses the shared editor shell and slots.
 
 ```tsx
-// apps/studio/components/workspaces/VideoWorkspace.tsx
-const mainContent = (
-  <div className="h-full min-h-0">
-    <LivePlayerProvider>
-      <TimelineProvider
-        contextId={`video-${doc?.id ?? 'demo'}`}
-        initialData={INITIAL_TIMELINE_DATA}
-        undoRedoPersistenceKey={`video-${doc?.id ?? 'demo'}-history`}
-      >
-        <TwickStudio
-          studioConfig={{
-            videoProps: { width: 1920, height: 1080 },
-          }}
-        />
-      </TimelineProvider>
-    </LivePlayerProvider>
-  </div>
-);
-
+// apps/studio/components/modes/VideoMode.tsx
 return (
-  <WorkspaceShell
-    workspaceId="video"
-    title="Video"
-    subtitle={doc?.title ?? 'Timeline'}
-    domain="video"
-    theme={workspaceTheme}
-    className="flex flex-col h-full min-h-0 bg-background"
-  >
-    <WorkspaceHeader>...</WorkspaceHeader>
-    <WorkspaceToolbar>...</WorkspaceToolbar>
-    <WorkspaceLayoutGrid main={mainContent} editor={{ editorId, editorType: 'timeline' }} />
-    <WorkspaceStatusBar>...</WorkspaceStatusBar>
-  </WorkspaceShell>
+  <EditorShell modeId="video" title="Video" domain="video">
+    <ModeHeader>...</ModeHeader>
+    <ModeToolbar>...</ModeToolbar>
+    <DockLayout ... />
+    <ModeStatusBar>...</ModeStatusBar>
+  </EditorShell>
 );
 ```
 
-Expected behavior:
-- Twick renders immediately inside our shell.
-- Timeline editing is handled by Twick (persistence integration is deferred).
-
-## 4. AI contract (lightweight)
-
-The Video domain still uses the Copilot contract pattern. Keep it wired even if actions are minimal.
+## 2. DockLayout panels
 
 ```tsx
-const videoContract = useVideoContract({
-  doc,
-  selection: null,
-  applyOperations,
-  onAIHighlight,
-  clearAIHighlights: clearHighlights,
-});
-
-useDomainCopilot(videoContract, { toolsEnabled });
+<DockLayout
+  main={
+    <DockPanel panelId="video-main" scrollable={false}>
+      <TwickStudio ... />
+    </DockPanel>
+  }
+  right={
+    <DockPanel panelId="video-right" title="Tracks">
+      <TwickTrackList ... />
+    </DockPanel>
+  }
+  bottom={
+    <DockPanel panelId="video-bottom" title="Timeline" scrollable={false}>
+      <TwickTimeline ... />
+    </DockPanel>
+  }
+  viewport={{ editorId: 'video-timeline', editorType: 'timeline' }}
+  layoutId="video-mode"
+/>
 ```
 
 Expected behavior:
-- AI can read context and call basic actions.
-- Full plan/patch/review can be added later using the shared workflow engine.
+- Panels are resizable and persist layout.
+- Video editor remains in the main viewport.
 
-## 5. Persistence (later)
+## 3. Domain contract
 
-Right now Twick manages timeline state internally. Our domain draft/persistence is still separate and will be integrated later. The minimal skeleton keeps the system compiling and demonstrable while we iterate on a shared patch model for video.
+VideoMode uses `useVideoContract` and `useDomainCopilot` to register
+context/actions when the mode is active.
 
-## 6. Extending toward patch review
+Key file: `apps/studio/lib/domains/video/copilot.ts`.
 
-When you are ready:
-- Define a `VideoPatchOp` list (already in `apps/studio/lib/domains/video/types.ts`).
-- Add a `VideoWorkflowPanel` similar to `ForgeWorkflowPanel`.
-- Use the same plan ? patch ? review ? commit flow.
+---
 
-## What the AI can do at this stage
-
-- Read video workspace context and run basic actions.
-- Highlight changes in metadata (if hooked up).
-- Prepare for the same workflow engine used in Forge.
-
-**Next:** Back to [06 - ForgeWorkspace walkthrough](06-forge-workspace-walkthrough.mdx).
+**Next:** Back to [06 - DialogueMode walkthrough](06-forge-workspace-walkthrough.mdx)

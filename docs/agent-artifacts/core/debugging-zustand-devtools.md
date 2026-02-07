@@ -17,7 +17,7 @@ Use Redux DevTools to inspect and time-travel Zustand store state when debugging
 
 ## Store names (Redux DevTools dropdown)
 
-- **AppShell** — `apps/studio/lib/app-shell/store.ts` (route, open workspaces, themes, bottom drawer).
+- **AppShell** - `apps/studio/lib/app-shell/store.ts` (route, open modes, themes, bottom drawer).
 - **Settings** — `apps/studio/lib/settings/store.ts` (app/workspace/editor settings).
 - **ModelRouter** — `apps/studio/lib/model-router/store.ts` (mode, manual model, enabled models, health).
 - **Entitlements** — `apps/studio/lib/entitlements/store.ts` (plan, overrides).
@@ -36,5 +36,5 @@ Use Redux DevTools to inspect and time-travel Zustand store state when debugging
 
 State and actions from the Redux DevTools extension are **not** easily machine-readable. When debugging state/loop issues:
 
-1. **Check [errors-and-attempts.md](errors-and-attempts.md)** for known errors and fixes (e.g. getSnapshot cached, max update depth with WorkspaceTab).
+1. **Check [errors-and-attempts.md](errors-and-attempts.md)** for known errors and fixes (e.g. getSnapshot cached, max update depth with EditorTab).
 2. **Suggest human steps**: Ask the user to reproduce the issue, open Redux DevTools, note which **store(s)** and **actions** lead to the bug, and share that (screenshots, exported state, or a short description). With that, the agent can target fixes (e.g. selector stability, ref usage, action ordering).

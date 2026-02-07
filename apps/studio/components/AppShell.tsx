@@ -3,14 +3,13 @@
 import React from 'react';
 import { useCopilotReadable, useCopilotAction } from '@copilotkit/react-core';
 import type { Parameter } from '@copilotkit/shared';
-import { useAppShellStore, type AppShellWorkspaceId } from '@/lib/app-shell/store';
+import { useEditorStore, type EditorModeId } from '@/lib/app-shell/store';
 import {
-  WORKSPACE_LABELS,
-  WORKSPACE_EDITOR_SUMMARY,
-} from '@/lib/app-shell/workspace-metadata';
-import { ForgeWorkspace, VideoWorkspace, CharacterWorkspace } from '@/components/workspaces';
-import { WorkspaceButton } from '@forge/shared/components/workspace';
-import { AppSpace } from '@forge/shared/components/app';
+  MODE_LABELS,
+  MODE_EDITOR_SUMMARY,
+} from '@/lib/app-shell/mode-metadata';
+import { EditorApp } from '@forge/shared/components/app';
+import { EditorButton } from '@forge/shared/components/editor';
 import { SettingsMenu } from '@/components/settings/SettingsMenu';
 import { Toaster } from '@forge/ui/sonner';
 import { useSettingsStore } from '@/lib/settings/store';
@@ -20,8 +19,20 @@ import { StructuredOutputRender } from '@/components/copilot/StructuredOutputRen
 import { useGenerateImage, useStructuredOutput } from '@/lib/data/hooks';
 import { createAppAction } from '@forge/shared/copilot';
 
+// Modes (new naming)
+import { DialogueMode } from '@/components/modes/DialogueMode';
+import { VideoMode } from '@/components/modes/VideoMode';
+import { CharacterMode } from '@/components/modes/CharacterMode';
+import { StrategyMode } from '@/components/modes/StrategyMode';
+
+const VALID_MODE_IDS: EditorModeId[] = ['dialogue', 'video', 'character', 'strategy'];
+
+function isValidModeId(id: string): id is EditorModeId {
+  return VALID_MODE_IDS.includes(id as EditorModeId);
+}
+
 export function AppShell() {
-  const { route, setActiveWorkspace, openWorkspace, closeWorkspace } = useAppShellStore();
+  const { route, setActiveWorkspace, openWorkspace, closeWorkspace } = useEditorStore();
   const { activeWorkspaceId, openWorkspaceIds } = route;
   const toastsEnabled = useSettingsStore((s) => s.getSettingValue('ui.toastsEnabled')) as boolean | undefined;
   const entitlements = useEntitlements();
@@ -29,83 +40,83 @@ export function AppShell() {
   const generateImageMutation = useGenerateImage();
   const structuredOutputMutation = useStructuredOutput();
 
-  // Shell-level context for the agent and user (workspace names, active workspace, editor summary)
+  // Shell-level context for the copilot agent
   useCopilotReadable({
     description:
-      'Unified workspace context: which workspace is active, workspace names, and editor types. Use this to switch workspaces or refer to "Forge" / "Video" in conversation.',
+      'Unified editor context: which mode is active, mode names, and editor types. Use this to switch modes.',
     value: {
       activeWorkspaceId,
-      activeWorkspaceName: WORKSPACE_LABELS[activeWorkspaceId],
-      workspaceNames: WORKSPACE_LABELS,
+      activeModeName: MODE_LABELS[activeWorkspaceId],
+      modeNames: MODE_LABELS,
       openWorkspaceIds,
-      editorSummary: WORKSPACE_EDITOR_SUMMARY[activeWorkspaceId],
-      hint: 'Say "switch to Video", "open Forge", or "open Characters" to change workspace.',
+      editorSummary: MODE_EDITOR_SUMMARY[activeWorkspaceId],
+      hint: 'Say "switch to Dialogue", "open Video", "open Characters", or "open Strategy" to change mode.',
     },
   });
 
   useCopilotAction(createAppAction<[Parameter]>({
-    name: 'switchWorkspace',
-    description: 'Switch the active workspace tab. Use when the user asks to go to Forge or Video.',
+    name: 'switchMode',
+    description: 'Switch the active editor mode tab.',
     parameters: [
       {
-        name: 'workspaceId',
+        name: 'modeId',
         type: 'string',
-        description: 'Workspace to switch to: "forge", "video", or "character"',
+        description: `Mode to switch to: ${VALID_MODE_IDS.map((id) => `"${id}"`).join(', ')}`,
         required: true,
       },
     ],
-    handler: async ({ workspaceId }) => {
-      const id = workspaceId as AppShellWorkspaceId;
-      if (id === 'forge' || id === 'video' || id === 'character') {
+    handler: async ({ modeId }) => {
+      const id = String(modeId);
+      if (isValidModeId(id)) {
         setActiveWorkspace(id);
-        return { success: true, message: `Switched to ${WORKSPACE_LABELS[id]}.` };
+        return { success: true, message: `Switched to ${MODE_LABELS[id]}.` };
       }
-      return { success: false, message: `Unknown workspace: ${workspaceId}. Use "forge", "video", or "character".` };
+      return { success: false, message: `Unknown mode: ${modeId}. Use ${VALID_MODE_IDS.join(', ')}.` };
     },
   }));
 
   useCopilotAction(createAppAction<[Parameter]>({
-    name: 'openWorkspace',
-    description: 'Open a workspace tab if not already open, and switch to it.',
+    name: 'openMode',
+    description: 'Open an editor mode tab if not already open, and switch to it.',
     parameters: [
       {
-        name: 'workspaceId',
+        name: 'modeId',
         type: 'string',
-        description: 'Workspace to open: "forge", "video", or "character"',
+        description: `Mode to open: ${VALID_MODE_IDS.map((id) => `"${id}"`).join(', ')}`,
         required: true,
       },
     ],
-    handler: async ({ workspaceId }) => {
-      const id = workspaceId as AppShellWorkspaceId;
-      if (id === 'forge' || id === 'video' || id === 'character') {
+    handler: async ({ modeId }) => {
+      const id = String(modeId);
+      if (isValidModeId(id)) {
         openWorkspace(id);
-        return { success: true, message: `Opened ${WORKSPACE_LABELS[id]}.` };
+        return { success: true, message: `Opened ${MODE_LABELS[id]}.` };
       }
-      return { success: false, message: `Unknown workspace: ${workspaceId}.` };
+      return { success: false, message: `Unknown mode: ${modeId}.` };
     },
   }));
 
   useCopilotAction(createAppAction<[Parameter]>({
-    name: 'closeWorkspace',
-    description: 'Close a workspace tab. Must have at least one open.',
+    name: 'closeMode',
+    description: 'Close an editor mode tab. Must have at least one open.',
     parameters: [
       {
-        name: 'workspaceId',
+        name: 'modeId',
         type: 'string',
-        description: 'Workspace to close: "forge", "video", or "character"',
+        description: `Mode to close: ${VALID_MODE_IDS.map((id) => `"${id}"`).join(', ')}`,
         required: true,
       },
     ],
-    handler: async ({ workspaceId }) => {
-      const id = workspaceId as AppShellWorkspaceId;
-      if (id === 'forge' || id === 'video' || id === 'character') {
+    handler: async ({ modeId }) => {
+      const id = String(modeId);
+      if (isValidModeId(id)) {
         if (openWorkspaceIds.length <= 1) {
-          return { success: false, message: 'Cannot close the last workspace.' };
+          return { success: false, message: 'Cannot close the last mode.' };
         }
         closeWorkspace(id);
-        return { success: true, message: `Closed ${WORKSPACE_LABELS[id]}.` };
+        return { success: true, message: `Closed ${MODE_LABELS[id]}.` };
       }
-      return { success: false, message: `Unknown workspace: ${workspaceId}.` };
+      return { success: false, message: `Unknown mode: ${modeId}.` };
     },
   }));
 
@@ -155,9 +166,9 @@ export function AppShell() {
   useCopilotAction(createAppAction<[Parameter, Parameter]>({
     name: 'app_respondWithStructure',
     description:
-      'Extract or produce structured data (JSON) from a prompt. Use when the user wants a list of characters, key-value pairs, or other structured output. Choose schemaName to match the request: "characters" for character lists, "keyValue" for key-value pairs, "list" for a simple string list.',
+      'Extract or produce structured data (JSON) from a prompt.',
     parameters: [
-      { name: 'prompt', type: 'string', description: 'What to extract or generate (e.g. "List the main characters in this scene")', required: true },
+      { name: 'prompt', type: 'string', description: 'What to extract or generate', required: true },
       {
         name: 'schemaName',
         type: 'string',
@@ -186,67 +197,78 @@ export function AppShell() {
   }));
 
   return (
-    <AppSpace>
-      {/* Workspace tabs */}
-      <AppSpace.Tabs
-        label="Workspace tabs"
+    <EditorApp>
+      {/* Mode tabs */}
+      <EditorApp.Tabs
+        label="Mode tabs"
         actions={
           <>
-            <WorkspaceButton
+            <EditorButton
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => openWorkspace('forge')}
-              tooltip="Open Forge workspace"
+              onClick={() => openWorkspace('dialogue')}
+              tooltip="Open Dialogue mode"
               className="text-muted-foreground hover:text-foreground"
             >
-              + Forge
-            </WorkspaceButton>
-            <WorkspaceButton
+              + Dialogue
+            </EditorButton>
+            <EditorButton
               type="button"
               variant="ghost"
               size="sm"
               onClick={() => openWorkspace('video')}
-              tooltip="Open Video workspace"
+              tooltip="Open Video mode"
               className="text-muted-foreground hover:text-foreground"
             >
               + Video
-            </WorkspaceButton>
-            <WorkspaceButton
+            </EditorButton>
+            <EditorButton
               type="button"
               variant="ghost"
               size="sm"
               onClick={() => openWorkspace('character')}
-              tooltip="Open Character workspace"
+              tooltip="Open Characters mode"
               className="text-muted-foreground hover:text-foreground"
             >
               + Characters
-            </WorkspaceButton>
+            </EditorButton>
+            <EditorButton
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => openWorkspace('strategy')}
+              tooltip="Open Strategy mode"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              + Strategy
+            </EditorButton>
             <SettingsMenu tooltip="App settings" defaultScope="app" />
           </>
         }
       >
         {openWorkspaceIds.map((id) => (
-          <AppSpace.Tab
+          <EditorApp.Tab
             key={id}
-            label={WORKSPACE_LABELS[id]}
+            label={MODE_LABELS[id]}
             isActive={activeWorkspaceId === id}
             domain={id}
             onSelect={() => setActiveWorkspace(id)}
             onClose={openWorkspaceIds.length > 1 ? () => closeWorkspace(id) : undefined}
-            tooltip={`Switch to ${WORKSPACE_LABELS[id]}`}
-            closeTooltip={`Close ${WORKSPACE_LABELS[id]}`}
+            tooltip={`Switch to ${MODE_LABELS[id]}`}
+            closeTooltip={`Close ${MODE_LABELS[id]}`}
           />
         ))}
-      </AppSpace.Tabs>
+      </EditorApp.Tabs>
 
-      {/* Active workspace content */}
-      <AppSpace.Content>
-        {activeWorkspaceId === 'forge' && <ForgeWorkspace />}
-        {activeWorkspaceId === 'video' && <VideoWorkspace />}
-        {activeWorkspaceId === 'character' && <CharacterWorkspace />}
-      </AppSpace.Content>
+      {/* Active mode content */}
+      <EditorApp.Content>
+        {activeWorkspaceId === 'dialogue' && <DialogueMode />}
+        {activeWorkspaceId === 'video' && <VideoMode />}
+        {activeWorkspaceId === 'character' && <CharacterMode />}
+        {activeWorkspaceId === 'strategy' && <StrategyMode />}
+      </EditorApp.Content>
       {toastsEnabled !== false && <Toaster />}
-    </AppSpace>
+    </EditorApp>
   );
 }

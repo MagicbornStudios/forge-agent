@@ -4,11 +4,11 @@ created: 2026-02-04
 updated: 2026-02-04
 ---
 
-Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../18-agent-artifacts-index.mdx).
+Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx).
 
 # Architecture decision records
 
-> **For coding agents.** See [Agent artifacts index](../18-agent-artifacts-index.mdx) for the full list.
+> **For coding agents.** See [Agent artifacts index](../../18-agent-artifacts-index.mdx) for the full list.
 
 When changing persistence or the data layer, read this file and **docs/11-tech-stack.mdx**. Update these docs when accepting or rejecting a significant choice.
 
@@ -67,3 +67,19 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 **Decision:** Foundation packages are published to a **local Verdaccio registry** under the `@forge/*` scope. We publish `@forge/ui`, `@forge/shared`, `@forge/agent-engine`, and the convenience meta-package `@forge/dev-kit`. Domain packages stay private.
 
 **Rationale:** This keeps the public surface small while enabling external apps to adopt the workspace/editor architecture and Copilot utilities quickly. Verdaccio is local-first, fast, and avoids public npm while we iterate.
+
+---
+
+## CopilotKit + OpenRouter: OpenAI SDK and AI SDK with baseURL only
+
+**Decision:** We use the **OpenAI** npm package and **@ai-sdk/openai** (Vercel AI SDK) with **baseURL** set to OpenRouter (`https://openrouter.ai/api/v1`). We do **not** use `@openrouter/ai-sdk-provider` for the CopilotKit route or shared runtime.
+
+**Rationale:** CopilotKit's `OpenAIAdapter` and `BuiltInAgent` are hardcoded to the `openai` and `@ai-sdk/openai` interfaces. OpenRouter's recommended approach is this same pattern (OpenAI SDK + baseURL). Using a different SDK leads to incompatibility and runtime swaps; see errors-and-attempts.
+
+---
+
+## AI and media provider stack
+
+**Decision:** We use a split provider stack: **OpenRouter** for text (chat, streaming, structured output, plan) and image (generation, vision); **ElevenLabs** for audio TTS (character voices, previews); **OpenAI Sora** (or equivalent) **planned** for video generation. OpenRouter does not provide audio TTS/STT or video; we use specialized providers.
+
+**Rationale:** Matches OpenRouter's actual capabilities and keeps a single place to document "who does what." STT and video are documented as future (e.g. Whisper for STT, Sora for video when we add them).

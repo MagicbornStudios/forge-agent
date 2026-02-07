@@ -1,7 +1,7 @@
 ---
 title: Code organization
 created: 2026-02-04
-updated: 2026-02-04
+updated: 2026-02-07
 ---
 
 # Code organization
@@ -9,33 +9,33 @@ updated: 2026-02-04
 ## Layout
 
 - **apps/studio/app/** - Routes, layout, globals.css.
-- **apps/studio/components/** - App and domain components. `apps/studio/components/workspaces/ForgeWorkspace.tsx` is the primary workspace.
+- **apps/studio/components/** - App and domain components. `apps/studio/components/modes/DialogueMode.tsx` is the primary mode.
 - **apps/studio/lib/** - Store, CopilotKit actions, utils, OpenRouter config. `apps/studio/lib/domains/video` is a UI showcase only.
 - **apps/studio/payload/** - Payload CMS collections (users, projects, forge-graphs, video-docs, settings-overrides, agent-sessions).
-- **packages/shared/** - Shared app/workspace UI and styles. No app routes or domain imports.
+- **packages/shared/** - Shared editor UI and styles. No app routes or domain imports.
 - **packages/agent-engine/** - Workflow runtime (steps + events + SSE).
 - **packages/dev-kit/** - Meta-package that re-exports forge foundation packages.
-- **packages/domain-forge/** - Forge domain logic (types, store, operations, copilot wiring).
+- **packages/domain-forge/** - Dialogue domain logic (types, store, operations, copilot wiring).
 - **packages/types/** - Generated Payload types + domain aliases.
 
 ## Atomic design map
 
 - **Atoms**: `packages/ui/src/components/ui/*` (shadcn primitives).
-- **Molecules**: composable widgets (e.g. `apps/studio/components/settings/*`, `apps/studio/components/model-switcher/*`, `packages/shared/src/shared/components/workspace/*` controls).
-- **Organisms**: workspace shells and larger assemblies (e.g. `apps/studio/components/workspaces/*`, `apps/studio/components/AppShell.tsx`).
+- **Molecules**: composable widgets (e.g. `apps/studio/components/settings/*`, `apps/studio/components/model-switcher/*`, `packages/shared/src/shared/components/editor/*` controls).
+- **Organisms**: editor shells and larger assemblies (e.g. `apps/studio/components/modes/*`, `apps/studio/components/AppShell.tsx`).
 - **Templates**: `apps/studio/app/*` layout and route composition.
 
-## Workspace + CopilotKit
+## Mode + CopilotKit
 
-- **Shell** - `packages/shared/src/shared/components/workspace/`: declarative slots, shadcn-based primitives.
-- **Forge workspace** - `apps/studio/components/workspaces/ForgeWorkspace.tsx`: composes shell, registers context and actions from `packages/domain-forge/src/copilot`.
+- **Shell** - `packages/shared/src/shared/components/editor/`: declarative slots, shadcn-based primitives.
+- **Dialogue mode** - `apps/studio/components/modes/DialogueMode.tsx`: composes shell, registers context and actions from `packages/domain-forge/src/copilot`.
 - **Editor** - `apps/studio/components/GraphEditor.tsx`: React Flow surface; mutations go through operations used by Copilot actions.
 
 So: **context** (readable) describes the graph; **actions** (createNode, updateNode, deleteNode, createEdge, getGraph) perform edits.
 
-## Adding a new workspace
+## Adding a new mode
 
-1. Add a workspace component that uses `WorkspaceShell` + slots.
-2. Register `useCopilotReadable` with that workspace's context.
+1. Add a mode component that uses `EditorShell` + slots.
+2. Register `useCopilotReadable` with that mode's context.
 3. Register `useCopilotAction` with domain-specific actions.
-4. Put the editor in `WorkspaceLayoutGrid` `main` and declare overlays in one place.
+4. Put the editor in `DockLayout` `main` and declare overlays in one place.

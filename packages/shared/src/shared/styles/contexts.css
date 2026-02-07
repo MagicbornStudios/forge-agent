@@ -1,12 +1,12 @@
 /* ==========================================================================
    Domain context theming (data-domain)
    Shared tokens: --context-accent, --context-glow, --context-ring
-   Set per-domain from theme vars (--color-df-domain-*) in themes.css
+   Set per-domain from --domain-* and --graph-* in themes.css
    ========================================================================== */
 
 /* ---- Shared ---- */
 :root {
-  --context-accent: var(--color-df-border-hover);
+  --context-accent: var(--border-hover);
   --context-glow: color-mix(in oklab, var(--context-accent) 35%, transparent);
   --context-ring: color-mix(in oklab, var(--context-accent) 60%, transparent);
 }
@@ -14,27 +14,75 @@
 [data-domain] {
   --context-glow: color-mix(in oklab, var(--context-accent) 35%, transparent);
   --context-ring: color-mix(in oklab, var(--context-accent) 60%, transparent);
-  /* Map domain accent into shadcn semantic tokens */
   --primary: var(--context-accent);
-  --primary-foreground: var(--color-df-text-primary);
-  --accent: color-mix(in oklab, var(--context-accent) 20%, var(--color-df-control-bg));
-  --accent-foreground: var(--color-df-text-primary);
+  --primary-foreground: var(--text-primary);
+  --accent: color-mix(in oklab, var(--context-accent) 20%, var(--control-bg));
+  --accent-foreground: var(--text-primary);
   --ring: var(--context-accent);
   --sidebar-primary: var(--context-accent);
   --sidebar-ring: var(--context-accent);
 }
 
 [data-domain][data-focused="false"] {
-  --context-accent: var(--color-df-border-hover);
+  --context-accent: var(--border-hover);
 }
 
 /* ---- Forge ---- */
 [data-domain="forge"] {
-  --context-accent: var(--color-df-domain-forge);
+  --context-accent: var(--domain-forge);
+}
+
+/* ---- Dialogue (Forge alias) ---- */
+[data-domain="dialogue"] {
+  --context-accent: var(--domain-dialogue);
+}
+
+[data-domain="dialogue"][data-editor-scope="storylet"] {
+  --context-accent: var(--graph-edge-choice-1);
+}
+
+[data-domain="dialogue"][data-context-node-type="ACT"] {
+  --context-accent: var(--node-act-accent);
+}
+
+[data-domain="dialogue"][data-context-node-type="CHAPTER"] {
+  --context-accent: var(--node-chapter-accent);
+}
+
+[data-domain="dialogue"][data-context-node-type="PAGE"] {
+  --context-accent: var(--node-page-accent);
+}
+
+[data-domain="dialogue"][data-context-node-type="CHARACTER"] {
+  --context-accent: var(--node-npc-accent);
+}
+
+[data-domain="dialogue"][data-context-node-type="PLAYER"] {
+  --context-accent: var(--node-player-accent);
+}
+
+[data-domain="dialogue"][data-context-node-type="CONDITIONAL"] {
+  --context-accent: var(--node-conditional-accent);
+}
+
+[data-domain="dialogue"][data-context-node-type="STORYLET"] {
+  --context-accent: var(--node-storylet-accent);
+}
+
+[data-domain="dialogue"][data-context-node-type="DETOUR"] {
+  --context-accent: var(--node-detour-accent);
+}
+
+[data-domain="dialogue"][data-context-node-type="JUMP"] {
+  --context-accent: var(--status-warning);
+}
+
+[data-domain="dialogue"][data-context-node-type="END"] {
+  --context-accent: var(--text-tertiary);
 }
 
 [data-domain="forge"][data-editor-scope="storylet"] {
-  --context-accent: var(--color-df-edge-choice-1);
+  --context-accent: var(--graph-edge-choice-1);
 }
 
 [data-domain="forge"][data-context-node-type="ACT"] {
@@ -70,16 +118,16 @@
 }
 
 [data-domain="forge"][data-context-node-type="JUMP"] {
-  --context-accent: var(--color-df-warning);
+  --context-accent: var(--status-warning);
 }
 
 [data-domain="forge"][data-context-node-type="END"] {
-  --context-accent: var(--color-df-text-tertiary);
+  --context-accent: var(--text-tertiary);
 }
 
 /* ---- Writer ---- */
 [data-domain="writer"] {
-  --context-accent: var(--color-df-domain-writer);
+  --context-accent: var(--domain-writer);
 }
 
 [data-domain="writer"][data-context-node-type="PAGE"] {
@@ -88,40 +136,40 @@
 
 /* ---- AI ---- */
 [data-domain="ai"] {
-  --context-accent: var(--color-df-domain-ai);
+  --context-accent: var(--domain-ai);
 }
 
 [data-domain="ai"][data-context-node-type="request"] {
-  --context-accent: var(--color-df-info);
+  --context-accent: var(--status-info);
 }
 
 [data-domain="ai"][data-context-node-type="response"] {
-  --context-accent: var(--color-df-success);
+  --context-accent: var(--status-success);
 }
 
 /* ---- Video ---- */
 [data-domain="video"] {
-  --context-accent: var(--color-df-domain-video);
-  --color-df-video: var(--color-df-domain-video);
-  --color-df-video-bg: color-mix(in oklab, var(--color-df-domain-video) 25%, var(--color-df-surface));
-  --color-df-video-border: color-mix(in oklab, var(--color-df-domain-video) 70%, var(--color-df-control-border));
-  --color-df-video-hover: color-mix(in oklab, var(--color-df-domain-video) 90%, white);
-  --color-df-video-active: color-mix(in oklab, var(--color-df-domain-video) 95%, white);
-  --video-canvas-bg: var(--color-df-canvas-bg);
-  --video-canvas-grid: var(--color-df-canvas-grid);
-  --video-canvas-border: var(--color-df-control-border);
-  --video-layer-bg: var(--color-df-surface);
-  --video-layer-border: var(--color-df-control-border);
-  --video-layer-selected: var(--color-df-video);
-  --video-layer-hover: color-mix(in oklab, var(--color-df-video) 40%, var(--color-df-control-bg));
-  --video-layer-handle: var(--color-df-video);
-  --video-timeline-bg: var(--color-df-canvas-bg);
-  --video-timeline-ruler: var(--color-df-control-border);
-  --video-timeline-playhead: var(--color-df-video);
-  --video-timeline-track: var(--color-df-surface);
-  --video-inspector-bg: var(--color-df-surface);
-  --video-inspector-border: var(--color-df-control-border);
-  --video-inspector-label: var(--color-df-text-secondary);
+  --context-accent: var(--domain-video);
+  --video-accent: var(--domain-video);
+  --video-accent-bg: color-mix(in oklab, var(--domain-video) 25%, var(--card));
+  --video-accent-border: color-mix(in oklab, var(--domain-video) 70%, var(--control-border));
+  --video-accent-hover: color-mix(in oklab, var(--domain-video) 90%, white);
+  --video-accent-active: color-mix(in oklab, var(--domain-video) 95%, white);
+  --video-canvas-bg: var(--graph-canvas);
+  --video-canvas-grid: var(--graph-grid);
+  --video-canvas-border: var(--control-border);
+  --video-layer-bg: var(--card);
+  --video-layer-border: var(--control-border);
+  --video-layer-selected: var(--video-accent);
+  --video-layer-hover: color-mix(in oklab, var(--video-accent) 40%, var(--control-bg));
+  --video-layer-handle: var(--video-accent);
+  --video-timeline-bg: var(--graph-canvas);
+  --video-timeline-ruler: var(--control-border);
+  --video-timeline-playhead: var(--video-accent);
+  --video-timeline-track: var(--card);
+  --video-inspector-bg: var(--card);
+  --video-inspector-border: var(--control-border);
+  --video-inspector-label: var(--text-secondary);
 }
 
 /* Video: panel border hovers */
@@ -155,14 +203,14 @@
 }
 
 [data-domain="video"] .toolbar-button-active {
-  background: var(--color-df-video-bg);
-  color: var(--color-df-video);
-  border-color: var(--color-df-video-border);
+  background: var(--video-accent-bg);
+  color: var(--video-accent);
+  border-color: var(--video-accent-border);
 }
 
 [data-domain="video"] .toolbar-button-active:hover {
-  background: color-mix(in oklab, var(--color-df-video-bg) 80%, var(--color-df-video));
-  border-color: var(--color-df-video-hover);
+  background: color-mix(in oklab, var(--video-accent-bg) 80%, var(--video-accent));
+  border-color: var(--video-accent-hover);
 }
 
 /* Video: utility classes */
@@ -194,13 +242,13 @@
 }
 
 .video-resize-handle:hover {
-  background: var(--color-df-video-hover);
+  background: var(--video-accent-hover);
   transform: scale(1.2);
 }
 
 .video-timeline {
   background: var(--video-timeline-bg);
-  border-top: 1px solid var(--color-df-control-border);
+  border-top: 1px solid var(--control-border);
 }
 
 .video-timeline-ruler {
@@ -237,5 +285,5 @@
 
 /* ---- Character ---- */
 [data-domain="character"] {
-  --context-accent: var(--color-df-domain-character);
+  --context-accent: var(--domain-character);
 }

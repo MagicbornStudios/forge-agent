@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState, createContext, useContext } from 'react';
 import { useAppShellStore } from '@/lib/app-shell/store';
-import { WORKSPACE_EDITOR_IDS, WORKSPACE_LABELS } from '@/lib/app-shell/workspace-metadata';
+import { MODE_EDITOR_IDS, MODE_LABELS } from '@/lib/app-shell/mode-metadata';
 import { useSettingsStore } from '@/lib/settings/store';
 import { useModelRouterStore } from '@/lib/model-router/store';
 import { CAPABILITIES, useEntitlements } from '@forge/shared/entitlements';
@@ -44,7 +44,7 @@ export function CopilotKitProvider({
 }: CopilotKitProviderProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const activeWorkspaceId = useAppShellStore((s) => s.route.activeWorkspaceId);
-  const editorId = WORKSPACE_EDITOR_IDS[activeWorkspaceId];
+  const editorId = MODE_EDITOR_IDS[activeWorkspaceId];
   const ids = useMemo(
     () => ({ workspaceId: activeWorkspaceId, editorId }),
     [activeWorkspaceId, editorId],
@@ -108,7 +108,7 @@ export function CopilotKitProvider({
   const sidebarTitle = labels?.title ?? agentName ?? 'AI Assistant';
   const sidebarInitial =
     labels?.initial ??
-    `Ask ${agentName ?? 'the assistant'} to help with ${WORKSPACE_LABELS[activeWorkspaceId]}.`;
+    `Ask ${agentName ?? 'the assistant'} to help with ${MODE_LABELS[activeWorkspaceId]}.`;
   const forwardedParameters = useMemo(() => {
     if (!Number.isFinite(temperature)) return undefined;
     return { temperature };
@@ -116,7 +116,7 @@ export function CopilotKitProvider({
   const headers = useMemo(() => {
     const next: Record<string, string> = {
       'x-forge-workspace-id': activeWorkspaceId,
-      'x-forge-workspace-name': WORKSPACE_LABELS[activeWorkspaceId],
+      'x-forge-workspace-name': MODE_LABELS[activeWorkspaceId],
       'x-forge-tools-enabled': toolsEnabled ? 'true' : 'false',
     };
     if (editorId) {
@@ -151,7 +151,7 @@ export function CopilotKitProvider({
         title: sidebarTitle,
         initial: sidebarInitial,
       }}
-      open={isOpen}
+      open={activeWorkspaceId === 'strategy' ? false : isOpen}
       onOpenChange={setIsOpen}
     >
       <CopilotSidebarContext.Provider value={{ isOpen, setIsOpen }}>

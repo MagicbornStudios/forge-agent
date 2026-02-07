@@ -85,10 +85,10 @@ export function SectionHeader({
   const accentColor =
     iconColor ??
     (focusedEditor === 'narrative'
-      ? 'var(--color-df-info)'
+      ? 'var(--status-info)'
       : focusedEditor === 'storylet'
-        ? 'var(--color-df-edge-choice-1)'
-        : 'var(--color-df-text-tertiary)');
+        ? 'var(--graph-edge-choice-1)'
+        : 'var(--text-tertiary)');
 
   const headerStyle = focusedEditor
     ? {

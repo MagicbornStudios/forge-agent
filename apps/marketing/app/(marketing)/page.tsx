@@ -19,6 +19,11 @@ const FEATURES = [
     description:
       'Payload CMS and generated types. One API boundary, TanStack Query, and optional drafts.',
   },
+  {
+    title: 'Codebase Strategy (coming soon)',
+    description:
+      'Per-workspace strategies and plans from your codebase, for any coding agent. Refine strategy with our copilot; traceable from plan to implementation.',
+  },
 ];
 
 export default function HomePage() {

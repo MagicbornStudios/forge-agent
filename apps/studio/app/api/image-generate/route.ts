@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOpenRouterConfig } from '@/lib/openrouter-config';
-
-/** OpenRouter model with image output_modalities. Override with OPENROUTER_IMAGE_MODEL. */
-const DEFAULT_IMAGE_MODEL = 'google/gemini-2.5-flash-image-preview';
+import { DEFAULT_IMAGE_MODEL } from '@/lib/model-router/defaults';
 
 /**
  * @swagger
@@ -55,6 +53,7 @@ export async function POST(request: NextRequest) {
   }
 
   const model = process.env.OPENROUTER_IMAGE_MODEL?.trim() || DEFAULT_IMAGE_MODEL;
+  // Image gen uses a single default (or env); no fallbacks. See docs for model list.
   const imageConfig: Record<string, string> = {};
   if (body.aspectRatio) imageConfig.aspect_ratio = body.aspectRatio;
   if (body.imageSize) imageConfig.image_size = body.imageSize;

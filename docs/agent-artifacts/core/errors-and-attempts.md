@@ -1,14 +1,14 @@
 ---
 title: Errors and attempts
 created: 2026-02-04
-updated: 2026-02-05
+updated: 2026-02-07
 ---
 
-Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../18-agent-artifacts-index.mdx).
+Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx).
 
 # Errors and attempts (do not repeat)
 
-> **For coding agents.** See [Agent artifacts index](../18-agent-artifacts-index.mdx) for the full list.
+> **For coding agents.** See [Agent artifacts index](../../18-agent-artifacts-index.mdx) for the full list.
 
 Log of known failures and fixes so agents and developers avoid repeating the same mistakes.
 
@@ -22,19 +22,21 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ---
 
-## Model 429 / 5xx and cooldown
+## Model 429 / 5xx (custom cooldown removed)
 
 **Problem**: Repeated requests to a rate-limited or failing model can exhaust the provider.
 
-**Fix**: Model router records errors via `reportModelError(modelId)` in the CopilotKit route on 429/5xx. Auto-switch excludes models in cooldown (exponential backoff: 15s -> 30s -> 60s -> ... up to 5 min). Success clears cooldown via `reportModelSuccess(modelId)`.
+**Previous fix (removed)**: We used to record errors via `reportModelError(modelId)` and auto-switch with cooldown. That behavior has been **removed**.
+
+**Current fix**: We use **OpenRouter model fallbacks**: the request body includes `models: [primary, ...fallbacks]`. OpenRouter retries with the next model in the array on rate limit / 5xx within the same request. No app-level health or cooldown. Preferences (primary + fallback chain) are in `server-state.ts`; the CopilotKit route and other OpenRouter call sites (forge/plan, structured-output) pass the `models` array.
 
 ---
 
 ## Double-registering domain actions
 
-**Problem**: If multiple workspaces are mounted at once and each calls `useDomainCopilot`, the same action names (e.g. `forge_createNode`) can be registered twice, leading to undefined behavior.
+**Problem**: If multiple modes are mounted at once and each calls `useDomainCopilot`, the same action names (e.g. `forge_createNode`) can be registered twice, leading to undefined behavior.
 
-**Fix**: Only the **active** workspace is rendered. App Shell renders either ForgeWorkspace or VideoWorkspace, so only one domain contract is active at a time.
+**Fix**: Only the **active** mode is rendered. App Shell renders only DialogueMode or VideoMode, so only one domain contract is active at a time.
 
 ---
 
@@ -68,7 +70,7 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 **Problem**: Using raw `fetch` for collection or app API bypasses the Payload SDK / generated client and duplicates logic; it breaks type safety and makes it easy to drift from the contract.
 
-**Fix**: For collection CRUD (forge-graphs, video-docs), use the Payload SDK (`lib/api-client/payload-sdk.ts`) via the TanStack Query hooks. For custom endpoints (auth, settings, AI), use the generated services or **manual client modules** in `lib/api-client/` (e.g. elevenlabs, media, workflows), or **vendor SDKs** where appropriate. Do not call `fetch` for `/api/*` from components or stores. **New endpoints:** add a manual client module in `lib/api-client/` or use a vendor SDK; the OpenAPI spec is for **documentation only** (it does not support streaming)â€”do not rely on extending it to generate new clients.
+**Fix**: For collection CRUD (forge-graphs, video-docs), use the Payload SDK (`lib/api-client/payload-sdk.ts`) via the TanStack Query hooks. For custom endpoints (auth, settings, AI), use the generated services or **manual client modules** in `lib/api-client/` (e.g. elevenlabs, media, workflows), or **vendor SDKs** where appropriate. Do not call `fetch` for `/api/*` from components or stores. **New endpoints:** add a manual client module in `lib/api-client/` or use a vendor SDK; the OpenAPI spec is for **documentation only** (it does not support streaming)â€"do not rely on extending it to generate new clients.
 
 ## Duplicating collection CRUD in custom routes
 
@@ -90,7 +92,7 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 **Problem**: Build fails with "Can't resolve '@twick/timeline/dist/timeline.css'" or "Can't resolve '@twick/live-player'" / "Can't resolve '@twick/studio'". Twick packages may be missing from the lockfile, or the registry was unreachable.
 
-**Fix**: (1) Use `workspace:*` for internal `@forge/*` deps in `packages/agent-engine`, `packages/shared`, and `packages/dev-kit` so `pnpm install` does not require Verdaccio. (2) Run `pnpm install --no-frozen-lockfile` from the repo root to resolve and lock all Twick packages. (3) In `apps/studio/app/globals.css`, import only `@twick/studio/dist/studio.css`; do not import `@twick/timeline/dist/timeline.css` â€” the published npm package does not ship that file (studio bundles timeline styles).
+**Fix**: (1) Use `workspace:*` for internal `@forge/*` deps in `packages/agent-engine`, `packages/shared`, and `packages/dev-kit` so `pnpm install` does not require Verdaccio. (2) Run `pnpm install --no-frozen-lockfile` from the repo root to resolve and lock all Twick packages. (3) In `apps/studio/app/globals.css`, import only `@twick/studio/dist/studio.css`; do not import `@twick/timeline/dist/timeline.css` â€" the published npm package does not ship that file (studio bundles timeline styles).
 
 ---
 
@@ -114,11 +116,27 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ---
 
-## "Maximum update depth exceeded" with setRef in WorkspaceTab/WorkspaceTooltip
+## "Maximum update depth exceeded" with setRef in EditorTab/EditorTooltip
 
-**Problem**: "Maximum update depth exceeded" in React, with stack pointing to Radix UI `setRef` and `WorkspaceTab` / `WorkspaceTooltip` / `AppShell`. Nested Radix Tooltips (e.g. one around the tab, one around the close button) and ref merging (`TooltipTrigger asChild`) can trigger setState inside ref callbacks, causing a re-render loop.
+**Problem**: "Maximum update depth exceeded" in React, with stack pointing to Radix UI `setRef` and `EditorApp.Tab` / `EditorTooltip` / `AppShell`. Nested Radix Tooltips (e.g. one around the tab, one around the close button) and ref merging (`TooltipTrigger asChild`) can trigger setState inside ref callbacks, causing a re-render loop.
 
-**Fix**: Avoid nested tooltips: use a native `title` attribute for the close button instead of wrapping it in a second `WorkspaceTooltip`. When the tab has no tooltip, do not wrap the tab in `WorkspaceTooltip` at all (render the tab element directly). If the loop persists, wrap the tab root in a `React.forwardRef` component so the ref target has a stable identity.
+**Fix**: Avoid nested tooltips: use a native `title` attribute for the close button instead of wrapping it in a second `EditorTooltip`. When the tab has no tooltip, do not wrap the tab in `EditorTooltip` at all (render the tab element directly). If the loop persists, wrap the tab root in a `React.forwardRef` component so the ref target has a stable identity.
+
+---
+
+## MdxBody type error when using body as JSX component
+
+**Problem**: In `apps/studio/app/docs/[[...slug]]/page.tsx`, `body` from `page.data` is narrowed to `body` when `typeof body === 'function'`, but TypeScript infers that as a generic `Function`. JSX requires a construct/call signature (e.g. `React.ComponentType`), so `<MdxBody components={mdxComponents} />` fails type-check.
+
+**Fix**: Cast `body` to a React component type when assigning: `(typeof body === 'function' ? body : null) as React.ComponentType<{ components: typeof mdxComponents }> | null`. Keep the existing render: `{MdxBody ? <MdxBody components={mdxComponents} /> : null}`.
+
+---
+
+## BuiltInAgent / OpenRouter SDK incompatibility
+
+**Problem**: Using `@openrouter/ai-sdk-provider` (e.g. `createOpenRouter`) for the CopilotKit agent causes interface mismatch. CopilotKit expects `openai` for the adapter and `@ai-sdk/openai` for BuiltInAgent; the OpenRouter provider uses a different shape. We swapped runtimes multiple times trying to use the OpenRouter SDK.
+
+**Fix**: Do **not** use `@openrouter/ai-sdk-provider` for the CopilotKit route or for `createForgeCopilotRuntime` in shared. Use **OpenAI** (`openai` package) with `baseURL: config.baseUrl` and **createOpenAI** from `@ai-sdk/openai` with the same baseURL. Model fallbacks are implemented via a custom fetch that injects `models: [primary, ...fallbacks]` into the request body (see [openrouter-fetch.ts](../../apps/studio/lib/model-router/openrouter-fetch.ts)). Reference: [06-model-routing-and-openrouter.mdx](../../architecture/06-model-routing-and-openrouter.mdx).
 
 ---
 

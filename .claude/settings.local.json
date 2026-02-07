@@ -13,7 +13,18 @@
       "WebFetch(domain:docs.copilotkit.ai)",
       "Bash(dir:*)",
       "WebFetch(domain:openrouter.ai)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "WebFetch(domain:www.assistant-ui.com)",
+      "WebFetch(domain:www.tool-ui.com)",
+      "Bash(gh api:*)",
+      "Bash(python -c:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(gh repo view:*)",
+      "Bash(gh search:*)",
+      "Bash(where:*)",
+      "Bash(gh:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(pnpm add:*)"
     ]
   }
 }

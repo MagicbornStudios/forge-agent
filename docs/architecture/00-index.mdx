@@ -1,0 +1,18 @@
+---
+title: Architecture index
+created: 2026-02-06
+updated: 2026-02-07
+---
+
+# Architecture index
+
+Reference docs for app and editor architecture. Main docs index: [00-docs-index.mdx](../00-docs-index.mdx).
+
+| Doc | Summary |
+|-----|---------|
+| [01 - Unified editor (App Shell)](01-unified-workspace.mdx) | App Shell owns mode tabs and active mode; only the active mode is rendered. |
+| [02 - Editor mode architecture](02-workspace-editor-architecture.mdx) | Mental model: EditorShell, controller, editor bridge, chat orchestrator; slots and domain contracts. |
+| [03 - CopilotKit and agents](03-copilotkit-and-agents.mdx) | CopilotKit integration, domain actions, plan-execute-review-commit, model routing, roadmap pointer. |
+| [04 - Component library and registry](04-component-library-and-registry.mdx) | Shared UI packages, registries, where to add components. |
+| [05 - Editor platform (DockLayout)](05-editor-platform.mdx) | DockLayout and mode architecture; naming migration from WorkspaceShell to EditorShell/DockLayout. |
+| [06 - Model routing and OpenRouter](06-model-routing-and-openrouter.mdx) | OpenAI SDK + baseURL for OpenRouter (CopilotKit-compatible), model list from API, static defaults, ModelSwitcher. Provider stack: OpenRouter (text/image), ElevenLabs (audio), Sora (video planned). |

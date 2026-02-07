@@ -1,15 +1,9 @@
 "use client";
 
-import { MODEL_REGISTRY } from "@/lib/model-router/registry";
+import { DEFAULT_MODEL_OPTIONS } from "@/lib/model-router/defaults";
 import type { SettingsSection } from "./types";
 
-const modelOptions = [
-  { value: "auto", label: "Auto (router)" },
-  ...MODEL_REGISTRY.map((model) => ({
-    value: model.id,
-    label: model.label,
-  })),
-];
+const modelOptions = DEFAULT_MODEL_OPTIONS;
 
 export const APP_SETTINGS_SECTIONS: SettingsSection[] = [
   {

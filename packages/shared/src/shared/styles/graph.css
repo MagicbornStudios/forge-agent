@@ -43,13 +43,13 @@
   border-color: var(--edge-color);
   border-style: solid;
   border-width: 2px;
-  background-color: var(--color-df-control-bg);
+  background-color: var(--control-bg);
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .dialogue-graph-editor .forge-choice-handle:hover {
   border-color: var(--edge-color);
-  background-color: color-mix(in oklab, var(--edge-color) 20%, var(--color-df-control-bg));
+  background-color: color-mix(in oklab, var(--edge-color) 20%, var(--control-bg));
 }
 
 .dialogue-graph-editor .forge-choice-input {
@@ -73,11 +73,11 @@
 }
 
 .dialogue-graph-editor .forge-choice-edge.is-loop:not(.is-dimmed) .forge-edge-path {
-  stroke: var(--color-df-edge-loop);
+  stroke: var(--graph-edge-loop);
 }
 
 .dialogue-graph-editor .forge-choice-edge.is-dimmed .forge-edge-path {
-  stroke: var(--color-df-edge-dimmed);
+  stroke: var(--graph-edge-dimmed);
 }
 
 .dialogue-graph-editor .forge-choice-edge .forge-choice-arrow {
@@ -86,16 +86,16 @@
 }
 
 .dialogue-graph-editor .forge-choice-edge.is-loop:not(.is-dimmed) .forge-choice-arrow {
-  stroke: var(--color-df-edge-loop);
-  fill: var(--color-df-edge-loop);
+  stroke: var(--graph-edge-loop);
+  fill: var(--graph-edge-loop);
 }
 
 .dialogue-graph-editor .forge-edge.is-draft .react-flow__edge-path,
 .dialogue-graph-editor .forge-choice-edge.is-draft .react-flow__edge-path {
-  stroke: var(--color-df-warning);
+  stroke: var(--status-warning);
 }
 
 .dialogue-graph-editor .forge-choice-edge.is-draft .forge-choice-arrow {
-  stroke: var(--color-df-warning);
-  fill: var(--color-df-warning);
+  stroke: var(--status-warning);
+  fill: var(--status-warning);
 }

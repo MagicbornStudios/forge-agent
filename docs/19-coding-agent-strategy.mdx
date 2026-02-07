@@ -2,7 +2,7 @@
 title: Coding agent strategy
 
 created: 2026-02-04
-updated: 2026-02-04
+updated: 2026-02-06
 ---
 
 # Coding agent strategy
@@ -17,6 +17,10 @@ We maintain explicit **agent artifacts** so that:
 - **Fewer repeated mistakes:** Known failures and fixes are greppable; agents check before retrying a pattern.
 - **Onboarding:** Treat the agent like a new hire—it only reads what's explicit. STATUS, decisions, errors-and-attempts, and per-area AGENTS.md give it the same context we'd give a developer.
 
+## Strategy is per workspace
+
+Strategy is applied **per workspace**, not per repo type. Each workspace (Forge, Video, Writer, Codebase Strategy) has its own strategy/artifacts/loop. This doc describes the **meta-strategy** (how we use artifacts across workspaces). Each workspace follows the same loop pattern but may have workspace-specific artifacts (e.g. Forge has graph-specific STATUS/decisions; Video has timeline-specific ones).
+
 ## What we treat as agent artifacts
 
 See **[18-agent-artifacts-index.mdx](18-agent-artifacts-index.mdx)** for the full index. In short:
@@ -24,14 +28,32 @@ See **[18-agent-artifacts-index.mdx](18-agent-artifacts-index.mdx)** for the ful
 - **agent-artifacts/core/STATUS.md** — Current state, Ralph Wiggum loop, next steps. Updated after each slice.
 - **agent-artifacts/core/decisions.md** — Architecture decision records (persistence, data layer, boundaries). Updated when we accept or reject a significant choice.
 - **agent-artifacts/core/errors-and-attempts.md** — Log of known failures and fixes. Do not repeat; add new entries when we fix something that cost time.
+- **agent-artifacts/core/tool-usage.md** — How to search and navigate: rg, list_dir, Read; Windows vs Linux equivalents. See [tool-usage.md](agent-artifacts/core/tool-usage.md).
+- **agent-artifacts/core/compacting-and-archiving.md** — When and how to compact sections and archive; thresholds and one-line pointers. We compact when artifact sections grow large so context windows stay effective. See [compacting-and-archiving.md](agent-artifacts/core/compacting-and-archiving.md).
 - **AGENTS.md** (root + per-package) — Rules, conventions, and loops for the area. One canonical file per critical area; no duplicate "for agents" copies elsewhere.
 
-## How agents are expected to use them
+## How agents are expected to use them (actions)
 
-1. **Before a slice:** Read [agent-artifacts/core/STATUS.md](agent-artifacts/core/STATUS.md) and the relevant AGENTS.md (root + shared/workspace when touching workspaces). Understand current state and next.
-2. **Before retrying a failed approach:** Check [agent-artifacts/core/errors-and-attempts.md](agent-artifacts/core/errors-and-attempts.md). If the failure is documented, follow the fix instead of retrying the same pattern.
-3. **When changing persistence or data layer:** Read [agent-artifacts/core/decisions.md](agent-artifacts/core/decisions.md) and [11-tech-stack.mdx](11-tech-stack.mdx); update them when making or rejecting a significant choice.
-4. **After a slice:** Update STATUS (including the Ralph Wiggum loop) and any AGENTS/README that the change affects.
+1. **Before a slice:** Read [agent-artifacts/core/STATUS.md](agent-artifacts/core/STATUS.md) and the relevant AGENTS.md (root + shared/workspace when touching workspaces). Use **rg** (or grep), **list_dir**/LS, and **Read** to locate and confirm files; check [agent-artifacts/core/errors-and-attempts.md](agent-artifacts/core/errors-and-attempts.md) before retrying a failed pattern. Understand current state and next.
+2. **Prefer canonical artifacts:** Use the agent artifacts index and core artifacts (STATUS, decisions, errors-and-attempts) for **current state** and **failure log**. Use numbered docs (10–19, how-to, architecture) for architecture and how-to, not for live state. Avoid relying on stray READMEs for "what is true now."
+3. **Before changing a pattern:** Use rg (or grep) to find occurrences; use list_dir/Read to confirm file locations. See [tool-usage.md](agent-artifacts/core/tool-usage.md).
+4. **When changing persistence or data layer:** Read [agent-artifacts/core/decisions.md](agent-artifacts/core/decisions.md) and [11-tech-stack.mdx](11-tech-stack.mdx); update them when making or rejecting a significant choice.
+5. **After a slice:** Update STATUS (including the Ralph Wiggum Done list) and any AGENTS/README that the change affects.
+6. **When adding a new area with distinct rules:** Add an AGENTS.md and link from the index.
+
+## General strategy vs domain granularity
+
+- **General strategy (static, standard):** Applies to all agents. Entry: 18-agent-artifacts-index, STATUS, decisions, errors-and-attempts, tool-usage, compacting. One canonical place; easy to find.
+- **Domain granularity (fine control):** Different domains or packages need their own rules and boundaries → **AGENTS.md** per area. Add a new AGENTS.md when you introduce a **new package** or **critical area** that needs its own rules (naming, boundaries, "do not," owner). Keep one canonical file per area; link from root AGENTS.md and 18-agent-artifacts-index. Do not add AGENTS.md for every subfolder; only for areas with distinct conventions or failure modes.
+
+## When to summarize / compact
+
+When a living doc section (Done list, errors-and-attempts entries, long decisions) exceeds a threshold, compact that subsection and move detail to the archive; keep a one-line summary or pointer in the main doc. See [compacting-and-archiving.md](agent-artifacts/core/compacting-and-archiving.md).
+
+## Steering from outdated documentation
+
+- **Canonical locations:** 18-agent-artifacts-index, agent-artifacts/core/*.md, root and per-package AGENTS.md. Prefer these over stray READMEs or numbered docs for "current state" and "what not to repeat."
+- **Deprecation:** If we retire or move a doc, add a short note at the top: "Deprecated. See [canonical link]."
 
 ## Adding or changing agent artifacts
 

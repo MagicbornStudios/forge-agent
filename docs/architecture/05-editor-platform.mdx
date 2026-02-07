@@ -1,0 +1,322 @@
+---
+title: Editor Platform - DockLayout and Mode Architecture
+created: 2026-02-06
+updated: 2026-02-07
+---
+
+# Editor Platform
+
+The editor platform replaces the workspace component hierarchy with an
+Unreal-Engine-inspired system of **resizable, dockable, lockable panels**.
+
+## Naming migration
+
+| Old Name | New Name | Import |
+|---|---|---|
+| `AppSpace` | `EditorApp` | `@forge/shared/components/app` |
+| `WorkspaceShell` | `EditorShell` | `@forge/shared/components/editor` |
+| `WorkspaceHeader` | `ModeHeader` | `@forge/shared/components/editor` |
+| `WorkspaceToolbar` | `ModeToolbar` | `@forge/shared/components/editor` |
+| `WorkspaceLayoutGrid` | `DockLayout` | `@forge/shared/components/editor` |
+| `WorkspaceEditor` | `ViewportMeta` | `@forge/shared/components/editor` |
+| `WorkspaceLeftPanel` | `DockPanel` | `@forge/shared/components/editor` |
+| `WorkspaceInspector` | `DockPanel` | `@forge/shared/components/editor` |
+| `WorkspaceStatusBar` | `ModeStatusBar` | `@forge/shared/components/editor` |
+| `WorkspaceReviewBar` | `ModeReviewBar` | `@forge/shared/components/editor` |
+| `WorkspaceOverlaySurface` | `ModeOverlaySurface` | `@forge/shared/components/editor` |
+| (new) | `PanelTabs` | `@forge/shared/components/editor` |
+| (new) | `PanelSettings` | `@forge/shared/components/editor` |
+| (new) | `usePanelLock` | `@forge/shared/components/editor` |
+
+**Old workspace components still work.** The migration is gradual.
+
+---
+
+## Architecture
+
+```
+EditorApp                    -> top-level application shell (mode tabs)
+  EditorApp.Tabs             -> tab bar for mode switching
+  EditorApp.Content          -> active mode content area
+    EditorShell              -> root container per mode
+      ModeHeader             -> mode title bar (.Left, .Center, .Right)
+      ModeToolbar            -> mode toolbar (.Left, .Right, .Menubar, .Button ...)
+      ModeReviewBar          -> AI change review bar (revert/accept)
+      DockLayout             -> resizable panel layout (left, main, right, bottom)
+        DockPanel            -> individual panel (title, tabs, lock, settings)
+          PanelTabs          -> tab bar within a panel
+          PanelSettings      -> per-panel settings popover
+        ViewportMeta         -> editor viewport metadata wrapper
+      ModeStatusBar          -> bottom status bar
+      ModeOverlaySurface     -> modal overlay surface
+```
+
+---
+
+## Component reference
+
+### `EditorShell`
+
+Root container for an editor mode. Sets `data-mode-id`, `data-domain`,
+`data-theme` attributes for copilot, settings, and theming.
+
+```tsx
+<EditorShell modeId="dialogue" title="Dialogue" domain="dialogue" theme="dark-fantasy">
+  {/* ModeHeader, ModeToolbar, DockLayout, ModeStatusBar, etc. */}
+</EditorShell>
+```
+
+### `ModeHeader` / `ModeToolbar`
+
+Title bar and toolbar. Compound components with `.Left`, `.Center`, `.Right`.
+`ModeToolbar` also has `.Separator`, `.Group`, `.Button`, `.Menubar`, `.FileMenu`.
+
+### `DockLayout`
+
+The core layout primitive. Built on `react-resizable-panels`. Replaces
+`WorkspaceLayoutGrid` (which used CSS Grid with hardcoded widths).
+
+```tsx
+<DockLayout
+  left={<DockPanel panelId="navigator" tabs={sidebarTabs} />}
+  main={<GraphEditor />}
+  right={<DockPanel panelId="inspector" title="Properties" scrollable />}
+  bottom={<DockPanel panelId="logs" title="Output" />}
+  viewport={{ editorId: 'dialogue-graph', editorType: 'react-flow' }}
+  layoutId="dialogue-mode"      // persists panel sizes to localStorage
+  leftDefaultSize={20}           // % of horizontal space
+  rightDefaultSize={25}
+  bottomDefaultSize={25}
+/>
+```
+
+Features:
+- All panels are **user-resizable** (drag handles)
+- Side and bottom panels are **collapsible**
+- Layout sizes **auto-persist** when `layoutId` is provided
+- Viewport metadata attributes are applied to the main region
+
+### `DockPanel`
+
+A single region within a `DockLayout`. Features:
+- Optional title bar with icon + actions
+- Tab support via `tabs` prop (renders `PanelTabs` internally)
+- Lock overlay via `locked` prop (during AI patch application)
+- Scroll management via `scrollable` prop
+
+```tsx
+<DockPanel
+  panelId="graph-editor"
+  title="Graph"
+  icon={<BookOpen size={14} />}
+  locked={editorLock.locked}
+  lockedProps={{ description: editorLock.reason ?? undefined }}
+  scrollable={false}
+  headerActions={
+    <PanelSettings panelId="graph-editor" settings={panelSettings} />
+  }
+>
+  <GraphEditor ... />
+</DockPanel>
+```
+
+### `PanelTabs`
+
+Tab bar + content within a `DockPanel`. Built on shadcn Tabs (Radix UI).
+Supports controlled and uncontrolled usage.
+
+```tsx
+<PanelTabs
+  tabs={[
+    { id: 'graphs', label: 'Graphs', icon: <BookOpen />, content: <GraphList /> },
+    { id: 'nodes', label: 'Nodes', icon: <Boxes />, content: <NodePalette /> },
+  ]}
+  defaultTabId="graphs"
+/>
+```
+
+### `ViewportMeta`
+
+Lightweight metadata wrapper that sets `data-editor-id`, `data-editor-type`,
+and `data-editor-scope` attributes. Used by copilot and settings systems.
+
+### `ModeStatusBar` / `ModeReviewBar` / `ModeOverlaySurface`
+
+Bottom status bar, AI review bar, and modal overlay surface - same API as
+their `Workspace*` predecessors.
+
+---
+
+## Panel utilities
+
+### `usePanelLock()`
+
+Hook for managing panel lock state during AI operations:
+
+```tsx
+const editorLock = usePanelLock();
+
+// Lock during AI plan application
+const handleApplyPlan = async (plan) => {
+  editorLock.lock('AI is applying changes...');
+  try { await applyPlan(plan); }
+  finally { editorLock.unlock(); }
+};
+
+<DockPanel locked={editorLock.locked} lockedProps={{ description: editorLock.reason }} />
+```
+
+### `PanelSettings`
+
+Popover component for per-panel settings. Place in `DockPanel.headerActions`:
+
+```tsx
+<PanelSettings
+  panelId="editor"
+  settings={[
+    { id: 'minimap', label: 'Show Minimap', type: 'toggle', value: showMiniMap, onChange: setShowMiniMap },
+  ]}
+/>
+```
+
+---
+
+## AI components
+
+### `GenerateMediaModal`
+
+Tabbed modal for AI media generation:
+- **Text -> Image** - prompt + aspect ratio -> image
+- **Image -> Video** - source image + motion prompt -> video (stub)
+- **Text -> Video** - prompt -> video (stub)
+- **Text -> Speech** - voice selection + text -> audio (ElevenLabs)
+
+### `ConnectedGenerateMediaModal`
+
+App-level wrapper that wires `GenerateMediaModal` to actual hooks
+(`useGenerateImage`, `useGenerateVideo`, `useElevenLabsVoices`, `useGenerateSpeech`).
+
+### `GenerationStatus`
+
+Inline status indicator for AI generation tasks (spinner, progress bar, error).
+
+### `MediaCard`
+
+Reusable entity media display with hover action overlay.
+
+---
+
+## AI hooks (no more direct fetch)
+
+All AI operations go through TanStack Query mutations:
+
+| Hook | Wraps |
+|---|---|
+| `useGenerateImage()` | `AiService.postApiImageGenerate` |
+| `useStructuredOutput()` | `AiService.postApiStructuredOutput` |
+| `useCreateForgePlan()` | `AiService.postApiForgePlan` |
+| `useGenerateVideo()` | Stub - throws "not implemented" |
+| `useElevenLabsVoices()` | ElevenLabs voices query |
+| `useGenerateSpeech()` | ElevenLabs TTS mutation |
+
+---
+
+## Migration guide
+
+### 1. Change imports
+
+```diff
+- import { WorkspaceShell, WorkspaceHeader, WorkspaceToolbar, WorkspaceLayoutGrid, WorkspaceStatusBar } from '@forge/shared/components/workspace';
++ import { EditorShell, ModeHeader, ModeToolbar, DockLayout, ModeStatusBar } from '@forge/shared/components/editor';
+```
+
+### 2. Replace the shell
+
+```diff
+- <WorkspaceShell workspaceId="forge" title="Forge" domain="forge" theme={theme}>
++ <EditorShell modeId="dialogue" title="Dialogue" domain="dialogue" theme={theme}>
+```
+
+### 3. Replace the layout
+
+```diff
+- <WorkspaceLayoutGrid
+-   left={leftContent}
+-   main={mainContent}
+-   right={rightContent}
+-   editor={{ editorId, editorType: 'react-flow' }}
+- />
++ <DockLayout
++   left={<DockPanel panelId="navigator">{leftContent}</DockPanel>}
++   main={mainContent}
++   right={<DockPanel panelId="inspector" scrollable>{rightContent}</DockPanel>}
++   viewport={{ editorId: 'dialogue-graph', editorType: 'react-flow' }}
++   layoutId="dialogue-mode"
++ />
+```
+
+### 4. Replace direct API calls with hooks
+
+```diff
+- import { AiService } from '@/lib/api-client';
++ import { useGenerateImage } from '@/lib/data/hooks';
+
+- const data = await AiService.postApiImageGenerate({ prompt });
++ const result = await generateImageMutation.mutateAsync({ prompt });
+```
+
+---
+
+## File inventory
+
+### `packages/shared/src/shared/components/editor/`
+
+| File | Export | Description |
+|---|---|---|
+| `DockLayout.tsx` | `DockLayout` | Resizable panel layout |
+| `DockPanel.tsx` | `DockPanel` | Individual panel with title/tabs/lock |
+| `PanelTabs.tsx` | `PanelTabs` | Tab bar within a panel |
+| `ViewportMeta.tsx` | `ViewportMeta` | Editor viewport metadata |
+| `EditorShell.tsx` | `EditorShell` | Mode root container |
+| `ModeHeader.tsx` | `ModeHeader` | Mode title bar |
+| `ModeToolbar.tsx` | `ModeToolbar` | Mode toolbar |
+| `ModeStatusBar.tsx` | `ModeStatusBar` | Bottom status bar |
+| `ModeReviewBar.tsx` | `ModeReviewBar` | AI change review bar |
+| `ModeOverlaySurface.tsx` | `ModeOverlaySurface` | Modal overlay surface |
+| `PanelSettings.tsx` | `PanelSettings` | Per-panel settings popover |
+| `usePanelLock.ts` | `usePanelLock` | Panel lock state hook |
+| `index.ts` | Barrel | All exports |
+
+### `packages/shared/src/shared/components/media/`
+
+| File | Export | Description |
+|---|---|---|
+| `MediaCard.tsx` | `MediaCard` | Entity media display card |
+| `GenerateMediaModal.tsx` | `GenerateMediaModal` | AI media generation modal |
+| `GenerationStatus.tsx` | `GenerationStatus` | Generation progress indicator |
+| `index.ts` | Barrel | All exports |
+
+### `apps/studio/lib/data/hooks/`
+
+| File | Export | Description |
+|---|---|---|
+| `use-generate-image.ts` | `useGenerateImage` | Image generation mutation |
+| `use-structured-output.ts` | `useStructuredOutput` | Structured output mutation |
+| `use-create-forge-plan.ts` | `useCreateForgePlan` | Dialogue plan mutation |
+| `use-generate-video.ts` | `useGenerateVideo` | Video generation stub |
+
+### `apps/studio/components/modes/`
+
+| File | Export | Description |
+|---|---|---|
+| `CharacterMode.tsx` | `CharacterMode` | Reference implementation |
+| `DialogueMode.tsx` | `DialogueMode` | Dialogue editor with DockLayout |
+| `VideoMode.tsx` | `VideoMode` | Twick editor mode |
+| `StrategyMode.tsx` | `StrategyMode` | Strategy chat mode |
+| `index.ts` | Barrel | Mode exports |
+
+### `apps/studio/components/media/`
+
+| File | Export | Description |
+|---|---|---|
+| `ConnectedGenerateMediaModal.tsx` | `ConnectedGenerateMediaModal` | Hooks-wired media modal |

@@ -1,53 +1,73 @@
 ---
-title: 05 - Building a workspace from scratch
-
+title: 05 - Building an editor mode
 created: 2026-02-04
-updated: 2026-02-04
+updated: 2026-02-07
 ---
 
-# 05 - Building a workspace from scratch
+# 05 - Building an editor mode
 
-Step-by-step: add a workspace, shell + slots, main content, inspector, toolbar actions, then wire the domain contract. At each step we note what the AI can do.
+Step-by-step: add a mode id, shell + slots, main content, inspector, toolbar
+actions, then wire the domain contract. At each step we note what the AI can do.
 
-## Step 1: Add workspace id and route
+## Step 1: Add mode id and tab
 
-- In `apps/studio/lib/app-shell/store.ts`, add your workspace id to `AppShellWorkspaceId` (e.g. `'myworkspace'`).
-- In `apps/studio/lib/app-shell/workspace-metadata.ts`, add label and editor summary.
-- In `AppShell.tsx`, add a tab and render branch: `{activeWorkspaceId === 'myworkspace' && <MyWorkspace />}`.
+- In `apps/studio/lib/app-shell/store.ts`, add your mode id to `EditorModeId`
+  (e.g. `'my-mode'`).
+- In `apps/studio/lib/app-shell/mode-metadata.ts`, add label and editor summary.
+- In `apps/studio/components/AppShell.tsx`, add a tab and render branch:
+  `{activeWorkspaceId === 'my-mode' && <MyMode />}`.
 
-**AI at this stage:** Shell can switch to your workspace via `switchWorkspace`; no domain context yet.
+**AI at this stage:** Shell can switch to your mode via `switchMode`; no domain
+context yet.
 
 ## Step 2: Shell + slots
 
-Create `MyWorkspace.tsx`. Compose `WorkspaceShell`, `WorkspaceHeader`, `WorkspaceToolbar`, `WorkspaceLayoutGrid` (with a placeholder `main`), `WorkspaceStatusBar`, `WorkspaceOverlaySurface`. No data binding yet.
+Create `MyMode.tsx`. Compose `EditorShell`, `ModeHeader`, `ModeToolbar`,
+`DockLayout` (with a placeholder `main`), `ModeStatusBar`, `ModeOverlaySurface`.
+No data binding yet.
 
-**AI at this stage:** Same as step 1; workspace is just layout.
+**AI at this stage:** Same as step 1; mode is just layout.
 
 ## Step 3: Main slot content
 
-Put your editor or main UI in `WorkspaceLayoutGrid`'s `main` prop. If you need selection state, hold it in local state or a small store; expose it later for the inspector and the Copilot contract.
+Put your editor or main UI in `DockLayout`'s `main` prop. If you need selection
+state, hold it in local state or a small store; expose it later for the
+inspector and the Copilot contract.
 
-**AI at this stage:** No domain contract yet; AI cannot read or change workspace state.
+**AI at this stage:** No domain contract yet; AI cannot read or change mode state.
 
 ## Step 4: Inspector (optional)
 
-Use `WorkspaceLayoutGrid`'s `right` slot with `WorkspaceInspector`. Pass `selection` and `sections` (or children). Selection shape is shared: see `packages/shared/src/shared/workspace/selection.ts`.
+Use `DockLayout`'s `right` slot with a `DockPanel` that wraps
+`WorkspaceInspector`. Pass `selection` and `sections` (or children). Selection
+shape is shared: see `packages/shared/src/shared/workspace/selection.ts`.
 
 **AI at this stage:** Still no contract; AI does not see selection or domain state.
 
 ## Step 5: Toolbar actions and domain contract
 
-- Implement a domain contract: `getContextSnapshot()`, `getInstructions()`, `createActions()`, `getSuggestions()`, `onAIHighlight`, `clearAIHighlights`. See `packages/shared/src/shared/copilot/types.ts` (`DomainCopilotContract`).
-- In your workspace, call `useMyContract(deps)` then `useDomainCopilot(myContract, { toolsEnabled })`. Register toolbar actions (e.g. Save) that call your store or mutations.
+- Implement a domain contract: `getContextSnapshot()`, `getInstructions()`,
+  `createActions()`, `getSuggestions()`, `onAIHighlight`, `clearAIHighlights`.
+  See `packages/shared/src/shared/copilot/types.ts` (`DomainCopilotContract`).
+- In your mode, call `useMyContract(deps)` then `useDomainCopilot(myContract, { toolsEnabled })`.
+  Register toolbar actions (e.g. Save) that call your store or mutations.
 
-**AI at this stage:** AI can read context (selection, domain state) and run actions (create/update/delete, save). No plan-execute-review yet unless you add it.
+**AI at this stage:** AI can read context (selection, domain state) and run
+actions (create/update/delete, save). No plan-execute-review yet unless you add it.
 
 ## Step 6: Plan-commit (optional)
 
-If your workspace supports plan-execute-review-commit: add a plan API (e.g. `POST /api/my/plan`), actions like `my_createPlan` and `my_executePlan`, and `WorkspaceReviewBar` between Toolbar and LayoutGrid. Render the plan in chat with `PlanCard` + `PlanActionBar` (see ForgePlanCard) so the user can Apply/Dismiss before executing. Wire `visible` to `(isDirty && pendingFromPlan)`, `onRevert` to refetch, `onAccept` to clear pending. State stays in your store.
+If your mode supports plan-execute-review-commit: add a plan API
+(e.g. `POST /api/my/plan`), actions like `my_createPlan` and `my_executePlan`,
+and `ModeReviewBar` between Toolbar and DockLayout. Render the plan in chat with
+`PlanCard` + `PlanActionBar` (see ForgePlanCard) so the user can Apply/Dismiss
+before executing. Wire `visible` to `(isDirty && pendingFromPlan)`, `onRevert`
+to refetch, `onAccept` to clear pending. State stays in your store.
 
-**AI at this stage:** AI can create a plan, execute it, user reviews with Revert/Accept, then commit (save).
+**AI at this stage:** AI can create a plan, execute it, user reviews with
+Revert/Accept, then commit (save).
 
-Reference implementation: ForgeWorkspace and `packages/domain-forge`; see [06 - ForgeWorkspace walkthrough](06-forge-workspace-walkthrough.mdx).
+Reference implementation: DialogueMode and `packages/domain-forge`; see
+[06 - DialogueMode walkthrough](06-forge-workspace-walkthrough.mdx).
 
-**Next:** [06 - ForgeWorkspace walkthrough](06-forge-workspace-walkthrough.mdx)
+**Next:** [06 - DialogueMode walkthrough](06-forge-workspace-walkthrough.mdx)

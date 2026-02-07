@@ -17,13 +17,29 @@ export const SETTINGS_CONFIG: SettingsConfig = {
     "ai.showAgentName": true,
     "ui.toastsEnabled": true,
     "ui.theme": "dark-fantasy",
+    "editor.locked": false,
+    "panel.visible.dialogue-left": true,
+    "panel.visible.dialogue-right": true,
+    "panel.visible.dialogue-bottom": true,
+    "panel.visible.character-left": true,
+    "panel.visible.character-right": true,
+    "panel.visible.video-right": true,
+    "panel.visible.video-bottom": true,
+    "panel.visible.strategy-left": true,
+    "panel.visible.strategy-right": true,
   },
   workspaceDefaults: {
-    forge: {
-      "ai.agentName": "Forge Agent",
+    dialogue: {
+      "ai.agentName": "Dialogue Agent",
     },
     video: {
       "ai.agentName": "Video Agent",
+    },
+    character: {
+      "ai.agentName": "Character Agent",
+    },
+    strategy: {
+      "ai.agentName": "Strategy Agent",
     },
   },
   editorDefaults: {},

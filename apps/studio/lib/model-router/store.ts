@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
-import type { ModelDef, ModelHealth, SelectionMode, ModelPreferences } from './types';
+import type { ModelDef, SelectionMode, ModelPreferences } from './types';
 import { MODEL_REGISTRY, getDefaultEnabledIds } from './registry';
 import { ModelService } from '@/lib/api-client';
 
@@ -18,12 +18,12 @@ interface ModelRouterState {
   mode: SelectionMode;
   /** When manual, the chosen model ID. */
   manualModelId: string | null;
-  /** Which models the user has enabled. */
+  /** Which models the user has enabled (auto mode: order = primary then fallbacks). */
   enabledModelIds: string[];
-  /** Current active model (resolved by server or locally). */
+  /** Current active/primary model ID. */
   activeModelId: string;
-  /** Server-reported health data. */
-  health: Record<string, ModelHealth>;
+  /** Fallback model IDs (for display). */
+  fallbackIds: string[];
   /** Whether we're loading settings from server. */
   isLoading: boolean;
 
@@ -40,71 +40,72 @@ interface ModelRouterState {
 export const useModelRouterStore = create<ModelRouterState>()(
   devtools(
     immer((set, get) => ({
-    registry: MODEL_REGISTRY,
+    registry: [],
     mode: 'auto',
     manualModelId: null,
     enabledModelIds: getDefaultEnabledIds(),
-    activeModelId: MODEL_REGISTRY.find((m) => m.enabledByDefault)?.id ?? MODEL_REGISTRY[0].id,
-    health: {},
-    isLoading: false,
+    activeModelId: getDefaultEnabledIds()[0] ?? 'google/gemini-2.0-flash-exp:free',
+      fallbackIds: [],
+      isLoading: false,
 
-    setMode: (mode) => {
-      set({ mode });
-      // If switching to manual and no model selected, pick the current active
-      if (mode === 'manual' && !get().manualModelId) {
-        set({ manualModelId: get().activeModelId });
-      }
-      get().savePreferences();
-    },
+      setMode: (mode) => {
+        set({ mode });
+        if (mode === 'manual' && !get().manualModelId) {
+          set({ manualModelId: get().activeModelId });
+        }
+        get().savePreferences();
+      },
 
-    setManualModel: (modelId) => {
-      set({ manualModelId: modelId, mode: 'manual' });
-      get().savePreferences();
-    },
+      setManualModel: (modelId) => {
+        set({ manualModelId: modelId, mode: 'manual' });
+        get().savePreferences();
+      },
 
-    toggleModel: (modelId) => {
-      const { enabledModelIds } = get();
-      const next = enabledModelIds.includes(modelId)
-        ? enabledModelIds.filter((id) => id !== modelId)
-        : [...enabledModelIds, modelId];
-      // Must have at least one enabled
-      if (next.length === 0) return;
-      set({ enabledModelIds: next });
-      get().savePreferences();
-    },
+      toggleModel: (modelId) => {
+        const { enabledModelIds } = get();
+        const next = enabledModelIds.includes(modelId)
+          ? enabledModelIds.filter((id) => id !== modelId)
+          : [...enabledModelIds, modelId];
+        if (next.length === 0) return;
+        set({ enabledModelIds: next });
+        get().savePreferences();
+      },
 
-    fetchSettings: async () => {
-      set({ isLoading: true });
-      try {
-        const data = await ModelService.getApiModelSettings();
-        set({
-          activeModelId: data.activeModelId,
-          mode: data.mode,
-          health: data.health ?? {},
-          enabledModelIds: data.preferences?.enabledModelIds ?? get().enabledModelIds,
-          manualModelId: data.preferences?.manualModelId ?? get().manualModelId,
-        });
-      } catch (err) {
-        console.error('[ModelRouter] Failed to fetch settings:', err);
-      } finally {
-        set({ isLoading: false });
-      }
-    },
+      fetchSettings: async () => {
+        set({ isLoading: true });
+        try {
+          const data = await ModelService.getApiModelSettings();
+          set({
+            activeModelId: data.activeModelId,
+            mode: data.mode,
+            fallbackIds: data.fallbackIds ?? [],
+            enabledModelIds: data.preferences?.enabledModelIds ?? get().enabledModelIds,
+            manualModelId: data.preferences?.manualModelId ?? get().manualModelId,
+          });
+        } catch (err) {
+          console.error('[ModelRouter] Failed to fetch settings:', err);
+        } finally {
+          set({ isLoading: false });
+        }
+      },
 
-    savePreferences: async () => {
-      const { mode, manualModelId, enabledModelIds } = get();
-      try {
-        const data = await ModelService.postApiModelSettings({
-          mode,
-          manualModelId: manualModelId ?? undefined,
-          enabledModelIds,
-        });
-        set({ activeModelId: data.activeModelId, health: data.health ?? {} });
-      } catch (err) {
-        console.error('[ModelRouter] Failed to save preferences:', err);
-      }
-    },
-  })),
+      savePreferences: async () => {
+        const { mode, manualModelId, enabledModelIds } = get();
+        try {
+          const data = await ModelService.postApiModelSettings({
+            mode,
+            manualModelId: manualModelId ?? undefined,
+            enabledModelIds,
+          });
+          set({
+            activeModelId: data.activeModelId,
+            fallbackIds: data.fallbackIds ?? [],
+          });
+        } catch (err) {
+          console.error('[ModelRouter] Failed to save preferences:', err);
+        }
+      },
+    })),
     { name: 'ModelRouter' },
   ),
 );

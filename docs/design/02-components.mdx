@@ -1,14 +1,14 @@
 ---
 title: Design components (atoms to organisms)
 created: 2026-02-05
-updated: 2026-02-05
+updated: 2026-02-07
 ---
 
 # Design: components (atoms -> molecules -> organisms)
 
 This document catalogs the **shared components** we expose for consumers and contributors. It focuses on **real components in the repo** and how they map to our atomic design system.
 
-> **Rule of thumb:** import from `@forge/dev-kit` (or `@forge/ui` / `@forge/shared`) and keep domain code in your own app/workspace package.
+> **Rule of thumb:** import from `@forge/dev-kit` (or `@forge/ui` / `@forge/shared`) and keep domain code in your own app/mode package.
 
 ---
 
@@ -53,15 +53,21 @@ import {
 
 Composable UI patterns built on atoms.
 
-### Workspace chrome
+### Editor chrome
 
-- `WorkspaceShell`
-- `WorkspaceHeader` (Left / Center / Right slots)
-- `WorkspaceToolbar` (Menubar, Group, Button, ProjectSelect, Settings)
-- `WorkspaceLayoutGrid` (left / main / right / bottom slots)
-- `WorkspaceStatusBar`
-- `WorkspaceReviewBar`
-- `AppSpace` (semantic wrapper over AppLayout + tabs + content)
+- `EditorApp` (semantic wrapper over AppLayout + tabs + content)
+- `EditorShell`
+- `ModeHeader` (Left / Center / Right slots)
+- `ModeToolbar` (Menubar, Group, Button, ProjectSelect, Settings)
+- `DockLayout` (left / main / right / bottom slots)
+- `DockPanel` (title, tabs, lock, settings)
+- `PanelTabs`
+- `PanelSettings`
+- `ModeStatusBar`
+- `ModeReviewBar`
+- `ModeOverlaySurface`
+- `EditorButton`, `EditorTooltip`
+- `DockSidebar`
 - `AppProviders` (optional shared provider stack for tooltips/copilot)
 
 ### Gating + AI
@@ -69,6 +75,18 @@ Composable UI patterns built on atoms.
 - `FeatureGate` (lock/hide/disable)
 - `useDomainCopilot`, `DomainCopilotContract`
 - `PlanCard`, `PlanActionBar` (generative UI in chat)
+- `CodebaseAgentStrategyEditor` (assistant-ui strategy editor)
+
+### Assistant UI + tool UI
+
+- Assistant UI primitives: thread, thread list, markdown renderer, tool fallback.
+- Tool UI primitives: plan cards, charts, tables, code blocks, media cards, approval cards.
+
+#### Component preview
+
+Use `ComponentPreview` to render registry examples inside docs.
+
+<ComponentPreview name="codebase-agent-strategy-editor" />
 
 ---
 
@@ -76,9 +94,10 @@ Composable UI patterns built on atoms.
 
 These live in the **app repo** and are not published.
 
-- `AppShell` - workspace tabs + active workspace routing.
-- `ForgeWorkspace` - React Flow editor + AI workflow panel.
-- `VideoWorkspace` - Twick editor skeleton + AI contract.
+- `AppShell` - mode tabs + active mode routing.
+- `DialogueMode` - React Flow editor + AI workflow panel.
+- `VideoMode` - Twick editor surface + AI contract.
+- `StrategyMode` - CodebaseAgentStrategyEditor with tool UI.
 
 ---
 
@@ -114,18 +133,18 @@ See `apps/studio/components/CreateNodeModal.tsx` for the canonical form structur
 
 - `Form` wrapper from `@forge/ui`
 - `FormField` + `FormItem` + `FormControl`
-- `WorkspaceButton` for actions
+- `EditorButton` for actions
 
 ---
 
 ## Adding components and registries
 
-To add a new shadcn registry or install components from a registry (e.g. `@lucide-animated`, `@billingsdk`), use the correct `components.json`: **packages/ui** for shared components, **apps/studio** or **apps/marketing** for app-only. See [How-to 15 – Shadcn registries and UI components](../how-to/15-shadcn-registries-and-components.mdx) for step-by-step instructions and where components live (shared vs app).
+To add a new shadcn registry or install components from a registry (e.g. `@lucide-animated`, `@billingsdk`), use the correct `components.json`: **packages/ui** for shared components, **apps/studio** or **apps/marketing** for app-only. See [How-to 15 - Shadcn registries and UI components](../how-to/15-shadcn-registries-and-components.mdx) for step-by-step instructions and where components live (shared vs app).
 
 ---
 
 ## Consumer guidance
 
 - **Atoms:** import from `@forge/dev-kit` (or `@forge/ui`).
-- **Workspace shell + AI helpers:** import from `@forge/dev-kit` (or `@forge/shared`).
-- **Domain logic:** stays in your app/workspace package - not in the shared layer.
+- **Editor shell + AI helpers:** import from `@forge/dev-kit` (or `@forge/shared`).
+- **Domain logic:** stays in your app/mode package - not in the shared layer.

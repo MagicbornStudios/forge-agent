@@ -1,4 +1,4 @@
 // Public API (shared types and registry -- safe for client + server)
 export * from './types';
-export { MODEL_REGISTRY, getModelDef, getToolCapableModels, getDefaultEnabledIds } from './registry';
-export { autoSelectModel, createHealth, isInCooldown, recordError, recordSuccess } from './auto-switch';
+export { getDefaultEnabledIds, getDefaultFallbackChain, FREE_ONLY, isDefaultModelId } from './registry';
+export { DEFAULT_FREE_CHAT_MODEL_IDS, DEFAULT_IMAGE_MODEL, DEFAULT_TASK_MODEL, DEFAULT_MODEL_OPTIONS } from './defaults';

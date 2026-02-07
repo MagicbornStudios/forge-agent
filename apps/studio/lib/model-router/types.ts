@@ -1,8 +1,8 @@
 /**
  * Model router types.
  *
- * Defines the model registry, selection modes, and health tracking
- * for Cursor-style auto-switching between OpenRouter models.
+ * Defines the model registry, selection modes, and preferences
+ * for OpenRouter model selection with fallbacks.
  */
 
 // ---------------------------------------------------------------------------
@@ -34,20 +34,8 @@ export interface ModelDef {
 }
 
 // ---------------------------------------------------------------------------
-// Model health & selection
+// Selection
 // ---------------------------------------------------------------------------
-
-export interface ModelHealth {
-  modelId: string;
-  /** Consecutive 429/5xx error count. */
-  errorCount: number;
-  /** Timestamp of last error. */
-  lastErrorAt: number | null;
-  /** Timestamp when the cooldown expires (model becomes eligible again). */
-  cooldownUntil: number | null;
-  /** Timestamp of last successful request. */
-  lastSuccessAt: number | null;
-}
 
 export type SelectionMode = 'auto' | 'manual';
 
@@ -56,8 +44,14 @@ export interface ModelPreferences {
   mode: SelectionMode;
   /** When mode is `'manual'`, this is the user's chosen model ID. */
   manualModelId: string | null;
-  /** Model IDs the user has enabled (subset of registry). */
+  /** Model IDs for auto mode: first = primary, rest = fallback chain. */
   enabledModelIds: string[];
+}
+
+/** Resolved primary model and fallback list (for OpenRouter models array). */
+export interface PrimaryAndFallbacks {
+  primary: string;
+  fallbacks: string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -76,5 +70,9 @@ export interface ModelSettingsResponse {
   activeModelId: string;
   mode: SelectionMode;
   registry: ModelDef[];
-  health: Record<string, ModelHealth>;
+  preferences: ModelPreferences;
+  /** Primary model ID (same as activeModelId). */
+  primaryId: string;
+  /** Fallback model IDs in order (empty in manual mode). */
+  fallbackIds: string[];
 }

@@ -2,19 +2,28 @@
 title: Agent artifacts index
 
 created: 2026-02-04
-updated: 2026-02-04
+updated: 2026-02-06
 ---
 
 # Agent artifacts index
 
 These files are maintained for AI/coding agents to read and use when modifying the codebase. Keep them accurate and greppable; avoid redundant copies.
 
+## AGENTS.md vs agent-artifacts
+
+- **AGENTS.md** (root + per-package): **Rules, conventions, and boundaries** for an area. Stable; agents read them before a slice. One canonical file per critical area.
+- **agent-artifacts/core/**: **State and history.** STATUS = current state + Ralph Wiggum **Done** list (audit trail of completed slices). decisions = ADRs. errors-and-attempts = failure log. tool-usage = how to search/navigate. compacting-and-archiving = when/how to compact and archive.
+- **Ralph Wiggum** in this repo: the **slice workflow** (read STATUS + AGENTS.md → implement one slice → update STATUS/artifacts) and the **Done list** in STATUS. Not the generic "autonomous retry until success" loop.
+
 ## Living agent artifacts (core)
 
 - **[agent-artifacts/core/STATUS.md](agent-artifacts/core/STATUS.md)** — Current state, Ralph Wiggum loop, next steps.
 - **[agent-artifacts/core/decisions.md](agent-artifacts/core/decisions.md)** — Architecture decisions and rationale.
 - **[agent-artifacts/core/errors-and-attempts.md](agent-artifacts/core/errors-and-attempts.md)** — Known failures and fixes (do not repeat).
+- **[agent-artifacts/core/tool-usage.md](agent-artifacts/core/tool-usage.md)** — How to search and navigate: rg, list_dir, Read; Windows vs Linux.
+- **[agent-artifacts/core/compacting-and-archiving.md](agent-artifacts/core/compacting-and-archiving.md)** — When and how to compact sections; archive folder; one-line pointers.
 - **[agent-artifacts/core/debugging-zustand-devtools.md](agent-artifacts/core/debugging-zustand-devtools.md)** — Debugging Zustand stores with Redux DevTools (humans and agents).
+- **agent-artifacts/archive/** — Compacted chunks (e.g. STATUS-done-YYYY-MM.md). Main docs point here; read main artifact first.
 - **[AGENTS.md](../AGENTS.md)** (root) — Global agent rules, loop, conventions.
 
 ## Per-package / per-area AGENTS.md
@@ -27,11 +36,19 @@ These files are maintained for AI/coding agents to read and use when modifying t
 
 ## Documentation conventions (human vs agent)
 
-- **Living agent artifacts:** Only `docs/agent-artifacts/core/*.md` (STATUS, decisions, errors-and-attempts). Purpose: current state, decisions, and failure log for agents. Updated after each slice or when something breaks. No number prefix; humans and agents reference this folder.
-- **Official human-facing docs:** Numbered `.mdx` in `docs/` (00, 10–19), `docs/how-to/` (00–09), `docs/architecture/` (01–03), `docs/design/` (01–). Purpose: tutorials, architecture, code organization, and the agent index/strategy (18–19). Kept up to date with the product.
+- **Living agent artifacts:** `docs/agent-artifacts/core/*.md` (STATUS, decisions, errors-and-attempts, tool-usage, compacting-and-archiving, debugging-zustand-devtools) and `docs/agent-artifacts/archive/` for compacted chunks. Purpose: current state, decisions, failure log, tool guidance, compacting process. Updated after each slice or when something breaks. No number prefix; humans and agents reference this folder.
+- **Official human-facing docs:** Numbered `.mdx` in `docs/` (00, 10–19), `docs/how-to/` (00–09), `docs/architecture/` (01–06), `docs/design/` (01–). Purpose: tutorials, architecture, code organization, and the agent index/strategy (18–19). Kept up to date with the product.
 - **Root / package:** `README.md`, `SETUP.md`, `AGENTS.md` stay `.md` at repo root or under packages; they point at `docs/18-agent-artifacts-index.mdx` and `docs/agent-artifacts/core/` for artifact locations.
 - **No duplicates:** One canonical file per topic; no parallel .md when a .mdx exists. One artifact folder for the three core living docs.
 
+## Link conventions
+
+- Use **relative paths** so links work from both the repo and the in-app docs viewer.
+- From a file in **docs/** (e.g. 12-workspace-design.mdx): use `agent-artifacts/core/...` or `18-agent-artifacts-index.mdx`.
+- From a file in **docs/subdir/** (e.g. how-to/, architecture/): use `../agent-artifacts/core/...` and `../18-agent-artifacts-index.mdx`.
+- From a file in **docs/agent-artifacts/core/**: use `../../18-agent-artifacts-index.mdx` and `./filename.md` for same-folder refs.
+- Keep numbered docs stable; don't renumber. Use indexes (00-index.mdx) as primary navigation; cross-links are secondary. When reorganizing, update indexes first, then audit cross-links.
+
 ## Search strategy
 
-For any task: (1) Grep `docs/` and relevant `AGENTS.md` first. (2) Check [agent-artifacts/core/errors-and-attempts.md](agent-artifacts/core/errors-and-attempts.md) before retrying a failed pattern. (3) See [19-coding-agent-strategy.mdx](19-coding-agent-strategy.mdx) for how we use and extend these artifacts.
+For any task: (1) Prefer this index and core artifacts for **current state** and **failure log**; use numbered docs for architecture/how-to. (2) Grep `docs/` and relevant `AGENTS.md` first. (3) Check [agent-artifacts/core/errors-and-attempts.md](agent-artifacts/core/errors-and-attempts.md) before retrying a failed pattern. (4) See [19-coding-agent-strategy.mdx](19-coding-agent-strategy.mdx) for how we use and extend these artifacts. (5) Use [tool-usage.md](agent-artifacts/core/tool-usage.md) for search/navigate (rg, list_dir, Read).
