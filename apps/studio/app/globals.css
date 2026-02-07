@@ -6,6 +6,7 @@
 @import "../../../packages/shared/src/shared/styles/scrollbar.css";
 @import "@twick/studio/dist/studio.css";
 @import "dockview/dist/styles/dockview.css";
+@import "../../../packages/shared/src/shared/styles/dockview-overrides.css";
 
 @plugin "tailwindcss-animate";
 

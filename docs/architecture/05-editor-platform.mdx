@@ -82,6 +82,7 @@ The core layout primitive. Built on **Dockview** (undock, drag, reorder, persist
   main={<GraphEditor />}
   right={<DockPanel panelId="inspector" title="Properties" scrollable />}
   bottom={<DockPanel panelId="logs" title="Output" />}
+  slots={{ main: { title: 'Dialogue Graphs' }, right: { title: 'Inspector' } }}
   viewport={{ viewportId: 'dialogue-graph', viewportType: 'react-flow' }}
   layoutId="dialogue-editor"    // persists panel sizes to localStorage
   leftDefaultSize={20}           // % of horizontal space
@@ -95,6 +96,8 @@ Features:
 - Side and bottom panels are **collapsible**
 - Layout sizes **auto-persist** when `layoutId` is provided
 - Viewport metadata attributes are applied to the main region
+
+**Dockview integration:** The Dockview tab bar is customized to match `DockPanel` headers: each panel tab shows an icon and title using the same tokens (`--tab-height`, `--panel-padding`, `bg-card`, `border-border`). Active tab uses `--context-accent` (bottom border and optional glow). Pass the optional `slots` prop to override tab title and icon key per slot (e.g. `slots={{ main: { title: 'Dialogue Graphs' } }}`). Layout persistence, resize, and drag are provided by Dockview and are available to all consumers of `DockLayout`—including devkit users who use `DockLayout` + `DockPanel` from `@forge/shared/components/editor`.
 
 ### `DockPanel`
 
@@ -274,7 +277,8 @@ All AI operations go through TanStack Query mutations:
 
 | File | Export | Description |
 |---|---|---|
-| `DockLayout.tsx` | `DockLayout` | Resizable panel layout |
+| `DockLayout.tsx` | `DockLayout` | Resizable panel layout (Dockview) |
+| `DockviewSlotTab.tsx` | (internal) | Custom Dockview tab (icons + tokens) |
 | `DockPanel.tsx` | `DockPanel` | Individual panel with title/tabs/lock |
 | `PanelTabs.tsx` | `PanelTabs` | Tab bar within a panel |
 | `ViewportMeta.tsx` | `ViewportMeta` | Editor viewport metadata |

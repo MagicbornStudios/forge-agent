@@ -1270,6 +1270,11 @@ export function DialogueEditor() {
           left={leftPanel}
           main={mainPanel}
           right={inspectorContent}
+          slots={{
+            left: { title: 'Library' },
+            main: { title: 'Dialogue Graphs' },
+            right: { title: 'Inspector' },
+          }}
           viewport={{ viewportId, viewportType: 'react-flow' }}
           layoutId="dialogue-mode"
         />

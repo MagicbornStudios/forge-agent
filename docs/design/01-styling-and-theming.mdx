@@ -76,6 +76,7 @@ We drive density through CSS variables and `data-density`:
 
 - Domain accents and focus rings are defined in `packages/shared/src/shared/styles/contexts.css`.
 - `--context-accent`, `--ring`, and `--sidebar-*` stay aligned to preserve hover/focus clarity.
+- Panel-edge hover glow and Dockview tab active state use `--context-accent` and `--context-glow`; Dockview sash (resize handle) and separator borders are themed via `dockview-overrides.css` when inside `[data-domain]`.
 
 ### Code references (source of truth)
 

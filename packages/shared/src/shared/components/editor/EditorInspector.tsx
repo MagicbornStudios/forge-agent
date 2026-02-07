@@ -25,8 +25,8 @@ export function EditorInspector({
       ? sections
           .filter((s) => s.when(selection))
           .map((s) => (
-            <div key={s.id} className="mb-4">
-              <h3 className="text-sm font-medium mb-2">{s.title}</h3>
+            <div key={s.id} className="mb-4 last:mb-0">
+              <h3 className="text-sm font-medium mb-2 text-foreground">{s.title}</h3>
               {s.render({ selection })}
             </div>
           ))
@@ -40,7 +40,7 @@ export function EditorInspector({
       )}
     >
       <ScrollArea className="h-full">
-        <div className="p-3">{content}</div>
+        <div className="p-[var(--panel-padding)]">{content}</div>
       </ScrollArea>
     </aside>
   );

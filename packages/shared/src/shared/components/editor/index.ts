@@ -19,7 +19,8 @@
 
 // Layout primitives
 export { DockLayout } from './DockLayout';
-export type { DockLayoutProps, DockLayoutViewport } from './DockLayout';
+export type { DockLayoutProps, DockLayoutViewport, DockLayoutSlotConfig } from './DockLayout';
+export type { DockLayoutSlotIconKey } from './DockviewSlotTab';
 
 export { DockPanel } from './DockPanel';
 export type { DockPanelProps } from './DockPanel';

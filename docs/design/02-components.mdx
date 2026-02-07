@@ -91,7 +91,7 @@ Composable UI patterns built on atoms.
 
 #### Editor layout (Dockview)
 
-Editors use **DockLayout** (Dockview) for full layout flexibility: resize splits, collapse panels, drag tabs to reorder, float panels. Layout is saved to `localStorage` on change and restored on load. **Reset layout:** clear `localStorage['dockview-{layoutId}']` for the editor (e.g. `dockview-dialogue-editor`) and reload.
+Editors use **DockLayout** (Dockview) for full layout flexibility: resize splits, collapse panels, drag tabs to reorder, float panels. Layout is saved to `localStorage` on change and restored on load. **Reset layout:** clear `localStorage['dockview-{layoutId}']` for the editor (e.g. `dockview-dialogue-editor`) and reload. Dockview tabs are themed to match DockPanel headers (icons, `--tab-height`, active state with `--context-accent`). Docking, resize, and persist are available to end users and to devkit consumers who use `DockLayout` and `DockPanel`.
 
 ### Gating + AI
 

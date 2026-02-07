@@ -1,0 +1,36 @@
+/* Dockview theme overrides: align tab bar with DockPanel headers (--tab-height, tokens, active state) */
+
+.dockview-theme-dark .dv-tabs-container,
+.dockview-theme-dark .dv-tab {
+  min-height: var(--tab-height);
+  font-size: 11px;
+}
+
+.dockview-theme-dark .dv-tab {
+  padding-inline: var(--panel-padding);
+  padding-block: var(--control-padding-y);
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  color: var(--foreground);
+}
+
+.dockview-theme-dark .dv-tab:hover {
+  background: color-mix(in oklab, var(--muted) 50%, transparent);
+}
+
+.dockview-theme-dark .dv-tab.dv-active-tab,
+.dockview-theme-dark .dv-groupview.dv-active-group .dv-tab.dv-active-tab {
+  border-bottom-color: var(--context-accent);
+  border-bottom-width: 2px;
+  box-shadow: var(--glow-panel-accent);
+}
+
+/* Sash (resize handle) and separator use context accent when inside a domain */
+[data-domain] .dockview-theme-dark {
+  --dv-active-sash-color: var(--context-accent);
+  --dv-separator-border: color-mix(in oklab, var(--context-accent) 40%, transparent);
+}
+[data-domain] .dockview-theme-dark .dv-sash-container .dv-sash:not(.disabled):hover,
+[data-domain] .dockview-theme-dark .dv-sash-container .dv-sash:not(.disabled):active {
+  box-shadow: 0 0 8px var(--context-glow);
+}

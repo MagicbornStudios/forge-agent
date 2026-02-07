@@ -17,7 +17,7 @@ and clearer naming.
 
 ## Docking + layout
 
-- `DockLayout` - resizable panel layout (left / main / right / bottom).
+- `DockLayout` - resizable panel layout (left / main / right / bottom). Built on **Dockview**; layout persistence, resize, and drag are available to all consumers (including devkit users). Use the optional `slots` prop to set tab title and icon key per slot (e.g. `slots={{ main: { title: 'Dialogue Graphs' } }}`). Layout is persisted to `localStorage` when `layoutId` is set; reset by clearing `localStorage['dockview-{layoutId}']`.
 - `DockPanel` - single panel (header, tabs, lock overlay, scroll).
 - `PanelTabs` - tabs within a DockPanel.
 - `ViewportMeta` - metadata wrapper for editor surfaces.

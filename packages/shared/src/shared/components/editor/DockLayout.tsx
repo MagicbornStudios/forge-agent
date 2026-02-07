@@ -124,20 +124,21 @@ export function DockLayout({
   main,
   right,
   bottom,
+  slots: slotConfig,
   viewport,
   layoutId,
   className,
 }: DockLayoutProps) {
   const [api, setApi] = useState<DockviewReadyEvent['api'] | null>(null);
-  const slotsRef = useRef({ left, main, right, bottom });
-  slotsRef.current = { left, main, right, bottom };
+  const slotsRef = useRef({ left, main, right, bottom, slotConfig });
+  slotsRef.current = { left, main, right, bottom, slotConfig };
 
   const storageKey = layoutId ? `dockview-${layoutId}` : undefined;
 
   const onReady = useCallback(
     (event: DockviewReadyEvent) => {
       const dockApi = event.api;
-      const slots = slotsRef.current;
+      const { left: l, main: m, right: r, bottom: b, slotConfig: config } = slotsRef.current;
 
       let success = false;
       if (storageKey && typeof window !== 'undefined') {
@@ -153,7 +154,7 @@ export function DockLayout({
         }
       }
       if (!success) {
-        buildDefaultLayout(dockApi, slots);
+        buildDefaultLayout(dockApi, { left: l, main: m, right: r, bottom: b }, config);
       }
 
       setApi(dockApi);
@@ -198,6 +199,9 @@ export function DockLayout({
           onReady={onReady}
           components={{
             slot: SlotPanel,
+          }}
+          tabComponents={{
+            slotTab: DockviewSlotTab,
           }}
           className="h-full w-full"
         />
