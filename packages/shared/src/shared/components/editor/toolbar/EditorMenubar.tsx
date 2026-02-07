@@ -15,6 +15,7 @@ import {
 export type EditorMenubarItem = {
   id: string;
   label?: string;
+  icon?: React.ReactNode;
   onSelect?: () => void;
   disabled?: boolean;
   shortcut?: string;
@@ -37,13 +38,23 @@ export function EditorMenubar({ menus, className }: EditorMenubarProps) {
     <Menubar className={cn('h-8 border-none bg-transparent p-0 shadow-none', className)}>
       {menus.map((menu) => (
         <MenubarMenu key={menu.id}>
-          <MenubarTrigger>{menu.label}</MenubarTrigger>
+          <MenubarTrigger className="border border-border bg-transparent hover:bg-accent/50 text-foreground">
+            {menu.label}
+          </MenubarTrigger>
           <MenubarContent>
             {menu.items.map((item) =>
               item.type === 'separator' ? (
                 <MenubarSeparator key={item.id} />
               ) : (
-                <MenubarItem key={item.id} disabled={item.disabled} onSelect={item.onSelect}>
+                <MenubarItem
+                  key={item.id}
+                  disabled={item.disabled}
+                  onSelect={item.onSelect}
+                  className="flex items-center gap-2"
+                >
+                  {item.icon != null && (
+                    <span className="flex shrink-0 size-4 [&>svg]:size-4">{item.icon}</span>
+                  )}
                   <span>{item.label}</span>
                   {item.shortcut && <MenubarShortcut>{item.shortcut}</MenubarShortcut>}
                 </MenubarItem>

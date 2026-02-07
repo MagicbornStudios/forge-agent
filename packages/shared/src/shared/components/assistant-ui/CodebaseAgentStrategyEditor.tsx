@@ -106,7 +106,7 @@ export function CodebaseAgentStrategyEditor({
           main={mainPanel}
           right={rightPanel}
           layoutId="strategy-editor"
-          viewport={{ editorId: 'strategy-chat', editorType: 'assistant-ui' }}
+          viewport={{ viewportId: 'strategy-chat', viewportType: 'assistant-ui' }}
         />
       </div>
     </AssistantRuntimeProvider>

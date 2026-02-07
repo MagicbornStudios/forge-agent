@@ -44,7 +44,7 @@ export function DockviewSlotTab(props: IDockviewPanelHeaderProps) {
   return (
     <div
       className={cn(
-        'dv-tab flex min-h-[var(--tab-height)] items-center gap-[var(--control-gap)] px-[var(--panel-padding)] py-[var(--control-padding-y)]',
+        'dv-tab flex min-h-[var(--tab-height)] items-center gap-[var(--control-gap)] px-1.5 py-[var(--control-padding-y)]',
         'border-b border-border bg-card shrink-0 text-[11px] min-w-0',
         'cursor-pointer select-none transition-colors',
         'hover:bg-muted/50',

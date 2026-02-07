@@ -30,9 +30,17 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 
 ---
 
+## Project context at app level
+
+**Decision:** The active project is owned by the **app shell**, not by individual editors. The app-shell store holds `activeProjectId`; the `ProjectSwitcher` lives in the editor tab bar (AppShell). Dialogue and Character (and any other project-scoped editor) read this single project id and sync it into their domain stores. This keeps project context cohesive across editors.
+
+**Rationale:** Users expect one "current project"; switching project in one place should affect all editors. Update this doc if we introduce editor-specific project overrides or multi-project views.
+
+---
+
 ## Zustand for drafts and UI route
 
-**Decision:** Draft edits (current graph doc, video doc) and UI state (app shell route, selection, open tabs, editor bottom drawer) live in Zustand. Draft is seeded from server data; save is a mutation that then invalidates queries. App shell route and "last document id" are persisted via **Zustand persist** (app-shell store). Graph and video stores use persist with partialize for dirty drafts; we rehydrate those conditionally when the persisted draft's documentId matches the current doc. Editor-level UI (e.g. bottom drawer open/closed) lives in the app-shell store, keyed by editor id.
+**Decision:** Draft edits (current graph doc, video doc) and UI state (app shell route, **active project**, selection, open tabs, editor bottom drawer) live in Zustand. Draft is seeded from server data; save is a mutation that then invalidates queries. App shell route and "last document id" are persisted via **Zustand persist** (app-shell store). Graph and video stores use persist with partialize for dirty drafts; we rehydrate those conditionally when the persisted draft's documentId matches the current doc. Editor-level UI (e.g. bottom drawer open/closed) lives in the app-shell store, keyed by editor id.
 
 **Rationale:** Drafts are client-owned until save; keeping them in Zustand avoids fighting the query cache and keeps a clear "dirty" and "save" flow. Using persist middleware avoids a separate localStorage abstraction and keeps versioning in one place.
 
@@ -75,6 +83,14 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 **Decision:** We use the **OpenAI** npm package and **@ai-sdk/openai** (Vercel AI SDK) with **baseURL** set to OpenRouter (`https://openrouter.ai/api/v1`). We do **not** use `@openrouter/ai-sdk-provider` for the CopilotKit route or shared runtime.
 
 **Rationale:** CopilotKit's `OpenAIAdapter` and `BuiltInAgent` are hardcoded to the `openai` and `@ai-sdk/openai` interfaces. OpenRouter's recommended approach is this same pattern (OpenAI SDK + baseURL). Using a different SDK leads to incompatibility and runtime swaps; see errors-and-attempts.
+
+---
+
+## Settings overrides scoped by user
+
+**Decision:** Settings overrides can be scoped by user. The `settings-overrides` collection has an optional `user` relationship. When authenticated, GET `/api/settings` returns only overrides where `user` equals the current user; POST sets `user` on create and update. Unauthenticated requests use overrides where `user` is null (global/legacy). Theme and app/editor settings are thus per-user when logged in.
+
+**Rationale:** One collection, one API; server derives user from auth. No client contract change. Update this doc if we add Payload access control by user or migrate legacy rows to users.
 
 ---
 

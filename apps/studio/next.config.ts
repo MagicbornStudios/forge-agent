@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
     "@forge/types",
     "@forge/ui",
     "@forge/agent-engine",
+    "@twick/studio",
+    "@twick/timeline",
+    "@twick/live-player",
+    "@twick/video-editor",
+    "@twick/canvas",
   ],
   experimental: {
     reactCompiler: false,

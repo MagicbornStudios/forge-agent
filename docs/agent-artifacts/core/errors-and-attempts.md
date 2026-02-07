@@ -14,11 +14,27 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ---
 
+## Grey buttons and missing menu/icons
+
+**Problem**: Toolbar and menu items appeared flat grey and text-only; the AI intent card had tight padding and looked flush to borders.
+
+**Fix**: (1) Use `outline` (or `default`) for File menu trigger and primary toolbar actions so they are not ghost-only. (2) Add optional `icon` to `EditorMenubarItem` and `EditorFileMenuItem`, and pass icons from DialogueEditor/CharacterEditor for View, State, and File menu items. (3) Add icons to editor creation buttons and Workbench in AppShell/DialogueEditor. (4) Use `p-[var(--panel-padding)]` (and content padding) in cards (e.g. AgentWorkflowPanel). Design docs 01 and 02 updated with icon/padding rules and screenshot reference ([docs/design/01-styling-and-theming.mdx](../../design/01-styling-and-theming.mdx), [02-components.mdx](../../design/02-components.mdx)).
+
+---
+
 ## Styling: theme variables overridden by globals
 
 **Problem**: Semantic tokens (`--background`, `--foreground`, etc.) were defined in both `packages/shared/src/shared/styles/themes.css` (via `--color-df-*`) and `apps/studio/app/globals.css` (`:root` / `.dark` with raw oklch). Import order caused globals to override the theme.
 
 **Fix**: Removed the duplicate `:root` and `.dark` blocks from `apps/studio/app/globals.css`. Themes.css is the single source for semantic tokens. Set default theme with `data-theme="dark-fantasy"` on `<html>` in `apps/studio/app/layout.tsx`.
+
+---
+
+## Theme/surface tokens (contrast in sidebar and app bar)
+
+**Problem**: Using `bg-background` or `text-foreground` inside a different surface (e.g. sidebar, app bar strip) can produce wrong contrast (e.g. dark text on dark background), because those tokens are global.
+
+**Fix**: Use surface-specific tokens. Inside sidebar use `bg-sidebar` / `text-sidebar-foreground` (and `sidebar-accent` for hover). For popovers use `bg-popover` / `text-popover-foreground`; for cards/panels use `bg-card` / `text-card-foreground`. Do not use `bg-background` or `text-foreground` in non-body surfaces. See [01 - Styling and theming — Token system](../../design/01-styling-and-theming.mdx#token-system-layers-and-when-to-use-which).
 
 ---
 
@@ -29,6 +45,14 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 **Previous fix (removed)**: We used to record errors via `reportModelError(modelId)` and auto-switch with cooldown. That behavior has been **removed**.
 
 **Current fix**: We use **OpenRouter model fallbacks**: the request body includes `models: [primary, ...fallbacks]`. OpenRouter retries with the next model in the array on rate limit / 5xx within the same request. No app-level health or cooldown. Preferences (primary + fallback chain) are in `server-state.ts`; the CopilotKit route and other OpenRouter call sites (forge/plan, structured-output) pass the `models` array.
+
+---
+
+## Project switcher at editor level (avoid)
+
+**Context**: Project context is **app-level**. The app-shell store holds `activeProjectId`; `ProjectSwitcher` lives in AppShell (editor tab bar). Dialogue and Character editors sync from app shell into their domain stores.
+
+**Do not**: Add a project switcher or project-selection UI inside an individual editor. Use the app-level project; see [decisions.md](./decisions.md) (Project context at app level).
 
 ---
 

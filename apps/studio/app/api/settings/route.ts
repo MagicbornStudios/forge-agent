@@ -33,11 +33,20 @@ import config from '@/payload.config';
  *       500:
  *         description: Server error
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const payload = await getPayload({ config });
+    const authResult = await payload.auth({
+      headers: request.headers,
+      canSetHeaders: false,
+    });
+    const userId = authResult.user?.id ?? null;
+    const where = userId != null
+      ? { user: { equals: userId } }
+      : { user: { equals: null } };
     const result = await payload.find({
       collection: 'settings-overrides',
+      where,
       limit: 500,
     });
     return NextResponse.json(result.docs);
@@ -53,6 +62,12 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const payload = await getPayload({ config });
+    const authResult = await payload.auth({
+      headers: request.headers,
+      canSetHeaders: false,
+    });
+    const currentUserId = authResult.user?.id ?? null;
+
     const body = await request.json();
     const { scope, scopeId, settings } = body;
     const resolvedScope =
@@ -92,6 +107,7 @@ export async function POST(request: NextRequest) {
           resolvedScope === 'app'
             ? { scopeId: { equals: null } }
             : { scopeId: { equals: scopeId ?? null } },
+          { user: { equals: currentUserId } },
         ],
       },
       limit: 1,
@@ -101,19 +117,20 @@ export async function POST(request: NextRequest) {
       const doc = await payload.update({
         collection: 'settings-overrides',
         id: existing.docs[0].id,
-        data: { settings },
+        data: { settings, user: currentUserId },
       });
       return NextResponse.json(doc);
     }
 
     const doc = await payload.create({
-        collection: 'settings-overrides',
-        data: {
-          scope: resolvedScope,
-          scopeId: resolvedScope === 'app' ? null : scopeId ?? null,
-          settings,
-        },
-      });
+      collection: 'settings-overrides',
+      data: {
+        scope: resolvedScope,
+        scopeId: resolvedScope === 'app' ? null : scopeId ?? null,
+        settings,
+        user: currentUserId,
+      },
+    });
     return NextResponse.json(doc);
   } catch (error) {
     console.error('Failed to save settings overrides:', error);

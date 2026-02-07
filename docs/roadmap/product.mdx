@@ -13,6 +13,8 @@ STATUS and artifacts.
 
 **Production target:** 2/14. We are in development until then; migration and rollback strategy apply after production.
 
+**For the canonical "what can I do next?" list with impact sizes, see [STATUS.md](../agent-artifacts/core/STATUS.md) § Next.**
+
 ---
 
 ## Active editors
@@ -80,7 +82,7 @@ that MCP hosts (Claude Desktop, Cursor, VS Code) can embed or orchestrate.
 2. Build Studio MCP Server.
 3. Register with MCP hosts; streaming tool results.
 
-Architecture: [07 - Editors as MCP Apps](../architecture/07-modes-as-mcp-apps.mdx).
+**Impact: Large.** Architecture: [07 - Editors as MCP Apps](../architecture/07-modes-as-mcp-apps.mdx).
 
 ### First-class Yarn Spinner support
 
@@ -96,7 +98,7 @@ dialogue scripting language.
 - Variable panel for declaring and tracking Yarn variables.
 - Command palette for common Yarn commands.
 
-Architecture: [09 - Dialogue system and Yarn Spinner](../architecture/09-dialogue-domain-and-yarn-spinner.mdx).
+**Impact: Medium.** Architecture: [09 - Dialogue system and Yarn Spinner](../architecture/09-dialogue-domain-and-yarn-spinner.mdx).
 
 ### Full Yarn Spinner implementation
 
@@ -111,6 +113,16 @@ Architecture: [09 - Dialogue system and Yarn Spinner](../architecture/09-dialogu
 - Localization and string table export.
 - Custom commands and functions.
 - Unity/Unreal export packages.
+
+---
+
+## Platform (future)
+
+These items are tracked in STATUS § Next with impact sizes. Not yet in active development.
+
+- **Publish and host project builds** — Authors publish a project build to our system; we host it as a playable narrative (e.g. playable dialogue/game). Build pipeline, storage, playable runtime. **Impact: Large.**
+- **Monetization (clone to account / download)** — Users can let others clone a project to their (or org) account for a price, or download the build. Listings, checkout, Stripe Connect or similar. **Impact: Epic.**
+- **Plan tiers and capabilities for platform** — Extend plans and `CAPABILITIES` to gate platform features (e.g. publish, monetize). **Impact: Small–Medium.**
 
 ---
 
@@ -129,8 +141,8 @@ Notion-inspired page and block model: **pages** and **blocks** Payload collectio
 - Vision/image input (model registry + chat upload).
 - Co-agents (documented, not used).
 - Optional agent graphs/subgraphs in runtime.
-- Video workflow panel (plan -> patch -> review) mirroring Dialogue.
+- Video workflow panel (plan -> patch -> review) mirroring Dialogue. **Impact: Medium.**
 
-See [agent-artifacts/core/STATUS.md](../agent-artifacts/core/STATUS.md) and
+See [STATUS § Next](../agent-artifacts/core/STATUS.md) for the full list with impact sizes, and
 [03 - CopilotKit and agents](../architecture/03-copilotkit-and-agents.mdx)
 Section 12.

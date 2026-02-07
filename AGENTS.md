@@ -21,7 +21,7 @@ Owns **packages/shared/src/shared**: editor components, shared styles, and edito
 
 ## Unified editor (App Shell)
 
-- **App Shell** (`apps/studio/components/AppShell.tsx`, `apps/studio/lib/app-shell/store.ts`) owns editor tabs and the active editor. Dialogue, Video, Character, and Strategy are editors; only the active one is rendered.
+- **App Shell** (`apps/studio/components/AppShell.tsx`, `apps/studio/lib/app-shell/store.ts`) owns editor tabs, the active editor, and **project context** (`activeProjectId`). Project switching lives in the tab bar; Dialogue and Character editors consume the same project. Do not add editor-level project switchers.
 - **Agent layers**: (1) Shell: context (activeEditor, editorNames) and actions (switchEditor, openEditor, closeEditor). (2) Per-editor: domain contract (context + actions + suggestions) when that editor is active. (3) Optional co-agents: see **docs/17-co-agents-and-multi-agent.mdx**.
 - **Do not repeat**: Before changing styling, model routing, or multi-editor registration, check **docs/agent-artifacts/core/errors-and-attempts.md** for known failures and fixes. For CopilotKit + OpenRouter use **OpenAI SDK** and **@ai-sdk/openai** with **baseURL** only; do not use `@openrouter/ai-sdk-provider`. See [errors-and-attempts.md](docs/agent-artifacts/core/errors-and-attempts.md) (BuiltInAgent/OpenRouter SDK) and [06-model-routing-and-openrouter.mdx](docs/architecture/06-model-routing-and-openrouter.mdx).
 
@@ -39,6 +39,16 @@ When touching editors (Dialogue, Character, Video, Strategy): use the shared she
 - Avoid ad-hoc `px-*` / `py-*` utilities in editor UIs; prefer token-based values.
 - Do not repeat context labels (project title, editor name) inside panels if already shown in the header.
 - If an editor overrides density, set `data-density` on `EditorShell`.
+
+## Styling and UI
+
+- When changing UI/styling: follow [docs/agent-artifacts/core/styling-and-ui-consistency.md](docs/agent-artifacts/core/styling-and-ui-consistency.md) and [how-to 26 - Styling debugging with Cursor](docs/how-to/26-styling-debugging-with-cursor.mdx). After implementing, take a screenshot, save to docs/images, and reference in doc or STATUS.
+
+## Vendor workflow
+
+- Vendored dependencies live under `vendor/` (not `.tmp/`).
+- Humans and agents follow the same process: [How-to 24 - Vendoring third-party code](docs/how-to/24-vendoring-third-party-code.mdx) for submodule updates, version alignment, pnpm overrides, and upstream PRs.
+- For local consumer repos, publish vendored packages to Verdaccio (see How-to 24 and [How-to 25](docs/how-to/25-verdaccio-local-registry.mdx)).
 
 ## Enhanced features / ideas backlog
 

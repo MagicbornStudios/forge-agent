@@ -21,28 +21,24 @@ const config = getOpenRouterConfig();
 function buildToolSet(schema: ToolSchemaRecord | undefined | null): ToolSet {
   if (!schema || typeof schema !== 'object') return {};
 
-  const entries = Object.entries(schema)
-    .map(([name, def]) => {
-      if (!def || typeof def !== 'object') return null;
-      const parameters = (def as ToolSchema).parameters;
-      if (!parameters || typeof parameters !== 'object') return null;
-      const description =
-        typeof (def as ToolSchema).description === 'string'
-          ? (def as ToolSchema).description
-          : undefined;
+  const toolSet: ToolSet = {};
 
-      return [
-        name,
-        tool({
-          description,
-          parameters: jsonSchema(parameters),
-          execute: async (input) => input ?? {},
-        }),
-      ] as const;
-    })
-    .filter(Boolean) as Array<readonly [string, ReturnType<typeof tool>]>;
+  for (const [name, def] of Object.entries(schema)) {
+    if (!def || typeof def !== 'object') continue;
+    const parameters = (def as ToolSchema).parameters;
+    if (!parameters || typeof parameters !== 'object') continue;
+    const description =
+      typeof (def as ToolSchema).description === 'string'
+        ? (def as ToolSchema).description
+        : undefined;
 
-  return Object.fromEntries(entries);
+    toolSet[name] = tool({
+      description,
+      inputSchema: jsonSchema(parameters),
+    });
+  }
+
+  return toolSet;
 }
 
 function resolveRequestedModel(configOverride: unknown): string | null {
@@ -100,7 +96,7 @@ export async function POST(req: Request) {
     fetch: customFetch,
   });
 
-  const aiMessages = convertToModelMessages(messages as any, {
+  const aiMessages = await convertToModelMessages(messages as any, {
     tools,
     ignoreIncompleteToolCalls: true,
   });

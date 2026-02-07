@@ -5,19 +5,20 @@ import { aws } from '@better-upload/server/clients';
 
 const bucketName = process.env.BETTER_UPLOAD_BUCKET ?? process.env.AWS_S3_BUCKET ?? '';
 
-const router: Router = {
-  client: aws(),
-  bucketName,
-  routes: {
-    media: route({
-      fileTypes: ['image/*'],
-      multipleFiles: false,
-      maxFileSize: 1024 * 1024 * 10, // 10MB
-    }),
-  },
-};
-
-const handler = toRouteHandler(router);
+function createHandler() {
+  const router: Router = {
+    client: aws(),
+    bucketName,
+    routes: {
+      media: route({
+        fileTypes: ['image/*'],
+        multipleFiles: false,
+        maxFileSize: 1024 * 1024 * 10, // 10MB
+      }),
+    },
+  };
+  return toRouteHandler(router);
+}
 
 async function wrappedPost(request: Request) {
   if (!bucketName) {
@@ -26,6 +27,7 @@ async function wrappedPost(request: Request) {
       { status: 503 },
     );
   }
+  const handler = createHandler();
   return handler.POST(request);
 }
 

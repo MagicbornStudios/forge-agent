@@ -7,7 +7,7 @@
 }
 
 .dockview-theme-dark .dv-tab {
-  padding-inline: var(--panel-padding);
+  padding-inline: 0.375rem;
   padding-block: var(--control-padding-y);
   background: var(--card);
   border-bottom: 1px solid var(--border);

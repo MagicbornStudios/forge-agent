@@ -38,5 +38,14 @@ export const SettingsOverrides: CollectionConfig = {
       name: 'label',
       type: 'text',
     },
+    {
+      name: 'user',
+      type: 'relationship',
+      relationTo: 'users',
+      required: false,
+      admin: {
+        description: 'When set, this override is owned by this user; null = global/legacy.',
+      },
+    },
   ],
 };

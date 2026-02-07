@@ -8,10 +8,14 @@ import {
   EDITOR_LABELS,
   EDITOR_SUMMARY,
 } from '@/lib/app-shell/editor-metadata';
+import { useProjects, useCreateProject } from '@/lib/data/hooks';
+import { ProjectSwitcher } from '@/components/ProjectSwitcher';
 import { EditorApp } from '@forge/shared/components/app';
 import { EditorButton } from '@forge/shared/components/editor';
 import { SettingsMenu } from '@/components/settings/SettingsMenu';
+import { ThemeSwitcher, AppBarUser } from '@/components/app-bar';
 import { Toaster } from '@forge/ui/sonner';
+import { Separator } from '@forge/ui/separator';
 import { useSettingsStore } from '@/lib/settings/store';
 import { useEntitlements, CAPABILITIES } from '@forge/shared/entitlements';
 import { ImageGenerateRender } from '@/components/copilot/ImageGenerateRender';
@@ -33,8 +37,24 @@ function isValidEditorId(id: string): id is EditorId {
 }
 
 export function AppShell() {
-  const { route, setActiveWorkspace, openWorkspace, closeWorkspace } = useEditorStore();
+  const {
+    route,
+    activeProjectId,
+    setActiveProjectId,
+    setActiveWorkspace,
+    openWorkspace,
+    closeWorkspace,
+  } = useEditorStore();
   const { activeWorkspaceId, openWorkspaceIds } = route;
+  const projectsQuery = useProjects();
+  const createProjectMutation = useCreateProject();
+
+  // Auto-select first project when none selected
+  React.useEffect(() => {
+    if (activeProjectId != null) return;
+    const projects = projectsQuery.data ?? [];
+    if (projects.length > 0) setActiveProjectId(projects[0].id);
+  }, [activeProjectId, projectsQuery.data, setActiveProjectId]);
   const toastsEnabled = useSettingsStore((s) => s.getSettingValue('ui.toastsEnabled')) as boolean | undefined;
   const entitlements = useEntitlements();
   const imageGenEnabled = entitlements.has(CAPABILITIES.IMAGE_GENERATION);
@@ -205,46 +225,84 @@ export function AppShell() {
         label="Editor tabs"
         actions={
           <>
+            <ProjectSwitcher
+              projects={projectsQuery.data ?? []}
+              selectedProjectId={activeProjectId}
+              onProjectChange={setActiveProjectId}
+              onCreateProject={async ({ name, description }) => {
+                const baseSlug = name
+                  .toLowerCase()
+                  .trim()
+                  .replace(/[^a-z0-9]+/g, '-')
+                  .replace(/(^-|-$)+/g, '');
+                const existingSlugs = new Set((projectsQuery.data ?? []).map((p) => p.slug));
+                const rootSlug = baseSlug || `project-${Date.now()}`;
+                let slug = rootSlug;
+                let suffix = 2;
+                while (existingSlugs.has(slug)) {
+                  slug = `${rootSlug}-${suffix}`;
+                  suffix += 1;
+                }
+                const created = await createProjectMutation.mutateAsync({
+                  title: name,
+                  slug,
+                  description,
+                  domain: 'forge',
+                });
+                setActiveProjectId(created.id);
+                return { id: created.id, name: created.title };
+              }}
+              isLoading={projectsQuery.isLoading}
+              error={projectsQuery.error ? 'Failed to load projects' : null}
+              variant="compact"
+            />
             <EditorButton
               type="button"
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={() => openWorkspace('dialogue')}
               tooltip="Open Dialogue editor"
               className="text-muted-foreground hover:text-foreground"
             >
+              <MessageCircle className="size-3 shrink-0" />
               + Dialogue Editor
             </EditorButton>
             <EditorButton
               type="button"
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={() => openWorkspace('video')}
               tooltip="Open Video editor"
               className="text-muted-foreground hover:text-foreground"
             >
+              <Video className="size-3 shrink-0" />
               + Video Editor
             </EditorButton>
             <EditorButton
               type="button"
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={() => openWorkspace('character')}
               tooltip="Open Character editor"
               className="text-muted-foreground hover:text-foreground"
             >
+              <Users className="size-3.5 shrink-0" />
               + Character Editor
             </EditorButton>
             <EditorButton
               type="button"
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={() => openWorkspace('strategy')}
               tooltip="Open Strategy editor"
               className="text-muted-foreground hover:text-foreground"
             >
+              <Target className="size-3 shrink-0" />
               + Strategy Editor
             </EditorButton>
+            <Separator orientation="vertical" className="h-[var(--control-height-sm)]" />
+            <ThemeSwitcher />
+            <AppBarUser />
             <SettingsMenu tooltip="App settings" defaultScope="app" />
           </>
         }

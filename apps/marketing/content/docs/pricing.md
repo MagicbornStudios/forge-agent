@@ -22,4 +22,4 @@ title: Pricing
 
 ## Billing
 
-When logged in, manage your plan and billing at [Account](/account) and [Billing](/billing).
+When logged in, manage your plan and billing at [Account](/account) and [Billing](/account/billing).

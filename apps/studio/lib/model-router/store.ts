@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 import type { ModelDef, SelectionMode, ModelPreferences } from './types';
-import { MODEL_REGISTRY, getDefaultEnabledIds } from './registry';
+import { getDefaultEnabledIds } from './registry';
 import { ModelService } from '@/lib/api-client';
 
 // ---------------------------------------------------------------------------

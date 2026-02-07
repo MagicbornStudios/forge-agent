@@ -12,10 +12,17 @@
     "lint": "pnpm --filter @forge/studio lint",
     "test": "pnpm --filter @forge/studio test",
     "payload:types": "pnpm --filter @forge/studio payload:types",
-    "registry:start": "verdaccio --config ./verdaccio.yaml"
+    "registry:start": "verdaccio --config ./verdaccio.yaml",
+    "vendor:twick:build": "pnpm --filter @twick/media-utils build && pnpm --filter @twick/canvas build && pnpm --filter @twick/timeline build && pnpm --filter @twick/visualizer build && pnpm --filter @twick/live-player build && pnpm --filter @twick/video-editor build && pnpm --filter @twick/studio build",
+    "vendor:twick:publish:local": "npm publish --registry http://localhost:4873 vendor/twick/packages/media-utils && npm publish --registry http://localhost:4873 vendor/twick/packages/canvas && npm publish --registry http://localhost:4873 vendor/twick/packages/timeline && npm publish --registry http://localhost:4873 vendor/twick/packages/visualizer && npm publish --registry http://localhost:4873 vendor/twick/packages/live-player && npm publish --registry http://localhost:4873 vendor/twick/packages/video-editor && npm publish --registry http://localhost:4873 vendor/twick/packages/studio"
   },
   "devDependencies": {
     "tsup": "^8.5.0",
     "verdaccio": "^5.30.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "@twick/*": "workspace:*"
+    }
   }
 }

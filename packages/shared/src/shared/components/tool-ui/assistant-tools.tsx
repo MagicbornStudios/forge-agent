@@ -33,7 +33,7 @@ import { XPost, parseSerializableXPost, SerializableXPostSchema } from './x-post
 
 type ToolRenderProps = ToolCallMessagePartProps<Record<string, unknown>, unknown>;
 
-type ToolUIConfig<TPayload> = {
+type ToolUIConfig<TPayload extends Record<string, unknown>> = {
   toolName: string;
   componentName: string;
   description: string;
@@ -42,7 +42,7 @@ type ToolUIConfig<TPayload> = {
   Component: React.ComponentType<TPayload>;
 };
 
-const renderParsedTool = <TPayload,>(
+const renderParsedTool = <TPayload extends Record<string, unknown>>(
   props: ToolRenderProps,
   config: ToolUIConfig<TPayload>,
 ) => {
@@ -64,7 +64,7 @@ const renderParsedTool = <TPayload,>(
   }
 };
 
-function createToolUI<TPayload>(config: ToolUIConfig<TPayload>) {
+function createToolUI<TPayload extends Record<string, unknown>>(config: ToolUIConfig<TPayload>) {
   return makeAssistantTool<Record<string, unknown>, unknown>({
     toolName: config.toolName,
     description: config.description,

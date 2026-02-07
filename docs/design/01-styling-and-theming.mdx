@@ -19,7 +19,13 @@ updated: 2026-02-07
 
 - Prefer semantic tokens (`--background`, `--foreground`, `--border`) from `packages/shared/src/shared/styles/themes.css`.
 - Avoid single-purpose UI components per editor; extend shared components and document the slot.
-- Standard toolbar layout: File menu + Project select + Settings (plus system actions).
+- **App bar** (editor tab bar): project context, editor access (+ Dialogue / Video / Character / Strategy), theme switcher, current user, app settings. Data/work on the left; platform/identity (theme, user, settings) on the right.
+- Standard toolbar layout (per-editor): File menu + Project select + Settings (plus system actions).
+
+### Buttons and menus
+
+- Prefer `outline` or `default` variant for toolbar and menu triggers; avoid ghost-only for primary actions so controls don’t read as flat grey.
+- Use tokenized padding (`--panel-padding`) for card headers and content so sections (e.g. AI Workflow) are not flush to borders.
 
 ## Compact editor style guide (Unreal-inspired)
 
@@ -53,6 +59,10 @@ We drive density through CSS variables and `data-density`:
 - `--header-height: 2.5rem`
 - `--tab-height: 1.75rem`
 - `--status-height: 1.5rem`
+- `--menu-item-padding-x`, `--menu-item-padding-y` — padding for dropdown/menu items (Item, SubTrigger, Label, etc.)
+- `--menu-content-padding` — padding for dropdown content container
+
+Dropdown and context menus in `packages/ui` use these tokens so all menus get consistent, theme-driven padding.
 
 **Comfortable overrides** live under `[data-density='comfortable']`.
 
@@ -77,6 +87,34 @@ We drive density through CSS variables and `data-density`:
 - Domain accents and focus rings are defined in `packages/shared/src/shared/styles/contexts.css`.
 - `--context-accent`, `--ring`, and `--sidebar-*` stay aligned to preserve hover/focus clarity.
 - Panel-edge hover glow and Dockview tab active state use `--context-accent` and `--context-glow`; Dockview sash (resize handle) and separator borders are themed via `dockview-overrides.css` when inside `[data-domain]`.
+
+### Token system (layers and when to use which)
+
+We use **four token layers**. Cascade order: `:root` → `[data-density]` → `[data-theme]` → `[data-domain]`.
+
+1. **Shadcn semantic** — `--background`, `--foreground`, `--card`, `--popover`, `--primary`, `--muted`, `--sidebar*`, etc. All overridden by `data-theme`. Single source: `themes.css`; do not redefine in `globals.css`.
+2. **Sizing / density** — `--control-height`, `--panel-padding`, `--tab-height`, `--menu-item-padding-x/y`, `--menu-content-padding`, etc. Overridden by `[data-density='compact']` or `[data-density='comfortable']` in `themes.css`.
+3. **Graph** — `--graph-canvas`, `--graph-node-*`, `--graph-edge-*`, `--graph-sidebar-bg`. Overridden by `data-theme`. Use only in graph UI (React Flow viewport, nodes, edges).
+4. **Context** — `--context-accent` (and under `[data-domain]`, `--primary` / `--ring` are overridden from `--domain-*`). Source: `contexts.css`. Set `data-domain` and optionally `data-context-node-type` on the graph or panel; use `var(--context-accent)` or `ring` for highlights and borders.
+
+**When to use which:**
+
+- **Body / main canvas** → `bg-background` / `text-foreground`.
+- **Sidebar** → `bg-sidebar` / `text-sidebar-foreground` (and `sidebar-accent` for hover). Do not use `bg-background` or `text-foreground` inside the sidebar.
+- **Popovers / dropdowns** → `bg-popover` / `text-popover-foreground`.
+- **Cards / panels** → `bg-card` / `text-card-foreground`.
+- **Controls** (inputs, buttons) → `--control-*` tokens plus semantic colors (e.g. `border-input`, `bg-background` for inputs).
+- **Graph** → `--graph-*` only in graph UI; React Flow overrides apply these to `.react-flow__*` classes.
+
+**Context-aware UI:** Set `data-domain` (e.g. `dialogue`, `forge`, `video`) on the editor or panel; use `--context-accent` and `--ring` for active tab, panel header accent, selected node border. Prefer reusing these over new tokens.
+
+### File map
+
+- **themes.css** — Colors, density overrides, and per-theme `[data-theme='X']` overrides. Source of truth for semantic and graph tokens.
+- **contexts.css** — Domain/context accents; `--context-accent`, `--primary`, `--ring` under `[data-domain]`.
+- **graph.css** — Dialogue graph edge/choice styling (e.g. `.dialogue-graph-editor`); React Flow viewport/node/edge overrides.
+- **scrollbar.css** — React Flow controls styling and scrollbar utilities.
+- **globals.css** — Tailwind `@theme` (maps our vars to Tailwind) and base layer only. No color redefinitions.
 
 ### Code references (source of truth)
 

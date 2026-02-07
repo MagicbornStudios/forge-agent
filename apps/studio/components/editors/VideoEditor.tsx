@@ -28,8 +28,6 @@ import { TwickTimeline } from '@/components/video/TwickTimeline';
 import { LivePlayerProvider } from '@twick/live-player';
 import { TimelineProvider, INITIAL_TIMELINE_DATA } from '@twick/timeline';
 import { TwickStudio } from '@twick/studio';
-import { Layers, Clock } from 'lucide-react';
-
 export function VideoEditor() {
   const lastVideoDocId = useEditorStore((s) => s.lastVideoDocId);
   const setLastVideoDocId = useEditorStore((s) => s.setLastVideoDocId);
@@ -309,13 +307,13 @@ export function VideoEditor() {
 
       <DockLayout
         main={
-          <DockPanel panelId="video-main" scrollable={false} className="h-full">
+          <DockPanel panelId="video-main" scrollable={false} hideTitleBar className="h-full">
             {mainContent}
           </DockPanel>
         }
         right={
           showRightPanel === false ? undefined : (
-            <DockPanel panelId="video-right" title="Tracks" className="h-full">
+            <DockPanel panelId="video-right" title="Tracks" hideTitleBar className="h-full">
               <TwickTrackList
                 tracks={docData.tracks}
                 selectedTrackId={selectedTrackId}
@@ -330,7 +328,7 @@ export function VideoEditor() {
         }
         bottom={
           showBottomPanel === false ? undefined : (
-            <DockPanel panelId="video-bottom" title="Timeline" icon={<Clock className="size-4 shrink-0" />} scrollable={false} className="h-full">
+            <DockPanel panelId="video-bottom" title="Timeline" scrollable={false} hideTitleBar className="h-full">
               <TwickTimeline
                 data={docData}
                 selectedTrackId={selectedTrackId}
@@ -347,6 +345,7 @@ export function VideoEditor() {
             </DockPanel>
           )
         }
+        slots={{ right: { title: 'Tracks' }, bottom: { title: 'Timeline' } }}
         viewport={{ viewportId, viewportType: 'timeline' }}
         layoutId="video-mode"
       />

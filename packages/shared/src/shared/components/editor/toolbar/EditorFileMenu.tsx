@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { cn } from '@forge/shared/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +16,7 @@ export type EditorFileMenuItem =
   | {
       id: string;
       label: string;
+      icon?: React.ReactNode;
       onSelect?: () => void;
       disabled?: boolean;
       shortcut?: string;
@@ -41,7 +43,7 @@ export function EditorFileMenu({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         {trigger ?? (
-          <EditorButton variant="ghost" size="sm" tooltip={tooltip}>
+          <EditorButton variant="outline" size="sm" tooltip={tooltip}>
             File
           </EditorButton>
         )}
@@ -55,8 +57,14 @@ export function EditorFileMenu({
               key={item.id}
               disabled={item.disabled}
               onSelect={() => item.onSelect?.()}
-              className={item.variant === 'destructive' ? 'text-destructive' : undefined}
+              className={cn(
+                'flex items-center gap-2',
+                item.variant === 'destructive' && 'text-destructive'
+              )}
             >
+              {item.icon != null && (
+                <span className="flex shrink-0 size-4 [&>svg]:size-4">{item.icon}</span>
+              )}
               {item.label}
               {item.shortcut && <DropdownMenuShortcut>{item.shortcut}</DropdownMenuShortcut>}
             </DropdownMenuItem>

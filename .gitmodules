@@ -1,0 +1,3 @@
+[submodule "vendor/twick"]
+	path = vendor/twick
+	url = https://github.com/MagicbornStudios/twick.git

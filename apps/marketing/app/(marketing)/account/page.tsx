@@ -45,7 +45,7 @@ export default function AccountPage() {
         </div>
       </div>
       <div className="mt-6 flex gap-4">
-        <Link href="/billing">
+        <Link href="/account/billing">
           <Button variant="outline">Billing</Button>
         </Link>
         <a href={getStudioApiUrl()} target="_blank" rel="noopener noreferrer">

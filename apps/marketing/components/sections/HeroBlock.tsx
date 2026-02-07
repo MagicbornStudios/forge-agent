@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { Sparkles, Play } from 'lucide-react';
 import { AnimatedGradientText } from '@/components/ui/animated-gradient-text';
@@ -8,8 +9,15 @@ import { Particles } from '@/components/ui/particles';
 import { ShimmerButton } from '@/components/ui/shimmer-button';
 import { TextAnimate } from '@/components/ui/text-animate';
 import { BlurFade } from '@/components/ui/blur-fade';
+import { HeroVideoDialog } from '@/components/ui/hero-video-dialog';
+
+const DEMO_VIDEO_SRC =
+  'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1';
+const DEMO_THUMBNAIL_SRC =
+  'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg';
 
 export function HeroBlock() {
+  const [demoOpen, setDemoOpen] = useState(false);
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden border-b border-border">
       {/* Background effects */}
@@ -66,6 +74,14 @@ export function HeroBlock() {
                 Get Started Free
               </ShimmerButton>
             </Link>
+            <button
+              type="button"
+              onClick={() => setDemoOpen(true)}
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-background/50 px-8 py-3 font-semibold backdrop-blur transition-all hover:bg-muted hover:scale-105"
+            >
+              <Play className="h-4 w-4" />
+              Watch Demo
+            </button>
             <Link href="/docs">
               <button className="inline-flex items-center gap-2 rounded-lg border border-border bg-background/50 px-8 py-3 font-semibold backdrop-blur transition-all hover:bg-muted hover:scale-105">
                 <Play className="h-4 w-4" />
@@ -74,6 +90,14 @@ export function HeroBlock() {
             </Link>
           </div>
         </BlurFade>
+
+        <HeroVideoDialog
+          videoSrc={DEMO_VIDEO_SRC}
+          thumbnailSrc={DEMO_THUMBNAIL_SRC}
+          thumbnailAlt="Product demo"
+          open={demoOpen}
+          onOpenChange={setDemoOpen}
+        />
 
         {/* Product preview placeholder */}
         <BlurFade delay={0.65}>

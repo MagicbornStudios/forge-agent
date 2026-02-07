@@ -27,3 +27,4 @@ Extend the editor types and `DockLayout` (or equivalent) in `packages/shared/src
 ## Pitfalls
 
 - Do not duplicate theme tokens in `apps/studio/app/globals.css`; see **docs/agent-artifacts/core/errors-and-attempts.md**.
+- Vendored dependencies (e.g. Twick) live under `vendor/`; follow [How-to 24](../../../../docs/how-to/24-vendoring-third-party-code.mdx) for version alignment, submodule updates, and Verdaccio publishing.

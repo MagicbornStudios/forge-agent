@@ -27,6 +27,11 @@ export interface DockPanelProps {
   /** Actions rendered in the panel header (gear icon, close button, etc.). */
   headerActions?: React.ReactNode;
   /**
+   * When true, the title bar (icon + title + headerActions) is not rendered.
+   * Use inside DockLayout when the Dockview tab bar already shows the panel identity.
+   */
+  hideTitleBar?: boolean;
+  /**
    * When true, wraps content in a `ScrollArea`. Default true.
    * Set to false for viewports (React Flow, canvas, etc.) that manage their own scroll.
    */
@@ -47,7 +52,7 @@ export interface DockPanelProps {
  * DockPanel — a single region within a `DockLayout`.
  *
  * Features:
- * - Optional title bar with icon + actions
+ * - Optional title bar with icon + actions (set `hideTitleBar` when the Dockview tab bar already shows the panel identity)
  * - When `tabs` provided → renders `PanelTabs` internally
  * - When `locked` → shows `LockedOverlay`
  * - When `scrollable` → wraps content in `ScrollArea`
@@ -79,13 +84,14 @@ export function DockPanel({
   activeTabId,
   onTabChange,
   headerActions,
+  hideTitleBar = false,
   scrollable = true,
   locked = false,
   lockedProps,
   children,
   className,
 }: DockPanelProps) {
-  const hasHeader = title || icon || headerActions;
+  const hasHeader = !hideTitleBar && (title || icon || headerActions);
   const hasTabs = tabs && tabs.length > 0;
 
   const body = hasTabs ? (

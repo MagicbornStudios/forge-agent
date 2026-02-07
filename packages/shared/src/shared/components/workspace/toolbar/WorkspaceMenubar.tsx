@@ -37,7 +37,9 @@ export function WorkspaceMenubar({ menus, className }: WorkspaceMenubarProps) {
     <Menubar className={cn("h-8 border-none bg-transparent p-0 shadow-none", className)}>
       {menus.map((menu) => (
         <MenubarMenu key={menu.id}>
-          <MenubarTrigger>{menu.label}</MenubarTrigger>
+          <MenubarTrigger className="border border-transparent hover:border-border hover:bg-accent/50">
+            {menu.label}
+          </MenubarTrigger>
           <MenubarContent>
             {menu.items.map((item) =>
               item.type === "separator" ? (

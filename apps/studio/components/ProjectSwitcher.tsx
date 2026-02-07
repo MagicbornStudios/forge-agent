@@ -140,7 +140,7 @@ export function ProjectSwitcher({
         </DropdownMenu>
         {onCreateProject && (
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
             className={variant === 'full' ? 'h-9 w-9' : 'h-7 w-7'}
             onClick={() => setIsCreateDialogOpen(true)}

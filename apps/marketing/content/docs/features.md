@@ -28,7 +28,7 @@ Actions run in the client; the agent never writes to the database directly. You 
 
 ## Billing and plans
 
-Plans (e.g. Free, Pro) are stored on your user. Upgrade from the [Billing](/billing) page when logged in.
+Plans (e.g. Free, Pro) are stored on your user. Upgrade from the [Billing](/account/billing) page when logged in.
 
 ## Upcoming: Codebase Strategy editor
 

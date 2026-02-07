@@ -1,3 +1,37 @@
+/* ==========================================================================
+   React Flow theme overrides (viewport, default node, default edge)
+   Uses --graph-* tokens from themes.css; respects data-theme and data-domain.
+   ========================================================================== */
+
+.react-flow__background {
+  background-color: var(--graph-canvas);
+}
+
+.react-flow__node {
+  background-color: var(--graph-node-bg);
+  border-color: var(--graph-node-border);
+  border-width: 1px;
+  border-style: solid;
+}
+
+.react-flow__node.selected {
+  border-color: var(--graph-node-selected);
+  box-shadow: 0 0 0 2px var(--graph-node-selected);
+}
+
+.react-flow__edge-path {
+  stroke: var(--graph-edge-default);
+}
+
+.react-flow__edge.selected .react-flow__edge-path,
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke: var(--graph-edge-default-hover);
+}
+
+/* ==========================================================================
+   Dialogue graph choice edges and handles (existing)
+   ========================================================================== */
+
 .dialogue-graph-editor [data-choice-index] {
   --edge-color: var(--edge-choice-1);
   --edge-color-muted: color-mix(in oklab, var(--edge-color) 60%, black);

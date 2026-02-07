@@ -38,7 +38,10 @@ export function GraphSidebar({
   side = 'left',
   className,
 }: GraphSidebarProps) {
-  const initialTab = useMemo(() => defaultTabId ?? tabs[0]?.id, [defaultTabId, tabs]);
+  const initialTab = useMemo(
+    () => defaultTabId ?? tabs[0]?.id,
+    [defaultTabId, tabs]
+  );
   const [internalTab, setInternalTab] = useState(initialTab);
   const currentTab = activeTabId ?? internalTab;
 
@@ -50,7 +53,7 @@ export function GraphSidebar({
   const active = tabs.find((tab) => tab.id === currentTab) ?? tabs[0];
 
   return (
-    <WorkspaceSidebar side={side} className={cn('h-full', className)}>
+    <EditorSidebar side={side} className={cn('h-full', className)}>
       <SidebarHeader className="p-0">
         <ToggleGroup
           type="single"
@@ -63,7 +66,8 @@ export function GraphSidebar({
             const isActive = tab.id === currentTab;
             const accent = tab.accentColor ?? 'var(--context-accent)';
             const accentMuted =
-              tab.accentMutedColor ?? 'color-mix(in oklab, var(--context-accent) 40%, transparent)';
+              tab.accentMutedColor ??
+              'color-mix(in oklab, var(--context-accent) 40%, transparent)';
 
             return (
               <ToggleGroupItem
@@ -72,15 +76,18 @@ export function GraphSidebar({
                 aria-label={tab.label}
                 className={cn(
                   'min-w-0 flex-1 text-xs rounded-none px-1 py-0.5 truncate leading-tight relative',
-                  'text-muted-foreground hover:text-foreground transition-colors',
-                  'data-[state=on]:bg-muted data-[state=on]:text-foreground',
+                  'text-sidebar-foreground/80 hover:text-sidebar-foreground transition-colors',
+                  'data-[state=on]:bg-sidebar-accent data-[state=on]:text-sidebar-accent-foreground',
                   'border-l-2'
                 )}
                 style={{
                   borderLeftColor: isActive ? accent : accentMuted,
                 }}
               >
-                <span className="mr-1 shrink-0" style={{ color: isActive ? accent : accentMuted }}>
+                <span
+                  className="mr-1 shrink-0"
+                  style={{ color: isActive ? accent : accentMuted }}
+                >
                   {tab.icon}
                 </span>
                 <span className="truncate">{tab.label}</span>

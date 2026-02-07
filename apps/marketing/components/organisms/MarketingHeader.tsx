@@ -77,7 +77,7 @@ export function MarketingHeader() {
                   Account
                 </Button>
               </Link>
-              <Link href="/billing" className="hidden sm:block">
+              <Link href="/account/billing" className="hidden sm:block">
                 <Button variant="ghost" size="sm" className="gap-1.5">
                   <CreditCard className="h-4 w-4 transition-transform hover:scale-110" />
                   Billing
@@ -136,7 +136,7 @@ export function MarketingHeader() {
                       Account
                     </Link>
                     <Link
-                      href="/billing"
+                      href="/account/billing"
                       onClick={() => setMobileOpen(false)}
                       className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                     >

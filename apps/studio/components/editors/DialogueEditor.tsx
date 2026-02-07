@@ -8,7 +8,6 @@ import { GraphEditorToolbar } from '@/components/graph/GraphEditorToolbar';
 import { GraphLeftToolbar } from '@/components/graph/GraphLeftToolbar';
 import { GraphLayoutControls } from '@/components/graph/GraphLayoutControls';
 import { NodeDragProvider } from '@/components/graph/useNodeDrag';
-import { ProjectSwitcher } from '@/components/ProjectSwitcher';
 import { SectionHeader, type SectionToolbarAction } from '@/components/graph/SectionHeader';
 import { CreateNodeModal } from '@/components/CreateNodeModal';
 import { ModelSwitcher } from '@/components/model-switcher';
@@ -55,14 +54,19 @@ import type { ForgeGraphDoc, ForgeGraphKind, ForgeGraphPatchOp, ForgeNodeType } 
 import { FORGE_GRAPH_KIND, FORGE_NODE_TYPE } from '@forge/types/graph';
 import {
   BookOpen,
-  Layers,
   Boxes,
-  Users,
-  User,
-  GitBranch,
-  Shield,
   Code,
+  FilePlus2,
+  Focus,
+  GitBranch,
+  Layers,
+  Maximize2,
+  PanelBottom,
   Plus,
+  Save,
+  Shield,
+  User,
+  Users,
 } from 'lucide-react';
 import { cn } from '@forge/shared/lib/utils';
 
@@ -333,14 +337,15 @@ export function DialogueEditor() {
     markSaved,
   } = useForgeGraphsStore();
 
-  const lastDialogueProjectId = useEditorStore((s) => s.lastDialogueProjectId);
-  const setLastDialogueProjectId = useEditorStore((s) => s.setLastDialogueProjectId);
+  const activeProjectId = useEditorStore((s) => s.activeProjectId);
   const bottomDrawerOpen = useEditorStore((s) => s.bottomDrawerOpen.dialogue);
   const setBottomDrawerOpen = useEditorStore((s) => s.setBottomDrawerOpen);
   const toggleBottomDrawer = useEditorStore((s) => s.toggleBottomDrawer);
 
-  const projectsQuery = useProjects('forge');
-  const createProjectMutation = useCreateProject();
+  // Sync app-level project into forge store so this editor uses the shared project context.
+  useEffect(() => {
+    setProject(activeProjectId);
+  }, [activeProjectId, setProject]);
 
   const narrativeGraphsQuery = useForgeGraphs(projectId, FORGE_GRAPH_KIND.NARRATIVE);
   const storyletGraphsQuery = useForgeGraphs(projectId, FORGE_GRAPH_KIND.STORYLET);
@@ -443,23 +448,6 @@ export function DialogueEditor() {
     narrativeCreatingRef.current = false;
     storyletCreatingRef.current = false;
   }, [projectId]);
-
-  useEffect(() => {
-    if (projectId != null) return;
-    const projects = projectsQuery.data ?? [];
-    if (lastDialogueProjectId && projects.some((p) => p.id === lastDialogueProjectId)) {
-      setProject(lastDialogueProjectId);
-      return;
-    }
-    if (projects.length > 0) {
-      setProject(projects[0].id);
-      setLastDialogueProjectId(projects[0].id);
-    }
-  }, [projectId, lastDialogueProjectId, projectsQuery.data, setProject, setLastDialogueProjectId]);
-
-  useEffect(() => {
-    if (projectId != null) setLastDialogueProjectId(projectId);
-  }, [projectId, setLastDialogueProjectId]);
 
   useEffect(() => {
     if (scopeRestored.current || projectId == null) return;
@@ -948,17 +936,20 @@ export function DialogueEditor() {
       {
         id: 'new-narrative',
         label: 'New narrative',
+        icon: <FilePlus2 size={16} />,
         onSelect: () => handleCreateGraph('narrative'),
       },
       {
         id: 'new-storylet',
         label: 'New storylet',
+        icon: <FilePlus2 size={16} />,
         onSelect: () => handleCreateGraph('storylet'),
       },
       { id: 'separator-1', type: 'separator' as const },
       {
         id: 'save',
         label: 'Save active',
+        icon: <Save size={16} />,
         disabled: !activeDirty,
         onSelect: () => saveActiveGraph(),
         shortcut: 'Ctrl+S',
@@ -972,11 +963,13 @@ export function DialogueEditor() {
       {
         id: 'fit-view',
         label: 'Fit view',
+        icon: <Maximize2 size={16} />,
         onSelect: fitViewActive,
       },
       {
         id: 'fit-selection',
         label: 'Fit to selection',
+        icon: <Focus size={16} />,
         onSelect: fitSelectionActive,
       },
     ],
@@ -988,6 +981,7 @@ export function DialogueEditor() {
       {
         id: 'workbench',
         label: bottomDrawerOpen ? 'Close workbench' : 'Open workbench',
+        icon: <PanelBottom size={16} />,
         onSelect: () => toggleBottomDrawer('dialogue'),
       },
     ],
@@ -1069,12 +1063,7 @@ export function DialogueEditor() {
   ];
 
   const leftPanel = showLeftPanel === false ? undefined : (
-    <DockPanel
-      panelId="dialogue-left"
-      title="Library"
-      tabs={sidebarTabs}
-      className="h-full"
-    />
+    <DockPanel panelId="dialogue-left" title="Library" tabs={sidebarTabs} hideTitleBar className="h-full" />
   );
 
   const mainContent = (
@@ -1124,7 +1113,7 @@ export function DialogueEditor() {
 
   const inspectorContent =
     showRightPanel === false ? undefined : (
-      <DockPanel panelId="dialogue-right" title="Inspector" icon={<ScanSearch className="size-4 shrink-0" />} className="h-full">
+      <DockPanel panelId="dialogue-right" title="Inspector" hideTitleBar className="h-full">
         <EditorInspector selection={activeSelection} sections={inspectorSections} />
       </DockPanel>
     );
@@ -1134,6 +1123,7 @@ export function DialogueEditor() {
     <DockPanel
       panelId="dialogue-main"
       title="Dialogue Graphs"
+      hideTitleBar
       scrollable={false}
       locked={isEditorLocked}
       lockedProps={{
@@ -1169,41 +1159,6 @@ export function DialogueEditor() {
         <EditorToolbar className="bg-sidebar border-b border-sidebar-border">
           <EditorToolbar.Left>
             <EditorToolbar.Group className="gap-2">
-              <ProjectSwitcher
-                projects={projectsQuery.data ?? []}
-                selectedProjectId={projectId}
-                onProjectChange={(id) => {
-                  setProject(id);
-                  setLastDialogueProjectId(id);
-                }}
-                onCreateProject={async ({ name, description }) => {
-                  const baseSlug = name
-                    .toLowerCase()
-                    .trim()
-                    .replace(/[^a-z0-9]+/g, '-')
-                    .replace(/(^-|-$)+/g, '');
-                  const existingSlugs = new Set((projectsQuery.data ?? []).map((p) => p.slug));
-                  const rootSlug = baseSlug || `dialogue-${Date.now()}`;
-                  let slug = rootSlug;
-                  let suffix = 2;
-                  while (existingSlugs.has(slug)) {
-                    slug = `${rootSlug}-${suffix}`;
-                    suffix += 1;
-                  }
-                  const created = await createProjectMutation.mutateAsync({
-                    title: name,
-                    slug,
-                    description,
-                    domain: 'forge',
-                  });
-                  setProject(created.id);
-                  setLastDialogueProjectId(created.id);
-                  return { id: created.id, name: created.title };
-                }}
-                isLoading={projectsQuery.isLoading}
-                error={projectsQuery.error ? 'Failed to load projects' : null}
-                variant="compact"
-              />
               <EditorToolbar.Menubar menus={menubarMenus} />
             </EditorToolbar.Group>
             <span className="text-xs text-muted-foreground">{toolbarCounts}</span>
@@ -1212,10 +1167,11 @@ export function DialogueEditor() {
             {headerLinks.map((link) => (
               <EditorToolbar.Button
                 key={link.label}
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={() => window.open(link.href, '_blank')}
                 tooltip={link.label}
+                className="border-border text-foreground"
               >
                 {link.icon}
                 <span className="ml-1.5 text-xs">{link.label}</span>
@@ -1234,7 +1190,9 @@ export function DialogueEditor() {
               variant="outline"
               size="sm"
               tooltip={bottomDrawerOpen ? 'Close workbench' : 'Open workbench'}
+              className="border-border text-foreground"
             >
+              <PanelBottom className="size-3.5 shrink-0" />
               Workbench
             </EditorToolbar.Button>
             {dirtyByScope.narrative && (

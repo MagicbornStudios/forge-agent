@@ -21,16 +21,19 @@ export interface AppShellRoute {
 
 interface AppShellState {
   route: AppShellRoute;
-  /** Last opened Dialogue (Forge) project id. */
+  /** App-level active project id. Shared across Dialogue, Character (and other project-scoped editors). */
+  activeProjectId: number | null;
+  /** Last opened Dialogue (Forge) project id (legacy/migration). */
   lastDialogueProjectId: number | null;
   /** Last opened video doc id (for refetch on load). */
   lastVideoDocId: number | null;
-  /** Last opened character project id (for refetch on load). */
+  /** Last opened character project id (legacy/migration). */
   lastCharacterProjectId: number | null;
   workspaceThemes: Partial<Record<EditorId, string>>;
   /** Bottom drawer (workbench/console) open per editor. */
   bottomDrawerOpen: Partial<Record<EditorId, boolean>>;
   setRoute: (route: Partial<Pick<AppShellRoute, 'activeWorkspaceId' | 'openWorkspaceIds'>>) => void;
+  setActiveProjectId: (id: number | null) => void;
   setLastDialogueProjectId: (id: number | null) => void;
   setLastVideoDocId: (id: number | null) => void;
   setLastCharacterProjectId: (id: number | null) => void;
@@ -51,6 +54,7 @@ type PersistedAppState = Partial<
   Pick<
     AppShellState,
     | 'route'
+    | 'activeProjectId'
     | 'lastDialogueProjectId'
     | 'lastVideoDocId'
     | 'lastCharacterProjectId'
@@ -86,8 +90,8 @@ export const useAppShellStore = create<AppShellState>()(
           openWorkspaceIds: DEFAULT_OPEN,
           globalModals: [],
         },
+        activeProjectId: null,
         lastDialogueProjectId: null,
-        lastForgeProjectId: null,
         lastVideoDocId: null,
         lastCharacterProjectId: null,
         workspaceThemes: { video: 'darcula' },
@@ -99,6 +103,12 @@ export const useAppShellStore = create<AppShellState>()(
             if (route.openWorkspaceIds != null && route.openWorkspaceIds.length > 0) {
               state.route.openWorkspaceIds = route.openWorkspaceIds;
             }
+          });
+        },
+
+        setActiveProjectId: (id) => {
+          set((state) => {
+            state.activeProjectId = id;
           });
         },
 
@@ -180,6 +190,7 @@ export const useAppShellStore = create<AppShellState>()(
         version: APP_SESSION_VERSION,
         partialize: (s) => ({
           route: s.route,
+          activeProjectId: s.activeProjectId,
           lastDialogueProjectId: s.lastDialogueProjectId,
           lastVideoDocId: s.lastVideoDocId,
           lastCharacterProjectId: s.lastCharacterProjectId,
@@ -192,10 +203,12 @@ export const useAppShellStore = create<AppShellState>()(
               .map(mapModeId)
               .filter(Boolean) as EditorId[];
           const openWorkspaceIds = open.length > 0 ? open : DEFAULT_OPEN;
-          const lastDialogueProjectId =
+          const lastDialogue =
             state.lastDialogueProjectId ??
             (state as { lastForgeProjectId?: number | null }).lastForgeProjectId ??
             null;
+          const activeProjectId =
+            state.activeProjectId ?? lastDialogue ?? state.lastCharacterProjectId ?? null;
 
           return {
             ...state,
@@ -204,7 +217,8 @@ export const useAppShellStore = create<AppShellState>()(
               openWorkspaceIds,
               globalModals: state.route?.globalModals ?? [],
             },
-            lastDialogueProjectId,
+            activeProjectId,
+            lastDialogueProjectId: lastDialogue,
             lastVideoDocId: state.lastVideoDocId ?? null,
             lastCharacterProjectId: state.lastCharacterProjectId ?? null,
           } as AppShellState;

@@ -93,13 +93,13 @@ export function AgentWorkflowPanel({
   return (
     <div className="space-y-3">
       <Card className="bg-muted/10 text-xs shadow-none">
-        <CardHeader className="p-3 pb-2">
+        <CardHeader className="p-[var(--panel-padding)] pb-2">
           <CardTitle className="text-xs">AI intent</CardTitle>
           <CardDescription className="text-[11px]">
             Describe the change you want to plan and propose.
           </CardDescription>
         </CardHeader>
-        <CardContent className="px-3 pb-3 pt-0 space-y-2">
+        <CardContent className="px-[var(--panel-padding)] pb-[var(--panel-padding)] pt-0 space-y-2">
           <Label htmlFor="forge-ai-intent" className="text-xs text-muted-foreground">
             Prompt
           </Label>
@@ -114,10 +114,22 @@ export function AgentWorkflowPanel({
             <Button size="sm" onClick={handleRun} disabled={!canRun}>
               {state.isRunning ? 'Running...' : 'Run workflow'}
             </Button>
-            <Button size="sm" variant="outline" onClick={cancel} disabled={!state.isRunning}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={cancel}
+              disabled={!state.isRunning}
+              className="border-border text-foreground"
+            >
               Cancel
             </Button>
-            <Button size="sm" variant="ghost" onClick={reset} disabled={state.isRunning}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={reset}
+              disabled={state.isRunning}
+              className="border-border text-foreground"
+            >
               Reset
             </Button>
             {!toolsEnabled && (

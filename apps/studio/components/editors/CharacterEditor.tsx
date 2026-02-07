@@ -15,7 +15,6 @@ import {
 } from '@forge/shared/components/editor';
 import type { OverlaySpec, ActiveOverlay, Selection } from '@forge/shared';
 import { isEntity } from '@forge/shared';
-import { Users, SlidersHorizontal } from 'lucide-react';
 
 // Copilot
 import { useAIHighlight } from '@forge/shared/copilot/use-ai-highlight';
@@ -46,6 +45,7 @@ import {
 import { useCharacterStore } from '@/lib/domains/character/store';
 
 // Components
+import { Maximize2 } from 'lucide-react';
 import { RelationshipGraphEditor, type CharacterViewportHandle } from '@/components/character/RelationshipGraphEditor';
 import { ActiveCharacterPanel } from '@/components/character/ActiveCharacterPanel';
 import { CharacterSidebar } from '@/components/character/CharacterSidebar';
@@ -56,7 +56,6 @@ import { Badge } from '@forge/ui/badge';
 import { Card } from '@forge/ui/card';
 import type { CharacterDoc, RelationshipDoc } from '@/lib/domains/character/types';
 import { NodeDragProvider } from '@/components/graph/useNodeDrag';
-import { ProjectSwitcher } from '@/components/ProjectSwitcher';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -100,8 +99,7 @@ function useCharacterSelection(
 export function CharacterEditor() {
   const editorId = 'character';
   const viewportId = EDITOR_VIEWPORT_IDS.character;
-  const lastProjectId = useEditorStore((s) => s.lastCharacterProjectId);
-  const setLastProjectId = useEditorStore((s) => s.setLastCharacterProjectId);
+  const activeProjectId = useEditorStore((s) => s.activeProjectId);
 
   // Settings
   const editorTheme = useSettingsStore((s) =>
@@ -145,22 +143,10 @@ export function CharacterEditor() {
     removeRelationship,
   } = store;
 
-  const projectsQuery = useProjects('character');
-  const createProjectMutation = useCreateProject();
-
-  // Auto-set project on mount
+  // Sync app-level project into character store so this editor uses the shared project context.
   useEffect(() => {
-    if (projectId != null) return;
-    const projects = projectsQuery.data ?? [];
-    if (lastProjectId && projects.some((p) => p.id === lastProjectId)) {
-      setProject(lastProjectId);
-      return;
-    }
-    if (projects.length > 0) {
-      setProject(projects[0].id);
-      setLastProjectId(projects[0].id);
-    }
-  }, [projectId, lastProjectId, projectsQuery.data, setProject, setLastProjectId]);
+    setProject(activeProjectId);
+  }, [activeProjectId, setProject]);
 
   // Data fetching
   const { data: fetchedChars } = useCharacters(projectId);
@@ -213,8 +199,13 @@ export function CharacterEditor() {
 
   const handleUpdateCharacter = useCallback(
     async (id: number, updates: Partial<Pick<CharacterDoc, 'name' | 'description' | 'imageUrl' | 'voiceId'>>) => {
-      await updateCharMutation.mutateAsync({ id, ...updates });
-      updateCharacterLocal(id, updates);
+      const sanitizedUpdates = {
+        ...updates,
+        description: updates.description ?? undefined,
+        imageUrl: updates.imageUrl ?? undefined,
+      };
+      await updateCharMutation.mutateAsync({ id, ...sanitizedUpdates });
+      updateCharacterLocal(id, sanitizedUpdates);
     },
     [updateCharMutation, updateCharacterLocal],
   );
@@ -342,6 +333,7 @@ export function CharacterEditor() {
       {
         id: 'fit-view',
         label: 'Fit view',
+        icon: <Maximize2 size={16} />,
         onSelect: () => viewportRef.current?.fitView(),
       },
     ],
@@ -360,7 +352,7 @@ export function CharacterEditor() {
 
   const leftPanel =
     showLeftPanel === false ? undefined : (
-      <DockPanel panelId="character-navigator" title="Characters" icon={<Users className="size-4 shrink-0" />} scrollable={false}>
+      <DockPanel panelId="character-navigator" title="Characters" scrollable={false} hideTitleBar>
         <CharacterSidebar
           characters={characters}
           relationships={relationships}
@@ -423,7 +415,7 @@ export function CharacterEditor() {
 
   const rightPanel =
     showRightPanel === false ? undefined : (
-      <DockPanel panelId="character-properties" title="Properties" icon={<SlidersHorizontal className="size-4 shrink-0" />} scrollable>
+      <DockPanel panelId="character-properties" title="Properties" scrollable hideTitleBar>
         <ActiveCharacterPanel character={activeChar} onUpdate={handleUpdateCharacter} />
       </DockPanel>
     );
@@ -453,41 +445,6 @@ export function CharacterEditor() {
         <EditorToolbar className="bg-sidebar border-b border-sidebar-border">
           <EditorToolbar.Left>
             <EditorToolbar.Group className="gap-2">
-              <ProjectSwitcher
-                projects={projectsQuery.data ?? []}
-                selectedProjectId={projectId}
-                onProjectChange={(id) => {
-                  setProject(id);
-                  setLastProjectId(id);
-                }}
-                onCreateProject={async ({ name, description }) => {
-                  const baseSlug = name
-                    .toLowerCase()
-                    .trim()
-                    .replace(/[^a-z0-9]+/g, '-')
-                    .replace(/(^-|-$)+/g, '');
-                  const existingSlugs = new Set((projectsQuery.data ?? []).map((p) => p.slug));
-                  const rootSlug = baseSlug || `character-${Date.now()}`;
-                  let slug = rootSlug;
-                  let suffix = 2;
-                  while (existingSlugs.has(slug)) {
-                    slug = `${rootSlug}-${suffix}`;
-                    suffix += 1;
-                  }
-                  const created = await createProjectMutation.mutateAsync({
-                    title: name,
-                    slug,
-                    description,
-                    domain: 'character',
-                  });
-                  setProject(created.id);
-                  setLastProjectId(created.id);
-                  return { id: created.id, name: created.title };
-                }}
-                isLoading={projectsQuery.isLoading}
-                error={projectsQuery.error ? 'Failed to load projects' : null}
-                variant="compact"
-              />
               <EditorToolbar.Menubar menus={menubarMenus} />
             </EditorToolbar.Group>
             <span className="text-xs text-muted-foreground">
@@ -520,6 +477,7 @@ export function CharacterEditor() {
           left={leftPanel}
           main={mainContent}
           right={rightPanel}
+          slots={{ left: { title: 'Characters' }, right: { title: 'Properties' } }}
           viewport={{ viewportId, viewportType: 'react-flow' }}
           layoutId="character-mode"
           leftDefaultSize={20}

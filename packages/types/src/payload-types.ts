@@ -422,6 +422,10 @@ export interface SettingsOverride {
     | boolean
     | null;
   label?: string | null;
+  /**
+   * When set, this override is owned by this user; null = global/legacy.
+   */
+  user?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -836,6 +840,7 @@ export interface SettingsOverridesSelect<T extends boolean = true> {
   scopeId?: T;
   settings?: T;
   label?: T;
+  user?: T;
   updatedAt?: T;
   createdAt?: T;
 }

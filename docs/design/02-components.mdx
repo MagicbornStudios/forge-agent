@@ -26,8 +26,13 @@ Use **Lucide React** throughout; standard size **16px** (`size-4` or `className=
 | Panel headers | `DockPanel` `title` + `icon` (Library, Inspector, Workbench, Tracks, Timeline, Characters, Properties) | Required |
 | Editor tabs | `EditorApp.Tab` label (Dialogue, Video, Characters, Strategy) | Required |
 | Toolbar actions | Fit view, new, settings, etc. | Required |
+| Menu items | File/View/State menu items (Fit view, Open workbench, New narrative, Save, etc.) | Required |
+| Editor creation buttons | "+ Dialogue Editor", "+ Video Editor", "+ Character Editor", "+ Strategy Editor" (AppShell) | Required |
+| Workbench | Toolbar "Workbench" button (open/close bottom drawer) | Required |
 | Settings | Section titles or key dropdowns (Model, Theme, Density) | Optional |
 | Tab triggers | `PanelTabs` tab defs (e.g. Narratives, Storylets, Nodes) | Per-tab icon in `PanelTabDef.icon` |
+
+**Avoid:** Unstyled grey buttons and text-only menu items. Reference screenshot: [buttons_dropdowns_menutitems_unstyled.png](../images/buttons_dropdowns_menutitems_unstyled.png). When updating UI patterns, add or update reference screenshots in **docs/images/** as needed. After applying contrast and spacing fixes (toolbar, PanelTabs, Dockview tabs, outline buttons), see [styling_after_contrast_and_spacing.png](../images/styling_after_contrast_and_spacing.png) when available.
 
 ---
 

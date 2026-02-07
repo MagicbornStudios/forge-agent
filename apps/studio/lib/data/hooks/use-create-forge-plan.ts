@@ -33,7 +33,7 @@ export function useCreateForgePlan() {
     mutationFn: async (params) => {
       const data = await AiService.postApiForgePlan({
         goal: params.goal,
-        ...(params.graphSummary && { graphSummary: params.graphSummary }),
+        ...(params.graphSummary ? { graphSummary: params.graphSummary } : {}),
       });
       if (!data?.steps || !Array.isArray(data.steps)) {
         throw new Error('Plan generation failed — no steps in response');

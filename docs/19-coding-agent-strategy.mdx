@@ -35,12 +35,14 @@ See **[18-agent-artifacts-index.mdx](18-agent-artifacts-index.mdx)** for the ful
 ## How agents are expected to use them (actions)
 
 1. **Before a slice:** Read [agent-artifacts/core/STATUS.md](agent-artifacts/core/STATUS.md) and the relevant AGENTS.md (root + shared/workspace when touching workspace types or panels). Use **rg** (or grep), **list_dir**/LS, and **Read** to locate and confirm files; check [agent-artifacts/core/errors-and-attempts.md](agent-artifacts/core/errors-and-attempts.md) before retrying a failed pattern. Understand current state and next.
-2. **Prefer canonical artifacts:** Use the agent artifacts index and core artifacts (STATUS, decisions, errors-and-attempts) for **current state** and **failure log**. Use numbered docs (10–19, how-to, architecture) for architecture and how-to, not for live state. Avoid relying on stray READMEs for "what is true now."
-3. **Before changing a pattern:** Use rg (or grep) to find occurrences; use list_dir/Read to confirm file locations. See [tool-usage.md](agent-artifacts/core/tool-usage.md).
-4. **When changing persistence or data layer:** Read [agent-artifacts/core/decisions.md](agent-artifacts/core/decisions.md) and [11-tech-stack.mdx](11-tech-stack.mdx); update them when making or rejecting a significant choice.
-5. **After a slice:** Update STATUS (including the Ralph Wiggum Done list) and any AGENTS/README that the change affects.
-6. **When adding a new area with distinct rules:** Add an AGENTS.md and link from the index.
-7. **Scope of edits:** When implementing a slice, scope all file edits to the repo (apps, packages, docs). Do not modify files under `.tmp/` or other agent-download directories; they are reference material, not our code.
+2. **To see what you can do next:** Read [STATUS § Next](agent-artifacts/core/STATUS.md) (and [product roadmap](roadmap/product.mdx)). Each item has an **impact size** (Small / Medium / Large / Epic). Prefer **one slice per item** to reduce overlap and merge conflicts; if you start an item, add a short "In progress" line in STATUS so other agents or contributors don't pick the same work. When proposing or implementing work that touches platform, settings, or paywall, check STATUS Next and roadmap for impact and dependencies; add new initiatives to the [enhanced-features backlog](agent-artifacts/core/enhanced-features-backlog.md) as `proposed` and to STATUS Next once accepted.
+3. **Prefer canonical artifacts:** Use the agent artifacts index and core artifacts (STATUS, decisions, errors-and-attempts) for **current state** and **failure log**. Use numbered docs (10–19, how-to, architecture) for architecture and how-to, not for live state. Avoid relying on stray READMEs for "what is true now."
+4. **Before changing a pattern:** Use rg (or grep) to find occurrences; use list_dir/Read to confirm file locations. See [tool-usage.md](agent-artifacts/core/tool-usage.md).
+5. **When changing persistence or data layer:** Read [agent-artifacts/core/decisions.md](agent-artifacts/core/decisions.md) and [11-tech-stack.mdx](11-tech-stack.mdx); update them when making or rejecting a significant choice.
+6. **After a slice:** Update STATUS (including the Ralph Wiggum Done list) and any AGENTS/README that the change affects.
+7. **When adding a new area with distinct rules:** Add an AGENTS.md and link from the index.
+8. **Scope of edits:** When implementing a slice, scope all file edits to the repo (apps, packages, docs). Do not modify files under `.tmp/` or other agent-download directories; they are reference material, not our code.
+9. **When making UI/styling changes:** After implementing, take a screenshot (browser tools), save to **docs/images/** with a descriptive filename, and reference it in the relevant design/how-to doc or in STATUS/errors-and-attempts. See [agent-artifacts/core/styling-and-ui-consistency.md](agent-artifacts/core/styling-and-ui-consistency.md) and [how-to 26 - Styling debugging with Cursor](how-to/26-styling-debugging-with-cursor.mdx).
 
 ## General strategy vs domain granularity
 

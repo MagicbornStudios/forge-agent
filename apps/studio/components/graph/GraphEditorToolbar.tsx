@@ -20,10 +20,10 @@ export function GraphEditorToolbar({ label, onCreateNew, className }: GraphEdito
           <TooltipTrigger asChild>
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={onCreateNew}
-              className="h-7 px-2 text-xs"
+              className="h-7 px-2 text-xs border-border text-foreground"
               title={`Create a new ${label.toLowerCase()}`}
             >
               <Plus className="h-4 w-4 mr-1.5" />

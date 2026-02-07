@@ -8,6 +8,10 @@ packages:
   '@forge/*':
     access: $all
     publish: $all
+  '@twick/*':
+    access: $all
+    publish: $all
+    proxy: npmjs
   '**':
     access: $all
     proxy: npmjs

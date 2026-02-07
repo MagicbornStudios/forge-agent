@@ -12,7 +12,7 @@ export function useBlocks(pageId: number | null, parentBlockId?: number | null) 
         ? studioKeys.blocks(pageId, parentBlockId ?? undefined)
         : ['studio', 'blocks', 'empty'],
     queryFn: async () => {
-      const and: Array<{ page: { equals: number }; parent_block?: { equals: number | null } }> = [
+      const and: Array<{ page?: { equals: number }; parent_block?: { equals: number | null } }> = [
         { page: { equals: pageId! } },
       ];
       if (parentBlockId != null) {

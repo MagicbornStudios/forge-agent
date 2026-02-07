@@ -37,7 +37,7 @@ export function WorkspaceFileMenu({ items, trigger, tooltip = "File menu" }: Wor
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         {trigger ?? (
-          <WorkspaceButton variant="ghost" size="sm" tooltip={tooltip}>
+          <WorkspaceButton variant="outline" size="sm" tooltip={tooltip}>
             File
           </WorkspaceButton>
         )}

@@ -1,7 +1,7 @@
 import 'server-only';
 
 import type { ModelPreferences, PrimaryAndFallbacks, SelectionMode } from './types';
-import { MODEL_REGISTRY, getDefaultEnabledIds, getDefaultFallbackChain } from './registry';
+import { getDefaultEnabledIds, getDefaultFallbackChain } from './registry';
 import { DEFAULT_FREE_CHAT_MODEL_IDS } from './defaults';
 
 /**
