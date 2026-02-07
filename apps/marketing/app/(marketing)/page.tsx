@@ -5,9 +5,9 @@ import { HeroSection, FeatureCard } from '@/components/molecules';
 
 const FEATURES = [
   {
-    title: 'Unified workspace',
+    title: 'Unified editor shell',
     description:
-      'One shell, multiple workspaces. Switch between Forge (graph) and Video (timeline) without losing context.',
+      'One shell, multiple editors. Switch between Dialogue (graph) and Video (timeline) without losing context.',
   },
   {
     title: 'AI in context',
@@ -22,7 +22,7 @@ const FEATURES = [
   {
     title: 'Codebase Strategy (coming soon)',
     description:
-      'Per-workspace strategies and plans from your codebase, for any coding agent. Refine strategy with our copilot; traceable from plan to implementation.',
+      'Per-editor strategies and plans from your codebase, for any coding agent. Refine strategy with our copilot; traceable from plan to implementation.',
   },
 ];
 
@@ -32,7 +32,7 @@ export default function HomePage() {
       <PromotionsBanner />
       <HeroSection
         title="AI-encapsulated editors for professional apps"
-        description="Build workspaces and editors that feel native, with AI built in. Forge brings graph editing, timelines, and copilot-style assistance into one stack."
+        description="Build editors and tools that feel native, with AI built in. Forge brings graph editing, timelines, and copilot-style assistance into one stack."
       />
 
       <section id="features" className="container border-t border-border px-4 py-20">
@@ -62,7 +62,7 @@ export default function HomePage() {
               price: '$0',
               period: 'forever',
               features: [
-                'Unified workspace',
+                'Unified editor shell',
                 'Core graph and timeline editors',
                 'Limited AI usage',
                 'Community support',

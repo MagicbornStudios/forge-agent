@@ -22,7 +22,7 @@ import config from '@/payload.config';
  *           schema:
  *             type: object
  *             properties:
- *               scope: { type: string, enum: [app, workspace, editor] }
+ *               scope: { type: string, enum: [app, editor, viewport] }
  *               scopeId: { type: string, nullable: true }
  *               settings: { type: object }
  *     responses:
@@ -55,13 +55,25 @@ export async function POST(request: NextRequest) {
     const payload = await getPayload({ config });
     const body = await request.json();
     const { scope, scopeId, settings } = body;
+    const resolvedScope =
+      scope === 'workspace'
+        ? 'editor'
+        : scope === 'editor' && typeof scopeId === 'string' && scopeId.includes(':')
+          ? 'viewport'
+          : scope;
 
-    if (!scope) {
+    if (!resolvedScope) {
       return NextResponse.json({ error: 'scope is required' }, { status: 400 });
     }
-    if (scope !== 'app' && (scopeId === undefined || scopeId === null || scopeId === '')) {
+    if (!['app', 'editor', 'viewport'].includes(resolvedScope)) {
+      return NextResponse.json({ error: 'scope must be app, editor, or viewport' }, { status: 400 });
+    }
+    if (
+      resolvedScope !== 'app' &&
+      (scopeId === undefined || scopeId === null || scopeId === '')
+    ) {
       return NextResponse.json(
-        { error: 'scope "workspace" or "editor" requires scopeId' },
+        { error: 'scope "editor" or "viewport" requires scopeId' },
         { status: 400 }
       );
     }
@@ -76,8 +88,8 @@ export async function POST(request: NextRequest) {
       collection: 'settings-overrides',
       where: {
         and: [
-          { scope: { equals: scope } },
-          scope === 'app'
+          { scope: { equals: resolvedScope } },
+          resolvedScope === 'app'
             ? { scopeId: { equals: null } }
             : { scopeId: { equals: scopeId ?? null } },
         ],
@@ -95,13 +107,13 @@ export async function POST(request: NextRequest) {
     }
 
     const doc = await payload.create({
-      collection: 'settings-overrides',
-      data: {
-        scope,
-        scopeId: scope === 'app' ? null : scopeId ?? null,
-        settings,
-      },
-    });
+        collection: 'settings-overrides',
+        data: {
+          scope: resolvedScope,
+          scopeId: resolvedScope === 'app' ? null : scopeId ?? null,
+          settings,
+        },
+      });
     return NextResponse.json(doc);
   } catch (error) {
     console.error('Failed to save settings overrides:', error);

@@ -11,29 +11,29 @@ import {
 import { Button } from "@forge/ui/button";
 import { useSettingsStore, type SettingsScope } from "@/lib/settings/store";
 import { AppSettingsPanel } from "./AppSettingsPanel";
-import { WorkspaceSettingsPanel } from "./WorkspaceSettingsPanel";
 import { EditorSettingsPanel } from "./EditorSettingsPanel";
+import { ViewportSettingsPanel } from "./ViewportSettingsPanel";
 import { toast } from "sonner";
 import { SettingsService } from "@/lib/api-client";
 
 const SCOPE_LABELS: Record<SettingsScope, string> = {
   app: "App settings",
-  workspace: "Workspace settings",
   editor: "Editor settings",
+  viewport: "Viewport settings",
 };
 
 export interface SettingsSheetProps {
   scope: SettingsScope;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  workspaceId?: string;
   editorId?: string;
+  viewportId?: string;
 }
 
-function getScopeId(scope: SettingsScope, workspaceId?: string, editorId?: string): string | null {
+function getScopeId(scope: SettingsScope, editorId?: string, viewportId?: string): string | null {
   if (scope === "app") return null;
-  if (scope === "workspace" && workspaceId) return workspaceId;
-  if (scope === "editor" && workspaceId && editorId) return `${workspaceId}:${editorId}`;
+  if (scope === "editor" && editorId) return editorId;
+  if (scope === "viewport" && editorId && viewportId) return `${editorId}:${viewportId}`;
   return null;
 }
 
@@ -41,16 +41,16 @@ export function SettingsSheet({
   scope,
   open,
   onOpenChange,
-  workspaceId,
   editorId,
+  viewportId,
 }: SettingsSheetProps) {
   const getOverridesForScope = useSettingsStore((s) => s.getOverridesForScope);
   const [saving, setSaving] = React.useState(false);
 
   const handleSave = React.useCallback(async () => {
-    const scopeId = getScopeId(scope, workspaceId, editorId);
+    const scopeId = getScopeId(scope, editorId, viewportId);
     if (scope !== "app" && scopeId === null) return;
-    const settings = getOverridesForScope(scope, { workspaceId, editorId });
+    const settings = getOverridesForScope(scope, { editorId, viewportId });
     setSaving(true);
     try {
       await SettingsService.postApiSettings({
@@ -68,7 +68,7 @@ export function SettingsSheet({
     } finally {
       setSaving(false);
     }
-  }, [scope, workspaceId, editorId, getOverridesForScope]);
+  }, [scope, editorId, viewportId, getOverridesForScope]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -76,18 +76,16 @@ export function SettingsSheet({
         <SheetHeader>
           <SheetTitle>{SCOPE_LABELS[scope]}</SheetTitle>
           <SheetDescription>
-            {scope === "app" && "Global defaults used by all workspaces and editors."}
-            {scope === "workspace" && "Overrides for this workspace. Unset values inherit from app."}
-            {scope === "editor" && "Overrides for this editor. Unset values inherit from workspace."}
+            {scope === "app" && "Global defaults used by all editors and viewports."}
+            {scope === "editor" && "Overrides for this editor. Unset values inherit from app."}
+            {scope === "viewport" && "Overrides for this viewport. Unset values inherit from editor."}
           </SheetDescription>
         </SheetHeader>
         <div className="mt-4 flex-1 overflow-y-auto">
           {scope === "app" && <AppSettingsPanel />}
-          {scope === "workspace" && workspaceId && (
-            <WorkspaceSettingsPanel workspaceId={workspaceId} />
-          )}
-          {scope === "editor" && workspaceId && editorId && (
-            <EditorSettingsPanel workspaceId={workspaceId} editorId={editorId} />
+          {scope === "editor" && editorId && <EditorSettingsPanel editorId={editorId} />}
+          {scope === "viewport" && editorId && viewportId && (
+            <ViewportSettingsPanel editorId={editorId} viewportId={viewportId} />
           )}
         </div>
         <div className="mt-4 pt-4 border-t flex justify-end shrink-0">

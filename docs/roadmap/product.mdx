@@ -6,36 +6,131 @@ updated: 2026-02-07
 
 # Product roadmap
 
-Upcoming editor modes and initiatives. Each follows the same **Ralph Wiggum loop**: read STATUS (or equivalent) and relevant artifacts -> implement a slice -> update STATUS and artifacts. Strategy is **per mode**; each mode has its own strategy/artifacts, but the loop pattern is consistent.
+Forge Agent is an **AI-first interactive narrative storytelling engine**. This
+roadmap tracks editors, platform initiatives, and integrations. Each item
+follows the **Ralph Wiggum loop**: read STATUS -> implement a slice -> update
+STATUS and artifacts.
 
-## Dialogue mode (YarnSpinner)
+**Production target:** 2/14. We are in development until then; migration and rollback strategy apply after production.
 
-**Status:** In progress.
+---
+
+## Active editors
+
+### Dialogue editor (Yarn Spinner)
+
+**Status:** In progress (primary editor).
 
 **Focus:**
 
-- YarnSpinner dialogue graph editing (narratives + storylets).
+- Yarn Spinner dialogue graph editing (narratives + storylets).
 - Plan -> patch -> review -> commit workflow with DockLayout.
 - Domain copilot actions and highlights for dialogue graphs.
+- Dual graph panels (narrative + storylet) with shared chrome.
 
-## CodebaseAgentStrategyEditor
+### Character editor
 
 **Status:** In progress.
 
 **Focus:**
 
-- Assistant UI and tool UI based chat editor.
+- Character relationship graph editing with React Flow.
+- Tabbed sidebar with node palette and drag-drop creation.
+- Character voice integration (ElevenLabs).
+
+### Video editor
+
+**Status:** In progress (Twick integration).
+
+**Focus:**
+
+- Twick timeline editor surface.
+- Track list and timeline panels.
+- Pending: map Twick state to VideoDoc draft and connect persistence.
+
+### Strategy editor (CodebaseAgentStrategyEditor)
+
+**Status:** In progress.
+
+**Focus:**
+
+- assistant-ui and tool-ui based chat editor.
 - Streaming AI SDK chat endpoint (`/api/assistant-chat`).
-- Shared component exported from `@forge/shared` and showcased in the consumer example.
+- Shared component exported from `@forge/shared` for consumer apps.
 
-**Scope:** Help users define and refine **per-mode strategies** for their codebases and produce plans and agent artifacts for any coding agent (Cursor, Codex, Claude, etc.). Support for standard Unity and Unreal codebase structures is in scope; deeper investigation (folder layout, build systems, common patterns) is a follow-on task.
+**Scope:** Help users define and refine **per-editor strategies** for their
+codebases and produce plans and agent artifacts for any coding agent (Cursor,
+Codex, Claude, etc.). Support for standard Unity and Unreal codebase
+structures is in scope.
 
-## Writer mode
+---
+
+## Platform initiatives
+
+### Editors as MCP Apps
+
+**Status:** Planned (next).
+
+**Goal:** Expose each editor as an **MCP App** — a self-contained unit
+that MCP hosts (Claude Desktop, Cursor, VS Code) can embed or orchestrate.
+
+**Phases:**
+
+1. Define `McpAppDescriptor` per editor (tools + UI resources).
+2. Build Studio MCP Server.
+3. Register with MCP hosts; streaming tool results.
+
+Architecture: [07 - Editors as MCP Apps](../architecture/07-modes-as-mcp-apps.mdx).
+
+### First-class Yarn Spinner support
+
+**Status:** Planned (next).
+
+**Goal:** Full integration with the [Yarn Spinner](https://yarnspinner.dev)
+dialogue scripting language.
+
+**Scope:**
+
+- Export/import `.yarn` files from dialogue graphs.
+- Yarn syntax preview alongside the visual graph.
+- Variable panel for declaring and tracking Yarn variables.
+- Command palette for common Yarn commands.
+
+Architecture: [09 - Dialogue system and Yarn Spinner](../architecture/09-dialogue-domain-and-yarn-spinner.mdx).
+
+### Full Yarn Spinner implementation
+
+**Status:** Planned (later).
+
+**Goal:** Complete Yarn Spinner toolchain in-browser.
+
+**Scope:**
+
+- Compile graphs to Yarn bytecode.
+- Runtime preview (play through dialogue).
+- Localization and string table export.
+- Custom commands and functions.
+- Unity/Unreal export packages.
+
+---
+
+## Planned editors
+
+### Writer editor
 
 **Status:** Planned.
 
-Same loop pattern (artifacts + strategy) as other modes. When implemented, it will have its own STATUS/decisions/errors-and-attempts or equivalent for that domain.
+Notion-inspired page and block model: **pages** and **blocks** Payload collections and CRUD hooks are in place (`usePages`, `usePage`, `useCreatePage`, `useUpdatePage`, `useBlocks`, `useBlock`, `useCreateBlock`, `useUpdateBlock`). Data structure aligns with Notion API concepts (parent, properties, block type + payload). WriterEditor UI and editor shell not yet implemented. Same loop pattern (artifacts + strategy) as other editors; when the editor is built, it will have its own STATUS/decisions/errors-and-attempts for the writing system.
+
+---
 
 ## Other roadmap items
 
-Vision/image input (model registry + chat upload), co-agents (documented, not used), optional agent graphs/subgraphs in runtime - see [agent-artifacts/core/STATUS.md](../agent-artifacts/core/STATUS.md) "Next" and "Roadmap remaining," and [03 - CopilotKit and agents](../architecture/03-copilotkit-and-agents.mdx) Section 12.
+- Vision/image input (model registry + chat upload).
+- Co-agents (documented, not used).
+- Optional agent graphs/subgraphs in runtime.
+- Video workflow panel (plan -> patch -> review) mirroring Dialogue.
+
+See [agent-artifacts/core/STATUS.md](../agent-artifacts/core/STATUS.md) and
+[03 - CopilotKit and agents](../architecture/03-copilotkit-and-agents.mdx)
+Section 12.

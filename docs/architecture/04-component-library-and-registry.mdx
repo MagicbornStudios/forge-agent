@@ -14,25 +14,25 @@ This repo is both **the Studio app** and the **source of publishable building bl
 
 ### `@forge/ui`
 - Shadcn/Radix atoms and form primitives.
-- No app or domain dependencies.
+- No app or system (domain) dependencies.
 
 ### `@forge/shared`
-- Editor shell, DockLayout primitives, and mode scaffolding.
+- Editor shell, DockLayout primitives, and editor scaffolding.
 - EditorApp + AppProviders for app-shell structure and provider wiring.
 - Copilot helpers (`useDomainCopilot`, action config types, generative UI).
-- App/workspace/editor contracts.
+- App/editor/viewport contracts.
 - Assistant UI and tool UI components for Strategy editor.
 
 ### `@forge/agent-engine`
 - Generic workflow runtime (steps + events + SSE helpers).
-- Public and domain-agnostic; domain workflows live in app/domain packages.
+- Public and system-agnostic; system workflows live in app/domain packages.
 
 ### `@forge/dev-kit`
 - Convenience meta-package that re-exports `@forge/ui`, `@forge/shared`, and `@forge/agent-engine`.
 - Use this when you want a single dependency.
 
 ### Not published (kept internal)
-- `@forge/domain-*` (domain logic and app-specific UI).
+- `@forge/domain-*` (system logic and app-specific UI).
 - `@forge/types` (Payload-generated types tied to this repo).
 
 ---
@@ -180,7 +180,7 @@ To use the Copilot helpers, consumers must provide:
 The contract is the same as this repo:
 
 1. Provide a CopilotKit provider (app shell).
-2. Register **domain contracts** via `useDomainCopilot()` in each mode.
+2. Register **system contracts** via `useDomainCopilot()` in each editor.
 3. Provide app-level actions using helpers like `createAppAction()`.
 
 ### Next.js runtime wrapper
@@ -201,7 +201,7 @@ This keeps adoption fast for Next apps without forcing a custom runtime.
 We expose helpers to keep action naming consistent:
 
 - `createAppAction()` -> prefixes `app_`
-- `createDomainAction(domain)` -> prefixes `<domain>_`
+- `createDomainAction(domain)` -> prefixes `<domain>_` (system prefix)
 
 These live in `@forge/shared` and are exported alongside Copilot contracts.
 
@@ -218,6 +218,6 @@ These live in `@forge/shared` and are exported alongside Copilot contracts.
 ## Agent guidance
 
 - **Only publish foundation packages** (`@forge/ui`, `@forge/shared`, `@forge/agent-engine`, `@forge/dev-kit`).
-- Keep `domain-*` private.
+- Keep `domain-*` private (system packages).
 - Avoid exporting app-specific code from shared.
 - Update this doc when the public surface or registry strategy changes.

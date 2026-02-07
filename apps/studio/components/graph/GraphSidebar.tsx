@@ -3,11 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import { ToggleGroup, ToggleGroupItem } from '@forge/ui/toggle-group';
 import { cn } from '@forge/shared/lib/utils';
-import {
-  WorkspaceSidebar,
-  SidebarHeader,
-  SidebarContent,
-} from '@forge/shared/components/workspace';
+import { EditorSidebar, SidebarHeader, SidebarContent } from '@forge/shared';
 
 export interface GraphSidebarTab {
   id: string;
@@ -30,7 +26,7 @@ export interface GraphSidebarProps {
 /**
  * GraphSidebar — a tabbed sidebar for graph editors.
  *
- * Composes `WorkspaceSidebar` (which uses shadcn Sidebar primitives internally)
+ * Composes `EditorSidebar` (shadcn Sidebar primitives)
  * and places the tab bar in `SidebarHeader` and active tab content in
  * `SidebarContent`.
  */
@@ -97,6 +93,6 @@ export function GraphSidebar({
       <SidebarContent className="px-0">
         {active?.content}
       </SidebarContent>
-    </WorkspaceSidebar>
+    </EditorSidebar>
   );
 }

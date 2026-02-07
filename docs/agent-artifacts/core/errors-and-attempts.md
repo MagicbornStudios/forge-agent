@@ -32,11 +32,11 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ---
 
-## Double-registering domain actions
+## Double-registering system actions
 
-**Problem**: If multiple modes are mounted at once and each calls `useDomainCopilot`, the same action names (e.g. `forge_createNode`) can be registered twice, leading to undefined behavior.
+**Problem**: If multiple editors are mounted at once and each calls `useDomainCopilot`, the same action names (e.g. `forge_createNode`) can be registered twice, leading to undefined behavior.
 
-**Fix**: Only the **active** mode is rendered. App Shell renders only DialogueMode or VideoMode, so only one domain contract is active at a time.
+**Fix**: Only the **active** editor is rendered. App Shell renders only DialogueEditor or VideoEditor, so only one system contract is active at a time.
 
 ---
 
@@ -70,7 +70,7 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 **Problem**: Using raw `fetch` for collection or app API bypasses the Payload SDK / generated client and duplicates logic; it breaks type safety and makes it easy to drift from the contract.
 
-**Fix**: For collection CRUD (forge-graphs, video-docs), use the Payload SDK (`lib/api-client/payload-sdk.ts`) via the TanStack Query hooks. For custom endpoints (auth, settings, AI), use the generated services or **manual client modules** in `lib/api-client/` (e.g. elevenlabs, media, workflows), or **vendor SDKs** where appropriate. Do not call `fetch` for `/api/*` from components or stores. **New endpoints:** add a manual client module in `lib/api-client/` or use a vendor SDK; the OpenAPI spec is for **documentation only** (it does not support streaming)â€"do not rely on extending it to generate new clients.
+**Fix**: For collection CRUD (forge-graphs, video-docs), use the Payload SDK (`lib/api-client/payload-sdk.ts`) via the TanStack Query hooks. For custom endpoints (auth, settings, AI), use the generated services or **manual client modules** in `lib/api-client/` (e.g. elevenlabs, media, workflows), or **vendor SDKs** where appropriate. Do not call `fetch` for `/api/*` from components or stores. **New endpoints:** add a manual client module in `lib/api-client/` or use a vendor SDK; the OpenAPI spec is for **documentation only** (it does not support streaming)?"do not rely on extending it to generate new clients.
 
 ## Duplicating collection CRUD in custom routes
 
@@ -92,7 +92,7 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 **Problem**: Build fails with "Can't resolve '@twick/timeline/dist/timeline.css'" or "Can't resolve '@twick/live-player'" / "Can't resolve '@twick/studio'". Twick packages may be missing from the lockfile, or the registry was unreachable.
 
-**Fix**: (1) Use `workspace:*` for internal `@forge/*` deps in `packages/agent-engine`, `packages/shared`, and `packages/dev-kit` so `pnpm install` does not require Verdaccio. (2) Run `pnpm install --no-frozen-lockfile` from the repo root to resolve and lock all Twick packages. (3) In `apps/studio/app/globals.css`, import only `@twick/studio/dist/studio.css`; do not import `@twick/timeline/dist/timeline.css` â€" the published npm package does not ship that file (studio bundles timeline styles).
+**Fix**: (1) Use `workspace:*` for internal `@forge/*` deps in `packages/agent-engine`, `packages/shared`, and `packages/dev-kit` so `pnpm install` does not require Verdaccio. (2) Run `pnpm install --no-frozen-lockfile` from the repo root to resolve and lock all Twick packages. (3) In `apps/studio/app/globals.css`, import only `@twick/studio/dist/studio.css`; do not import `@twick/timeline/dist/timeline.css` ?" the published npm package does not ship that file (studio bundles timeline styles).
 
 ---
 
@@ -110,7 +110,7 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ## "getSnapshot should be cached" / useSyncExternalStore loop
 
-**Problem**: Console error "The result of getSnapshot should be cached to avoid an infinite loop", often followed by "Maximum update depth exceeded". Triggered when a Zustand selector returns a **new object or array reference** every time (e.g. `state.getMergedSettings(...)` which spreads and returns a new object). React's `useSyncExternalStore` requires the snapshot to be referentially stable when state has not changed; a new reference each time is treated as a change and causes re-render â†’ getSnapshot again â†’ infinite loop.
+**Problem**: Console error "The result of getSnapshot should be cached to avoid an infinite loop", often followed by "Maximum update depth exceeded". Triggered when a Zustand selector returns a **new object or array reference** every time (e.g. `state.getMergedSettings(...)` which spreads and returns a new object). React's `useSyncExternalStore` requires the snapshot to be referentially stable when state has not changed; a new reference each time is treated as a change and causes re-render ? getSnapshot again ? infinite loop.
 
 **Fix**: Do not select merged or derived objects from the store in components. Use selectors that return **primitives or stable references** only (e.g. `(s) => s.getSettingValue('ai.agentName', ids)` with stable `ids`). Build any object needed in the component with `useMemo` from those primitive values. Optionally, the store can cache merged result per key and return the same reference when underlying data is unchanged.
 
@@ -129,6 +129,26 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 **Problem**: In `apps/studio/app/docs/[[...slug]]/page.tsx`, `body` from `page.data` is narrowed to `body` when `typeof body === 'function'`, but TypeScript infers that as a generic `Function`. JSX requires a construct/call signature (e.g. `React.ComponentType`), so `<MdxBody components={mdxComponents} />` fails type-check.
 
 **Fix**: Cast `body` to a React component type when assigning: `(typeof body === 'function' ? body : null) as React.ComponentType<{ components: typeof mdxComponents }> | null`. Keep the existing render: `{MdxBody ? <MdxBody components={mdxComponents} /> : null}`.
+
+---
+
+## Payload SQLite CANTOPEN (error 14) when opening /admin or creating project
+
+**Problem**: `Error: cannot connect to SQLite: ConnectionFailed("Unable to open connection to local database ./data/payload.db: 14")` when visiting `/admin` or doing any Payload operation. SQLite error 14 is `SQLITE_CANTOPEN` (unable to open the database file).
+
+**Cause**: The default DB URL was `file:./data/payload.db`, which is resolved relative to the **process cwd**. When running `pnpm dev` from the repo root, cwd is the root, so the path pointed at `./data/payload.db` under the root; that directory often doesn't exist, or the path is wrong when Next runs from a different working directory.
+
+**Fix**: In `apps/studio/payload.config.ts`, the default DB path is now resolved relative to the config file: `path.join(dirname, 'data', 'payload.db')`, and the URL is built with `pathToFileURL(...).href` so libsql receives a valid absolute file URL. The config also ensures `apps/studio/data` exists with `fs.mkdirSync(dataDir, { recursive: true })` when `DATABASE_URI` is not set. To use a custom path, set `DATABASE_URI` in `.env` (e.g. `file:./data/payload.db` for a path relative to cwd, or an absolute path).
+
+---
+
+## Payload DB: pathToFileURL not defined + DATABASE_URI only in .env.example
+
+**Problem**: `ReferenceError: pathToFileURL is not defined` at `payload.config.ts` when hitting e.g. `/api/projects`. Payload could not connect to the database.
+
+**Causes**: (1) `pathToFileURL` was used in the config but never imported (only `fileURLToPath` was imported from `'url'`). (2) Agents had only updated `.env.example` with `DATABASE_URI`; the actual secret files (`.env`, `.env.local`) were not updated, so `DATABASE_URI` was empty at runtime. The code then fell back to the default path and tried to call `pathToFileURL(defaultDbPath).href`, which threw.
+
+**Fix**: (1) In `payload.config.ts`, import `pathToFileURL` from `'url'`: `import { fileURLToPath, pathToFileURL } from 'url'`. (2) When adding or changing env vars that affect runtime (e.g. `DATABASE_URI`), **update both** `.env.example` (documentation) **and** the real env files (`.env` or `.env.local`) so the app has a valid value. If you leave `DATABASE_URI` unset on purpose, the default local SQLite path is used and requires the `pathToFileURL` import to build a valid file URL.
 
 ---
 

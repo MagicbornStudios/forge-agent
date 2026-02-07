@@ -24,3 +24,4 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 1. **Prefer rg for text search** — Cross-platform, fast. Use `rg "pattern" -n apps packages` (or your target path) to find occurrences; then read the relevant file.
 2. **Prefer list_dir for directory listing, Read for file content** — Do not use raw `cat`/`head`/`tail` in agent instructions when an editor/IDE read tool is available; stay in the same workflow.
 3. **Search and confirm before editing** — Before changing a pattern: grep for the token or pattern, then read the file(s) to confirm location and context. Check [errors-and-attempts.md](./errors-and-attempts.md) before retrying a failed pattern.
+4. **Search and edit only within the repo** — Limit searches and edits to `apps/`, `packages/`, `docs/`, and root config. Exclude `.tmp/` and other agent-download paths; they are not our code.

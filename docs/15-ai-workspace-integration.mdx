@@ -1,48 +1,48 @@
 ---
-title: AI-mode integration
+title: AI editor integration
 created: 2026-02-04
 updated: 2026-02-07
 ---
 
-# AI-mode integration
+# AI editor integration
 
 ## Overview
 
-The chat UI operates the mode: the Copilot agent reads context from the active
-mode and performs edits via **actions**. This doc describes the flow and how to
-add or extend features per domain (Dialogue, Writer, etc.).
+The chat UI operates the editor: the Copilot agent reads context from the active
+editor and performs edits via **actions**. This doc describes the flow and how to
+add or extend features per system (Dialogue, Writer, etc.).
 
 ## Flow
 
-1. **Context (what the agent sees)** - The mode exposes a snapshot via
-   `useCopilotReadable`: `workspaceId`, `editorType`, domain-specific summary
+1. **Context (what the agent sees)** - The editor exposes a snapshot via
+   `useCopilotReadable`: `editorId`, `viewportType` (legacy `editorType`), system-specific summary
    (e.g. graph summary, selection, dirty state). The agent uses this to answer
    questions and decide which actions to call.
 2. **Actions (what the agent can do)** - Registered with `useCopilotAction`
-   (or a domain hook like `useForgeCopilotActions`). Examples: create node,
+   (or a system hook like `useForgeCopilotActions`). Examples: create node,
    update node, create edge, open overlay, reveal selection.
 3. **Optional: AI highlight** - When an action creates or edits an element, the
-   mode can report affected ids via an `onAIChange` callback so the UI highlights
+   editor can report affected ids via an `onAIChange` callback so the UI highlights
    them for a few seconds (or until the next user interaction).
 
 ## Single place for wiring
 
-In each mode component (e.g. Dialogue `DialogueMode.tsx`), keep one clear block:
+In each editor component (e.g. Dialogue `DialogueEditor.tsx`), keep one clear block:
 
-1. **Context** - `useCopilotReadable` with description and value (mode id,
-   editor type, selection, summary).
-2. **Action registration** - All CopilotKit actions for that domain
+1. **Context** - `useCopilotReadable` with description and value (editor id,
+   viewport type, selection, summary).
+2. **Action registration** - All CopilotKit actions for that system
    (e.g. `useForgeCopilotActions({ graph, applyOperations, openOverlay, revealSelection, onAIChange, createNodeOverlayId })`).
 3. **Optional** - `onAIChange` and local state for AI highlight ids, passed into
    the action factory and into the editor (e.g. `GraphEditor` receives
    `aiHighlightIds` and applies a highlight class).
 
-This keeps "AI -> mode" wiring in one place and makes it easy to add or
-document new actions per domain.
+This keeps "AI -> editor" wiring in one place and makes it easy to add or
+document new actions per system.
 
-## Per-domain action checklist
+## Per-system action checklist
 
-When adding or documenting a new mode/domain, consider implementing:
+When adding or documenting a new editor/system, consider implementing:
 
 | Capability | Purpose | Dialogue example |
 |------------|---------|------------------|
@@ -54,8 +54,8 @@ When adding or documenting a new mode/domain, consider implementing:
 | **Open overlay** | Open modal/drawer (e.g. create form) | `openCreateNodeModal` |
 | **Reveal selection** | Fit viewport to selection | `revealSelection` |
 
-Not every domain needs all of these; implement what makes sense and document
-the set for that domain.
+Not every system needs all of these; implement what makes sense and document
+the set for that system.
 
 ## Missing / roadmap
 
@@ -69,11 +69,11 @@ Planned capabilities not yet implemented:
 | **Vision / image input** | Missing | Model registry has no `supportsVision`; no image upload in chat. |
 | **Co-agents** | Documented, not used | See [17-co-agents-and-multi-agent.mdx](./17-co-agents-and-multi-agent.mdx). |
 
-See [architecture/03-copilotkit-and-agents.mdx](./architecture/03-copilotkit-and-agents.mdx) for full architecture, roadmap, and conventions (one contract per domain, `app_` prefix, new features as slices).
+See [architecture/03-copilotkit-and-agents.mdx](./architecture/03-copilotkit-and-agents.mdx) for full architecture, roadmap, and conventions (one contract per system, `app_` prefix, new features as slices).
 
 ## References
 
-- **Context + actions** - `apps/studio/components/modes/DialogueMode.tsx` (Dialogue), `packages/domain-forge/src/copilot`, `useDomainCopilot`.
+- **Context + actions** - `apps/studio/components/editors/DialogueEditor.tsx` (Dialogue), `packages/domain-forge/src/copilot`, `useDomainCopilot`.
 - **Capabilities contract** - `packages/shared/src/shared/workspace/capabilities.ts` (`getSelection`, `getContextSnapshot`, `revealSelection`).
-- **Adding a new domain** - See [14-adding-domain-actions.mdx](./14-adding-domain-actions.mdx).
+- **Adding a new system** - See [14-adding-domain-actions.mdx](./14-adding-domain-actions.mdx).
 - **Architecture** - [architecture/03-copilotkit-and-agents.mdx](./architecture/03-copilotkit-and-agents.mdx), [architecture/02-workspace-editor-architecture.mdx](./architecture/02-workspace-editor-architecture.mdx) (AI-first, unified API).

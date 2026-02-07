@@ -19,7 +19,7 @@ We use **OpenRouter** for chat, structured output, plan generation, and image ge
 
 - **Auto**: Primary = first in the user's enabled list (or default free chain); fallbacks = rest of that list. OpenRouter receives `models: [primary, ...fallbacks]` and retries on rate limit / 5xx within the same request.
 - **Manual**: User picks one model; no fallbacks.
-- **Override**: Client can send header `x-forge-model` (e.g. from workspace/editor/user setting for `ai.model`). When set, we use that model as primary and no fallbacks for that request.
+- **Override**: Client can send header `x-forge-model` (e.g. from app/editor/viewport setting for `ai.model`). When set, we use that model as primary and no fallbacks for that request.
 
 ## ModelSwitcher component
 
@@ -39,7 +39,7 @@ We use **OpenRouter** for chat, structured output, plan generation, and image ge
 ## How to avoid auto-switching (single model)
 
 - **Manual mode**: In ModelSwitcher, choose "Manual" and select one model. All chat requests use that model with no fallbacks.
-- **Per-request**: Set `ai.model` at workspace/editor/user level to a specific model ID (not "auto"); the client sends `x-forge-model` and we use that model only for that request.
+- **Per-request**: Set `ai.model` at app/editor/viewport level to a specific model ID (not "auto"); the client sends `x-forge-model` and we use that model only for that request.
 - **Image**: Uses a single model (env or default); no fallbacks.
 
 ## Provider stack (text / image / audio / video)

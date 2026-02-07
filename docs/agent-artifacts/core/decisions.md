@@ -32,7 +32,7 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 
 ## Zustand for drafts and UI route
 
-**Decision:** Draft edits (current graph doc, video doc) and UI state (app shell route, selection, open tabs, workspace bottom drawer) live in Zustand. Draft is seeded from server data; save is a mutation that then invalidates queries. App shell route and "last document id" are persisted via **Zustand persist** (app-shell store). Graph and video stores use persist with partialize for dirty drafts; we rehydrate those conditionally when the persisted draft's documentId matches the current doc. Workspace-level UI (e.g. bottom drawer open/closed) lives in the app-shell store, keyed by workspace id.
+**Decision:** Draft edits (current graph doc, video doc) and UI state (app shell route, selection, open tabs, editor bottom drawer) live in Zustand. Draft is seeded from server data; save is a mutation that then invalidates queries. App shell route and "last document id" are persisted via **Zustand persist** (app-shell store). Graph and video stores use persist with partialize for dirty drafts; we rehydrate those conditionally when the persisted draft's documentId matches the current doc. Editor-level UI (e.g. bottom drawer open/closed) lives in the app-shell store, keyed by editor id.
 
 **Rationale:** Drafts are client-owned until save; keeping them in Zustand avoids fighting the query cache and keeps a clear "dirty" and "save" flow. Using persist middleware avoids a separate localStorage abstraction and keeps versioning in one place.
 

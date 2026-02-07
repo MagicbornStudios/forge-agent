@@ -16,6 +16,11 @@ export const studioKeys = {
   character: (id: number) => ['studio', 'character', id] as const,
   relationships: (projectId: number) => ['studio', 'relationships', projectId] as const,
   characterProjects: () => ['studio', 'character-projects'] as const,
+  pages: (projectId: number) => ['studio', 'pages', projectId] as const,
+  page: (id: number) => ['studio', 'page', id] as const,
+  blocks: (pageId: number, parentBlockId?: number) =>
+    ['studio', 'blocks', pageId, parentBlockId ?? null] as const,
+  block: (id: number) => ['studio', 'block', id] as const,
   elevenlabsVoices: () => ['studio', 'elevenlabs', 'voices'] as const,
   // AI generation mutation keys
   generateImage: () => ['studio', 'ai', 'generate-image'] as const,

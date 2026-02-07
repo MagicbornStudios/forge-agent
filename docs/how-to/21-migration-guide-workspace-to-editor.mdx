@@ -6,85 +6,83 @@ updated: 2026-02-07
 
 # Workspace to Editor migration
 
-This guide maps old Workspace naming to the new Editor platform primitives and provides a checklist to migrate existing modes.
+This guide maps old Workspace naming to the new Editor platform primitives and provides a checklist to migrate existing editors.
 
 ## Naming map
 
 | Old name | New name | Purpose |
 |---|---|---|
 | `AppSpace` | `EditorApp` | App frame, tabs, and content slots. |
-| `WorkspaceShell` | `EditorShell` | Mode root (layout + data attributes). |
-| `WorkspaceHeader` | `ModeHeader` | Header slots. |
-| `WorkspaceToolbar` | `ModeToolbar` | Toolbar slots, groups, buttons. |
+| `WorkspaceShell` | `EditorShell` | Editor root (layout + data attributes). |
+| `WorkspaceHeader` | `EditorHeader` | Header slots. |
+| `WorkspaceToolbar` | `EditorToolbar` | Toolbar slots, groups, buttons. |
 | `WorkspaceLayoutGrid` | `DockLayout` | Resizable dock layout. |
-| `WorkspaceStatusBar` | `ModeStatusBar` | Status bar. |
-| `WorkspaceOverlaySurface` | `ModeOverlaySurface` | Overlay host. |
-| `WorkspaceReviewBar` | `ModeReviewBar` | Plan review bar. |
+| `WorkspaceStatusBar` | `EditorStatusBar` | Status bar. |
+| `WorkspaceOverlaySurface` | `EditorOverlaySurface` | Overlay host. |
+| `WorkspaceReviewBar` | `EditorReviewBar` | Plan review bar. |
 | `WorkspaceButton` | `EditorButton` | Tooltip-enabled button. |
 | `WorkspaceTooltip` | `EditorTooltip` | Tooltip wrapper. |
 | `WorkspaceSidebar` | `DockSidebar` | Sidebar wrapper in dock panels. |
 | `WorkspaceTabGroup` / `GraphSidebar` | `PanelTabs` | Tabs inside a dock panel. |
 | `WorkspaceEditor` | `ViewportMeta` | Metadata wrapper for editor surfaces. |
 
-## Mode renames
+## Editor renames
 
-| Old mode | New mode | Notes |
+| Old editor | New editor | Notes |
 |---|---|---|
-| ForgeWorkspace | DialogueMode | YarnSpinner dialogue editor; `data-domain="dialogue"`. |
-| VideoWorkspace | VideoMode | Twick timeline editor. |
-| CharacterWorkspace | CharacterMode | Character graph editor. |
-| AppShellWorkspaceId | EditorModeId | `useEditorStore` alias maintained. |
+| ForgeWorkspace | DialogueEditor | YarnSpinner dialogue editor; `data-domain="dialogue"`. |
+| VideoWorkspace | VideoEditor | Twick timeline editor. |
+| CharacterWorkspace | CharacterEditor | Character graph editor. |
+| AppShellWorkspaceId | EditorId | Use `EditorId` and `useEditorStore`. |
 
 ## Compatibility
 
-- `packages/shared/src/shared/components/workspace/index.ts` re-exports deprecated aliases for the old names.
-- `apps/studio/lib/app-shell/store.ts` keeps `AppShellWorkspaceId` as a deprecated alias for `EditorModeId`.
-- `apps/studio/lib/app-shell/workspace-metadata.ts` re-exports `mode-metadata.ts`.
+Migration is complete. Import editor UI and types from `@forge/shared` only. Use Editor* names (EditorShell, EditorInspector, EditorButton, etc.). The workspace component export has been removed; types (Selection, InspectorSection, etc.) remain on `@forge/shared`. Use `apps/studio/lib/app-shell/editor-metadata.ts` for editor labels and viewport IDs.
 
 ## Migration checklist
 
-1. Update imports in each mode from `@forge/shared/components/workspace` to `@forge/shared/components/editor`.
+1. Update imports from `@forge/shared/components/workspace` or `@forge/shared/workspace` to `@forge/shared`. Use Editor* component names (e.g. `EditorButton`, `EditorInspector`).
 2. Replace `WorkspaceLayoutGrid` with `DockLayout` and move left/right/bottom panels into `DockPanel` wrappers.
 3. Replace sidebars with `DockPanel` + `PanelTabs`.
-4. Wrap the main editor surface in `ViewportMeta` and set `viewport={{ editorId, editorType }}` on `DockLayout`.
-5. Ensure `EditorShell` has the correct `modeId`, `domain`, and `theme` props.
-6. Replace `WorkspaceReviewBar` with `ModeReviewBar` between toolbar and layout.
-7. Replace `WorkspaceOverlaySurface` with `ModeOverlaySurface` at the bottom of the shell.
+4. Wrap the main editor surface in `ViewportMeta` and set `viewport={{ viewportId, viewportType }}` on `DockLayout`.
+5. Ensure `EditorShell` has the correct editor id (`editorId` prop), `domain`, and `theme` props.
+6. Replace `WorkspaceReviewBar` with `EditorReviewBar` between toolbar and layout.
+7. Replace `WorkspaceOverlaySurface` with `EditorOverlaySurface` at the bottom of the shell.
 8. Update settings keys for panel visibility and editor lock:
    - `editor.locked`
    - `panel.visible.<panelId>`
-9. Update any app-level references to `EditorModeId` and use `useEditorStore`.
+9. Update any app-level references to `EditorId` and use `useEditorStore`.
 
 ## Example
 
 ```tsx
 import {
   EditorShell,
-  ModeHeader,
-  ModeToolbar,
-  ModeStatusBar,
-  ModeReviewBar,
-  ModeOverlaySurface,
+  EditorHeader,
+  EditorToolbar,
+  EditorStatusBar,
+  EditorReviewBar,
+  EditorOverlaySurface,
   DockLayout,
   DockPanel,
   PanelTabs,
 } from '@forge/shared/components/editor';
 
-export function DialogueMode() {
+export function DialogueEditor() {
   return (
-    <EditorShell modeId="dialogue" title="Dialogue" domain="dialogue">
-      <ModeHeader>...</ModeHeader>
-      <ModeToolbar>...</ModeToolbar>
-      <ModeReviewBar visible={false} />
+    <EditorShell editorId="dialogue" title="Dialogue" domain="dialogue">
+      <EditorHeader>...</EditorHeader>
+      <EditorToolbar>...</EditorToolbar>
+      <EditorReviewBar visible={false} />
       <DockLayout
         left={<DockPanel panelId="dialogue-left" tabs={[]} />}
         main={<DockPanel panelId="dialogue-main" scrollable={false}>...</DockPanel>}
         right={<DockPanel panelId="dialogue-right">...</DockPanel>}
-        viewport={{ editorId: 'dialogue-graph', editorType: 'react-flow' }}
-        layoutId="dialogue-mode"
+        viewport={{ viewportId: 'dialogue-graph', viewportType: 'react-flow' }}
+        layoutId="dialogue-editor"
       />
-      <ModeStatusBar>Ready</ModeStatusBar>
-      <ModeOverlaySurface overlays={[]} activeOverlay={null} onDismiss={() => {}} />
+      <EditorStatusBar>Ready</EditorStatusBar>
+      <EditorOverlaySurface overlays={[]} activeOverlay={null} onDismiss={() => {}} />
     </EditorShell>
   );
 }

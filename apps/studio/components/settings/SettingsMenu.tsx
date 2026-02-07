@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Settings } from "lucide-react";
-import { WorkspaceButton } from "@forge/shared/components/workspace";
+import { EditorButton } from "@forge/shared/components/editor";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,25 +13,27 @@ import type { SettingsScope } from "@/lib/settings/store";
 import { SettingsSheet } from "./SettingsSheet";
 
 export interface SettingsMenuProps {
-  workspaceId?: string;
   editorId?: string;
+  viewportId?: string;
   defaultScope?: SettingsScope;
   tooltip?: React.ReactNode;
 }
 
 const scopeLabels: Record<SettingsScope, string> = {
   app: "App settings",
-  workspace: "Workspace settings",
   editor: "Editor settings",
+  viewport: "Viewport settings",
 };
 
 export function SettingsMenu({
-  workspaceId,
   editorId,
-  defaultScope = "workspace",
+  viewportId,
+  defaultScope,
   tooltip = "Settings",
 }: SettingsMenuProps) {
-  const [scope, setScope] = React.useState<SettingsScope>(defaultScope);
+  const resolvedDefaultScope =
+    defaultScope ?? (viewportId ? "viewport" : editorId ? "editor" : "app");
+  const [scope, setScope] = React.useState<SettingsScope>(resolvedDefaultScope);
   const [open, setOpen] = React.useState(false);
 
   const openForScope = (next: SettingsScope) => {
@@ -41,10 +43,10 @@ export function SettingsMenu({
 
   const scopes = React.useMemo(() => {
     const list: SettingsScope[] = ["app"];
-    if (workspaceId) list.push("workspace");
-    if (workspaceId && editorId) list.push("editor");
+    if (editorId) list.push("editor");
+    if (editorId && viewportId) list.push("viewport");
     return list;
-  }, [workspaceId, editorId]);
+  }, [editorId, viewportId]);
 
   React.useEffect(() => {
     if (!scopes.includes(scope)) {
@@ -56,10 +58,10 @@ export function SettingsMenu({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <WorkspaceButton variant="ghost" size="sm" tooltip={tooltip}>
+          <EditorButton variant="ghost" size="sm" tooltip={tooltip}>
             <Settings className="h-4 w-4" />
             <span className="hidden sm:inline">Settings</span>
-          </WorkspaceButton>
+          </EditorButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           {scopes.map((scopeOption) => (
@@ -73,8 +75,8 @@ export function SettingsMenu({
         scope={scope}
         open={open}
         onOpenChange={setOpen}
-        workspaceId={workspaceId}
         editorId={editorId}
+        viewportId={viewportId}
       />
     </>
   );

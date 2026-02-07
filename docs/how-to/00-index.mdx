@@ -7,21 +7,22 @@ updated: 2026-02-07
 
 # How-to guides
 
-Numbered guides that build an editor mode from the ground up. Read in order; each states **what the AI can do at that stage** and points to real code. Files can be `.mdx` (preferred) or `.md`.
+Numbered guides that build an editor from the ground up. Read in order; each states **what the AI can do at that stage** and points to real code. Files can be `.mdx` (preferred) or `.md`.
 
 | # | Guide | Summary |
 |---|--------|--------|
 | 1 | [Foundation](01-foundation.md) | Repo structure, packages, running the app, key concepts. |
-| 2 | [Editor shell and slots](02-workspace-shell.md) | EditorShell, ModeHeader, ModeToolbar, DockLayout, ModeStatusBar, ModeOverlaySurface. |
+| 2 | [Editor shell and slots](02-workspace-shell.md) | EditorShell, EditorHeader, EditorToolbar, DockLayout, EditorStatusBar, EditorOverlaySurface. |
 | 3 | [Styling and theming](03-styling.md) | Design tokens, data-theme, @forge/ui, shared styles. |
 | 4 | [Data and state](04-data-and-state.md) | Draft (Zustand), server state (TanStack Query), API boundary. |
-| 5 | [Building an editor mode](05-building-a-workspace.md) | Step-by-step: shell, main, inspector, toolbar, domain contract. |
-| 6 | [DialogueMode walkthrough](06-forge-workspace-walkthrough.mdx) | How DialogueMode is built; plan, patch preview, review, commit, highlighting. |
+| 5 | [Building an editor](05-building-a-workspace.md) | Step-by-step: shell, main, inspector, toolbar, system contract. |
+| 6 | [Dialogue Editor walkthrough](06-forge-workspace-walkthrough.mdx) | How the Dialogue Editor is built; plan, patch preview, review, commit, highlighting. |
 | 7 | [Copilot and AI integration](07-copilot.md) | Context, actions, suggestions, plan-execute-review-commit; app actions. |
-| 8 | [Adding AI to modes](08-adding-ai-to-workspaces.md) | How to add domain actions, app-level actions, agents, and (future) graphs. |
-| 9 | [VideoMode walkthrough](09-twick-workspace.mdx) | Timeline UI, Twick-inspired data flow, AI actions, and extension points. |
+| 8 | [Adding AI to editors](08-adding-ai-to-workspaces.md) | How to add system actions, app-level actions, agents, and (future) graphs. |
+| 9 | [Video Editor walkthrough](09-twick-workspace.mdx) | Timeline UI, Twick-inspired data flow, AI actions, and extension points. |
 | 21 | [Workspace -> Editor migration](21-migration-guide-workspace-to-editor.mdx) | Old vs new names, compatibility notes, migration checklist. |
 | 22 | [AI generation components](22-ai-generation-components.mdx) | GenerateMediaModal, hooks, assistant-ui strategy editor. |
+| 23 | [Adding a collection or client](23-adding-a-collection-or-client.mdx) | Payload collection, slug, keys, hooks; when to add a custom API route and client. |
 
 ## Marketing site (customer-facing)
 
@@ -38,6 +39,10 @@ Numbered guides that build an editor mode from the ground up. Read in order; eac
 
 - [Project overview](../10-project-overview.mdx)
 - [Architecture: CopilotKit and agents](../architecture/03-copilotkit-and-agents.mdx)
+- [Architecture: Editors as MCP Apps](../architecture/07-modes-as-mcp-apps.mdx)
+- [Architecture: CopilotKit vs assistant-ui](../architecture/08-copilotkit-vs-assistant-ui.mdx)
+- [Architecture: Dialogue system and Yarn Spinner](../architecture/09-dialogue-domain-and-yarn-spinner.mdx)
+- [Product roadmap](../roadmap/product.mdx)
 - [Decisions](../agent-artifacts/core/decisions.md)
 - [Tech stack](../11-tech-stack.mdx)
 - [STATUS](../agent-artifacts/core/STATUS.md)

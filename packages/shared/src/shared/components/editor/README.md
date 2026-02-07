@@ -6,14 +6,14 @@ and clearer naming.
 
 ## Core building blocks
 
-- `EditorShell` - root container per mode. Sets `data-mode-id`, `data-domain`,
-  and `data-theme`.
-- `ModeHeader` - title bar with `.Left` / `.Center` / `.Right`.
-- `ModeToolbar` - toolbar with `.Left` / `.Center` / `.Right` and Menubar,
+- `EditorShell` - root container per editor. Sets `data-editor-id` (and legacy `data-mode-id`),
+  `data-domain`, and `data-theme`.
+- `EditorHeader` - title bar with `.Left` / `.Center` / `.Right`.
+- `EditorToolbar` - toolbar with `.Left` / `.Center` / `.Right` and Menubar,
   Button, Group, ProjectSelect helpers.
-- `ModeReviewBar` - plan -> patch review UX.
-- `ModeStatusBar` - bottom status line.
-- `ModeOverlaySurface` - declarative modal/drawer surface.
+- `EditorReviewBar` - plan -> patch review UX.
+- `EditorStatusBar` - bottom status line.
+- `EditorOverlaySurface` - declarative modal/drawer surface.
 
 ## Docking + layout
 
@@ -32,38 +32,38 @@ and clearer naming.
 ## Migration notes
 
 Legacy `Workspace*` components remain in `components/workspace`. Use the
-new names for all editor mode code. The old barrel re-exports the new
-components with `@deprecated` comments to ease migration.
+new names for all editor code. Deprecated `Mode*` aliases are re-exported
+from the editor barrel for a limited migration window.
 
 ## Example
 
 ```tsx
 import {
   EditorShell,
-  ModeHeader,
-  ModeToolbar,
+  EditorHeader,
+  EditorToolbar,
   DockLayout,
   DockPanel,
-  ModeStatusBar,
+  EditorStatusBar,
 } from '@forge/shared/components/editor';
 
-export function ExampleMode() {
+export function ExampleEditor() {
   return (
-    <EditorShell modeId="example" title="Example" domain="ai">
-      <ModeHeader>
-        <ModeHeader.Left>Example</ModeHeader.Left>
-      </ModeHeader>
-      <ModeToolbar>
-        <ModeToolbar.Left>Toolbar</ModeToolbar.Left>
-      </ModeToolbar>
+    <EditorShell editorId="example" title="Example" domain="ai">
+      <EditorHeader>
+        <EditorHeader.Left>Example</EditorHeader.Left>
+      </EditorHeader>
+      <EditorToolbar>
+        <EditorToolbar.Left>Toolbar</EditorToolbar.Left>
+      </EditorToolbar>
       <DockLayout
         left={<DockPanel panelId="left" title="Library" />}
         main={<DockPanel panelId="main" scrollable={false}>Main</DockPanel>}
         right={<DockPanel panelId="right" title="Inspector" />}
-        viewport={{ editorId: 'example', editorType: 'custom' }}
+        viewport={{ viewportId: 'example', viewportType: 'custom' }}
         layoutId="example"
       />
-      <ModeStatusBar>Ready</ModeStatusBar>
+      <EditorStatusBar>Ready</EditorStatusBar>
     </EditorShell>
   );
 }

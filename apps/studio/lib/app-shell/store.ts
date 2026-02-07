@@ -5,22 +5,17 @@ import { devtools, persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 
 /**
- * Editor mode identifier for the unified editor app.
+ * Editor identifier for the unified editor app.
  * - `dialogue` - YarnSpinner dialogue building (formerly "forge")
  * - `video` - Twick video timeline editor
  * - `character` - Character relationship graph editor
  * - `strategy` - CodebaseAgentStrategyEditor (assistant-ui chat)
  */
-export type EditorModeId = 'dialogue' | 'video' | 'character' | 'strategy';
-
-/**
- * @deprecated Use EditorModeId instead.
- */
-export type AppShellWorkspaceId = EditorModeId;
+export type EditorId = 'dialogue' | 'video' | 'character' | 'strategy';
 
 export interface AppShellRoute {
-  activeWorkspaceId: EditorModeId;
-  openWorkspaceIds: EditorModeId[];
+  activeWorkspaceId: EditorId;
+  openWorkspaceIds: EditorId[];
   globalModals: Array<{ id: string; props?: Record<string, unknown> }>;
 }
 
@@ -28,31 +23,27 @@ interface AppShellState {
   route: AppShellRoute;
   /** Last opened Dialogue (Forge) project id. */
   lastDialogueProjectId: number | null;
-  /** @deprecated Alias for lastDialogueProjectId. */
-  lastForgeProjectId: number | null;
   /** Last opened video doc id (for refetch on load). */
   lastVideoDocId: number | null;
   /** Last opened character project id (for refetch on load). */
   lastCharacterProjectId: number | null;
-  workspaceThemes: Partial<Record<EditorModeId, string>>;
-  /** Bottom drawer (workbench/console) open per workspace. */
-  bottomDrawerOpen: Partial<Record<EditorModeId, boolean>>;
+  workspaceThemes: Partial<Record<EditorId, string>>;
+  /** Bottom drawer (workbench/console) open per editor. */
+  bottomDrawerOpen: Partial<Record<EditorId, boolean>>;
   setRoute: (route: Partial<Pick<AppShellRoute, 'activeWorkspaceId' | 'openWorkspaceIds'>>) => void;
   setLastDialogueProjectId: (id: number | null) => void;
-  /** @deprecated Alias for setLastDialogueProjectId. */
-  setLastForgeProjectId: (id: number | null) => void;
   setLastVideoDocId: (id: number | null) => void;
   setLastCharacterProjectId: (id: number | null) => void;
-  setActiveWorkspace: (id: EditorModeId) => void;
-  openWorkspace: (id: EditorModeId) => void;
-  closeWorkspace: (id: EditorModeId) => void;
-  setWorkspaceTheme: (id: EditorModeId, theme: string) => void;
-  clearWorkspaceTheme: (id: EditorModeId) => void;
-  setBottomDrawerOpen: (id: EditorModeId, open: boolean) => void;
-  toggleBottomDrawer: (id: EditorModeId) => void;
+  setActiveWorkspace: (id: EditorId) => void;
+  openWorkspace: (id: EditorId) => void;
+  closeWorkspace: (id: EditorId) => void;
+  setWorkspaceTheme: (id: EditorId, theme: string) => void;
+  clearWorkspaceTheme: (id: EditorId) => void;
+  setBottomDrawerOpen: (id: EditorId, open: boolean) => void;
+  toggleBottomDrawer: (id: EditorId) => void;
 }
 
-const DEFAULT_OPEN: EditorModeId[] = ['dialogue'];
+const DEFAULT_OPEN: EditorId[] = ['dialogue'];
 const APP_SESSION_KEY = 'forge:app-session:v2';
 const APP_SESSION_VERSION = 2;
 
@@ -61,19 +52,18 @@ type PersistedAppState = Partial<
     AppShellState,
     | 'route'
     | 'lastDialogueProjectId'
-    | 'lastForgeProjectId'
     | 'lastVideoDocId'
     | 'lastCharacterProjectId'
   >
 > & {
   route?: {
-    activeWorkspaceId?: EditorModeId | 'forge';
-    openWorkspaceIds?: Array<EditorModeId | 'forge'>;
+    activeWorkspaceId?: EditorId | 'forge';
+    openWorkspaceIds?: Array<EditorId | 'forge'>;
     globalModals?: Array<{ id: string; props?: Record<string, unknown> }>;
   };
 };
 
-const mapModeId = (value: unknown): EditorModeId | undefined => {
+const mapModeId = (value: unknown): EditorId | undefined => {
   switch (value) {
     case 'dialogue':
     case 'video':
@@ -115,14 +105,6 @@ export const useAppShellStore = create<AppShellState>()(
         setLastDialogueProjectId: (id) => {
           set((state) => {
             state.lastDialogueProjectId = id;
-            state.lastForgeProjectId = id;
-          });
-        },
-
-        setLastForgeProjectId: (id) => {
-          set((state) => {
-            state.lastDialogueProjectId = id;
-            state.lastForgeProjectId = id;
           });
         },
 
@@ -199,7 +181,6 @@ export const useAppShellStore = create<AppShellState>()(
         partialize: (s) => ({
           route: s.route,
           lastDialogueProjectId: s.lastDialogueProjectId,
-          lastForgeProjectId: s.lastForgeProjectId,
           lastVideoDocId: s.lastVideoDocId,
           lastCharacterProjectId: s.lastCharacterProjectId,
         }),
@@ -209,11 +190,11 @@ export const useAppShellStore = create<AppShellState>()(
           const open =
             (state.route?.openWorkspaceIds ?? [])
               .map(mapModeId)
-              .filter(Boolean) as EditorModeId[];
+              .filter(Boolean) as EditorId[];
           const openWorkspaceIds = open.length > 0 ? open : DEFAULT_OPEN;
           const lastDialogueProjectId =
             state.lastDialogueProjectId ??
-            state.lastForgeProjectId ??
+            (state as { lastForgeProjectId?: number | null }).lastForgeProjectId ??
             null;
 
           return {
@@ -224,7 +205,8 @@ export const useAppShellStore = create<AppShellState>()(
               globalModals: state.route?.globalModals ?? [],
             },
             lastDialogueProjectId,
-            lastForgeProjectId: lastDialogueProjectId,
+            lastVideoDocId: state.lastVideoDocId ?? null,
+            lastCharacterProjectId: state.lastCharacterProjectId ?? null,
           } as AppShellState;
         },
         skipHydration: true,

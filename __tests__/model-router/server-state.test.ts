@@ -2,7 +2,6 @@ import {
   getPreferences,
   updatePreferences,
   resolvePrimaryAndFallbacks,
-  resolveModel,
 } from '@/lib/model-router/server-state';
 import { MODEL_REGISTRY } from '@/lib/model-router/registry';
 
@@ -46,10 +45,4 @@ describe('model-router server-state', () => {
     updatePreferences({ mode: 'auto', manualModelId: null });
   });
 
-  it('resolveModel (deprecated) returns modelId and mode', () => {
-    const { modelId, mode } = resolveModel();
-    expect(typeof modelId).toBe('string');
-    expect(modelId.length).toBeGreaterThan(0);
-    expect(['auto', 'manual']).toContain(mode);
-  });
 });

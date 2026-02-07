@@ -2,6 +2,8 @@ import { Users } from './users.ts';
 import { Projects } from './projects.ts';
 import { ForgeGraphs } from './forge-graphs.ts';
 import { VideoDocs } from './video-docs.ts';
+import { Pages } from './pages.ts';
+import { Blocks } from './blocks.ts';
 import { SettingsOverrides } from './settings-overrides.ts';
 import { AgentSessions } from './agent-sessions.ts';
 import { Waitlist } from './waitlist.ts';
@@ -17,6 +19,8 @@ export const collections = [
   Projects,
   ForgeGraphs,
   VideoDocs,
+  Pages,
+  Blocks,
   Characters,
   Relationships,
   Media,
@@ -33,6 +37,8 @@ export {
   Projects,
   ForgeGraphs,
   VideoDocs,
+  Pages,
+  Blocks,
   Characters,
   Relationships,
   Media,

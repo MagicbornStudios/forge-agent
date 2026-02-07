@@ -1,0 +1,46 @@
+---
+title: Design language
+created: 2026-02-07
+updated: 2026-02-07
+---
+
+# Design language
+
+One-pager for the editor’s visual direction: professional, modern, elegant, with a Spotify-intense, neobrutal dark feel and Rave-like glows. We aim to look **much more shadcn** than before while keeping density where it matters.
+
+## 1. Spotify-intense
+
+- **Dark sidebar and canvas** — Clear hierarchy between navigation, content, and inspector.
+- **One primary accent** — Green/teal (or domain accent) used sparingly: active state, primary actions, selection. No visual clutter.
+- **Clean cards and lists** — Clear hierarchy; muted borders; purposeful use of `bg-card`, `border-border`, and semantic tokens.
+- **High-contrast** — Text and controls readable; deliberate contrast between levels (background, card, muted).
+
+## 2. Neobrutal but dark
+
+- **Bold where it matters** — Strong type for headings and primary labels; confident, not soft.
+- **Deliberate borders** — 1px or 2px borders; high contrast; optional thick accent (e.g. left edge of selected item, top bar of active panel).
+- **Dark base, bright accents** — Dark backgrounds with clear structure; accents (green/teal, domain colors) pop without feeling garish.
+- **Not soft/fluffy** — We avoid marketing-soft; we stay tool-like and professional.
+
+## 3. Rave / glows
+
+- **Glows on focus and selection** — Use `--context-glow` and `--glow-*` tokens for: focus rings (soft glow), selected graph nodes, timeline playhead, active tab or panel accent, hover on key controls.
+- **Premium, not garish** — Glows should feel alive and polished; keep opacity and spread subtle so they enhance rather than overwhelm.
+- **Where to apply** — Focused inputs/dropdowns; selected nodes; ForgeGraphPanel when focused (top bar); active tab (underline or top bar + optional glow); Dockview panel headers when active.
+
+## 4. Shadcn-first
+
+- **Align with shadcn defaults** — Prefer shadcn’s typical radius and focus behavior where we haven’t over-tightened. Our atoms in `packages/ui` should look like shadcn docs: rounded, clear focus ring, readable type.
+- **Audit over-tightening** — We previously forced 11px/10px and tiny radius in many places. Relax to 12px for labels and slightly larger radius so we "look more shadcn."
+- **Compact via data-density** — Support compact density via `data-density="compact"` for power users; default appearance aligns with shadcn for elegance.
+
+## 5. Professional and elegant
+
+- **Consistent spacing** — Use tokens only (`--panel-padding`, `--control-gap`, etc.); no ad-hoc `px-*`/`py-*` in editor chrome.
+- **Consistent icon set** — Lucide React throughout; standard size (e.g. 16px) and style (outline).
+- **Semantic tokens only** — No hardcoded colors; use `--background`, `--foreground`, `--border`, `--context-accent`, `--glow-*`, etc.
+
+## Relation to other design docs
+
+- **Density and tokens** — Still defined in [01 - Styling and theming](01-styling-and-theming.mdx). This doc replaces "Sharpness over softness" as the primary visual direction while keeping density tokens.
+- **Components** — [02 - Components](02-components.mdx) lists atoms and molecules; they should adhere to this language (glows, radius, type scale).

@@ -6,7 +6,7 @@ import type {
   AIHighlightPayload,
   CopilotActionRenderProps,
 } from '@forge/shared/copilot/types';
-import type { Selection } from '@forge/shared/workspace/selection';
+import type { Selection } from '@forge/shared';
 import type { ForgeGraphDoc, ForgeGraphPatchOp } from '@forge/types/graph';
 import { createForgeActions } from './actions';
 import { buildForgeContext } from './context';

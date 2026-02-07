@@ -28,7 +28,7 @@ export class SettingsService {
      */
     public static postApiSettings(
         requestBody?: {
-            scope?: 'app' | 'workspace' | 'editor';
+            scope?: 'app' | 'editor' | 'viewport';
             scopeId?: string | null;
             settings?: Record<string, any>;
         },

@@ -7,27 +7,43 @@ updated: 2026-02-07
 
 **Agent artifact index:** See [docs/18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx) for the full list of agent-only docs (agent-artifacts/core: STATUS, decisions, errors-and-attempts, tool-usage, compacting; all AGENTS.md). **Strategy and conventions:** [docs/19-coding-agent-strategy.mdx](docs/19-coding-agent-strategy.mdx). For **current state** and **failures**, read docs/agent-artifacts (index + core); for **area rules**, read this file and the relevant per-package AGENTS.md. Prefer **rg**/list_dir/Read to search and confirm - see [docs/agent-artifacts/core/tool-usage.md](docs/agent-artifacts/core/tool-usage.md).
 
-## Workspace Platform Engineer
+## Scoped edits / .tmp
 
-Owns **packages/shared/src/shared**: editor components, shared styles, and workspace types/contracts.
+The `.tmp/` directory (and any path listed in .gitignore as agent-download/reference) is used by agents to download entire repos or component trees for reference. Do **not** edit, refactor, or lint files under `.tmp/`. It is not part of our codebase; search and code changes apply to `apps/`, `packages/`, `docs/`, and root config only.
 
-- **Loop**: Read **docs/agent-artifacts/core/STATUS.md** (see [18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx)) and **AGENTS.md** (root + `packages/shared/src/shared/AGENTS.md` + `packages/shared/src/shared/components/workspace/AGENTS.md`) -> implement one vertical slice -> update STATUS (including **Ralph Wiggum loop**) and relevant AGENTS/README.
+## Editor platform (shared)
+
+Owns **packages/shared/src/shared**: editor components, shared styles, and editor/selection/overlay/toolbar types (internal `shared/workspace`; consumed via `@forge/shared`).
+
+- **Loop**: Read **docs/agent-artifacts/core/STATUS.md** (see [18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx)) and **AGENTS.md** (root + `packages/shared/src/shared/AGENTS.md`) -> implement one vertical slice -> update STATUS (including **Ralph Wiggum loop**) and relevant AGENTS/README.
 - **Naming**: Use **EditorShell** for the declarative root (layout + slots). Do not introduce a separate "container" name for the same concept.
 - No imperative toolbar API; timeline is optional; no cross-domain imports in shared. Capabilities live in `packages/shared/src/shared/workspace/capabilities.ts` (contracts only).
 
 ## Unified editor (App Shell)
 
-- **App Shell** (`apps/studio/components/AppShell.tsx`, `apps/studio/lib/app-shell/store.ts`) owns mode tabs and the active mode. Dialogue, Video, Character, and Strategy are sub-modes; only the active one is rendered.
-- **Agent layers**: (1) Shell: context (activeWorkspace, workspaceNames) and actions (switchMode, openMode, closeMode). (2) Per-mode: domain contract (context + actions + suggestions) when that mode is active. (3) Optional co-agents: see **docs/17-co-agents-and-multi-agent.mdx**.
-- **Do not repeat**: Before changing styling, model routing, or multi-mode registration, check **docs/agent-artifacts/core/errors-and-attempts.md** for known failures and fixes. For CopilotKit + OpenRouter use **OpenAI SDK** and **@ai-sdk/openai** with **baseURL** only; do not use `@openrouter/ai-sdk-provider`. See [errors-and-attempts.md](docs/agent-artifacts/core/errors-and-attempts.md) (BuiltInAgent/OpenRouter SDK) and [06-model-routing-and-openrouter.mdx](docs/architecture/06-model-routing-and-openrouter.mdx).
+- **App Shell** (`apps/studio/components/AppShell.tsx`, `apps/studio/lib/app-shell/store.ts`) owns editor tabs and the active editor. Dialogue, Video, Character, and Strategy are editors; only the active one is rendered.
+- **Agent layers**: (1) Shell: context (activeEditor, editorNames) and actions (switchEditor, openEditor, closeEditor). (2) Per-editor: domain contract (context + actions + suggestions) when that editor is active. (3) Optional co-agents: see **docs/17-co-agents-and-multi-agent.mdx**.
+- **Do not repeat**: Before changing styling, model routing, or multi-editor registration, check **docs/agent-artifacts/core/errors-and-attempts.md** for known failures and fixes. For CopilotKit + OpenRouter use **OpenAI SDK** and **@ai-sdk/openai** with **baseURL** only; do not use `@openrouter/ai-sdk-provider`. See [errors-and-attempts.md](docs/agent-artifacts/core/errors-and-attempts.md) (BuiltInAgent/OpenRouter SDK) and [06-model-routing-and-openrouter.mdx](docs/architecture/06-model-routing-and-openrouter.mdx).
 
 ## Other agents
 
-When touching modes (Dialogue, Character, Video, Strategy): use the shared shell from `@forge/shared/components/editor`. Do not invent new layout patterns; extend via slots and document in shared AGENTS.
+When touching editors (Dialogue, Character, Video, Strategy): use the shared shell from `@forge/shared/components/editor`. Do not invent new layout patterns; extend via slots and document in shared AGENTS.
 
 ## UI atoms
 
 - Shared shadcn atoms live in `packages/ui` and are imported via `@forge/ui/*`.
+
+## UI density checklist
+
+- Editor surfaces must use compact tokens (`--control-*`, `--panel-padding`, `--tab-height`).
+- Avoid ad-hoc `px-*` / `py-*` utilities in editor UIs; prefer token-based values.
+- Do not repeat context labels (project title, editor name) inside panels if already shown in the header.
+- If an editor overrides density, set `data-density` on `EditorShell`.
+
+## Enhanced features / ideas backlog
+
+- **Backlog:** [docs/agent-artifacts/core/enhanced-features-backlog.md](docs/agent-artifacts/core/enhanced-features-backlog.md). Process: [enhanced-features-process.md](docs/agent-artifacts/core/enhanced-features-process.md).
+- Agents may add ideas with status `proposed` (Title, Context, Suggestion, Date). Do **not** implement proposed items until a human sets status to `accepted`. Human triages; then implement and set status to `implemented` with optional Link.
 
 ## Feature gating
 

@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 import {
-  WorkspaceSidebar,
-  type WorkspaceSidebarProps,
+  EditorSidebar,
+  type EditorSidebarProps,
   SidebarContent,
   SidebarHeader,
   SidebarFooter,
@@ -18,21 +18,18 @@ import {
   SidebarTrigger,
   SidebarInset,
   useSidebar,
-} from '../workspace/panels';
+} from './EditorSidebar';
 
-export type DockSidebarProps = WorkspaceSidebarProps;
+export type DockSidebarProps = EditorSidebarProps;
 
 /**
  * DockSidebar — grid-embedded shadcn Sidebar wrapper for DockLayout panels.
- *
- * This is a naming-aligned alias of WorkspaceSidebar. Use within DockPanel
- * regions when you want the shadcn Sidebar experience inside the editor.
+ * Alias of EditorSidebar for use within DockPanel regions.
  */
 export function DockSidebar(props: DockSidebarProps) {
-  return <WorkspaceSidebar {...props} />;
+  return <EditorSidebar {...props} />;
 }
 
-// Re-export shadcn sidebar primitives for convenience.
 export {
   SidebarContent,
   SidebarHeader,

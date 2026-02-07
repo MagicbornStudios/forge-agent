@@ -3,7 +3,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Forge',
-  description: 'AI-encapsulated editors and workspaces for professional apps',
+  description: 'AI-encapsulated editors for professional apps',
 };
 
 export default function RootLayout({

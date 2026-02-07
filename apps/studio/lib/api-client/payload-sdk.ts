@@ -29,3 +29,9 @@ export const RELATIONSHIPS_SLUG = 'relationships';
 
 /** Collection slug for media uploads (Payload REST: /api/media). */
 export const MEDIA_SLUG = 'media';
+
+/** Collection slug for WriterMode pages (Payload REST: /api/pages). */
+export const PAGES_SLUG = 'pages';
+
+/** Collection slug for WriterMode blocks (Payload REST: /api/blocks). */
+export const BLOCKS_SLUG = 'blocks';

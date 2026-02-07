@@ -17,8 +17,8 @@ Use Redux DevTools to inspect and time-travel Zustand store state when debugging
 
 ## Store names (Redux DevTools dropdown)
 
-- **AppShell** - `apps/studio/lib/app-shell/store.ts` (route, open modes, themes, bottom drawer).
-- **Settings** — `apps/studio/lib/settings/store.ts` (app/workspace/editor settings).
+- **AppShell** - `apps/studio/lib/app-shell/store.ts` (route, open editors, themes, bottom drawer).
+- **Settings** — `apps/studio/lib/settings/store.ts` (app/editor/viewport settings).
 - **ModelRouter** — `apps/studio/lib/model-router/store.ts` (mode, manual model, enabled models, health).
 - **Entitlements** — `apps/studio/lib/entitlements/store.ts` (plan, overrides).
 - **Video** — `apps/studio/lib/domains/video/store.ts` (video doc draft, isDirty).
@@ -26,7 +26,7 @@ Use Redux DevTools to inspect and time-travel Zustand store state when debugging
 
 ## How to use (humans)
 
-1. Reproduce the issue (e.g. open app, switch workspace, trigger the bug).
+1. Reproduce the issue (e.g. open app, switch editor, trigger the bug).
 2. Open browser DevTools → **Redux** tab.
 3. Select a store from the dropdown (or "All" to see combined state).
 4. Inspect **State** and **Action** list; use **time-travel** (slider or prev/next) to step back and see what changed.

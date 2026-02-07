@@ -15,19 +15,19 @@ Start here. Pick your path: **human / contributor** or **coding agent**.
 
 ### 1. How-to guides (read in order)
 
-The numbered guides build a workspace from the ground up. In the app, open **[Docs](/docs)** in the sidebar, or read in the repo:
+The numbered guides build an editor from the ground up. In the app, open **[Docs](/docs)** in the sidebar, or read in the repo:
 
 | # | Guide | Summary |
 |---|--------|--------|
 | 1 | [Foundation](how-to/01-foundation.md) | Repo structure, packages, running the app, key concepts. |
-| 2 | [Editor shell and slots](how-to/02-workspace-shell.md) | EditorShell, ModeHeader, ModeToolbar, DockLayout, ModeStatusBar, ModeOverlaySurface. |
+| 2 | [Editor shell and slots](how-to/02-workspace-shell.md) | EditorShell, EditorHeader, EditorToolbar, DockLayout, EditorStatusBar, EditorOverlaySurface. |
 | 3 | [Styling and theming](how-to/03-styling.md) | Design tokens, data-theme, @forge/ui, shared styles. |
 | 4 | [Data and state](how-to/04-data-and-state.md) | Draft (Zustand), server state (TanStack Query), API boundary. |
-| 5 | [Building an editor mode](how-to/05-building-a-workspace.md) | Step-by-step: shell, main, inspector, toolbar, domain contract. |
-| 6 | [DialogueMode walkthrough](how-to/06-forge-workspace-walkthrough.mdx) | How DialogueMode is built; plan, patch, review, commit. |
+| 5 | [Building an editor](how-to/05-building-a-workspace.md) | Step-by-step: shell, main, inspector, toolbar, system contract. |
+| 6 | [Dialogue Editor walkthrough](how-to/06-forge-workspace-walkthrough.mdx) | How Dialogue Editor is built; plan, patch, review, commit. |
 | 7 | [Copilot and AI integration](how-to/07-copilot.md) | Context, actions, suggestions, plan-execute-review-commit. |
-| 8 | [Adding AI to modes](how-to/08-adding-ai-to-workspaces.md) | Domain actions, app-level actions, agents. |
-| 9 | [VideoMode walkthrough](how-to/09-twick-workspace.mdx) | Timeline UI, Twick-inspired data flow, AI actions. |
+| 8 | [Adding AI to editors](how-to/08-adding-ai-to-workspaces.md) | System actions, app-level actions, agents. |
+| 9 | [Video Editor walkthrough](how-to/09-twick-workspace.mdx) | Timeline UI, Twick-inspired data flow, AI actions. |
 | 21 | [Workspace -> Editor migration](how-to/21-migration-guide-workspace-to-editor.mdx) | Old vs new names, compatibility notes, migration checklist. |
 | 22 | [AI generation components](how-to/22-ai-generation-components.mdx) | GenerateMediaModal, hooks, assistant-ui strategy editor. |
 | 15 | [Shadcn registries and UI components](how-to/15-shadcn-registries-and-components.mdx) | Registries, components.json, where to add shared vs app-only, how to add and use. |
@@ -36,20 +36,20 @@ Full how-to index: [how-to/00-index.md](how-to/00-index.md).
 
 ### 2. Architecture and reference
 
-- **Architecture:** [Architecture index](architecture/00-index.mdx) - [Unified editor](architecture/01-unified-workspace.mdx), [Editor mode architecture](architecture/02-workspace-editor-architecture.mdx), [CopilotKit and agents](architecture/03-copilotkit-and-agents.mdx), [Component library + registry](architecture/04-component-library-and-registry.mdx), [Editor platform (DockLayout)](architecture/05-editor-platform.mdx).
+- **Architecture:** [Architecture index](architecture/00-index.mdx) - [Unified editor](architecture/01-unified-workspace.mdx), [Editor architecture](architecture/02-workspace-editor-architecture.mdx), [CopilotKit and agents](architecture/03-copilotkit-and-agents.mdx), [Component library + registry](architecture/04-component-library-and-registry.mdx), [Editor platform (DockLayout)](architecture/05-editor-platform.mdx), [Editors as MCP Apps](architecture/07-modes-as-mcp-apps.mdx), [CopilotKit vs assistant-ui](architecture/08-copilotkit-vs-assistant-ui.mdx), [Dialogue system and Yarn Spinner](architecture/09-dialogue-domain-and-yarn-spinner.mdx).
 - **Design:** [Design index](design/00-index.mdx) - [Styling and theming](design/01-styling-and-theming.mdx), [Components](design/02-components.mdx).
 - [Project overview](10-project-overview.mdx)
 - [Tech stack](11-tech-stack.mdx)
-- [Editor mode design](12-workspace-design.mdx)
+- [Editor design](12-workspace-design.mdx)
 - [Code organization](13-code-organization.mdx)
-- [Adding domain actions](14-adding-domain-actions.mdx)
-- [AI mode integration](15-ai-workspace-integration.mdx)
-- [CopilotKit workspace integration](16-copilotkit-workspace-integration.mdx)
+- [Adding system actions](14-adding-domain-actions.mdx)
+- [AI editor integration](15-ai-workspace-integration.mdx)
+- [CopilotKit editor integration](16-copilotkit-workspace-integration.mdx)
 - [Co-agents and multi-agent](17-co-agents-and-multi-agent.mdx)
 
-### 3. Contributor editor mode requirement
+### 3. Contributor editor requirement
 
-We expect every new contributor to **build their own editor mode** (tutorial: [05 - Building a workspace](how-to/05-building-a-workspace.mdx)) and **submit a PR** to add it under **`packages/shared/contributor_workspaces/`**. See the [README](../README.md) contributor section and [contributor_workspaces README](../packages/shared/contributor_workspaces/README.md).
+We expect every new contributor to **build their own editor** (tutorial: [05 - Building an editor](how-to/05-building-a-workspace.mdx)) and **submit a PR** to add it under **`packages/shared/contributor_workspaces/`**. See the [README](../README.md) contributor section and [contributor_workspaces README](../packages/shared/contributor_workspaces/README.md).
 
 ---
 

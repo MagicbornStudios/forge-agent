@@ -10,9 +10,13 @@ Reference docs for app and editor architecture. Main docs index: [00-docs-index.
 
 | Doc | Summary |
 |-----|---------|
-| [01 - Unified editor (App Shell)](01-unified-workspace.mdx) | App Shell owns mode tabs and active mode; only the active mode is rendered. |
-| [02 - Editor mode architecture](02-workspace-editor-architecture.mdx) | Mental model: EditorShell, controller, editor bridge, chat orchestrator; slots and domain contracts. |
-| [03 - CopilotKit and agents](03-copilotkit-and-agents.mdx) | CopilotKit integration, domain actions, plan-execute-review-commit, model routing, roadmap pointer. |
+| [00 - Tools, editors, and systems](00-tools-and-editors.mdx) | Unreal-aligned vocabulary: tools vs editors vs systems and how we map to code. |
+| [01 - Unified editor (App Shell)](01-unified-workspace.mdx) | App Shell owns editor tabs and active editor; only the active editor is rendered. |
+| [02 - Editor architecture](02-workspace-editor-architecture.mdx) | Mental model: EditorShell, controller, editor bridge, chat orchestrator; slots and system contracts. |
+| [03 - CopilotKit and agents](03-copilotkit-and-agents.mdx) | CopilotKit integration, system actions, plan-execute-review-commit, model routing, roadmap pointer. |
 | [04 - Component library and registry](04-component-library-and-registry.mdx) | Shared UI packages, registries, where to add components. |
-| [05 - Editor platform (DockLayout)](05-editor-platform.mdx) | DockLayout and mode architecture; naming migration from WorkspaceShell to EditorShell/DockLayout. |
+| [05 - Editor platform (DockLayout)](05-editor-platform.mdx) | DockLayout and editor architecture; naming migration from WorkspaceShell to EditorShell/DockLayout. |
 | [06 - Model routing and OpenRouter](06-model-routing-and-openrouter.mdx) | OpenAI SDK + baseURL for OpenRouter (CopilotKit-compatible), model list from API, static defaults, ModelSwitcher. Provider stack: OpenRouter (text/image), ElevenLabs (audio), Sora (video planned). |
+| [07 - Editors as MCP Apps](07-modes-as-mcp-apps.mdx) | Each editor exposable as an MCP App (tool + UI resource) for external host embedding. Roadmap for MCP server and registry. |
+| [08 - CopilotKit vs assistant-ui](08-copilotkit-vs-assistant-ui.mdx) | When to use CopilotKit (system copilot) vs assistant-ui (chat UI). Architecture, packages, API routes. |
+| [09 - Dialogue system and Yarn Spinner](09-dialogue-domain-and-yarn-spinner.mdx) | Dialogue Editor architecture, graph types, node types, AI workflow, Yarn Spinner integration roadmap. |

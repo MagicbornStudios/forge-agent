@@ -6,28 +6,30 @@ import { cn } from '@forge/shared/lib/utils';
 export interface ViewportMetaProps {
   children?: React.ReactNode;
   className?: string;
-  /** Unique identifier for this editor viewport. */
-  editorId: string;
+  /** Unique identifier for this viewport. */
+  viewportId?: string;
   /** Type descriptor (e.g. 'react-flow', 'lexical', 'video', 'canvas'). */
-  editorType: string;
-  /** Optional scope for multi-editor modes (e.g. 'narrative', 'storylet'). */
-  editorScope?: string;
+  viewportType?: string;
+  /** Optional scope for multi-viewport editors (e.g. 'narrative', 'storylet'). */
+  viewportScope?: string;
 }
 
 /**
- * ViewportMeta — lightweight metadata wrapper for editor viewports.
+ * ViewportMeta - lightweight metadata wrapper for editor viewports.
  *
- * Sets `data-editor-id`, `data-editor-type`, and `data-editor-scope`
+ * Sets `data-viewport-id`, `data-viewport-type`, and `data-viewport-scope`
  * attributes on the wrapping div. These attributes are used by the
  * copilot system, settings resolution, and AI highlight overlay to
- * identify which editor is active.
+ * identify which viewport is active.
  *
- * Renamed from `WorkspaceEditor` for clarity — this component provides
+ * Legacy `data-editor-*` attributes are also set for compatibility.
+ *
+ * Renamed from `WorkspaceEditor` for clarity - this component provides
  * metadata, not an actual editor.
  *
  * @example
  * ```tsx
- * <ViewportMeta editorId="forge-narrative" editorType="react-flow" editorScope="narrative">
+ * <ViewportMeta viewportId="forge-narrative" viewportType="react-flow" viewportScope="narrative">
  *   <ReactFlowProvider>
  *     <ReactFlow ... />
  *   </ReactFlowProvider>
@@ -37,16 +39,19 @@ export interface ViewportMetaProps {
 export function ViewportMeta({
   children,
   className,
-  editorId,
-  editorType,
-  editorScope,
+  viewportId,
+  viewportType,
+  viewportScope,
 }: ViewportMetaProps) {
   return (
     <div
       className={cn('h-full w-full min-h-0 min-w-0', className)}
-      data-editor-id={editorId}
-      data-editor-type={editorType}
-      {...(editorScope ? { 'data-editor-scope': editorScope } : {})}
+      {...(viewportId ? { 'data-viewport-id': viewportId } : {})}
+      {...(viewportType ? { 'data-viewport-type': viewportType } : {})}
+      {...(viewportScope ? { 'data-viewport-scope': viewportScope } : {})}
+      {...(viewportId ? { 'data-editor-id': viewportId } : {})}
+      {...(viewportType ? { 'data-editor-type': viewportType } : {})}
+      {...(viewportScope ? { 'data-editor-scope': viewportScope } : {})}
     >
       {children}
     </div>

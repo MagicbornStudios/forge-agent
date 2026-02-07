@@ -2,19 +2,19 @@
 // Editor Platform - Forge Agent's Unreal-Engine-inspired editor kit
 // ---------------------------------------------------------------------------
 // These components provide a complete declarative UI system for building
-// AI-first editor modes with resizable, dockable, lockable panels.
+// AI-first editors with resizable, dockable, lockable panels.
 //
 // Architecture
-// EditorShell          <- root container (data-mode-id, data-domain, data-theme)
-//   ModeHeader         <- title bar  (.Left, .Center, .Right)
-//   ModeToolbar        <- toolbar    (.Left, .Center, .Right, .Menubar, .Button ...)
-//   ModeReviewBar      <- AI change review (revert / accept)
+// EditorShell          <- root container (data-editor-id, data-domain, data-theme)
+//   EditorHeader       <- title bar  (.Left, .Center, .Right)
+//   EditorToolbar      <- toolbar    (.Left, .Center, .Right, .Menubar, .Button ...)
+//   EditorReviewBar    <- AI change review (revert / accept)
 //   DockLayout         <- resizable panel layout (left, main, right, bottom)
 //     DockPanel        <- single panel (title, tabs, lock, scroll)
 //       PanelTabs      <- tab bar within a panel
 //     ViewportMeta     <- editor viewport metadata wrapper
-//   ModeStatusBar      <- bottom status bar
-//   ModeOverlaySurface <- modal overlay surface
+//   EditorStatusBar    <- bottom status bar
+//   EditorOverlaySurface <- modal overlay surface
 // ---------------------------------------------------------------------------
 
 // Layout primitives
@@ -39,24 +39,61 @@ export type { EditorButtonProps } from './EditorButton';
 export { EditorTooltip } from './EditorTooltip';
 export type { EditorTooltipProps } from './EditorTooltip';
 
-// Shell + Mode components
+// Shell + Editor components
 export { EditorShell } from './EditorShell';
 export type { EditorShellProps } from './EditorShell';
 
-export { ModeHeader } from './ModeHeader';
-export type { ModeHeaderProps } from './ModeHeader';
+export { EditorHeader } from './EditorHeader';
+export type { EditorHeaderProps } from './EditorHeader';
 
-export { ModeToolbar } from './ModeToolbar';
-export type { ModeToolbarProps } from './ModeToolbar';
+export { EditorToolbar } from './EditorToolbar';
+export type { EditorToolbarProps } from './EditorToolbar';
 
-export { ModeStatusBar } from './ModeStatusBar';
-export type { ModeStatusBarProps } from './ModeStatusBar';
+export { EditorFileMenu } from './toolbar/EditorFileMenu';
+export type { EditorFileMenuProps, EditorFileMenuItem } from './toolbar/EditorFileMenu';
+export { EditorMenubar } from './toolbar/EditorMenubar';
+export type { EditorMenubarProps, EditorMenubarMenu, EditorMenubarItem } from './toolbar/EditorMenubar';
+export { EditorProjectSelect } from './toolbar/EditorProjectSelect';
+export type { EditorProjectSelectProps, EditorProjectOption } from './toolbar/EditorProjectSelect';
 
-export { ModeReviewBar } from './ModeReviewBar';
-export type { ModeReviewBarProps } from './ModeReviewBar';
+export { EditorInspector } from './EditorInspector';
+export type { EditorInspectorProps } from './EditorInspector';
 
-export { ModeOverlaySurface } from './ModeOverlaySurface';
-export type { ModeOverlaySurfaceProps } from './ModeOverlaySurface';
+export {
+  EditorSidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarFooter,
+  SidebarSeparator,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupAction,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarTrigger,
+  SidebarInset,
+  useSidebar,
+} from './EditorSidebar';
+export type { EditorSidebarProps } from './EditorSidebar';
+
+export { EditorTab } from './EditorTab';
+export type { EditorTabProps } from './EditorTab';
+export { EditorTabGroup } from './EditorTabGroup';
+export type { EditorTabGroupProps } from './EditorTabGroup';
+
+export { EditorBottomPanel } from './EditorBottomPanel';
+export type { EditorBottomPanelProps } from './EditorBottomPanel';
+
+export { EditorStatusBar } from './EditorStatusBar';
+export type { EditorStatusBarProps } from './EditorStatusBar';
+
+export { EditorReviewBar } from './EditorReviewBar';
+export type { EditorReviewBarProps } from './EditorReviewBar';
+
+export { EditorOverlaySurface } from './EditorOverlaySurface';
+export type { EditorOverlaySurfaceProps } from './EditorOverlaySurface';
 
 // Panel utilities
 export { PanelSettings } from './PanelSettings';

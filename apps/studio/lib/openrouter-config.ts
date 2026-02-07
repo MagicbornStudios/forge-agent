@@ -1,6 +1,6 @@
 import 'server-only';
 
-/** Free model defaults (CopilotKit uses model-router resolveModel(); these are for non-CopilotKit use). */
+/** Free model defaults (CopilotKit uses model-router resolvePrimaryAndFallbacks(); these are for non-CopilotKit use). */
 const DEFAULT_MODEL_FREE = 'google/gemini-2.0-flash-exp:free';
 const DEFAULT_TIMEOUT_MS = 60000;
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';

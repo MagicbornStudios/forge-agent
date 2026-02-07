@@ -5,9 +5,9 @@ import {
   AppProviders,
   EditorApp,
   EditorShell,
-  ModeHeader,
-  ModeToolbar,
-  ModeStatusBar,
+  EditorHeader,
+  EditorToolbar,
+  EditorStatusBar,
   CodebaseAgentStrategyEditor,
 } from '@forge/dev-kit';
 
@@ -15,42 +15,42 @@ export default function Home() {
   return (
     <AppProviders tooltip={{ delayDuration: 250 }} copilot={false}>
       <EditorApp>
-        <EditorApp.Tabs label="Mode tabs">
+        <EditorApp.Tabs label="Editor tabs">
           <EditorApp.Tab label="Strategy" isActive domain="ai" />
         </EditorApp.Tabs>
 
         <EditorApp.Content>
           <EditorShell
-            modeId="strategy"
+            editorId="strategy"
             title="Strategy"
             subtitle="Codebase Agent Strategy Editor"
             domain="ai"
             className="flex-1 min-h-0 bg-canvas"
           >
-            <ModeHeader>
-              <ModeHeader.Left>
+            <EditorHeader>
+              <EditorHeader.Left>
                 <h1 className="text-lg font-bold">Strategy</h1>
-              </ModeHeader.Left>
-              <ModeHeader.Center>
+              </EditorHeader.Left>
+              <EditorHeader.Center>
                 <span className="text-sm text-muted-foreground">
                   Consumer showcase for assistant-ui + tool-ui
                 </span>
-              </ModeHeader.Center>
-            </ModeHeader>
+              </EditorHeader.Center>
+            </EditorHeader>
 
-            <ModeToolbar className="bg-sidebar border-b border-sidebar-border">
-              <ModeToolbar.Left>
+            <EditorToolbar className="bg-sidebar border-b border-sidebar-border">
+              <EditorToolbar.Left>
                 <span className="text-xs text-muted-foreground">
                   Build and iterate on agent strategies with streaming chat.
                 </span>
-              </ModeToolbar.Left>
-            </ModeToolbar>
+              </EditorToolbar.Left>
+            </EditorToolbar>
 
             <div className="flex-1 min-h-0">
               <CodebaseAgentStrategyEditor apiUrl="/api/assistant-chat" />
             </div>
 
-            <ModeStatusBar>Connected to /api/assistant-chat</ModeStatusBar>
+            <EditorStatusBar>Connected to /api/assistant-chat</EditorStatusBar>
           </EditorShell>
         </EditorApp.Content>
       </EditorApp>

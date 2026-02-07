@@ -34,7 +34,7 @@ Supports text-to-image, upload, and text-to-speech. To enable text-to-speech, pr
 <GenerateMediaModal
   open={open}
   onOpenChange={setOpen}
-  context={{ mode: 'character', entityId: characterId }}
+  context={{ name: characterName, description: characterBio, existingImageUrl: characterImageUrl }}
   enabledTabs={['text-to-image', 'text-to-speech']}
   generateImage={(prompt) => generateImage.mutateAsync({ prompt })}
   generateSpeech={(voiceId, text) => generateSpeech.mutateAsync({ voiceId, text })}

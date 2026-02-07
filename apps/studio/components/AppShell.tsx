@@ -3,11 +3,11 @@
 import React from 'react';
 import { useCopilotReadable, useCopilotAction } from '@copilotkit/react-core';
 import type { Parameter } from '@copilotkit/shared';
-import { useEditorStore, type EditorModeId } from '@/lib/app-shell/store';
+import { useEditorStore, type EditorId } from '@/lib/app-shell/store';
 import {
-  MODE_LABELS,
-  MODE_EDITOR_SUMMARY,
-} from '@/lib/app-shell/mode-metadata';
+  EDITOR_LABELS,
+  EDITOR_SUMMARY,
+} from '@/lib/app-shell/editor-metadata';
 import { EditorApp } from '@forge/shared/components/app';
 import { EditorButton } from '@forge/shared/components/editor';
 import { SettingsMenu } from '@/components/settings/SettingsMenu';
@@ -16,19 +16,20 @@ import { useSettingsStore } from '@/lib/settings/store';
 import { useEntitlements, CAPABILITIES } from '@forge/shared/entitlements';
 import { ImageGenerateRender } from '@/components/copilot/ImageGenerateRender';
 import { StructuredOutputRender } from '@/components/copilot/StructuredOutputRender';
+import { MessageCircle, Video, Users, Target } from 'lucide-react';
 import { useGenerateImage, useStructuredOutput } from '@/lib/data/hooks';
 import { createAppAction } from '@forge/shared/copilot';
 
-// Modes (new naming)
-import { DialogueMode } from '@/components/modes/DialogueMode';
-import { VideoMode } from '@/components/modes/VideoMode';
-import { CharacterMode } from '@/components/modes/CharacterMode';
-import { StrategyMode } from '@/components/modes/StrategyMode';
+// Editors
+import { DialogueEditor } from '@/components/editors/DialogueEditor';
+import { VideoEditor } from '@/components/editors/VideoEditor';
+import { CharacterEditor } from '@/components/editors/CharacterEditor';
+import { StrategyEditor } from '@/components/editors/StrategyEditor';
 
-const VALID_MODE_IDS: EditorModeId[] = ['dialogue', 'video', 'character', 'strategy'];
+const VALID_EDITOR_IDS: EditorId[] = ['dialogue', 'video', 'character', 'strategy'];
 
-function isValidModeId(id: string): id is EditorModeId {
-  return VALID_MODE_IDS.includes(id as EditorModeId);
+function isValidEditorId(id: string): id is EditorId {
+  return VALID_EDITOR_IDS.includes(id as EditorId);
 }
 
 export function AppShell() {
@@ -43,80 +44,81 @@ export function AppShell() {
   // Shell-level context for the copilot agent
   useCopilotReadable({
     description:
-      'Unified editor context: which mode is active, mode names, and editor types. Use this to switch modes.',
+      'Unified editor context: which editor is active, editor names, and editor types. Use this to switch editors.',
     value: {
       activeWorkspaceId,
-      activeModeName: MODE_LABELS[activeWorkspaceId],
-      modeNames: MODE_LABELS,
+      activeEditorId: activeWorkspaceId,
+      activeEditorName: EDITOR_LABELS[activeWorkspaceId],
+      editorNames: EDITOR_LABELS,
       openWorkspaceIds,
-      editorSummary: MODE_EDITOR_SUMMARY[activeWorkspaceId],
-      hint: 'Say "switch to Dialogue", "open Video", "open Characters", or "open Strategy" to change mode.',
+      editorSummary: EDITOR_SUMMARY[activeWorkspaceId],
+      hint: 'Say "switch to Dialogue", "open Video", "open Characters", or "open Strategy" to change editor.',
     },
   });
 
   useCopilotAction(createAppAction<[Parameter]>({
-    name: 'switchMode',
-    description: 'Switch the active editor mode tab.',
+    name: 'switchEditor',
+    description: 'Switch the active editor tab.',
     parameters: [
       {
-        name: 'modeId',
+        name: 'editorId',
         type: 'string',
-        description: `Mode to switch to: ${VALID_MODE_IDS.map((id) => `"${id}"`).join(', ')}`,
+        description: `Editor to switch to: ${VALID_EDITOR_IDS.map((id) => `"${id}"`).join(', ')}`,
         required: true,
       },
     ],
-    handler: async ({ modeId }) => {
-      const id = String(modeId);
-      if (isValidModeId(id)) {
+    handler: async ({ editorId }) => {
+      const id = String(editorId);
+      if (isValidEditorId(id)) {
         setActiveWorkspace(id);
-        return { success: true, message: `Switched to ${MODE_LABELS[id]}.` };
+        return { success: true, message: `Switched to ${EDITOR_LABELS[id]}.` };
       }
-      return { success: false, message: `Unknown mode: ${modeId}. Use ${VALID_MODE_IDS.join(', ')}.` };
+      return { success: false, message: `Unknown editor: ${editorId}. Use ${VALID_EDITOR_IDS.join(', ')}.` };
     },
   }));
 
   useCopilotAction(createAppAction<[Parameter]>({
-    name: 'openMode',
-    description: 'Open an editor mode tab if not already open, and switch to it.',
+    name: 'openEditor',
+    description: 'Open an editor tab if not already open, and switch to it.',
     parameters: [
       {
-        name: 'modeId',
+        name: 'editorId',
         type: 'string',
-        description: `Mode to open: ${VALID_MODE_IDS.map((id) => `"${id}"`).join(', ')}`,
+        description: `Editor to open: ${VALID_EDITOR_IDS.map((id) => `"${id}"`).join(', ')}`,
         required: true,
       },
     ],
-    handler: async ({ modeId }) => {
-      const id = String(modeId);
-      if (isValidModeId(id)) {
+    handler: async ({ editorId, modeId }) => {
+      const id = String(editorId ?? modeId);
+      if (isValidEditorId(id)) {
         openWorkspace(id);
-        return { success: true, message: `Opened ${MODE_LABELS[id]}.` };
+        return { success: true, message: `Opened ${EDITOR_LABELS[id]}.` };
       }
-      return { success: false, message: `Unknown mode: ${modeId}.` };
+      return { success: false, message: `Unknown editor: ${editorId}.` };
     },
   }));
 
   useCopilotAction(createAppAction<[Parameter]>({
-    name: 'closeMode',
-    description: 'Close an editor mode tab. Must have at least one open.',
+    name: 'closeEditor',
+    description: 'Close an editor tab. Must have at least one open.',
     parameters: [
       {
-        name: 'modeId',
+        name: 'editorId',
         type: 'string',
-        description: `Mode to close: ${VALID_MODE_IDS.map((id) => `"${id}"`).join(', ')}`,
+        description: `Editor to close: ${VALID_EDITOR_IDS.map((id) => `"${id}"`).join(', ')}`,
         required: true,
       },
     ],
-    handler: async ({ modeId }) => {
-      const id = String(modeId);
-      if (isValidModeId(id)) {
+    handler: async ({ editorId }) => {
+      const id = String(editorId);
+      if (isValidEditorId(id)) {
         if (openWorkspaceIds.length <= 1) {
-          return { success: false, message: 'Cannot close the last mode.' };
+          return { success: false, message: 'Cannot close the last editor.' };
         }
         closeWorkspace(id);
-        return { success: true, message: `Closed ${MODE_LABELS[id]}.` };
+        return { success: true, message: `Closed ${EDITOR_LABELS[id]}.` };
       }
-      return { success: false, message: `Unknown mode: ${modeId}.` };
+      return { success: false, message: `Unknown editor: ${editorId}.` };
     },
   }));
 
@@ -198,9 +200,9 @@ export function AppShell() {
 
   return (
     <EditorApp>
-      {/* Mode tabs */}
+      {/* Editor tabs */}
       <EditorApp.Tabs
-        label="Mode tabs"
+        label="Editor tabs"
         actions={
           <>
             <EditorButton
@@ -208,65 +210,80 @@ export function AppShell() {
               variant="ghost"
               size="sm"
               onClick={() => openWorkspace('dialogue')}
-              tooltip="Open Dialogue mode"
+              tooltip="Open Dialogue editor"
               className="text-muted-foreground hover:text-foreground"
             >
-              + Dialogue
+              + Dialogue Editor
             </EditorButton>
             <EditorButton
               type="button"
               variant="ghost"
               size="sm"
               onClick={() => openWorkspace('video')}
-              tooltip="Open Video mode"
+              tooltip="Open Video editor"
               className="text-muted-foreground hover:text-foreground"
             >
-              + Video
+              + Video Editor
             </EditorButton>
             <EditorButton
               type="button"
               variant="ghost"
               size="sm"
               onClick={() => openWorkspace('character')}
-              tooltip="Open Characters mode"
+              tooltip="Open Character editor"
               className="text-muted-foreground hover:text-foreground"
             >
-              + Characters
+              + Character Editor
             </EditorButton>
             <EditorButton
               type="button"
               variant="ghost"
               size="sm"
               onClick={() => openWorkspace('strategy')}
-              tooltip="Open Strategy mode"
+              tooltip="Open Strategy editor"
               className="text-muted-foreground hover:text-foreground"
             >
-              + Strategy
+              + Strategy Editor
             </EditorButton>
             <SettingsMenu tooltip="App settings" defaultScope="app" />
           </>
         }
       >
-        {openWorkspaceIds.map((id) => (
-          <EditorApp.Tab
-            key={id}
-            label={MODE_LABELS[id]}
-            isActive={activeWorkspaceId === id}
-            domain={id}
-            onSelect={() => setActiveWorkspace(id)}
-            onClose={openWorkspaceIds.length > 1 ? () => closeWorkspace(id) : undefined}
-            tooltip={`Switch to ${MODE_LABELS[id]}`}
-            closeTooltip={`Close ${MODE_LABELS[id]}`}
-          />
-        ))}
+        {openWorkspaceIds.map((id) => {
+          const Icon =
+            id === 'dialogue'
+              ? MessageCircle
+              : id === 'video'
+                ? Video
+                : id === 'character'
+                  ? Users
+                  : Target;
+          return (
+            <EditorApp.Tab
+              key={id}
+              label={
+                <>
+                  <Icon className="size-4 shrink-0" aria-hidden />
+                  {EDITOR_LABELS[id]}
+                </>
+              }
+              isActive={activeWorkspaceId === id}
+              domain={id}
+              onSelect={() => setActiveWorkspace(id)}
+              onClose={openWorkspaceIds.length > 1 ? () => closeWorkspace(id) : undefined}
+              tooltip={`Switch to ${EDITOR_LABELS[id]}`}
+              closeTooltip={`Close ${EDITOR_LABELS[id]}`}
+            />
+          );
+        })}
       </EditorApp.Tabs>
 
-      {/* Active mode content */}
+      {/* Active editor content */}
       <EditorApp.Content>
-        {activeWorkspaceId === 'dialogue' && <DialogueMode />}
-        {activeWorkspaceId === 'video' && <VideoMode />}
-        {activeWorkspaceId === 'character' && <CharacterMode />}
-        {activeWorkspaceId === 'strategy' && <StrategyMode />}
+        {activeWorkspaceId === 'dialogue' && <DialogueEditor />}
+        {activeWorkspaceId === 'video' && <VideoEditor />}
+        {activeWorkspaceId === 'character' && <CharacterEditor />}
+        {activeWorkspaceId === 'strategy' && <StrategyEditor />}
       </EditorApp.Content>
       {toastsEnabled !== false && <Toaster />}
     </EditorApp>

@@ -7,13 +7,13 @@
  * route persistence is handled by the app-shell store's persist middleware.
  */
 
-import type { AppShellWorkspaceId } from '@/lib/app-shell/store';
+import type { EditorId } from '@/lib/app-shell/store';
 
 const APP_SHELL_ROUTE_KEY = 'forge-app-shell-route';
 
 export interface AppShellRouteSaved {
-  activeWorkspaceId: AppShellWorkspaceId;
-  openWorkspaceIds: AppShellWorkspaceId[];
+  activeWorkspaceId: EditorId;
+  openWorkspaceIds: EditorId[];
 }
 
 export function getAppShellRoute(): AppShellRouteSaved | null {

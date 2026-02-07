@@ -8,16 +8,81 @@ updated: 2026-02-07
 
 ## Visual direction
 
-- **Spotify/Photoshop-inspired**: clean, dense, high-contrast hierarchy with muted borders and purposeful accents.
-- **Declarative shadcn**: use shadcn UI primitives (DropdownMenu, Select, Sheet, Card, Button, etc.) instead of hand-rolled UI.
-- **Mode theming**: app theme is the base (driven by `ui.theme` via `AppThemeProvider`), modes may override via `EditorShell theme`.
+- **Design language**: We aim for **Spotify-intense**, **neobrutal dark**, **Rave/glows**, and **shadcn-first** — professional, modern, and elegant. See [03 - Design language](03-design-language.mdx) for the one-pager.
+- **Unreal-style compactness**: dense, editor-first layouts; we keep density tokens but align visuals to the design language (radius, glows, type).
+- **Spotify/Photoshop-inspired**: clean, high-contrast hierarchy; one primary accent; clear sidebar and content areas.
+- **Declarative shadcn**: use shadcn UI primitives (DropdownMenu, Select, Sheet, Card, Button, etc.) instead of hand-rolled UI; default appearance should look like shadcn docs.
+- **Editor theming**: app theme is the base (driven by `ui.theme` via `AppThemeProvider`), editors may override via `EditorShell theme`.
 - **Atomic design**: atoms live in `packages/ui/src/components/ui/*` (shadcn). Build molecules and organisms from those primitives.
 
 ## UI rules
 
 - Prefer semantic tokens (`--background`, `--foreground`, `--border`) from `packages/shared/src/shared/styles/themes.css`.
-- Avoid single-purpose UI components per workspace; extend shared components and document the slot.
-- Standard toolbar layout: File menu + Project select + Settings (plus domain actions).
+- Avoid single-purpose UI components per editor; extend shared components and document the slot.
+- Standard toolbar layout: File menu + Project select + Settings (plus system actions).
+
+## Compact editor style guide (Unreal-inspired)
+
+This is the **system of record** for density, borders, and cohesion across all editor surfaces. The goal is a professional, heavy‑tooling UI that stays readable at high density.
+
+### Principles
+
+- **Density by default**: editor surfaces run compact; marketing/landing pages are free to remain comfortable.
+- **Design language overrides**: We prefer the direction in [03 - Design language](03-design-language.mdx): neobrutal dark with Rave glows, shadcn-first radius and type. Use `--glow-*` and semantic tokens; avoid overly sharp or tiny radii everywhere.
+- **Context without redundancy**: if the project name appears in the app header, do not repeat it in panels or sidebars.
+- **One primary label per surface**: top left editor title is the only H1. Panels use compact titles only.
+- **Tokens over ad‑hoc**: spacing, border, shadow, and typography must use tokens.
+
+### Density system
+
+We drive density through CSS variables and `data-density`:
+
+- **Default**: `compact`
+- **Setting**: `ui.density` (app defaults) + per‑editor overrides (editor settings)
+- **Override**: `EditorShell` can set `data-density` directly
+
+**Primary tokens (compact)** in `packages/shared/src/shared/styles/themes.css`:
+
+- `--control-height: 1.5rem`
+- `--control-height-sm: 1.25rem`
+- `--control-padding-x: 0.5rem`
+- `--control-padding-y: 0.125rem`
+- `--control-gap: 0.25rem`
+- `--panel-padding: 0.5rem`
+- `--toolbar-height: 2.25rem`
+- `--header-height: 2.5rem`
+- `--tab-height: 1.75rem`
+- `--status-height: 1.5rem`
+
+**Comfortable overrides** live under `[data-density='comfortable']`.
+
+### Borders and grouping
+
+- **Primary grouping** uses `border-border` and `bg-card` (panels, sidebars).
+- **Avoid double borders**: if a panel contains cards, cards should use `shadow-xs` or no border.
+- **Separators are sparse**: only between major sections, not every row.
+
+### Typography + tracking
+
+- Default label size is `11px` with tight leading (`leading-tight`).
+- Letter spacing is set globally with `--tracking-normal` and `letter-spacing` on `body`.
+
+### Shadows
+
+- Shadows are **crisp** and offset (no blur) to echo Unreal’s tooling feel.
+- Use `shadow-[var(--shadow-xs)]` or `shadow-none` for most surfaces.
+
+### Context accents
+
+- Domain accents and focus rings are defined in `packages/shared/src/shared/styles/contexts.css`.
+- `--context-accent`, `--ring`, and `--sidebar-*` stay aligned to preserve hover/focus clarity.
+
+### Code references (source of truth)
+
+- Theme tokens: `packages/shared/src/shared/styles/themes.css`
+- Context accents: `packages/shared/src/shared/styles/contexts.css`
+- Editor chrome sizing: `packages/shared/src/shared/components/editor/EditorToolbar.tsx`, `packages/shared/src/shared/components/editor/EditorHeader.tsx`, `packages/shared/src/shared/components/editor/DockPanel.tsx`
+- Shadcn primitives: `packages/ui/src/components/ui/button.tsx`, `packages/ui/src/components/ui/input.tsx`, `packages/ui/src/components/ui/tabs.tsx`, `packages/ui/src/components/ui/card.tsx`
 
 ## Accessibility
 

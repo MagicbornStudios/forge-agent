@@ -6,10 +6,11 @@ Workspace Platform Engineer: owns `packages/shared/src/shared` (editor component
 
 ## Conventions
 
-- **Editor shell**: Declarative, slot-based. See `components/editor/README.md` and `components/workspace/AGENTS.md` for slot map and how to build a mode.
-- **Dock layout**: `DockLayout` is the layout primitive. It wraps the main slot in `ViewportMeta` metadata. Always provide `editorId` + `editorType` via `viewport` prop.
+- **Editor shell**: Declarative, slot-based. See `components/editor/README.md` for slot map and how to build an editor.
+- **Dock layout**: `DockLayout` is the layout primitive. It wraps the main slot in `ViewportMeta` metadata. Always provide `viewportId` + `viewportType` via the `viewport` prop.
 - **Atomic design**: shadcn atoms live in `packages/ui/src/components/ui/*`; shared editor UI composes those atoms into molecules.
 - **Styles**: Single source in `packages/shared/src/shared/styles/`. Themes are data-driven (`data-theme` on `<html>` or editor root). Do not duplicate theme tokens elsewhere.
+- **Density**: Editor UI is compact by default. Use tokenized spacing (`--control-*`, `--panel-padding`, `--tab-height`) and set `data-density` on `EditorShell` for overrides.
 - **No cross-domain imports**: Shared should not import from app routes or domain-specific code (e.g. Dialogue, Character). UI atoms are imported from `@forge/ui`.
 - **Editor UI primitives**: Use `EditorButton`, `PanelTabs`, and `EditorTooltip` for tooltip-enabled UI.
 - **Media components**: Reusable `MediaCard` and `GenerateMediaModal` live under `shared/components/media` for entity media slots.
@@ -21,7 +22,7 @@ Extend the editor types and `DockLayout` (or equivalent) in `packages/shared/src
 
 ## Unified editor / Copilot
 
-- Shell-level context and actions live in `apps/studio/components/AppShell.tsx` (not in shared). Shared provides `DomainCopilotContract`, `useDomainCopilot`, and `agent-types` for per-mode and co-agent use. See root **AGENTS.md** and **docs/17-co-agents-and-multi-agent.mdx**.
+- Shell-level context and actions live in `apps/studio/components/AppShell.tsx` (not in shared). Shared provides `DomainCopilotContract`, `useDomainCopilot`, and `agent-types` for per-editor and co-agent use. See root **AGENTS.md** and **docs/17-co-agents-and-multi-agent.mdx**.
 
 ## Pitfalls
 

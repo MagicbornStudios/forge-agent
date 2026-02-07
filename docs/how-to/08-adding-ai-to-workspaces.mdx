@@ -1,25 +1,25 @@
 ---
-title: 08 - Adding AI to modes
+title: 08 - Adding AI to editors
 
 created: 2026-02-04
 updated: 2026-02-07
 ---
 
-# 08 - Adding AI to modes
+# 08 - Adding AI to editors
 
-How to add more AI to the app: domain actions, app-level actions, agents, and (future) graphs/subgraphs. Single source of truth for architecture: [architecture/03-copilotkit-and-agents.mdx](../architecture/03-copilotkit-and-agents.mdx).
+How to add more AI to the app: system actions, app-level actions, agents, and (future) graphs/subgraphs. Single source of truth for architecture: [architecture/03-copilotkit-and-agents.mdx](../architecture/03-copilotkit-and-agents.mdx).
 
 ## Overview
 
 - **One CopilotKit provider**, one **OpenRouter** agent today. Model is resolved per request (model router or override).
-- **Context** = shell (AppShell) + active domain contract when a mode is mounted.
-- **Actions** = shell + domain (`forge_` / `video_`) + app-level (`app_`). Use helper factories to prefix consistently.
+- **Context** = shell (AppShell) + active system contract when an editor is mounted.
+- **Actions** = shell + system (`forge_` / `video_`) + app-level (`app_`). Use helper factories to prefix consistently.
 
-## Adding domain actions
+## Adding system actions
 
 1. Implement or extend a **DomainCopilotContract** ([packages/shared/src/shared/copilot/types.ts](../../packages/shared/src/shared/copilot/types.ts)): `getContextSnapshot()`, `getInstructions()`, `createActions()`, `getSuggestions()`, `onAIHighlight` / `clearAIHighlights`.
-2. In the mode component, call **useDomainCopilot(contract, { toolsEnabled })**. Only one mode is mounted at a time, so only that domain's actions are active.
-3. Build action configs with `createDomainAction('forge', config)` (or your domain id). This keeps names consistent.
+2. In the editor component, call **useDomainCopilot(contract, { toolsEnabled })**. Only one editor is mounted at a time, so only that system's actions are active.
+3. Build action configs with `createDomainAction('forge', config)` (or your system id). This keeps names consistent.
 4. **References:** Dialogue = [packages/domain-forge/src/copilot](../../packages/domain-forge/src/copilot), Video = [apps/studio/lib/domains/video/copilot](../../apps/studio/lib/domains/video/copilot).
 
 Step-by-step: [14-adding-domain-actions.mdx](../14-adding-domain-actions.mdx).
@@ -34,16 +34,16 @@ Step-by-step: [14-adding-domain-actions.mdx](../14-adding-domain-actions.mdx).
 
 - **Today:** Single agent in [apps/studio/app/api/copilotkit/route.ts](../../apps/studio/app/api/copilotkit/route.ts) (OpenRouter).
 - **Next.js wrapper:** `@forge/shared/copilot/next` exports `ForgeCopilotProvider` + `createForgeCopilotRuntime(...)` for fast adoption.
-- **Adding another agent** (e.g. co-agent per mode): see [17-co-agents-and-multi-agent.mdx](../17-co-agents-and-multi-agent.mdx). No code changes in this guide.
+- **Adding another agent** (e.g. co-agent per editor): see [17-co-agents-and-multi-agent.mdx](../17-co-agents-and-multi-agent.mdx). No code changes in this guide.
 
 ## Workflow graphs (internal engine)
 
 - **Now:** We have a minimal workflow engine in `packages/agent-engine` (steps + events) and a streaming endpoint `POST /api/workflows/run` that emits plan/patch/review over SSE. This is the base pattern for plan -> propose -> review workflows.
-- **Later:** If we add LangGraph, it replaces the workflow executor, not the domain contracts. This keeps the client wiring stable.
+- **Later:** If we add LangGraph, it replaces the workflow executor, not the system contracts. This keeps the client wiring stable.
 
 ## Conventions recap
 
-- One contract per domain; use `createDomainAction()` / `createAppAction()` to prefix consistently.
+- One contract per system; use `createDomainAction()` / `createAppAction()` to prefix consistently.
 - Same number of actions every render; use **available: 'disabled'** when an action is contextually inactive.
 - **OpenRouter** is the model provider for chat, image gen, and structured output. **Provider stack:** OpenRouter = text + image; ElevenLabs = TTS (character voices); video = OpenAI Sora when we add it. See [06 - Model routing and OpenRouter](../architecture/06-model-routing-and-openrouter.mdx).
 

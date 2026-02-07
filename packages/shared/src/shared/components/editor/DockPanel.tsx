@@ -98,7 +98,7 @@ export function DockPanel({
     />
   ) : scrollable ? (
     <ScrollArea className="h-full">
-      <div className="p-3">{children}</div>
+      <div className="p-[var(--panel-padding)]">{children}</div>
     </ScrollArea>
   ) : (
     <div className="h-full w-full min-h-0 min-w-0">{children}</div>
@@ -111,13 +111,13 @@ export function DockPanel({
     >
       {/* Optional title bar */}
       {hasHeader && (
-        <div className="flex items-center justify-between px-3 py-1.5 border-b border-border bg-card shrink-0">
-          <div className="flex items-center gap-2 text-xs min-w-0">
+        <div className="flex min-h-[var(--tab-height)] items-center justify-between px-[var(--panel-padding)] py-[var(--control-padding-y)] border-b border-border bg-card shrink-0">
+          <div className="flex items-center gap-[var(--control-gap)] text-[11px] min-w-0">
             {icon && <span className="shrink-0 text-muted-foreground">{icon}</span>}
             {title && <span className="font-semibold text-foreground truncate">{title}</span>}
           </div>
           {headerActions && (
-            <div className="flex items-center gap-1 shrink-0">{headerActions}</div>
+            <div className="flex items-center gap-[var(--control-gap)] shrink-0">{headerActions}</div>
           )}
         </div>
       )}

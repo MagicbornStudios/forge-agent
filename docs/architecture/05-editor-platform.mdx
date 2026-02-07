@@ -1,5 +1,5 @@
 ---
-title: Editor Platform - DockLayout and Mode Architecture
+title: Editor Platform - DockLayout and Editor Architecture
 created: 2026-02-06
 updated: 2026-02-07
 ---
@@ -15,15 +15,15 @@ Unreal-Engine-inspired system of **resizable, dockable, lockable panels**.
 |---|---|---|
 | `AppSpace` | `EditorApp` | `@forge/shared/components/app` |
 | `WorkspaceShell` | `EditorShell` | `@forge/shared/components/editor` |
-| `WorkspaceHeader` | `ModeHeader` | `@forge/shared/components/editor` |
-| `WorkspaceToolbar` | `ModeToolbar` | `@forge/shared/components/editor` |
+| `WorkspaceHeader` | `EditorHeader` | `@forge/shared/components/editor` |
+| `WorkspaceToolbar` | `EditorToolbar` | `@forge/shared/components/editor` |
 | `WorkspaceLayoutGrid` | `DockLayout` | `@forge/shared/components/editor` |
 | `WorkspaceEditor` | `ViewportMeta` | `@forge/shared/components/editor` |
 | `WorkspaceLeftPanel` | `DockPanel` | `@forge/shared/components/editor` |
 | `WorkspaceInspector` | `DockPanel` | `@forge/shared/components/editor` |
-| `WorkspaceStatusBar` | `ModeStatusBar` | `@forge/shared/components/editor` |
-| `WorkspaceReviewBar` | `ModeReviewBar` | `@forge/shared/components/editor` |
-| `WorkspaceOverlaySurface` | `ModeOverlaySurface` | `@forge/shared/components/editor` |
+| `WorkspaceStatusBar` | `EditorStatusBar` | `@forge/shared/components/editor` |
+| `WorkspaceReviewBar` | `EditorReviewBar` | `@forge/shared/components/editor` |
+| `WorkspaceOverlaySurface` | `EditorOverlaySurface` | `@forge/shared/components/editor` |
 | (new) | `PanelTabs` | `@forge/shared/components/editor` |
 | (new) | `PanelSettings` | `@forge/shared/components/editor` |
 | (new) | `usePanelLock` | `@forge/shared/components/editor` |
@@ -35,20 +35,20 @@ Unreal-Engine-inspired system of **resizable, dockable, lockable panels**.
 ## Architecture
 
 ```
-EditorApp                    -> top-level application shell (mode tabs)
-  EditorApp.Tabs             -> tab bar for mode switching
-  EditorApp.Content          -> active mode content area
-    EditorShell              -> root container per mode
-      ModeHeader             -> mode title bar (.Left, .Center, .Right)
-      ModeToolbar            -> mode toolbar (.Left, .Right, .Menubar, .Button ...)
-      ModeReviewBar          -> AI change review bar (revert/accept)
+EditorApp                    -> top-level application shell (editor tabs)
+  EditorApp.Tabs             -> tab bar for editor switching
+  EditorApp.Content          -> active editor content area
+    EditorShell              -> root container per editor
+      EditorHeader           -> editor title bar (.Left, .Center, .Right)
+      EditorToolbar          -> editor toolbar (.Left, .Right, .Menubar, .Button ...)
+      EditorReviewBar        -> AI change review bar (revert/accept)
       DockLayout             -> resizable panel layout (left, main, right, bottom)
         DockPanel            -> individual panel (title, tabs, lock, settings)
           PanelTabs          -> tab bar within a panel
           PanelSettings      -> per-panel settings popover
         ViewportMeta         -> editor viewport metadata wrapper
-      ModeStatusBar          -> bottom status bar
-      ModeOverlaySurface     -> modal overlay surface
+      EditorStatusBar        -> bottom status bar
+      EditorOverlaySurface   -> modal overlay surface
 ```
 
 ---
@@ -57,23 +57,23 @@ EditorApp                    -> top-level application shell (mode tabs)
 
 ### `EditorShell`
 
-Root container for an editor mode. Sets `data-mode-id`, `data-domain`,
-`data-theme` attributes for copilot, settings, and theming.
+Root container for an editor. Sets `data-editor-id` (and legacy `data-mode-id`),
+`data-domain`, `data-theme`, and `data-density` attributes for copilot, settings, and theming.
 
 ```tsx
-<EditorShell modeId="dialogue" title="Dialogue" domain="dialogue" theme="dark-fantasy">
-  {/* ModeHeader, ModeToolbar, DockLayout, ModeStatusBar, etc. */}
+<EditorShell editorId="dialogue" title="Dialogue" domain="dialogue" theme="dark-fantasy">
+  {/* EditorHeader, EditorToolbar, DockLayout, EditorStatusBar, etc. */}
 </EditorShell>
 ```
 
-### `ModeHeader` / `ModeToolbar`
+### `EditorHeader` / `EditorToolbar`
 
 Title bar and toolbar. Compound components with `.Left`, `.Center`, `.Right`.
-`ModeToolbar` also has `.Separator`, `.Group`, `.Button`, `.Menubar`, `.FileMenu`.
+`EditorToolbar` also has `.Separator`, `.Group`, `.Button`, `.Menubar`, `.FileMenu`.
 
 ### `DockLayout`
 
-The core layout primitive. Built on `react-resizable-panels`. Replaces
+The core layout primitive. Built on **Dockview** (undock, drag, reorder, persist). Replaces
 `WorkspaceLayoutGrid` (which used CSS Grid with hardcoded widths).
 
 ```tsx
@@ -82,8 +82,8 @@ The core layout primitive. Built on `react-resizable-panels`. Replaces
   main={<GraphEditor />}
   right={<DockPanel panelId="inspector" title="Properties" scrollable />}
   bottom={<DockPanel panelId="logs" title="Output" />}
-  viewport={{ editorId: 'dialogue-graph', editorType: 'react-flow' }}
-  layoutId="dialogue-mode"      // persists panel sizes to localStorage
+  viewport={{ viewportId: 'dialogue-graph', viewportType: 'react-flow' }}
+  layoutId="dialogue-editor"    // persists panel sizes to localStorage
   leftDefaultSize={20}           // % of horizontal space
   rightDefaultSize={25}
   bottomDefaultSize={25}
@@ -137,10 +137,11 @@ Supports controlled and uncontrolled usage.
 
 ### `ViewportMeta`
 
-Lightweight metadata wrapper that sets `data-editor-id`, `data-editor-type`,
-and `data-editor-scope` attributes. Used by copilot and settings systems.
+Lightweight metadata wrapper that sets `data-viewport-id`, `data-viewport-type`,
+and `data-viewport-scope` attributes (plus legacy `data-editor-*`). Used by
+copilot and settings systems.
 
-### `ModeStatusBar` / `ModeReviewBar` / `ModeOverlaySurface`
+### `EditorStatusBar` / `EditorReviewBar` / `EditorOverlaySurface`
 
 Bottom status bar, AI review bar, and modal overlay surface - same API as
 their `Workspace*` predecessors.
@@ -226,15 +227,15 @@ All AI operations go through TanStack Query mutations:
 ### 1. Change imports
 
 ```diff
-- import { WorkspaceShell, WorkspaceHeader, WorkspaceToolbar, WorkspaceLayoutGrid, WorkspaceStatusBar } from '@forge/shared/components/workspace';
-+ import { EditorShell, ModeHeader, ModeToolbar, DockLayout, ModeStatusBar } from '@forge/shared/components/editor';
+- import { EditorShell, EditorHeader, EditorToolbar, DockLayout, EditorStatusBar } from '@forge/shared';
++ import { EditorShell, EditorHeader, EditorToolbar, DockLayout, EditorStatusBar } from '@forge/shared/components/editor';
 ```
 
 ### 2. Replace the shell
 
 ```diff
 - <WorkspaceShell workspaceId="forge" title="Forge" domain="forge" theme={theme}>
-+ <EditorShell modeId="dialogue" title="Dialogue" domain="dialogue" theme={theme}>
++ <EditorShell editorId="dialogue" title="Dialogue" domain="dialogue" theme={theme}>
 ```
 
 ### 3. Replace the layout
@@ -250,8 +251,8 @@ All AI operations go through TanStack Query mutations:
 +   left={<DockPanel panelId="navigator">{leftContent}</DockPanel>}
 +   main={mainContent}
 +   right={<DockPanel panelId="inspector" scrollable>{rightContent}</DockPanel>}
-+   viewport={{ editorId: 'dialogue-graph', editorType: 'react-flow' }}
-+   layoutId="dialogue-mode"
++   viewport={{ viewportId: 'dialogue-graph', viewportType: 'react-flow' }}
++   layoutId="dialogue-editor"
 + />
 ```
 
@@ -277,12 +278,12 @@ All AI operations go through TanStack Query mutations:
 | `DockPanel.tsx` | `DockPanel` | Individual panel with title/tabs/lock |
 | `PanelTabs.tsx` | `PanelTabs` | Tab bar within a panel |
 | `ViewportMeta.tsx` | `ViewportMeta` | Editor viewport metadata |
-| `EditorShell.tsx` | `EditorShell` | Mode root container |
-| `ModeHeader.tsx` | `ModeHeader` | Mode title bar |
-| `ModeToolbar.tsx` | `ModeToolbar` | Mode toolbar |
-| `ModeStatusBar.tsx` | `ModeStatusBar` | Bottom status bar |
-| `ModeReviewBar.tsx` | `ModeReviewBar` | AI change review bar |
-| `ModeOverlaySurface.tsx` | `ModeOverlaySurface` | Modal overlay surface |
+| `EditorShell.tsx` | `EditorShell` | Editor root container |
+| `EditorHeader.tsx` | `EditorHeader` | Editor title bar |
+| `EditorToolbar.tsx` | `EditorToolbar` | Editor toolbar |
+| `EditorStatusBar.tsx` | `EditorStatusBar` | Bottom status bar |
+| `EditorReviewBar.tsx` | `EditorReviewBar` | AI change review bar |
+| `EditorOverlaySurface.tsx` | `EditorOverlaySurface` | Modal overlay surface |
 | `PanelSettings.tsx` | `PanelSettings` | Per-panel settings popover |
 | `usePanelLock.ts` | `usePanelLock` | Panel lock state hook |
 | `index.ts` | Barrel | All exports |
@@ -305,18 +306,27 @@ All AI operations go through TanStack Query mutations:
 | `use-create-forge-plan.ts` | `useCreateForgePlan` | Dialogue plan mutation |
 | `use-generate-video.ts` | `useGenerateVideo` | Video generation stub |
 
-### `apps/studio/components/modes/`
+### `apps/studio/components/editors/`
 
 | File | Export | Description |
 |---|---|---|
-| `CharacterMode.tsx` | `CharacterMode` | Reference implementation |
-| `DialogueMode.tsx` | `DialogueMode` | Dialogue editor with DockLayout |
-| `VideoMode.tsx` | `VideoMode` | Twick editor mode |
-| `StrategyMode.tsx` | `StrategyMode` | Strategy chat mode |
-| `index.ts` | Barrel | Mode exports |
+| `CharacterEditor.tsx` | `CharacterEditor` | Reference implementation |
+| `DialogueEditor.tsx` | `DialogueEditor` | Dialogue editor with DockLayout |
+| `VideoEditor.tsx` | `VideoEditor` | Twick editor |
+| `StrategyEditor.tsx` | `StrategyEditor` | Strategy chat editor |
+| `index.ts` | Barrel | Editor exports |
 
 ### `apps/studio/components/media/`
 
 | File | Export | Description |
 |---|---|---|
 | `ConnectedGenerateMediaModal.tsx` | `ConnectedGenerateMediaModal` | Hooks-wired media modal |
+
+---
+
+## See also
+
+- [Editors as MCP Apps](07-modes-as-mcp-apps.mdx) — exposing editors for external embedding.
+- [CopilotKit vs assistant-ui](08-copilotkit-vs-assistant-ui.mdx) — when to use which AI framework.
+- [Dialogue system and Yarn Spinner](09-dialogue-domain-and-yarn-spinner.mdx) — Dialogue Editor architecture and Yarn Spinner roadmap.
+- [Product roadmap](../roadmap/product.mdx) — upcoming features and initiatives.

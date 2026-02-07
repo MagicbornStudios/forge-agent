@@ -23,21 +23,21 @@ These files are maintained for AI/coding agents to read and use when modifying t
 - **[agent-artifacts/core/tool-usage.md](agent-artifacts/core/tool-usage.md)** — How to search and navigate: rg, list_dir, Read; Windows vs Linux.
 - **[agent-artifacts/core/compacting-and-archiving.md](agent-artifacts/core/compacting-and-archiving.md)** — When and how to compact sections; archive folder; one-line pointers.
 - **[agent-artifacts/core/debugging-zustand-devtools.md](agent-artifacts/core/debugging-zustand-devtools.md)** — Debugging Zustand stores with Redux DevTools (humans and agents).
+- **[agent-artifacts/core/enhanced-features-backlog.md](agent-artifacts/core/enhanced-features-backlog.md)** — Ideas backlog (propose → triage → implement). Process: [enhanced-features-process.md](agent-artifacts/core/enhanced-features-process.md).
 - **agent-artifacts/archive/** — Compacted chunks (e.g. STATUS-done-YYYY-MM.md). Main docs point here; read main artifact first.
 - **[AGENTS.md](../AGENTS.md)** (root) — Global agent rules, loop, conventions.
 
 ## Per-package / per-area AGENTS.md
 
 - [packages/shared/src/shared/AGENTS.md](../packages/shared/src/shared/AGENTS.md)
-- [packages/shared/src/shared/components/workspace/AGENTS.md](../packages/shared/src/shared/components/workspace/AGENTS.md)
-- [packages/shared/src/shared/workspace/AGENTS.md](../packages/shared/src/shared/workspace/AGENTS.md)
+- [packages/shared/src/shared/workspace/AGENTS.md](../packages/shared/src/shared/workspace/AGENTS.md) (internal types only; consume via `@forge/shared`)
 - [packages/ui/AGENTS.md](../packages/ui/AGENTS.md)
 - [packages/agent-engine/AGENTS.md](../packages/agent-engine/AGENTS.md)
 
 ## Documentation conventions (human vs agent)
 
 - **Living agent artifacts:** `docs/agent-artifacts/core/*.md` (STATUS, decisions, errors-and-attempts, tool-usage, compacting-and-archiving, debugging-zustand-devtools) and `docs/agent-artifacts/archive/` for compacted chunks. Purpose: current state, decisions, failure log, tool guidance, compacting process. Updated after each slice or when something breaks. No number prefix; humans and agents reference this folder.
-- **Official human-facing docs:** Numbered `.mdx` in `docs/` (00, 10–19), `docs/how-to/` (00–09), `docs/architecture/` (01–06), `docs/design/` (01–). Purpose: tutorials, architecture, code organization, and the agent index/strategy (18–19). Kept up to date with the product.
+- **Official human-facing docs:** Numbered `.mdx` in `docs/` (00, 10–19), `docs/how-to/` (00–09, 20–22), `docs/architecture/` (01–09), `docs/design/` (01–), `docs/roadmap/`. Purpose: tutorials, architecture, code organization, and the agent index/strategy (18–19). Kept up to date with the product.
 - **Root / package:** `README.md`, `SETUP.md`, `AGENTS.md` stay `.md` at repo root or under packages; they point at `docs/18-agent-artifacts-index.mdx` and `docs/agent-artifacts/core/` for artifact locations.
 - **No duplicates:** One canonical file per topic; no parallel .md when a .mdx exists. One artifact folder for the three core living docs.
 

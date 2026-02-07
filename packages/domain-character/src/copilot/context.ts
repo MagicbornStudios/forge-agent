@@ -1,5 +1,5 @@
 import type { DomainContextSnapshot } from '@forge/shared/copilot/types';
-import type { Selection } from '@forge/shared/workspace/selection';
+import type { Selection } from '@forge/shared';
 import type { CharacterDoc, RelationshipDoc } from '@forge/types/character';
 
 export interface CharacterContextDeps {

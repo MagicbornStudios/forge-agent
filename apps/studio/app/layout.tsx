@@ -1,8 +1,15 @@
 import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 import './globals.css';
 import { AppThemeProvider } from '@/components/providers/AppThemeProvider';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { SettingsHydration } from '@/components/settings/SettingsHydration';
+
+const fontSans = Inter({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Forge Agent PoC',
@@ -15,8 +22,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-theme="dark-fantasy">
-      <body>
+    <html lang="en" data-theme="dark-fantasy" data-density="compact" className={fontSans.variable}>
+      <body className="font-sans antialiased">
         <AppThemeProvider>
           <QueryProvider>
             <SettingsHydration />

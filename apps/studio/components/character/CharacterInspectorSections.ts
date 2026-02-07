@@ -1,4 +1,4 @@
-import type { Selection } from '@forge/shared/workspace';
+import type { Selection } from '@forge/shared';
 import type { CharacterDoc, RelationshipDoc } from '@/lib/domains/character/types';
 import { resolveRelId } from '@/lib/domains/character/operations';
 

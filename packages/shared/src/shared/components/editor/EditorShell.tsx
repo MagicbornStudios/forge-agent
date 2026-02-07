@@ -5,12 +5,12 @@ import { cn } from '@forge/shared/lib/utils';
 
 export interface EditorShellProps {
   /**
-   * Unique mode identifier (e.g. 'forge', 'character', 'video').
-   * Sets `data-mode-id` on the root element, used by the copilot
+   * Unique editor identifier (e.g. 'dialogue', 'character', 'video').
+   * Sets `data-editor-id` on the root element, used by the copilot
    * system, settings resolution, and theme context.
    */
-  modeId: string;
-  /** Display title for the mode. */
+  editorId?: string;
+  /** Display title for the editor. */
   title: string;
   /** Optional subtitle (e.g. active document name). */
   subtitle?: string;
@@ -18,17 +18,19 @@ export interface EditorShellProps {
   domain?: string;
   /** Theme override. Sets `data-theme` for palette switching. */
   theme?: string;
+  /** Density override. Sets `data-density` (compact/comfortable). */
+  density?: 'compact' | 'comfortable' | string;
   className?: string;
   children?: React.ReactNode;
 }
 
 /**
- * EditorShell — the outermost container for an editor mode.
+ * EditorShell - the outermost container for an editor.
  *
- * Replaces `WorkspaceShell`. Every mode (Forge, Character, Video, etc.)
+ * Replaces `WorkspaceShell`. Every editor (Dialogue, Character, Video, etc.)
  * wraps its content in an `EditorShell` which:
  *
- * 1. Sets `data-mode-id`, `data-domain`, and `data-theme` attributes
+ * 1. Sets `data-editor-id`, `data-mode-id` (legacy), `data-domain`, `data-theme`, and `data-density` attributes
  * 2. Provides the flex-column layout skeleton
  * 3. Applies domain-specific theming via CSS custom properties
  *
@@ -36,34 +38,36 @@ export interface EditorShellProps {
  * | Old | New |
  * |---|---|
  * | `WorkspaceShell` | `EditorShell` |
- * | `workspaceId` | `modeId` |
+ * | `workspaceId` | `editorId` |
  *
  * @example
  * ```tsx
- * <EditorShell modeId="forge" title="Forge" domain="forge" theme="dark-forge">
- *   <ModeHeader>...</ModeHeader>
- *   <ModeToolbar>...</ModeToolbar>
+ * <EditorShell editorId="dialogue" title="Dialogue" domain="dialogue" theme="dark-fantasy">
+ *   <EditorHeader>...</EditorHeader>
+ *   <EditorToolbar>...</EditorToolbar>
  *   <DockLayout ... />
- *   <ModeStatusBar>Ready</ModeStatusBar>
+ *   <EditorStatusBar>Ready</EditorStatusBar>
  * </EditorShell>
  * ```
  */
 export function EditorShell({
-  modeId,
+  editorId,
   title,
   subtitle,
   domain,
   theme,
+  density,
   className,
   children,
 }: EditorShellProps) {
   return (
     <div
       className={cn('flex flex-col h-full min-h-0 overflow-hidden', className)}
-      data-mode-id={modeId}
+      {...(editorId ? { 'data-editor-id': editorId } : {})}
       {...(domain ? { 'data-domain': domain } : {})}
       {...(theme ? { 'data-theme': theme } : {})}
-      aria-label={subtitle ? `${title} — ${subtitle}` : title}
+      {...(density ? { 'data-density': density } : {})}
+      aria-label={subtitle ? `${title} - ${subtitle}` : title}
     >
       {children}
     </div>

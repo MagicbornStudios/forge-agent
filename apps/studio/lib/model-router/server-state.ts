@@ -56,11 +56,3 @@ export function resolvePrimaryAndFallbacks(): PrimaryAndFallbacks & { mode: Sele
 
   return { primary, fallbacks, mode: 'auto' };
 }
-
-/**
- * @deprecated Use resolvePrimaryAndFallbacks() instead. Kept for compatibility during migration.
- */
-export function resolveModel(): { modelId: string; mode: SelectionMode } {
-  const { primary, mode } = resolvePrimaryAndFallbacks();
-  return { modelId: primary, mode };
-}

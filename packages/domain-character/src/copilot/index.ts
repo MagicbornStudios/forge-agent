@@ -5,7 +5,7 @@ import type {
   DomainCopilotContract,
   AIHighlightPayload,
 } from '@forge/shared/copilot/types';
-import type { Selection } from '@forge/shared/workspace/selection';
+import type { Selection } from '@forge/shared';
 import type { CharacterDoc, RelationshipDoc } from '@forge/types/character';
 import { createCharacterActions } from './actions';
 import { buildCharacterContext } from './context';

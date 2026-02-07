@@ -1,6 +1,6 @@
 import type { DomainContextSnapshot } from '@forge/shared/copilot/types';
-import type { Selection } from '@forge/shared/workspace/selection';
-import { isEntity, isCanvasObject } from '@forge/shared/workspace/selection';
+import type { Selection } from '@forge/shared';
+import { isEntity, isCanvasObject } from '@forge/shared';
 import { getVideoDocData, type VideoDoc } from '../types';
 
 export interface VideoContextDeps {

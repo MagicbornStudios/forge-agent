@@ -31,8 +31,8 @@ import type { SettingsSection, SettingsField } from "./types";
 export interface SettingsPanelProps {
   scope: SettingsScope;
   sections: SettingsSection[];
-  workspaceId?: string;
   editorId?: string;
+  viewportId?: string;
   className?: string;
 }
 
@@ -140,8 +140,8 @@ function FieldControl({
 export function SettingsPanel({
   scope,
   sections,
-  workspaceId,
   editorId,
+  viewportId,
   className,
 }: SettingsPanelProps) {
   const {
@@ -163,19 +163,19 @@ export function SettingsPanel({
             <FieldGroup className="gap-3">
               <ItemGroup className="gap-3">
                 {section.fields.map((field, index) => {
-                  const ids = { workspaceId, editorId };
+                  const ids = { editorId, viewportId };
                   const value = getSettingValue(field.key, ids);
                   const source = getSettingSource(field.key, ids);
                   const isOverride = source === scope;
                   const canReset = scope !== "app" && isOverride;
                   const inheritedLabel =
-                    scope === "editor"
-                      ? source === "workspace"
-                        ? "Inherited from workspace"
+                    scope === "viewport"
+                      ? source === "editor"
+                        ? "Inherited from editor"
                         : source === "app"
                           ? "Inherited from app"
                           : null
-                      : scope === "workspace"
+                      : scope === "editor"
                         ? source === "app"
                           ? "Inherited from app"
                           : null

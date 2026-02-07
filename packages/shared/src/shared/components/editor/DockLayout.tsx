@@ -1,193 +1,177 @@
 'use client';
 
-import * as React from 'react';
-import {
-  ResizablePanelGroup,
-  ResizablePanel,
-  ResizableHandle,
-} from '@forge/ui/resizable';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { DockviewReact } from 'dockview';
+import type { DockviewReadyEvent, IDockviewPanelProps } from 'dockview';
 import { cn } from '@forge/shared/lib/utils';
 
 export interface DockLayoutViewport {
-  /** Unique identifier for the viewport/editor (used in data-editor-id). */
-  editorId: string;
-  /** Type descriptor (e.g. 'react-flow', 'lexical', 'video'). */
-  editorType: string;
-  /** Optional scope for multi-editor modes. */
-  editorScope?: string;
+  viewportId?: string;
+  viewportType?: string;
+  viewportScope?: string;
 }
 
 export interface DockLayoutProps {
-  /** Left panel content (library, palette, navigator). Collapsible. */
   left?: React.ReactNode;
-  /** Main/center content (viewport, editor). Always visible. */
   main: React.ReactNode;
-  /** Right panel content (inspector, properties). Collapsible. */
   right?: React.ReactNode;
-  /** Bottom panel content (logs, timeline, workbench). Collapsible. */
   bottom?: React.ReactNode;
-  /** Viewport metadata — sets data-editor-* attributes on the main region. */
   viewport?: DockLayoutViewport;
-
-  // — Sizing (percentages of the total group width/height) —
-
-  /** Default width of the left panel as a % of horizontal group. @default 20 */
   leftDefaultSize?: number;
-  /** Minimum width of the left panel as a % of horizontal group. @default 10 */
   leftMinSize?: number;
-  /** Default width of the right panel as a % of horizontal group. @default 25 */
   rightDefaultSize?: number;
-  /** Minimum width of the right panel as a % of horizontal group. @default 10 */
   rightMinSize?: number;
-  /** Default height of the bottom panel as a % of vertical group. @default 25 */
   bottomDefaultSize?: number;
-  /** Minimum height of the bottom panel as a % of vertical group. @default 10 */
   bottomMinSize?: number;
-
-  // — Persistence —
-
-  /**
-   * Persistence key for `react-resizable-panels` autoSaveId.
-   * When provided, panel sizes are saved to localStorage and restored on mount.
-   */
   layoutId?: string;
-
   className?: string;
 }
 
-/**
- * DockLayout — a resizable panel layout built on `react-resizable-panels`.
- *
- * Replaces `WorkspaceLayoutGrid` (CSS Grid with hardcoded widths) with
- * user-resizable, collapsible, auto-persisting panels.
- *
- * ## Structure
- * ```
- * ResizablePanelGroup[horizontal]
- *   ├── ResizablePanel[left, collapsible]
- *   ├── ResizableHandle
- *   ├── ResizablePanel[center]
- *   │     └── ResizablePanelGroup[vertical]
- *   │           ├── ResizablePanel[main]
- *   │           ├── ResizableHandle           (if bottom)
- *   │           └── ResizablePanel[bottom, collapsible]
- *   ├── ResizableHandle
- *   └── ResizablePanel[right, collapsible]
- * ```
- *
- * @example
- * ```tsx
- * <DockLayout
- *   left={<PanelTabs tabs={sidebarTabs} />}
- *   main={<GraphEditor />}
- *   right={<Inspector />}
- *   bottom={<Timeline />}
- *   viewport={{ editorId: 'forge', editorType: 'react-flow' }}
- *   layoutId="forge-layout"
- * />
- * ```
- */
+const SLOT_IDS = ['left', 'main', 'right', 'bottom'] as const;
+type SlotId = (typeof SLOT_IDS)[number];
+
+const DockLayoutContentContext = React.createContext<Record<SlotId, React.ReactNode | undefined>>({
+  left: undefined,
+  main: undefined,
+  right: undefined,
+  bottom: undefined,
+});
+
+function SlotPanel(props: IDockviewPanelProps) {
+  const slots = React.useContext(DockLayoutContentContext);
+  const slotId = (props.params?.slotId as SlotId) ?? 'main';
+  const content = slots[slotId];
+  if (content == null) return null;
+  return <div className="h-full w-full min-h-0 min-w-0 overflow-hidden">{content}</div>;
+}
+
+function buildDefaultLayout(
+  api: DockviewReadyEvent['api'],
+  slots: { left?: React.ReactNode; main: React.ReactNode; right?: React.ReactNode; bottom?: React.ReactNode }
+) {
+  const hasLeft = slots.left != null;
+  const hasRight = slots.right != null;
+  const hasBottom = slots.bottom != null;
+
+  api.addPanel({
+    id: 'main',
+    component: 'slot',
+    params: { slotId: 'main' },
+    title: 'Main',
+  });
+
+  if (hasLeft) {
+    api.addPanel({
+      id: 'left',
+      component: 'slot',
+      params: { slotId: 'left' },
+      title: 'Library',
+      position: { referencePanel: 'main', direction: 'left' },
+    });
+  }
+  if (hasRight) {
+    api.addPanel({
+      id: 'right',
+      component: 'slot',
+      params: { slotId: 'right' },
+      title: 'Inspector',
+      position: { referencePanel: 'main', direction: 'right' },
+    });
+  }
+  if (hasBottom) {
+    api.addPanel({
+      id: 'bottom',
+      component: 'slot',
+      params: { slotId: 'bottom' },
+      title: 'Workbench',
+      position: { referencePanel: 'main', direction: 'below' },
+    });
+  }
+}
+
 export function DockLayout({
   left,
   main,
   right,
   bottom,
   viewport,
-  leftDefaultSize = 20,
-  leftMinSize = 10,
-  rightDefaultSize = 25,
-  rightMinSize = 10,
-  bottomDefaultSize = 25,
-  bottomMinSize = 10,
   layoutId,
   className,
 }: DockLayoutProps) {
-  const hasLeft = left != null;
-  const hasRight = right != null;
-  const hasBottom = bottom != null;
+  const [api, setApi] = useState<DockviewReadyEvent['api'] | null>(null);
+  const slotsRef = useRef({ left, main, right, bottom });
+  slotsRef.current = { left, main, right, bottom };
 
-  // Calculate center default size based on what side panels are present
-  const centerDefaultSize = 100 - (hasLeft ? leftDefaultSize : 0) - (hasRight ? rightDefaultSize : 0);
+  const storageKey = layoutId ? `dockview-${layoutId}` : undefined;
 
-  // Viewport metadata attributes
+  const onReady = useCallback(
+    (event: DockviewReadyEvent) => {
+      const dockApi = event.api;
+      const slots = slotsRef.current;
+
+      let success = false;
+      if (storageKey && typeof window !== 'undefined') {
+        try {
+          const raw = localStorage.getItem(storageKey);
+          if (raw) {
+            const layout = JSON.parse(raw);
+            dockApi.fromJSON(layout);
+            success = true;
+          }
+        } catch {
+          // invalid layout
+        }
+      }
+      if (!success) {
+        buildDefaultLayout(dockApi, slots);
+      }
+
+      setApi(dockApi);
+    },
+    [storageKey]
+  );
+
+  useEffect(() => {
+    if (!api || !storageKey) return;
+    const disposable = api.onDidLayoutChange(() => {
+      try {
+        const layout = api.toJSON();
+        localStorage.setItem(storageKey, JSON.stringify(layout));
+      } catch {
+        // ignore
+      }
+    });
+    return () => disposable.dispose();
+  }, [api, storageKey]);
+
   const viewportAttrs = viewport
     ? {
-        'data-editor-id': viewport.editorId,
-        'data-editor-type': viewport.editorType,
-        ...(viewport.editorScope ? { 'data-editor-scope': viewport.editorScope } : {}),
+        ...(viewport.viewportId
+          ? { 'data-viewport-id': viewport.viewportId, 'data-editor-id': viewport.viewportId }
+          : {}),
+        ...(viewport.viewportType
+          ? { 'data-viewport-type': viewport.viewportType, 'data-editor-type': viewport.viewportType }
+          : {}),
+        ...(viewport.viewportScope
+          ? { 'data-viewport-scope': viewport.viewportScope, 'data-editor-scope': viewport.viewportScope }
+          : {}),
       }
     : {};
 
-  // The main + bottom vertical group
-  const centerContent = hasBottom ? (
-    <ResizablePanelGroup direction="vertical" autoSaveId={layoutId ? `${layoutId}-v` : undefined}>
-      <ResizablePanel defaultSize={100 - bottomDefaultSize} minSize={20}>
-        <div className="h-full w-full min-h-0 min-w-0" {...viewportAttrs}>
-          {main}
-        </div>
-      </ResizablePanel>
-      <ResizableHandle withHandle />
-      <ResizablePanel
-        defaultSize={bottomDefaultSize}
-        minSize={bottomMinSize}
-        collapsible
-        className="min-h-0"
-      >
-        <div className="h-full w-full min-h-0 overflow-hidden border-t border-border bg-muted">
-          {bottom}
-        </div>
-      </ResizablePanel>
-    </ResizablePanelGroup>
-  ) : (
-    <div className="h-full w-full min-h-0 min-w-0" {...viewportAttrs}>
-      {main}
-    </div>
-  );
-
   return (
-    <ResizablePanelGroup
-      direction="horizontal"
-      autoSaveId={layoutId ? `${layoutId}-h` : undefined}
-      className={cn('flex-1 min-h-0 overflow-hidden', className)}
-    >
-      {/* Left panel */}
-      {hasLeft && (
-        <>
-          <ResizablePanel
-            defaultSize={leftDefaultSize}
-            minSize={leftMinSize}
-            collapsible
-            className="min-w-0"
-          >
-            <div className="h-full w-full min-h-0 overflow-hidden border-r border-border bg-background">
-              {left}
-            </div>
-          </ResizablePanel>
-          <ResizableHandle withHandle />
-        </>
-      )}
-
-      {/* Center region (main + bottom) */}
-      <ResizablePanel defaultSize={centerDefaultSize} minSize={30}>
-        {centerContent}
-      </ResizablePanel>
-
-      {/* Right panel */}
-      {hasRight && (
-        <>
-          <ResizableHandle withHandle />
-          <ResizablePanel
-            defaultSize={rightDefaultSize}
-            minSize={rightMinSize}
-            collapsible
-            className="min-w-0"
-          >
-            <div className="h-full w-full min-h-0 overflow-hidden border-l border-border bg-background">
-              {right}
-            </div>
-          </ResizablePanel>
-        </>
-      )}
-    </ResizablePanelGroup>
+    <DockLayoutContentContext.Provider value={{ left, main, right, bottom }}>
+      <div
+        className={cn('flex-1 min-h-0 overflow-hidden dockview-theme-dark', className)}
+        {...viewportAttrs}
+      >
+        <DockviewReact
+          onReady={onReady}
+          components={{
+            slot: SlotPanel,
+          }}
+          className="h-full w-full"
+        />
+      </div>
+    </DockLayoutContentContext.Provider>
   );
 }

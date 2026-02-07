@@ -6,7 +6,7 @@ title: Pricing
 
 ## Free
 
-- Core features and workspace access
+- Core features and editor access
 - Limited AI usage
 - Community support
 

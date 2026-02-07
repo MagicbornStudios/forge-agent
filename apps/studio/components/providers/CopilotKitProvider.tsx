@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState, createContext, useContext } from 'react';
 import { useAppShellStore } from '@/lib/app-shell/store';
-import { MODE_EDITOR_IDS, MODE_LABELS } from '@/lib/app-shell/mode-metadata';
+import { EDITOR_VIEWPORT_IDS, EDITOR_LABELS } from '@/lib/app-shell/editor-metadata';
 import { useSettingsStore } from '@/lib/settings/store';
 import { useModelRouterStore } from '@/lib/model-router/store';
 import { CAPABILITIES, useEntitlements } from '@forge/shared/entitlements';
@@ -31,11 +31,11 @@ export function useCopilotSidebar() {
   return context;
 }
 
-/**
- * Generic CopilotKit provider that can be used by any workspace.
- * Context and actions are provided by domain-specific contracts
- * (via `useDomainCopilot` inside workspace components).
- */
+  /**
+   * Generic CopilotKit provider that can be used by any editor.
+   * Context and actions are provided by system-specific contracts
+   * (via `useDomainCopilot` inside editor components).
+   */
 export function CopilotKitProvider({
   children,
   instructions,
@@ -44,10 +44,10 @@ export function CopilotKitProvider({
 }: CopilotKitProviderProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const activeWorkspaceId = useAppShellStore((s) => s.route.activeWorkspaceId);
-  const editorId = MODE_EDITOR_IDS[activeWorkspaceId];
+  const viewportId = EDITOR_VIEWPORT_IDS[activeWorkspaceId];
   const ids = useMemo(
-    () => ({ workspaceId: activeWorkspaceId, editorId }),
-    [activeWorkspaceId, editorId],
+    () => ({ editorId: activeWorkspaceId, viewportId }),
+    [activeWorkspaceId, viewportId],
   );
   // Primitive selectors only — avoid getMergedSettings() which returns a new object every time (getSnapshot loop).
   const agentNameRaw = useSettingsStore((s) => s.getSettingValue('ai.agentName', ids));
@@ -104,23 +104,24 @@ export function CopilotKitProvider({
 
   const finalInstructions = (instructions ?? settingsInstructions).trim()
     ? (instructions ?? settingsInstructions)
-    : 'You are an AI assistant for a creative workspace. Use the available actions to help users edit their project.';
+    : 'You are an AI assistant for a creative editor. Use the available actions to help users edit their project.';
   const sidebarTitle = labels?.title ?? agentName ?? 'AI Assistant';
   const sidebarInitial =
     labels?.initial ??
-    `Ask ${agentName ?? 'the assistant'} to help with ${MODE_LABELS[activeWorkspaceId]}.`;
+    `Ask ${agentName ?? 'the assistant'} to help with ${EDITOR_LABELS[activeWorkspaceId]}.`;
   const forwardedParameters = useMemo(() => {
     if (!Number.isFinite(temperature)) return undefined;
     return { temperature };
   }, [temperature]);
   const headers = useMemo(() => {
     const next: Record<string, string> = {
-      'x-forge-workspace-id': activeWorkspaceId,
-      'x-forge-workspace-name': MODE_LABELS[activeWorkspaceId],
+      'x-forge-workspace-id': activeWorkspaceId, // backward compatibility; prefer x-forge-editor-id
+      'x-forge-workspace-name': EDITOR_LABELS[activeWorkspaceId],
+      'x-forge-editor-id': activeWorkspaceId,
       'x-forge-tools-enabled': toolsEnabled ? 'true' : 'false',
     };
-    if (editorId) {
-      next['x-forge-editor-id'] = editorId;
+    if (viewportId) {
+      next['x-forge-viewport-id'] = viewportId;
     }
     if (agentName) {
       next['x-forge-agent-name'] = agentName;
@@ -133,7 +134,7 @@ export function CopilotKitProvider({
   }, [
     activeWorkspaceId,
     agentName,
-    editorId,
+    viewportId,
     modelPreference,
     modelSource,
     shouldOverrideModel,

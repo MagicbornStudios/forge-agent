@@ -1,6 +1,6 @@
 import type { DomainSuggestion } from '@forge/shared/copilot/types';
-import type { Selection } from '@forge/shared/workspace/selection';
-import { isEntity } from '@forge/shared/workspace/selection';
+import type { Selection } from '@forge/shared';
+import { isEntity } from '@forge/shared';
 import type { ForgeGraphDoc } from '@forge/types/graph';
 
 export interface ForgeSuggestionsDeps {

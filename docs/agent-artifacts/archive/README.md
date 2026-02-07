@@ -1,3 +1,7 @@
+---
+title: Agent artifacts archive
+---
+
 # Agent artifacts archive
 
 This folder holds **compacted chunks** of living agent artifacts. When a section (e.g. STATUS "Ralph Wiggum" Done list, or old errors-and-attempts entries) grows too long, we summarize it in the main doc and move the full content here.

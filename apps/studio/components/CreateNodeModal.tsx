@@ -3,8 +3,8 @@
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { FORGE_NODE_TYPE, type ForgeNodeType } from '@forge/types/graph';
-import type { ModalComponentProps } from '@forge/shared/workspace';
-import { WorkspaceButton } from '@forge/shared/components/workspace';
+import type { ModalComponentProps } from '@forge/shared';
+import { EditorButton } from '@forge/shared';
 import {
   Input,
   Textarea,
@@ -134,12 +134,12 @@ export function CreateNodeModal({ route, onClose, onSubmit }: Props) {
           )}
         />
         <div className="flex justify-end gap-2 pt-2">
-          <WorkspaceButton type="button" variant="outline" onClick={onClose}>
+          <EditorButton type="button" variant="outline" onClick={onClose}>
             Cancel
-          </WorkspaceButton>
-          <WorkspaceButton type="submit" disabled={!form.formState.isValid}>
+          </EditorButton>
+          <EditorButton type="submit" disabled={!form.formState.isValid}>
             Create node
-          </WorkspaceButton>
+          </EditorButton>
         </div>
       </form>
     </Form>

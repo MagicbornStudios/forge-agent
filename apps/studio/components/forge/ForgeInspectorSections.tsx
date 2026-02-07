@@ -1,23 +1,23 @@
 'use client';
 
 import * as React from 'react';
-import type { InspectorSection } from '@forge/shared/workspace';
-import { isEntity } from '@forge/shared/workspace';
+import type { InspectorSection } from '@forge/shared';
+import { isEntity } from '@forge/shared';
 import type { ForgeGraphDoc, ForgeGraphPatchOp } from '@forge/types/graph';
 import { Input } from '@forge/ui/input';
 import { Textarea } from '@forge/ui/textarea';
 import { Label } from '@forge/ui/label';
 import { Badge } from '@forge/ui/badge';
 
-export interface ForgeInspectorSectionsParams {
+export interface DialogueInspectorSectionsParams {
   graph: ForgeGraphDoc | null;
   applyOperations: (ops: ForgeGraphPatchOp[]) => void;
 }
 
-export function forgeInspectorSections({
+export function dialogueInspectorSections({
   graph,
   applyOperations,
-}: ForgeInspectorSectionsParams): InspectorSection[] {
+}: DialogueInspectorSectionsParams): InspectorSection[] {
   return [
     {
       id: 'forge-node',

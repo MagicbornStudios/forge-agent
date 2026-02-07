@@ -1,4 +1,4 @@
 'use client';
 
-/** Legacy export: single Dialogue mode. Prefer AppShell + Editor modes for unified app. */
-export { DialogueMode as Workspace } from '@/components/modes';
+/** Legacy export: single Dialogue editor. Prefer AppShell + Editor tabs for unified app. */
+export { DialogueEditor as Workspace } from '@/components/editors';

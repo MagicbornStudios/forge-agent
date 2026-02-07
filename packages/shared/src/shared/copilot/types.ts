@@ -12,7 +12,7 @@ import type {
   ActionRenderProps,
   ActionRenderPropsNoArgs,
 } from '@copilotkit/react-core';
-import type { Selection } from '@forge/shared/workspace/selection';
+import type { Selection } from '@forge/shared';
 
 // ---------------------------------------------------------------------------
 // Action result

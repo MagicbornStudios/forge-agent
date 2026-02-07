@@ -7,14 +7,38 @@ updated: 2026-02-07
 
 # Forge Agent - Project overview
 
-## Project summary
+## Product vision
 
-Forge Agent is an AI-first studio for editing dialogue graphs. It focuses on:
+Forge Agent is an **AI-first interactive narrative storytelling engine**. It
+combines visual graph editing, AI-assisted authoring, and multi-modal content
+creation into a unified editor platform inspired by Unreal Engine's editor UI.
 
-- Editor shell with multiple modes (Dialogue is primary; Character, Video, and Strategy are additional modes).
+### Core identity
+
+- **Interactive narrative storytelling** - build branching dialogue, character
+  relationships, and cinematic sequences with AI assistance.
+- **Yarn Spinner compatible** - first-class support for the Yarn Spinner
+  dialogue scripting language used across Unity, Unreal, and Godot.
+- **Editors as MCP Apps** - each editor can be exposed as an MCP App for
+  embedding in external hosts (Claude Desktop, Cursor, VS Code).
+
+### Editors
+
+| Editor | Purpose | Status |
+|------|---------|--------|
+| **Dialogue** | Yarn Spinner dialogue graph editing (narratives + storylets) | Primary |
+| **Character** | Character relationship graph editing | In progress |
+| **Video** | Twick timeline video editing | In progress |
+| **Strategy** | AI agent strategy chat (assistant-ui + tool-ui) | In progress |
+
+### Key capabilities
+
+- Editor shell with resizable, dockable, lockable panels (DockLayout).
 - CopilotKit for in-app AI context, actions, and suggestions.
+- assistant-ui + tool-ui for conversational AI interfaces.
 - Payload CMS (SQLite) for local-first persistence.
-- Payload-generated types used across domains for consistent schemas.
+- Payload-generated types used across systems (domain packages) for consistent schemas.
+- OpenRouter for multi-model AI access; ElevenLabs for voice generation.
 
 ## Tech stack
 
@@ -24,7 +48,8 @@ Forge Agent is an AI-first studio for editing dialogue graphs. It focuses on:
 - Tailwind CSS 4
 - shadcn/ui (Radix UI)
 - Zustand
-- CopilotKit
+- CopilotKit (system copilot - context, actions, suggestions)
+- assistant-ui + tool-ui (Strategy chat UI - threads, messages, tool rendering)
 - OpenRouter via OpenAI SDK + baseURL; ElevenLabs for audio; video (Sora) planned - see [06 - Model routing and OpenRouter](architecture/06-model-routing-and-openrouter.mdx)
 - React Flow
 - Payload CMS (SQLite)
@@ -33,12 +58,12 @@ Forge Agent is an AI-first studio for editing dialogue graphs. It focuses on:
 
 ## Architecture (high level)
 
-- **App Shell** (`apps/studio/components/AppShell.tsx`, `apps/studio/lib/app-shell/store.ts`): owns mode tabs and the active mode. Only the active mode is rendered.
-- **Modes**: Dialogue is primary. Character and Video are editors; Strategy is the assistant-ui strategy editor.
+- **App Shell** (`apps/studio/components/AppShell.tsx`, `apps/studio/lib/app-shell/store.ts`): owns editor tabs and the active editor. Only the active editor is rendered.
+- **Editors**: Dialogue is primary. Character and Video are editors; Strategy is the assistant-ui strategy editor.
 - **Shared**: `packages/shared/src/shared` contains the editor UI kit, headless contracts, assistant-ui/tool-ui components, and styling tokens.
 - **Agent engine**: `packages/agent-engine` provides the workflow runtime (steps + events + SSE helpers).
 - **Dev kit**: `packages/dev-kit` re-exports `@forge/ui`, `@forge/shared`, and `@forge/agent-engine` for consumers.
-- **Domains**: Dialogue logic lives in `packages/domain-forge` and consumes types from `packages/types`.
+- **Systems (domain packages)**: Dialogue system logic lives in `packages/domain-forge` and consumes types from `packages/types`.
 - **Types**: Payload generates types into `packages/types/src/payload-types.ts`. Domain aliases live in `packages/types/src/payload.ts` and `packages/types/src/graph.ts`.
 - **Persistence**: Payload runs inside the Studio app. Collections live under `apps/studio/payload/collections`.
 - **Settings**: Config-based defaults in `apps/studio/lib/settings/config.ts`. Overrides are loaded from Payload (`settings-overrides`) on app init via `GET /api/settings` and `hydrateFromOverrides`; saved explicitly via the settings sheet Save button and `POST /api/settings`.
@@ -52,13 +77,13 @@ Note: API routes exist inside the Studio app for CopilotKit, assistant-chat, and
 | Path | Purpose |
 |------|---------|
 | **apps/studio/app/** | Next.js App Router: layout, page, globals.css, internal API routes. |
-| **apps/studio/components/** | Studio UI (AppShell, modes, settings, providers, shadcn UI). |
+| **apps/studio/components/** | Studio UI (AppShell, editors, settings, providers, shadcn UI). |
 | **apps/studio/payload/** | Payload config and collections for Studio. |
 | **apps/studio/lib/** | App logic (stores, model router, settings, graph operations, utils). |
 | **packages/shared/** | Shared editor UI kit and headless contracts. |
 | **packages/agent-engine/** | Workflow runtime (steps + events + SSE). |
 | **packages/dev-kit/** | Meta-package that re-exports forge foundation packages for consumers. |
-| **packages/domain-forge/** | Dialogue domain logic (types, store, operations, copilot wiring). |
+| **packages/domain-forge/** | Dialogue system (domain package) logic (types, store, operations, copilot wiring). |
 | **packages/ui/** | Shared shadcn UI atoms (Radix-based primitives). |
 | **packages/types/** | Payload-generated types + domain aliases (source of truth). |
 | **docs/** | Documentation (STATUS, architecture, design, guides). How-to guides live in `docs/how-to/` (numbered 00-09, 21-22) and are also served in-app at `/docs`. |
@@ -93,14 +118,13 @@ apps/
       GraphEditor.tsx
       CreateNodeModal.tsx
       copilot/
+      editors/
       forge/
       media/
-      modes/
+      editors/
       providers/
       settings/
       video/
-      workspaces/
-        legacy/
     lib/
       app-shell/
       domains/
@@ -207,16 +231,16 @@ types/
 ## Entry and data flow
 
 - **Entry**: `apps/studio/app/layout.tsx` -> `apps/studio/app/page.tsx`.
-- **AppShell**: Reads app-shell store and renders the active mode. Mode tabs use shared components from `@forge/shared`.
-- **Dialogue mode**: Composes `EditorShell` and `DockLayout` from `@forge/shared` with the GraphEditor as the main surface.
-- **CopilotKit**: The active mode registers context + actions from domain wiring; the chat uses those to propose edits.
-- **Payload**: Collections define persisted shapes; generated types are used by domain logic for type safety.
+- **AppShell**: Reads app-shell store and renders the active editor. Editor tabs use shared components from `@forge/shared`.
+- **Dialogue editor**: Composes `EditorShell` and `DockLayout` from `@forge/shared` with the GraphEditor as the main surface.
+- **CopilotKit**: The active editor registers context + actions from system wiring; the chat uses those to propose edits.
+- **Payload**: Collections define persisted shapes; generated types are used by system logic for type safety.
 
 ---
 
 ## How-to guides
 
-Numbered guides in `docs/how-to/` build an editor mode from the ground up. They are served in the Studio app at **/docs** (sidebar + article). Order: 01 Foundation -> 02 Editor shell and slots -> 03 Styling -> 04 Data and state -> 05 Building an editor mode -> 06 DialogueMode walkthrough -> 07 Copilot and AI integration -> 08 Adding AI to modes -> 09 VideoMode walkthrough -> 21 Workspace -> Editor migration -> 22 AI generation components. Each guide includes "What the AI can do at this stage" and points to real code.
+Numbered guides in `docs/how-to/` build an editor from the ground up. They are served in the Studio app at **/docs** (sidebar + article). Order: 01 Foundation -> 02 Editor shell and slots -> 03 Styling -> 04 Data and state -> 05 Building an editor -> 06 Dialogue Editor walkthrough -> 07 Copilot and AI integration -> 08 Adding AI to editors -> 09 Video Editor walkthrough -> 21 Workspace -> Editor migration -> 22 AI generation components. Each guide includes "What the AI can do at this stage" and points to real code.
 
 ---
 

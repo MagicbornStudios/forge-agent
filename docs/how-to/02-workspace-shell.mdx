@@ -6,24 +6,24 @@ updated: 2026-02-07
 
 # 02 - Editor shell and slots
 
-Every editor mode uses the same surfaces: ModeHeader, ModeToolbar, DockLayout
-(main/right/bottom/left), ModeStatusBar, and overlays. Composition only; no
+Every editor uses the same surfaces: EditorHeader, EditorToolbar, DockLayout
+(main/right/bottom/left), EditorStatusBar, and overlays. Composition only; no
 data binding in this guide.
 
 ## Shared components
 
 From `packages/shared/src/shared/components/editor/`:
 
-- **EditorShell** - Root; accepts `modeId`, `title`, `subtitle`, `domain`,
+- **EditorShell** - Root; accepts `editorId`, `title`, `subtitle`, `domain`,
   `theme`, `className`, `children`. Renders a flex column; children define order.
-- **ModeHeader** - `ModeHeader.Left`, `.Center`, `.Right` for composable sections.
-- **ModeToolbar** - `ModeToolbar.Left`, `.Center`, `.Right`; menubar, project
+- **EditorHeader** - `EditorHeader.Left`, `.Center`, `.Right` for composable sections.
+- **EditorToolbar** - `EditorToolbar.Left`, `.Center`, `.Right`; menubar, project
   select, buttons.
 - **DockLayout** - Slots: `main` (required), `left?`, `right?`, `bottom?`.
   Resizable and persistent.
 - **DockPanel** - Panel wrapper with optional title and tabs.
-- **ModeStatusBar** - Footer strip (e.g. "Ready", "Unsaved changes").
-- **ModeOverlaySurface** - Renders overlays from a declarative list:
+- **EditorStatusBar** - Footer strip (e.g. "Ready", "Unsaved changes").
+- **EditorOverlaySurface** - Renders overlays from a declarative list:
   `overlays`, `activeOverlay`, `onDismiss`.
 
 Legacy components still live in `components/workspace` but new work should use
@@ -33,16 +33,16 @@ and [workspace AGENTS.md](../../packages/shared/src/shared/components/workspace/
 ## Minimal shell example
 
 ```tsx
-<EditorShell modeId="my-mode" title="My Mode" domain="my">
-  <ModeHeader>...</ModeHeader>
-  <ModeToolbar>...</ModeToolbar>
+<EditorShell editorId="my-editor" title="My Editor" domain="my">
+  <EditorHeader>...</EditorHeader>
+  <EditorToolbar>...</EditorToolbar>
   <DockLayout main={<DockPanel panelId="main">Main content</DockPanel>} />
-  <ModeStatusBar>Ready</ModeStatusBar>
-  <ModeOverlaySurface overlays={[]} activeOverlay={null} onDismiss={() => {}} />
+  <EditorStatusBar>Ready</EditorStatusBar>
+  <EditorOverlaySurface overlays={[]} activeOverlay={null} onDismiss={() => {}} />
 </EditorShell>
 ```
 
-Real reference: `apps/studio/components/modes/DialogueMode.tsx` composes these
+Real reference: `apps/studio/components/editors/DialogueEditor.tsx` composes these
 with Dialogue-specific content.
 
 ## What the AI can do at this stage

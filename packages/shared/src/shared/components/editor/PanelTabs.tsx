@@ -78,7 +78,7 @@ export function PanelTabs({
       {/* Tab triggers */}
       <TabsList
         className={cn(
-          'w-full flex rounded-none bg-transparent h-8 px-0 gap-0 m-0',
+          'w-full flex rounded-none bg-transparent h-[var(--tab-height)] px-0 gap-0 m-0',
           'min-w-0 overflow-hidden border-b border-border shrink-0',
         )}
       >
@@ -91,17 +91,16 @@ export function PanelTabs({
               key={tab.id}
               value={tab.id}
               className={cn(
-                'min-w-0 flex-1 text-xs rounded-none px-2 py-1 truncate leading-tight',
-                'relative shadow-none ring-0',
+                'min-w-0 flex-1 text-xs rounded-none px-[var(--control-padding-x)] py-[var(--control-padding-y)] truncate leading-tight',
+                'relative shadow-none ring-0 border-b-2 border-transparent',
                 'text-muted-foreground hover:text-foreground transition-colors',
-                'data-[state=active]:bg-muted data-[state=active]:text-foreground data-[state=active]:shadow-none',
-                'border-l-2',
+                'data-[state=active]:bg-muted data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-[var(--context-accent,hsl(var(--primary)))]',
               )}
-              style={{
-                borderLeftColor: isActive
-                  ? accent
-                  : `color-mix(in oklab, ${accent} 40%, transparent)`,
-              }}
+              style={
+                isActive
+                  ? { borderBottomColor: accent }
+                  : undefined
+              }
             >
               {tab.icon && (
                 <span

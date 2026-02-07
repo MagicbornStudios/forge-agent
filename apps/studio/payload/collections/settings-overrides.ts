@@ -15,15 +15,15 @@ export const SettingsOverrides: CollectionConfig = {
       required: true,
       options: [
         { label: 'App', value: 'app' },
-        { label: 'Workspace', value: 'workspace' },
         { label: 'Editor', value: 'editor' },
+        { label: 'Viewport', value: 'viewport' },
       ],
     },
     {
       name: 'scopeId',
       type: 'text',
       admin: {
-        description: 'Null for app; workspaceId for workspace; workspaceId:editorId for editor.',
+        description: 'Null for app; editorId for editor; editorId:viewportId for viewport.',
       },
     },
     {

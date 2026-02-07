@@ -10,14 +10,14 @@ Sign up or log in from the [marketing site](/) or the [Log in](/login) page. You
 
 ## 2. Open the app
 
-Once logged in, click **Open app** in the header. You will be taken to the Forge Studio with your workspace.
+Once logged in, click **Open app** in the header. You will be taken to the Forge Studio editor shell.
 
-## 3. Explore workspaces
+## 3. Explore editors
 
-- **Forge** — Graph-based dialogue and flow editing
-- **Video** — Timeline-based video editing (showcase)
+- **Dialogue** - Graph-based dialogue and flow editing
+- **Video** - Timeline-based video editing (showcase)
 
-Switch between workspaces using the tabs. Your last-opened document and layout are remembered.
+Switch between editors using the tabs. Your last-opened document and layout are remembered.
 
 ## Need help?
 

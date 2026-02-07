@@ -1,14 +1,14 @@
 ---
-title: CopilotKit mode integration
+title: CopilotKit editor integration
 created: 2026-02-04
 updated: 2026-02-07
 ---
 
-# CopilotKit mode integration
+# CopilotKit editor integration
 
 ## Pattern: context + actions
 
-- **Context** describes current state so the agent can reason (e.g. which mode, what graph, dirty state). Supply it via `useCopilotReadable` in the mode component or via `useDomainCopilot` contracts.
+- **Context** describes current state so the agent can reason (e.g. which editor, what graph, dirty state). Supply it via `useCopilotReadable` in the editor component or via `useDomainCopilot` contracts.
 - **Actions** perform edits. Register them with `useCopilotAction`; the agent calls them to change the graph, document, etc.
 
 The agent uses context to answer questions like "What's in the graph?" and uses actions to apply changes (create node, update node, save, etc.).
@@ -16,20 +16,20 @@ The agent uses context to answer questions like "What's in the graph?" and uses 
 ## Stable action IDs (conventions)
 
 - App-level actions are prefixed via `createAppAction()` (e.g. `app_generateImage`).
-- Domain actions are prefixed via `createDomainAction(domain, ...)` (e.g. `forge_createNode`).
+- System actions are prefixed via `createDomainAction(domain, ...)` (e.g. `forge_createNode`).
 
 Even if an action is disabled, it should exist so the UI stays consistent.
 
-## Mode context shape (Dialogue)
+## Editor context shape (Dialogue)
 
 Dialogue exposes to the agent:
 
-- `workspaceId`: `"dialogue"`
-- `editorType`: `"react-flow"`
+- `editorId`: `"dialogue"`
+- `viewportType`: `"react-flow"` (legacy `editorType`)
 - `graphSummary`: `{ title, nodeCount, edgeCount, nodeIds }` or `null` when no graph
 - `isDirty`: boolean
 
-Other modes (e.g. Writer/Lexical) can expose their own summary (e.g. document title, word count, selection).
+Other editors (e.g. Writer/Lexical) can expose their own summary (e.g. document title, word count, selection).
 
 ## Selection-aware instructions
 

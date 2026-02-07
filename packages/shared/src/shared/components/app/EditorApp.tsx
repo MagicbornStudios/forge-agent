@@ -11,19 +11,19 @@ export interface EditorAppProps extends AppLayoutProps {}
 /**
  * EditorApp — the root application shell.
  *
- * Replaces `AppSpace` in the new naming convention. Contains the mode
- * tab bar and the active mode content area.
+ * Replaces `AppSpace` in the new naming convention. Contains the editor
+ * tab bar and the active editor content area.
  *
  * ## Compound API
  * ```tsx
  * <EditorApp>
- *   <EditorApp.Tabs label="Mode tabs" actions={...}>
+ *   <EditorApp.Tabs label="Editor tabs" actions={...}>
  *     <EditorApp.Tab label="Forge" isActive={...} onSelect={...} />
  *     <EditorApp.Tab label="Characters" isActive={...} onSelect={...} />
  *   </EditorApp.Tabs>
  *   <EditorApp.Content>
- *     {activeMode === 'forge' && <ForgeMode />}
- *     {activeMode === 'character' && <CharacterMode />}
+ *     {activeEditor === 'dialogue' && <DialogueEditor />}
+ *     {activeEditor === 'character' && <CharacterEditor />}
  *   </EditorApp.Content>
  * </EditorApp>
  * ```

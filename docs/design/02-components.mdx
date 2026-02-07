@@ -8,7 +8,26 @@ updated: 2026-02-07
 
 This document catalogs the **shared components** we expose for consumers and contributors. It focuses on **real components in the repo** and how they map to our atomic design system.
 
-> **Rule of thumb:** import from `@forge/dev-kit` (or `@forge/ui` / `@forge/shared`) and keep domain code in your own app/mode package.
+> **Rule of thumb:** import from `@forge/dev-kit` (or `@forge/ui` / `@forge/shared`) and keep domain code in your own app/system package.
+
+## Density rules (editor UI)
+
+- Use tokenized spacing and sizing (`--control-*`, `--panel-padding`, `--tab-height`).
+- Avoid raw `px-*`/`py-*` utilities in editor surfaces.
+- Prefer `EditorShell` + `DockLayout` + `DockPanel` for consistent padding and borders.
+- **Default appearance** aligns with shadcn (radius, type scale, focus); compact density is available via `data-density` where supported (see [03 - Design language](03-design-language.mdx)).
+
+## Icon audit checklist
+
+Use **Lucide React** throughout; standard size **16px** (`size-4` or `className="size-4"`) and outline style.
+
+| Surface | Where | Status |
+|--------|--------|--------|
+| Panel headers | `DockPanel` `title` + `icon` (Library, Inspector, Workbench, Tracks, Timeline, Characters, Properties) | Required |
+| Editor tabs | `EditorApp.Tab` label (Dialogue, Video, Characters, Strategy) | Required |
+| Toolbar actions | Fit view, new, settings, etc. | Required |
+| Settings | Section titles or key dropdowns (Model, Theme, Density) | Optional |
+| Tab triggers | `PanelTabs` tab defs (e.g. Narratives, Storylets, Nodes) | Per-tab icon in `PanelTabDef.icon` |
 
 ---
 
@@ -57,18 +76,22 @@ Composable UI patterns built on atoms.
 
 - `EditorApp` (semantic wrapper over AppLayout + tabs + content)
 - `EditorShell`
-- `ModeHeader` (Left / Center / Right slots)
-- `ModeToolbar` (Menubar, Group, Button, ProjectSelect, Settings)
+- `EditorHeader` (Left / Center / Right slots)
+- `EditorToolbar` (Menubar, Group, Button, ProjectSelect, Settings)
 - `DockLayout` (left / main / right / bottom slots)
 - `DockPanel` (title, tabs, lock, settings)
 - `PanelTabs`
 - `PanelSettings`
-- `ModeStatusBar`
-- `ModeReviewBar`
-- `ModeOverlaySurface`
+- `EditorStatusBar`
+- `EditorReviewBar`
+- `EditorOverlaySurface`
 - `EditorButton`, `EditorTooltip`
 - `DockSidebar`
 - `AppProviders` (optional shared provider stack for tooltips/copilot)
+
+#### Editor layout (Dockview)
+
+Editors use **DockLayout** (Dockview) for full layout flexibility: resize splits, collapse panels, drag tabs to reorder, float panels. Layout is saved to `localStorage` on change and restored on load. **Reset layout:** clear `localStorage['dockview-{layoutId}']` for the editor (e.g. `dockview-dialogue-editor`) and reload.
 
 ### Gating + AI
 
@@ -94,10 +117,10 @@ Use `ComponentPreview` to render registry examples inside docs.
 
 These live in the **app repo** and are not published.
 
-- `AppShell` - mode tabs + active mode routing.
-- `DialogueMode` - React Flow editor + AI workflow panel.
-- `VideoMode` - Twick editor surface + AI contract.
-- `StrategyMode` - CodebaseAgentStrategyEditor with tool UI.
+- `AppShell` - editor tabs + active editor routing.
+- `DialogueEditor` - React Flow editor + AI workflow panel.
+- `VideoEditor` - Twick editor surface + AI contract.
+- `StrategyEditor` - CodebaseAgentStrategyEditor with tool UI.
 
 ---
 
@@ -147,4 +170,4 @@ To add a new shadcn registry or install components from a registry (e.g. `@lucid
 
 - **Atoms:** import from `@forge/dev-kit` (or `@forge/ui`).
 - **Editor shell + AI helpers:** import from `@forge/dev-kit` (or `@forge/shared`).
-- **Domain logic:** stays in your app/mode package - not in the shared layer.
+- **Domain logic:** stays in your app/system package - not in the shared layer.

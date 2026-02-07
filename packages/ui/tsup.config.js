@@ -9,7 +9,15 @@ const external = [
 module.exports = defineConfig({
   entry: ['src/index.ts'],
   format: ['esm', 'cjs'],
-  dts: true,
+  dts: {
+    resolve: true,
+    compilerOptions: {
+      moduleResolution: 'node',
+      skipLibCheck: true,
+      allowSyntheticDefaultImports: true,
+      jsx: 'react-jsx',
+    },
+  },
   sourcemap: true,
   clean: true,
   external,

@@ -24,7 +24,16 @@
       "Bash(where:*)",
       "Bash(gh:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "Bash(pnpm add:*)"
+      "Bash(pnpm add:*)",
+      "WebFetch(domain:docs.yarnspinner.dev)",
+      "WebFetch(domain:fumadocs.dev)",
+      "WebFetch(domain:www.fumadocs.dev)",
+      "WebFetch(domain:magicui.design)",
+      "WebFetch(domain:billingsdk.com)",
+      "WebFetch(domain:ui.shadcn.com)",
+      "WebFetch(domain:www.vinzius.com)",
+      "WebSearch",
+      "WebFetch(domain:v1.yarnspinner.dev)"
     ]
   }
 }

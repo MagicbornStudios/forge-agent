@@ -4,20 +4,20 @@ describe('App Shell store', () => {
   beforeEach(() => {
     useAppShellStore.setState({
       route: {
-        activeWorkspaceId: 'forge',
-        openWorkspaceIds: ['forge'],
+        activeWorkspaceId: 'dialogue',
+        openWorkspaceIds: ['dialogue'],
         globalModals: [],
       },
     });
   });
 
   it('setActiveWorkspace switches active and opens workspace if not open', () => {
-    const { setActiveWorkspace, route } = useAppShellStore.getState();
+    const { setActiveWorkspace } = useAppShellStore.getState();
     setActiveWorkspace('video');
     const next = useAppShellStore.getState().route;
     expect(next.activeWorkspaceId).toBe('video');
     expect(next.openWorkspaceIds).toContain('video');
-    expect(next.openWorkspaceIds).toContain('forge');
+    expect(next.openWorkspaceIds).toContain('dialogue');
   });
 
   it('openWorkspace adds tab and switches to it', () => {
@@ -51,7 +51,7 @@ describe('App Shell store', () => {
   it('closeWorkspace when active switches to first remaining', () => {
     const { openWorkspace, closeWorkspace } = useAppShellStore.getState();
     openWorkspace('video');
-    closeWorkspace('forge');
+    closeWorkspace('dialogue');
     const next = useAppShellStore.getState().route;
     expect(next.activeWorkspaceId).toBe('video');
     expect(next.openWorkspaceIds).toEqual(['video']);

@@ -17,7 +17,7 @@ import {
   DropdownMenuCheckboxItem,
 } from '@forge/ui/dropdown-menu';
 import { Badge } from '@forge/ui/badge';
-import { WorkspaceButton } from '@forge/shared/components/workspace';
+import { EditorButton } from '@forge/shared';
 
 // ---------------------------------------------------------------------------
 // Tier badge
@@ -103,7 +103,7 @@ export function ModelSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <WorkspaceButton
+        <EditorButton
           variant="ghost"
           size="sm"
           tooltip="Model routing"
@@ -119,7 +119,7 @@ export function ModelSwitcher() {
             <span className="truncate">{triggerLabel}</span>
             <ChevronDown className="h-3 w-3 opacity-60" />
           </span>
-        </WorkspaceButton>
+        </EditorButton>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-80">

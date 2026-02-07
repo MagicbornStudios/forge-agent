@@ -71,6 +71,8 @@ export interface Config {
     projects: Project;
     'forge-graphs': ForgeGraph;
     'video-docs': VideoDoc;
+    pages: Page;
+    blocks: Block;
     characters: Character;
     relationships: Relationship;
     media: Media;
@@ -91,6 +93,8 @@ export interface Config {
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     'forge-graphs': ForgeGraphsSelect<false> | ForgeGraphsSelect<true>;
     'video-docs': VideoDocsSelect<false> | VideoDocsSelect<true>;
+    pages: PagesSelect<false> | PagesSelect<true>;
+    blocks: BlocksSelect<false> | BlocksSelect<true>;
     characters: CharactersSelect<false> | CharactersSelect<true>;
     relationships: RelationshipsSelect<false> | RelationshipsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
@@ -224,6 +228,93 @@ export interface VideoDoc {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages".
+ */
+export interface Page {
+  id: number;
+  project: number | Project;
+  parent:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  properties:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  cover?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  icon?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  archived?: boolean | null;
+  in_trash?: boolean | null;
+  url?: string | null;
+  public_url?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blocks".
+ */
+export interface Block {
+  id: number;
+  page: number | Page;
+  /**
+   * Optional; set when block is nested under another block.
+   */
+  parent_block?: (number | null) | Block;
+  /**
+   * e.g. paragraph, heading_1, heading_2, bulleted_list_item, code
+   */
+  type: string;
+  /**
+   * Order among siblings.
+   */
+  position: number;
+  /**
+   * Type-specific content (e.g. rich_text, code.language).
+   */
+  payload:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  archived?: boolean | null;
+  in_trash?: boolean | null;
+  has_children?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "characters".
  */
 export interface Character {
@@ -313,9 +404,9 @@ export interface Relationship {
  */
 export interface SettingsOverride {
   id: number;
-  scope: 'app' | 'workspace' | 'editor';
+  scope: 'app' | 'editor' | 'viewport';
   /**
-   * Null for app; workspaceId for workspace; workspaceId:editorId for editor.
+   * Null for app; editorId for editor; editorId:viewportId for viewport.
    */
   scopeId?: string | null;
   /**
@@ -484,6 +575,14 @@ export interface PayloadLockedDocument {
         value: number | VideoDoc;
       } | null)
     | ({
+        relationTo: 'pages';
+        value: number | Page;
+      } | null)
+    | ({
+        relationTo: 'blocks';
+        value: number | Block;
+      } | null)
+    | ({
         relationTo: 'characters';
         value: number | Character;
       } | null)
@@ -621,6 +720,39 @@ export interface VideoDocsSelect<T extends boolean = true> {
   title?: T;
   graphId?: T;
   doc?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages_select".
+ */
+export interface PagesSelect<T extends boolean = true> {
+  project?: T;
+  parent?: T;
+  properties?: T;
+  cover?: T;
+  icon?: T;
+  archived?: T;
+  in_trash?: T;
+  url?: T;
+  public_url?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blocks_select".
+ */
+export interface BlocksSelect<T extends boolean = true> {
+  page?: T;
+  parent_block?: T;
+  type?: T;
+  position?: T;
+  payload?: T;
+  archived?: T;
+  in_trash?: T;
+  has_children?: T;
   updatedAt?: T;
   createdAt?: T;
 }

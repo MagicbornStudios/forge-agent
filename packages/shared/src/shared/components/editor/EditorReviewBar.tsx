@@ -1,0 +1,68 @@
+'use client';
+
+import * as React from 'react';
+import { Button } from '@forge/ui/button';
+import { cn } from '@forge/shared/lib/utils';
+
+export interface EditorReviewBarProps {
+  /** When false, render nothing. */
+  visible: boolean;
+  /** Revert callback — reset to last saved state. */
+  onRevert: () => void;
+  /** Accept callback — keep AI changes, clear pending flag. */
+  onAccept: () => void;
+  /** Descriptive label for the pending changes. */
+  label?: string;
+  revertLabel?: string;
+  acceptLabel?: string;
+  className?: string;
+}
+
+/**
+ * EditorReviewBar — a plan/commit review bar for AI-generated changes.
+ *
+ * Replaces `WorkspaceReviewBar`. Renders between the `EditorToolbar`
+ * and the `DockLayout` when there are pending AI changes to review.
+ *
+ * @example
+ * ```tsx
+ * <EditorReviewBar
+ *   visible={isDirty && hasPendingPlan}
+ *   onRevert={handleRevert}
+ *   onAccept={handleAccept}
+ *   label="AI generated 5 new nodes"
+ * />
+ * ```
+ */
+export function EditorReviewBar({
+  visible,
+  onRevert,
+  onAccept,
+  label = 'Pending changes from plan',
+  revertLabel = 'Revert',
+  acceptLabel = 'Accept',
+  className,
+}: EditorReviewBarProps) {
+  if (!visible) return null;
+
+  return (
+    <div
+      role="region"
+      aria-label="Review pending changes"
+      className={cn(
+        'flex items-center justify-between gap-2 px-3 py-1.5 text-sm border-b border-border bg-muted/60 shrink-0',
+        className,
+      )}
+    >
+      <span className="text-muted-foreground">{label}</span>
+      <div className="flex gap-2">
+        <Button variant="outline" size="sm" onClick={onRevert}>
+          {revertLabel}
+        </Button>
+        <Button variant="secondary" size="sm" onClick={onAccept}>
+          {acceptLabel}
+        </Button>
+      </div>
+    </div>
+  );
+}

@@ -99,13 +99,13 @@
     },
     "/api/model-settings": {
       "get": {
-        "summary": "Get model router state (active model, mode, registry, preferences, health)",
+        "summary": "Get model router state (active model, mode, registry from OpenRouter, preferences, primary + fallbacks)",
         "tags": [
           "model"
         ],
         "responses": {
           "200": {
-            "description": "Model settings and health snapshot"
+            "description": "Model settings and preferences; registry is from OpenRouter API"
           }
         }
       },
@@ -139,7 +139,7 @@
         },
         "responses": {
           "200": {
-            "description": "New resolved model and health"
+            "description": "New resolved primary and fallbacks"
           }
         }
       }
@@ -174,8 +174,8 @@
                     "type": "string",
                     "enum": [
                       "app",
-                      "workspace",
-                      "editor"
+                      "editor",
+                      "viewport"
                     ]
                   },
                   "scopeId": {

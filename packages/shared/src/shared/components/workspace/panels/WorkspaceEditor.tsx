@@ -11,6 +11,7 @@ export interface WorkspaceEditorProps {
   editorScope?: string;
 }
 
+/** @deprecated Use ViewportMeta from @forge/shared/components/editor. */
 export function WorkspaceEditor({
   children,
   className,
@@ -21,6 +22,9 @@ export function WorkspaceEditor({
   return (
     <div
       className={cn('h-full w-full min-h-0 min-w-0', className)}
+      data-viewport-id={editorId}
+      data-viewport-type={editorType}
+      {...(editorScope ? { 'data-viewport-scope': editorScope } : {})}
       data-editor-id={editorId}
       data-editor-type={editorType}
       {...(editorScope ? { 'data-editor-scope': editorScope } : {})}

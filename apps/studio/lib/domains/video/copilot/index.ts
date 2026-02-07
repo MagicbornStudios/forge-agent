@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import type { DomainCopilotContract, AIHighlightPayload } from '@forge/shared/copilot/types';
-import type { Selection } from '@forge/shared/workspace/selection';
+import type { Selection } from '@forge/shared';
 import type { VideoDoc, VideoPatchOp } from '../types';
 import { createVideoActions } from './actions';
 import { buildVideoContext } from './context';

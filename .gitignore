@@ -80,6 +80,10 @@ Desktop.ini
 # Windows
 nul
 
+# Agent / tooling – downloaded reference material (do not track or edit)
+# Agents use .tmp to pull entire repos or component trees for reference.
+.tmp/
+
 # Misc
 *.pem
 .cache/

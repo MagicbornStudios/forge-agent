@@ -2,8 +2,8 @@ export type SettingsDefaults = Record<string, unknown>;
 
 export interface SettingsConfig {
   appDefaults: SettingsDefaults;
-  workspaceDefaults: Record<string, SettingsDefaults>;
   editorDefaults: Record<string, SettingsDefaults>;
+  viewportDefaults: Record<string, SettingsDefaults>;
 }
 
 export const SETTINGS_CONFIG: SettingsConfig = {
@@ -17,6 +17,7 @@ export const SETTINGS_CONFIG: SettingsConfig = {
     "ai.showAgentName": true,
     "ui.toastsEnabled": true,
     "ui.theme": "dark-fantasy",
+    "ui.density": "compact",
     "editor.locked": false,
     "panel.visible.dialogue-left": true,
     "panel.visible.dialogue-right": true,
@@ -28,7 +29,7 @@ export const SETTINGS_CONFIG: SettingsConfig = {
     "panel.visible.strategy-left": true,
     "panel.visible.strategy-right": true,
   },
-  workspaceDefaults: {
+  editorDefaults: {
     dialogue: {
       "ai.agentName": "Dialogue Agent",
     },
@@ -42,16 +43,16 @@ export const SETTINGS_CONFIG: SettingsConfig = {
       "ai.agentName": "Strategy Agent",
     },
   },
-  editorDefaults: {},
+  viewportDefaults: {},
 };
 
-export function getWorkspaceDefaults(workspaceId?: string) {
-  if (!workspaceId) return {};
-  return SETTINGS_CONFIG.workspaceDefaults[workspaceId] ?? {};
+export function getEditorDefaults(editorId?: string) {
+  if (!editorId) return {};
+  return SETTINGS_CONFIG.editorDefaults[editorId] ?? {};
 }
 
-export function getEditorDefaults(workspaceId?: string, editorId?: string) {
-  if (!workspaceId || !editorId) return {};
-  const key = `${workspaceId}:${editorId}`;
-  return SETTINGS_CONFIG.editorDefaults[key] ?? {};
+export function getViewportDefaults(editorId?: string, viewportId?: string) {
+  if (!editorId || !viewportId) return {};
+  const key = `${editorId}:${viewportId}`;
+  return SETTINGS_CONFIG.viewportDefaults[key] ?? {};
 }
