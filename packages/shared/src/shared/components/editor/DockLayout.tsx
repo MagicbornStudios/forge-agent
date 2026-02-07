@@ -4,6 +4,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { DockviewReact } from 'dockview';
 import type { DockviewReadyEvent, IDockviewPanelProps } from 'dockview';
 import { cn } from '@forge/shared/lib/utils';
+import { DockviewSlotTab } from './DockviewSlotTab';
+import type { DockLayoutSlotIconKey } from './DockviewSlotTab';
 
 export interface DockLayoutViewport {
   viewportId?: string;
@@ -11,11 +13,23 @@ export interface DockLayoutViewport {
   viewportScope?: string;
 }
 
+export interface DockLayoutSlotConfig {
+  title?: string;
+  iconKey?: DockLayoutSlotIconKey;
+}
+
 export interface DockLayoutProps {
   left?: React.ReactNode;
   main: React.ReactNode;
   right?: React.ReactNode;
   bottom?: React.ReactNode;
+  /** Optional per-slot tab config (title + iconKey) for Dockview tab bar. */
+  slots?: {
+    left?: DockLayoutSlotConfig;
+    main?: DockLayoutSlotConfig;
+    right?: DockLayoutSlotConfig;
+    bottom?: DockLayoutSlotConfig;
+  };
   viewport?: DockLayoutViewport;
   leftDefaultSize?: number;
   leftMinSize?: number;
@@ -45,45 +59,61 @@ function SlotPanel(props: IDockviewPanelProps) {
   return <div className="h-full w-full min-h-0 min-w-0 overflow-hidden">{content}</div>;
 }
 
+const DEFAULT_SLOT_CONFIG: Record<SlotId, { title: string; iconKey: DockLayoutSlotIconKey }> = {
+  left: { title: 'Library', iconKey: 'library' },
+  main: { title: 'Main', iconKey: 'main' },
+  right: { title: 'Inspector', iconKey: 'inspector' },
+  bottom: { title: 'Workbench', iconKey: 'workbench' },
+};
+
 function buildDefaultLayout(
   api: DockviewReadyEvent['api'],
-  slots: { left?: React.ReactNode; main: React.ReactNode; right?: React.ReactNode; bottom?: React.ReactNode }
+  slots: { left?: React.ReactNode; main: React.ReactNode; right?: React.ReactNode; bottom?: React.ReactNode },
+  slotConfig?: DockLayoutProps['slots']
 ) {
   const hasLeft = slots.left != null;
   const hasRight = slots.right != null;
   const hasBottom = slots.bottom != null;
 
+  const mainConfig = { ...DEFAULT_SLOT_CONFIG.main, ...slotConfig?.main };
   api.addPanel({
     id: 'main',
     component: 'slot',
-    params: { slotId: 'main' },
-    title: 'Main',
+    tabComponent: 'slotTab',
+    params: { slotId: 'main', iconKey: mainConfig.iconKey, title: mainConfig.title },
+    title: mainConfig.title,
   });
 
   if (hasLeft) {
+    const leftConfig = { ...DEFAULT_SLOT_CONFIG.left, ...slotConfig?.left };
     api.addPanel({
       id: 'left',
       component: 'slot',
-      params: { slotId: 'left' },
-      title: 'Library',
+      tabComponent: 'slotTab',
+      params: { slotId: 'left', iconKey: leftConfig.iconKey, title: leftConfig.title },
+      title: leftConfig.title,
       position: { referencePanel: 'main', direction: 'left' },
     });
   }
   if (hasRight) {
+    const rightConfig = { ...DEFAULT_SLOT_CONFIG.right, ...slotConfig?.right };
     api.addPanel({
       id: 'right',
       component: 'slot',
-      params: { slotId: 'right' },
-      title: 'Inspector',
+      tabComponent: 'slotTab',
+      params: { slotId: 'right', iconKey: rightConfig.iconKey, title: rightConfig.title },
+      title: rightConfig.title,
       position: { referencePanel: 'main', direction: 'right' },
     });
   }
   if (hasBottom) {
+    const bottomConfig = { ...DEFAULT_SLOT_CONFIG.bottom, ...slotConfig?.bottom };
     api.addPanel({
       id: 'bottom',
       component: 'slot',
-      params: { slotId: 'bottom' },
-      title: 'Workbench',
+      tabComponent: 'slotTab',
+      params: { slotId: 'bottom', iconKey: bottomConfig.iconKey, title: bottomConfig.title },
+      title: bottomConfig.title,
       position: { referencePanel: 'main', direction: 'below' },
     });
   }

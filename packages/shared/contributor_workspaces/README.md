@@ -13,4 +13,6 @@ Community editors live here. We expect every new contributor to build their own 
 2. **Implement your editor** (shell, slots, domain contract, optional AI actions).
 3. **Open a PR** that adds a subfolder under this directory, e.g. `contributor_workspaces/my-awesome-editor/`, with your editor code and a **README** that describes what it does and how to run it.
 
+To use `@forge/dev-kit` in a **separate repo** (e.g. your own app), run the local registry and follow [How-to 24 - Verdaccio and local registry](../../../docs/how-to/24-verdaccio-local-registry.mdx).
+
 We'll review and merge; once wired into the app shell (in a follow-up), your editor will be part of the showcase.

@@ -17,6 +17,7 @@ export const DOC_ENTRIES = [
   { slug: '20-create-a-workspace', label: '20 - Create an editor' },
   { slug: '21-migration-guide-workspace-to-editor', label: '21 - Workspace to editor migration' },
   { slug: '22-ai-generation-components', label: '22 - AI generation components' },
+  { slug: '24-verdaccio-local-registry', label: '24 - Verdaccio and local registry' },
   { slug: '18-agent-artifacts-index', label: 'Agent artifacts index' },
   { slug: '19-coding-agent-strategy', label: 'Coding agent strategy' },
 ] as const;

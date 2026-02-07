@@ -15,6 +15,7 @@
     "registry:start": "verdaccio --config ./verdaccio.yaml"
   },
   "devDependencies": {
-    "tsup": "^8.5.0"
+    "tsup": "^8.5.0",
+    "verdaccio": "^5.30.0"
   }
 }
