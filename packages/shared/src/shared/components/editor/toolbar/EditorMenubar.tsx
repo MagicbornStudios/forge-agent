@@ -69,7 +69,7 @@ export function EditorMenubar({ menus, className }: EditorMenubarProps) {
                   )}
                 >
                   {item.icon != null && (
-                    <span className="flex shrink-0 size-4 [&>svg]:size-4" aria-hidden>{item.icon}</span>
+                    <span className="flex shrink-0 size-3 [&>svg]:size-3" aria-hidden>{item.icon}</span>
                   )}
                   <span className="truncate">{item.label}</span>
                   {item.shortcut && <MenubarShortcut>{item.shortcut}</MenubarShortcut>}

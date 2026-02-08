@@ -23,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-theme="dark-fantasy" data-density="compact" className={fontSans.variable}>
+    <html lang="en" data-theme="dark" data-density="compact" className={fontSans.variable}>
       <body className="font-sans antialiased">
         <TwickProviders>
           <AppThemeProvider>

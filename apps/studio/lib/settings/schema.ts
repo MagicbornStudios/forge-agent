@@ -22,12 +22,8 @@ export interface SettingsSchemaEntry {
 }
 
 const themeOptions: SettingsOption[] = [
-  { value: "dark-fantasy", label: "Dark Fantasy" },
-  { value: "darcula", label: "Darcula" },
-  { value: "cyberpunk", label: "Cyberpunk" },
-  { value: "high-contrast", label: "High Contrast" },
+  { value: "dark", label: "Dark" },
   { value: "light", label: "Light" },
-  { value: "girly", label: "Girly" },
 ];
 const densityOptions: SettingsOption[] = [
   { value: "compact", label: "Compact" },
@@ -94,7 +90,7 @@ export const SETTINGS_SCHEMA: SettingsSchemaEntry[] = [
     type: "select",
     label: "Theme",
     options: themeOptions,
-    default: "dark-fantasy",
+    default: "dark",
     scopes: ["app", "project", "editor"],
   },
   {

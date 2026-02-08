@@ -52,7 +52,7 @@ export function WorkspaceProjectSelect({
           <span className="truncate">
             {selected ? selected.label : placeholder}
           </span>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronsUpDown className="ml-2 size-3 shrink-0 opacity-50" />
         </WorkspaceButton>
       </PopoverTrigger>
       <PopoverContent className="p-0 w-[--radix-popover-trigger-width]" align="start">
@@ -72,7 +72,7 @@ export function WorkspaceProjectSelect({
                 >
                   <Check
                     className={cn(
-                      "mr-2 h-4 w-4",
+                      "mr-2 size-3",
                       value === opt.value ? "opacity-100" : "opacity-0"
                     )}
                   />

@@ -37,7 +37,7 @@ export function AppBarUser() {
   if (isLoading) {
     return (
       <EditorButton variant="ghost" size="sm" disabled tooltip="Loading…">
-        <User className="h-4 w-4 shrink-0" />
+        <User className="size-3 shrink-0" />
         <span className="hidden sm:inline">…</span>
       </EditorButton>
     );
@@ -48,7 +48,7 @@ export function AppBarUser() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <EditorButton variant="ghost" size="sm" tooltip="Not signed in">
-            <User className="h-4 w-4 shrink-0" />
+            <User className="size-3 shrink-0" />
             <span className="hidden sm:inline">Not signed in</span>
           </EditorButton>
         </DropdownMenuTrigger>

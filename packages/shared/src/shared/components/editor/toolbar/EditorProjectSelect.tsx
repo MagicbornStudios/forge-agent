@@ -57,7 +57,7 @@ export function EditorProjectSelect({
           className={cn('min-w-[180px] justify-between', className)}
         >
           <span className="truncate">{selected ? selected.label : placeholder}</span>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronsUpDown className="ml-2 size-3 shrink-0 opacity-50" />
         </EditorButton>
       </PopoverTrigger>
       <PopoverContent className="p-0 w-[--radix-popover-trigger-width]" align="start">
@@ -76,7 +76,7 @@ export function EditorProjectSelect({
                   }}
                 >
                   <Check
-                    className={cn('mr-2 h-4 w-4', value === opt.value ? 'opacity-100' : 'opacity-0')}
+                    className={cn('mr-2 size-3', value === opt.value ? 'opacity-100' : 'opacity-0')}
                   />
                   {opt.label}
                 </CommandItem>

@@ -59,7 +59,7 @@ export function SettingsMenu({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <EditorButton variant="ghost" size="sm" tooltip={tooltip}>
-            <Settings className="h-4 w-4" />
+            <Settings className="size-3 shrink-0" />
             <span className="hidden sm:inline">Settings</span>
           </EditorButton>
         </DropdownMenuTrigger>

@@ -16,12 +16,8 @@ import { toast } from 'sonner';
 import { APP_THEMES } from '@/components/providers/AppThemeProvider';
 
 const THEME_LABELS: Record<(typeof APP_THEMES)[number], string> = {
-  'dark-fantasy': 'Dark Fantasy',
-  darcula: 'Darcula',
-  cyberpunk: 'Cyberpunk',
-  'high-contrast': 'High Contrast',
+  dark: 'Dark',
   light: 'Light',
-  girly: 'Girly',
 };
 
 const DENSITY_OPTIONS = ['compact', 'comfortable'] as const;
@@ -37,7 +33,7 @@ export function ThemeSwitcher() {
   const getOverridesForScope = useSettingsStore((s) => s.getOverridesForScope);
   const currentTheme = APP_THEMES.includes(theme as (typeof APP_THEMES)[number])
     ? (theme as (typeof APP_THEMES)[number])
-    : 'dark-fantasy';
+    : 'dark';
   const currentDensity = DENSITY_OPTIONS.includes(density as (typeof DENSITY_OPTIONS)[number])
     ? (density as (typeof DENSITY_OPTIONS)[number])
     : 'compact';
@@ -77,7 +73,7 @@ export function ThemeSwitcher() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <EditorButton variant="ghost" size="sm" tooltip="Change theme and density">
-          <Palette className="h-4 w-4 shrink-0" />
+          <Palette className="size-3 shrink-0" />
           <span className="hidden sm:inline">Theme</span>
         </EditorButton>
       </DropdownMenuTrigger>

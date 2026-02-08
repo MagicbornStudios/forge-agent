@@ -47,6 +47,12 @@ We drive density through CSS variables and `data-density`:
 - **Setting**: `ui.density` (app defaults) + per‑editor overrides (editor settings)
 - **Override**: `EditorShell` can set `data-density` directly
 
+**Icon and radius:** Standard icon size is **12px** (`size-3` or `var(--icon-size)`); optional `--icon-size-sm: 10px` for tight spots. Radius scale is modest (Spotify-like): `--radius-sm: 4px`, `--radius-md: 5px`, `--radius-lg: 6px`, `--radius-xl: 8px`, `--radius: 6px`. See [03 - Design language](03-design-language.mdx).
+
+**Themes:** Only two themes — **dark** and **light** — Spotify-inspired (near-black/white base, one green accent). `data-theme` applies only `light` or `dark`; no other theme blocks.
+
+**Borders:** Prefer minimal full borders; use full borders only where it makes sense (e.g. inputs, dropdowns, modals). For cards and list items, prefer background separation or a single-edge accent; see [03 - Design language](03-design-language.mdx).
+
 **Primary tokens (compact)** in `packages/shared/src/shared/styles/themes.css`:
 
 - `--control-height: 1.5rem`
@@ -91,7 +97,7 @@ Dropdown and context menus in `packages/ui` use these tokens so all menus get co
 
 ### Token system (layers and when to use which)
 
-We use **four token layers**. Cascade order: `:root` → `[data-density]` → `[data-theme]` → `[data-domain]`.
+We use **four token layers**. Cascade order: `:root` → `[data-density]` → `[data-theme]` → `[data-domain]`. Theme layer applies only `light` or `dark` (Spotify-based palettes).
 
 1. **Shadcn semantic** — `--background`, `--foreground`, `--card`, `--popover`, `--primary`, `--muted`, `--sidebar*`, etc. All overridden by `data-theme`. Single source: `themes.css`; do not redefine in `globals.css`.
 2. **Sizing / density** — `--control-height`, `--panel-padding`, `--tab-height`, `--menu-item-padding-x/y`, `--menu-content-padding`, etc. Overridden by `[data-density='compact']` or `[data-density='comfortable']` in `themes.css`.

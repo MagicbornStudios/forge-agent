@@ -93,7 +93,7 @@ export function ProjectSwitcher({
       <span className={variant === 'full' ? 'truncate' : 'truncate max-w-[120px]'}>
         {triggerLabel}
       </span>
-      <ChevronDown className={variant === 'full' ? 'ml-2 h-4 w-4 shrink-0' : 'ml-1.5 h-3 w-3 shrink-0'} />
+      <ChevronDown className={variant === 'full' ? 'ml-2 size-3 shrink-0' : 'ml-1.5 size-[var(--icon-size-sm)] shrink-0'} />
     </Button>
   );
 
@@ -132,7 +132,7 @@ export function ProjectSwitcher({
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setIsCreateDialogOpen(true)} className="text-xs">
-                  <Plus className="mr-2 h-4 w-4 shrink-0" />
+                  <Plus className="mr-2 size-3 shrink-0" />
                   New project...
                 </DropdownMenuItem>
               </>
@@ -148,7 +148,7 @@ export function ProjectSwitcher({
             title="Create new project"
             disabled={isLoading}
           >
-            <Plus className={variant === 'full' ? 'h-4 w-4' : 'h-3.5 w-3.5'} />
+            <Plus className={variant === 'full' ? 'size-3' : 'size-[var(--icon-size-sm)]'} />
           </Button>
         )}
         {children}

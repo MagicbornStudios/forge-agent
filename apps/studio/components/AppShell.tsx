@@ -391,7 +391,7 @@ export function AppShell() {
               tooltip="Settings"
               onClick={() => setSettingsDrawerOpen(true)}
             >
-              <Settings className="h-4 w-4" />
+              <Settings className="size-3 shrink-0" />
               <span className="hidden sm:inline">Settings</span>
             </EditorButton>
             <SettingsDrawer
@@ -418,7 +418,7 @@ export function AppShell() {
               key={id}
               label={
                 <>
-                  <Icon className="size-4 shrink-0" aria-hidden />
+                  <Icon className="size-3 shrink-0" aria-hidden />
                   {EDITOR_LABELS[id]}
                 </>
               }

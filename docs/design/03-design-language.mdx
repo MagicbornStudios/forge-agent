@@ -15,10 +15,12 @@ One-pager for the editor’s visual direction: professional, modern, elegant —
 - **Text and icons within containers** — Truncation, `min-w-0`, and constrained layout so text and icons stay inside their containers (no overflow).
 - **Accent bordering: one edge only** — For list items, cards, and tab-like surfaces, use accent on **one edge only** (top, or one side, or bottom). **No full border** (no four-sided purple/primary border) for narrative graph list items or similar.
 
-## 2. Spotify-intense
+## 2. Spotify-inspired (two themes only)
 
+- **Themes** — Only **light** and **dark**; Spotify-based palettes (dark: near-black background, light text, green accent; light: white/light gray, dark text, same green accent).
 - **Dark sidebar and canvas** — Clear hierarchy between navigation, content, and inspector.
-- **One primary accent** — Green/teal (or domain accent) used sparingly: active state, primary actions, selection. No visual clutter.
+- **One primary accent** — Green (e.g. `#1DB954`-like) used sparingly: active state, primary actions, selection. No visual clutter.
+- **Radius** — Modest, Spotify-like (4–8px for controls and cards); see `--radius-*` in themes.css.
 - **Clean cards and lists** — Clear hierarchy; muted borders; purposeful use of `bg-card`, `border-border`, and semantic tokens.
 - **High-contrast** — Text and controls readable; deliberate contrast between levels (background, card, muted).
 
@@ -41,7 +43,7 @@ One-pager for the editor’s visual direction: professional, modern, elegant —
 ## 6. Professional and elegant
 
 - **Consistent spacing** — Use tokens only (`--panel-padding`, `--control-gap`, etc.); no ad-hoc `px-*`/`py-*` in editor chrome.
-- **Consistent icon set** — Lucide React throughout; standard size (e.g. 16px) and style (outline). Menu items and toolbar actions must include an icon where the action benefits from visual recognition (e.g. Fit view, Open workbench, Save, editor creation buttons).
+- **Consistent icon set** — Lucide React throughout; standard size **12px** (`size-3` or `var(--icon-size)`) and outline style. Menu items and toolbar actions must include an icon where the action benefits from visual recognition (e.g. Fit view, Open workbench, Save, editor creation buttons).
 - **Semantic tokens only** — No hardcoded colors; use `--background`, `--foreground`, `--border`, `--context-accent`, `--glow-*`, etc.
 
 ## Relation to other design docs

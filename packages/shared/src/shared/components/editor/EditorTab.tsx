@@ -97,7 +97,7 @@ export function EditorTab({
           }
           className="shrink-0 rounded border-none p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
         >
-          <X className="size-4" />
+          <X className="size-3" />
         </Button>
       )}
     </div>

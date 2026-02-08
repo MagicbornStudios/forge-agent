@@ -63,7 +63,7 @@ export function EditorFileMenu({
               )}
             >
               {item.icon != null && (
-                <span className="flex shrink-0 size-4 [&>svg]:size-4">{item.icon}</span>
+                <span className="flex shrink-0 size-3 [&>svg]:size-3">{item.icon}</span>
               )}
               {item.label}
               {item.shortcut && <DropdownMenuShortcut>{item.shortcut}</DropdownMenuShortcut>}

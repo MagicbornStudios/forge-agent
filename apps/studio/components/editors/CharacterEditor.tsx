@@ -408,7 +408,7 @@ export function CharacterEditor() {
             className="text-sm text-primary"
             onClick={() => openOverlay(CREATE_CHARACTER_OVERLAY_ID)}
           >
-            <Plus className="mr-1 size-4" />
+            <Plus className="mr-1 size-3" />
             Create Character
           </Button>
         </Card>

@@ -100,7 +100,7 @@ export function ModelSwitcher() {
             <Bot className="h-3.5 w-3.5 shrink-0 opacity-70" aria-hidden />
             <span className="truncate">{triggerLabel}</span>
           </span>
-          <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
+          <ChevronsUpDown className="size-3 shrink-0 opacity-50" />
         </EditorButton>
       </PopoverTrigger>
       <PopoverContent className="p-0 min-w-[20rem] w-80" align="end">
@@ -119,7 +119,7 @@ export function ModelSwitcher() {
                   onSelect={() => setMode('auto')}
                   className="text-xs"
                 >
-                  <Check className={cn('mr-2 h-4 w-4 shrink-0', mode === 'auto' ? 'opacity-100' : 'opacity-0')} />
+                  <Check className={cn('mr-2 size-3 shrink-0', mode === 'auto' ? 'opacity-100' : 'opacity-0')} />
                   Auto (primary + fallbacks)
                 </CommandItem>
                 <CommandItem
@@ -127,7 +127,7 @@ export function ModelSwitcher() {
                   onSelect={() => setMode('manual')}
                   className="text-xs"
                 >
-                  <Check className={cn('mr-2 h-4 w-4 shrink-0', mode === 'manual' ? 'opacity-100' : 'opacity-0')} />
+                  <Check className={cn('mr-2 size-3 shrink-0', mode === 'manual' ? 'opacity-100' : 'opacity-0')} />
                   Manual (pick one)
                 </CommandItem>
               </CommandGroup>
@@ -142,7 +142,7 @@ export function ModelSwitcher() {
                       className="text-xs"
                     >
                       <Check
-                        className={cn('mr-2 h-4 w-4 shrink-0', enabledModelIds.includes(model.id) ? 'opacity-100' : 'opacity-0')}
+                        className={cn('mr-2 size-3 shrink-0', enabledModelIds.includes(model.id) ? 'opacity-100' : 'opacity-0')}
                       />
                       <span className="flex-1 truncate">{model.label}</span>
                       {showTierBadge && <TierBadge tier={model.tier} />}
@@ -162,7 +162,7 @@ export function ModelSwitcher() {
                       className="text-xs"
                     >
                       <Check
-                        className={cn('mr-2 h-4 w-4 shrink-0', activeModelId === model.id ? 'opacity-100' : 'opacity-0')}
+                        className={cn('mr-2 size-3 shrink-0', activeModelId === model.id ? 'opacity-100' : 'opacity-0')}
                       />
                       <span className="flex-1 truncate">{model.label}</span>
                       {showTierBadge && <TierBadge tier={model.tier} />}

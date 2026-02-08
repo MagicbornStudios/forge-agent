@@ -4,14 +4,7 @@ import * as React from 'react';
 import { ThemeProvider } from 'next-themes';
 import { useSettingsStore } from '@/lib/settings/store';
 
-export const APP_THEMES = [
-  'dark-fantasy',
-  'darcula',
-  'cyberpunk',
-  'high-contrast',
-  'light',
-  'girly',
-] as const;
+export const APP_THEMES = ['dark', 'light'] as const;
 
 type AppTheme = (typeof APP_THEMES)[number];
 
@@ -20,7 +13,7 @@ const isAppTheme = (value: string | undefined): value is AppTheme =>
 
 export function AppThemeProvider({ children }: { children: React.ReactNode }) {
   const theme = useSettingsStore((state) => state.getSettingValue('ui.theme')) as string | undefined;
-  const forcedTheme: AppTheme = isAppTheme(theme) ? theme : 'dark-fantasy';
+  const forcedTheme: AppTheme = isAppTheme(theme) ? theme : 'dark';
   const density = useSettingsStore((state) => state.getSettingValue('ui.density')) as string | undefined;
 
   React.useEffect(() => {
@@ -33,7 +26,7 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
     <ThemeProvider
       attribute="data-theme"
       themes={[...APP_THEMES]}
-      defaultTheme="dark-fantasy"
+      defaultTheme="dark"
       enableSystem={false}
       forcedTheme={forcedTheme}
     >

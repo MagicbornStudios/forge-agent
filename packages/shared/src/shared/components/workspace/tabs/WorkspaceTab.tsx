@@ -93,7 +93,7 @@ export function WorkspaceTab({
           title={closeTooltipDisabled ? undefined : (typeof closeTooltip === 'string' ? closeTooltip : 'Close tab')}
           className="shrink-0 rounded border-none p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
         >
-          <X className="size-4" />
+          <X className="size-3" />
         </Button>
       )}
     </div>
