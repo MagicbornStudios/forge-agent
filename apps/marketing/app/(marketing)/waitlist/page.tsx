@@ -6,6 +6,7 @@ import { Button } from '@forge/ui';
 import { Input } from '@forge/ui';
 import { Label } from '@forge/ui';
 import { submitWaitlist } from '@/lib/api';
+import { trackEvent } from '@/lib/analytics';
 
 export default function WaitlistPage() {
   const [email, setEmail] = useState('');
@@ -20,6 +21,7 @@ export default function WaitlistPage() {
     try {
       await submitWaitlist({ email: email.trim(), name: name.trim() || undefined });
       setStatus('success');
+      trackEvent('Waitlist Signup');
       setEmail('');
       setName('');
     } catch (err) {

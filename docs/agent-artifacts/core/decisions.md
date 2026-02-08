@@ -1,7 +1,7 @@
 ---
 title: Architecture decision records
 created: 2026-02-04
-updated: 2026-02-04
+updated: 2026-02-08
 ---
 
 Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx).
@@ -99,3 +99,27 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 **Decision:** We use a split provider stack: **OpenRouter** for text (chat, streaming, structured output, plan) and image (generation, vision); **ElevenLabs** for audio TTS (character voices, previews); **OpenAI Sora** (or equivalent) **planned** for video generation. OpenRouter does not provide audio TTS/STT or video; we use specialized providers.
 
 **Rationale:** Matches OpenRouter's actual capabilities and keeps a single place to document "who does what." STT and video are documented as future (e.g. Whisper for STT, Sora for video when we add them).
+
+---
+
+## Copilot not gated
+
+**Decision:** The **Copilot** (AI sidebar, plan/patch/review, model selection in chat) is **not** behind a plan or capability gate. All users with access to an editor can use the Copilot. Future platform features (publish, monetize) may be gated via `user.plan` and `CAPABILITIES`; Copilot remains free to use.
+
+**Rationale:** Product choice to keep AI assistance available without paywall. Update this doc if we introduce any Copilot-related gating (e.g. rate limits or premium models only).
+
+---
+
+## Analytics and feature flags: PostHog
+
+**Decision:** We use **PostHog** for (1) marketing analytics (page views, custom events e.g. Waitlist Signup), and (2) Studio feature flags (e.g. Video editor via `video-editor-enabled`). Dev and production use separate PostHog project keys (or the same project with environments) so flags can differ. Plan-based entitlements (free/pro) remain for paywall; release/rollout toggles use PostHog.
+
+**Rationale:** Single provider for analytics and feature flags; no Plausible. Update this doc if we add another analytics or flag provider.
+
+---
+
+## DockLayout uses Dockview (docking + floating)
+
+**Decision:** `DockLayout` is implemented with **Dockview** to restore Unreal-style docking, drag-to-reorder, and floating panels. Layout persists to `localStorage['dockview-{layoutId}']` and exposes a `resetLayout()` ref to recover lost panels.
+
+**Rationale:** Dockview provides the desired editor UX (docked tabs, floating groups, drag-to-group). To avoid known provider/context pitfalls (Twick), the Video editor is locked behind `studio.video.editor` until we re-enable and validate context flow.

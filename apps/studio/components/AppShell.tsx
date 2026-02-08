@@ -18,6 +18,7 @@ import { Toaster } from '@forge/ui/sonner';
 import { Separator } from '@forge/ui/separator';
 import { useSettingsStore } from '@/lib/settings/store';
 import { useEntitlements, CAPABILITIES } from '@forge/shared/entitlements';
+import { useVideoEditorEnabled } from '@/lib/feature-flags';
 import { ImageGenerateRender } from '@/components/copilot/ImageGenerateRender';
 import { StructuredOutputRender } from '@/components/copilot/StructuredOutputRender';
 import { MessageCircle, Video, Users, Target } from 'lucide-react';
@@ -31,10 +32,6 @@ import { CharacterEditor } from '@/components/editors/CharacterEditor';
 import { StrategyEditor } from '@/components/editors/StrategyEditor';
 
 const VALID_EDITOR_IDS: EditorId[] = ['dialogue', 'video', 'character', 'strategy'];
-
-function isValidEditorId(id: string): id is EditorId {
-  return VALID_EDITOR_IDS.includes(id as EditorId);
-}
 
 export function AppShell() {
   const {
@@ -57,9 +54,42 @@ export function AppShell() {
   }, [activeProjectId, projectsQuery.data, setActiveProjectId]);
   const toastsEnabled = useSettingsStore((s) => s.getSettingValue('ui.toastsEnabled')) as boolean | undefined;
   const entitlements = useEntitlements();
+  const videoEnabled = useVideoEditorEnabled();
+  const editorIdsForActions = React.useMemo(
+    () => (videoEnabled ? VALID_EDITOR_IDS : VALID_EDITOR_IDS.filter((id) => id !== 'video')),
+    [videoEnabled],
+  );
+  const editorNames = React.useMemo(() => {
+    const names: Partial<Record<EditorId, string>> = {};
+    editorIdsForActions.forEach((id) => {
+      names[id] = EDITOR_LABELS[id];
+    });
+    return names;
+  }, [editorIdsForActions]);
+  const visibleWorkspaceIds = React.useMemo(
+    () => openWorkspaceIds.filter((id) => id !== 'video' || videoEnabled),
+    [openWorkspaceIds, videoEnabled],
+  );
   const imageGenEnabled = entitlements.has(CAPABILITIES.IMAGE_GENERATION);
   const generateImageMutation = useGenerateImage();
   const structuredOutputMutation = useStructuredOutput();
+
+  React.useEffect(() => {
+    if (videoEnabled) return;
+    if (openWorkspaceIds.includes('video')) {
+      closeWorkspace('video');
+    }
+    if (activeWorkspaceId === 'video') {
+      setActiveWorkspace(visibleWorkspaceIds[0] ?? 'dialogue');
+    }
+  }, [
+    activeWorkspaceId,
+    closeWorkspace,
+    openWorkspaceIds,
+    setActiveWorkspace,
+    videoEnabled,
+    visibleWorkspaceIds,
+  ]);
 
   // Shell-level context for the copilot agent
   useCopilotReadable({
@@ -69,10 +99,12 @@ export function AppShell() {
       activeWorkspaceId,
       activeEditorId: activeWorkspaceId,
       activeEditorName: EDITOR_LABELS[activeWorkspaceId],
-      editorNames: EDITOR_LABELS,
-      openWorkspaceIds,
+      editorNames,
+      openWorkspaceIds: visibleWorkspaceIds,
       editorSummary: EDITOR_SUMMARY[activeWorkspaceId],
-      hint: 'Say "switch to Dialogue", "open Video", "open Characters", or "open Strategy" to change editor.',
+      hint: videoEnabled
+        ? 'Say "switch to Dialogue", "open Video", "open Characters", or "open Strategy" to change editor.'
+        : 'Say "switch to Dialogue", "open Characters", or "open Strategy" to change editor.',
     },
   });
 
@@ -83,17 +115,21 @@ export function AppShell() {
       {
         name: 'editorId',
         type: 'string',
-        description: `Editor to switch to: ${VALID_EDITOR_IDS.map((id) => `"${id}"`).join(', ')}`,
+        description: `Editor to switch to: ${editorIdsForActions.map((id) => `"${id}"`).join(', ')}`,
         required: true,
       },
     ],
     handler: async ({ editorId }) => {
       const id = String(editorId);
-      if (isValidEditorId(id)) {
-        setActiveWorkspace(id);
-        return { success: true, message: `Switched to ${EDITOR_LABELS[id]}.` };
+      if (editorIdsForActions.includes(id as EditorId)) {
+        const nextId = id as EditorId;
+        setActiveWorkspace(nextId);
+        return { success: true, message: `Switched to ${EDITOR_LABELS[nextId]}.` };
       }
-      return { success: false, message: `Unknown editor: ${editorId}. Use ${VALID_EDITOR_IDS.join(', ')}.` };
+      if (id === 'video') {
+        return { success: false, message: 'Video editor is currently locked.' };
+      }
+      return { success: false, message: `Unknown editor: ${editorId}. Use ${editorIdsForActions.join(', ')}.` };
     },
   }));
 
@@ -104,15 +140,19 @@ export function AppShell() {
       {
         name: 'editorId',
         type: 'string',
-        description: `Editor to open: ${VALID_EDITOR_IDS.map((id) => `"${id}"`).join(', ')}`,
+        description: `Editor to open: ${editorIdsForActions.map((id) => `"${id}"`).join(', ')}`,
         required: true,
       },
     ],
     handler: async ({ editorId, modeId }) => {
       const id = String(editorId ?? modeId);
-      if (isValidEditorId(id)) {
-        openWorkspace(id);
-        return { success: true, message: `Opened ${EDITOR_LABELS[id]}.` };
+      if (editorIdsForActions.includes(id as EditorId)) {
+        const nextId = id as EditorId;
+        openWorkspace(nextId);
+        return { success: true, message: `Opened ${EDITOR_LABELS[nextId]}.` };
+      }
+      if (id === 'video') {
+        return { success: false, message: 'Video editor is currently locked.' };
       }
       return { success: false, message: `Unknown editor: ${editorId}.` };
     },
@@ -125,18 +165,22 @@ export function AppShell() {
       {
         name: 'editorId',
         type: 'string',
-        description: `Editor to close: ${VALID_EDITOR_IDS.map((id) => `"${id}"`).join(', ')}`,
+        description: `Editor to close: ${editorIdsForActions.map((id) => `"${id}"`).join(', ')}`,
         required: true,
       },
     ],
     handler: async ({ editorId }) => {
       const id = String(editorId);
-      if (isValidEditorId(id)) {
+      if (editorIdsForActions.includes(id as EditorId)) {
         if (openWorkspaceIds.length <= 1) {
           return { success: false, message: 'Cannot close the last editor.' };
         }
-        closeWorkspace(id);
-        return { success: true, message: `Closed ${EDITOR_LABELS[id]}.` };
+        const nextId = id as EditorId;
+        closeWorkspace(nextId);
+        return { success: true, message: `Closed ${EDITOR_LABELS[nextId]}.` };
+      }
+      if (id === 'video') {
+        return { success: false, message: 'Video editor is currently locked.' };
       }
       return { success: false, message: `Unknown editor: ${editorId}.` };
     },
@@ -261,44 +305,46 @@ export function AppShell() {
               variant="outline"
               size="sm"
               onClick={() => openWorkspace('dialogue')}
-              tooltip="Open Dialogue editor"
+              tooltip="Open or switch to Dialogue editor"
               className="text-muted-foreground hover:text-foreground"
             >
               <MessageCircle className="size-3 shrink-0" />
-              + Dialogue Editor
+              Dialogue
             </EditorButton>
-            <EditorButton
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => openWorkspace('video')}
-              tooltip="Open Video editor"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <Video className="size-3 shrink-0" />
-              + Video Editor
-            </EditorButton>
+            {videoEnabled ? (
+              <EditorButton
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => openWorkspace('video')}
+                tooltip="Open or switch to Video editor"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <Video className="size-3 shrink-0" />
+                Video
+              </EditorButton>
+            ) : null}
             <EditorButton
               type="button"
               variant="outline"
               size="sm"
               onClick={() => openWorkspace('character')}
-              tooltip="Open Character editor"
+              tooltip="Open or switch to Character editor"
               className="text-muted-foreground hover:text-foreground"
             >
               <Users className="size-3.5 shrink-0" />
-              + Character Editor
+              Character
             </EditorButton>
             <EditorButton
               type="button"
               variant="outline"
               size="sm"
               onClick={() => openWorkspace('strategy')}
-              tooltip="Open Strategy editor"
+              tooltip="Open or switch to Strategy editor"
               className="text-muted-foreground hover:text-foreground"
             >
               <Target className="size-3 shrink-0" />
-              + Strategy Editor
+              Strategy
             </EditorButton>
             <Separator orientation="vertical" className="h-[var(--control-height-sm)]" />
             <ThemeSwitcher />
@@ -307,7 +353,7 @@ export function AppShell() {
           </>
         }
       >
-        {openWorkspaceIds.map((id) => {
+        {visibleWorkspaceIds.map((id) => {
           const Icon =
             id === 'dialogue'
               ? MessageCircle
@@ -339,7 +385,7 @@ export function AppShell() {
       {/* Active editor content */}
       <EditorApp.Content>
         {activeWorkspaceId === 'dialogue' && <DialogueEditor />}
-        {activeWorkspaceId === 'video' && <VideoEditor />}
+        {activeWorkspaceId === 'video' && videoEnabled && <VideoEditor />}
         {activeWorkspaceId === 'character' && <CharacterEditor />}
         {activeWorkspaceId === 'strategy' && <StrategyEditor />}
       </EditorApp.Content>

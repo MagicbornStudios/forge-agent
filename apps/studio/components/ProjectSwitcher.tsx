@@ -85,7 +85,7 @@ export function ProjectSwitcher({
 
   const trigger = (
     <Button
-      variant={variant === 'full' ? 'outline' : 'ghost'}
+      variant="outline"
       size={variant === 'full' ? 'default' : 'sm'}
       className={variant === 'full' ? 'min-w-[200px] justify-between' : 'h-7 px-2 text-xs'}
       disabled={isLoading}

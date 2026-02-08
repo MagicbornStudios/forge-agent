@@ -2,9 +2,13 @@ export const CAPABILITIES = {
   STUDIO_AI_CHAT: 'studio.ai.chat',
   STUDIO_AI_TOOLS: 'studio.ai.tools',
   STUDIO_MODELS_PAID: 'studio.models.paid',
+  STUDIO_VIDEO_EDITOR: 'studio.video.editor',
   FORGE_AI_EDIT: 'forge.ai.edit',
   VIDEO_EXPORT: 'video.export',
   IMAGE_GENERATION: 'studio.ai.imageGeneration',
+  // Platform (future): gate publish and monetization when implemented
+  PLATFORM_PUBLISH: 'platform.publish',
+  PLATFORM_MONETIZE: 'platform.monetize',
 } as const;
 
 export type CapabilityId = typeof CAPABILITIES[keyof typeof CAPABILITIES];

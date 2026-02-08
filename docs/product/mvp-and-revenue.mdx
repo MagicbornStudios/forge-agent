@@ -1,0 +1,90 @@
+---
+title: MVP and first revenue
+created: 2026-02-08
+updated: 2026-02-08
+---
+
+# MVP and first revenue
+
+Product and monetization strategy for the Studio platform. **We focus on funding quickly while delivering clear value.** See [product roadmap](../roadmap/product.mdx) for editor and initiative details, and [STATUS](../agent-artifacts/core/STATUS.md) for current state and next steps.
+
+---
+
+## First revenue: paid clone / download
+
+Our **first revenue mechanism** is **paid clone or download** (not publish/host or seats first).
+
+- Users can **clone** a project, template, or “core” (e.g. Codebase Agent Strategy) to their account for a price.
+- Or **download** a build or integration package for a price.
+- Listings, checkout, and payouts (e.g. Stripe Connect) are in scope; plan tiers and capabilities gate who can list and who can clone/download paid items.
+
+**Plans/capabilities:** We extend `user.plan` and `CAPABILITIES` (e.g. `PLATFORM_MONETIZE`) to gate platform features. Copilot remains free; monetization and listing are gated.
+
+---
+
+## MVP: two hero moments
+
+MVP is the smallest slice that (1) delivers clear value and (2) ties to first revenue (paid clone/download). We have **two hero paths**; both lead to the same monetization.
+
+### Path A — Author a small game fully with AI
+
+- Use Studio (Dialogue + Character + Strategy + AI) to **author a complete small game** (narrative/content).
+- Value: writers, narrative teams, and indies ship a playable thing without building the engine.
+- Monetization: **clone** a starter or **download** a build/template for a price.
+
+### Path B — Layer Studio on existing projects
+
+- Use Studio to **create content** (dialogue, narrative, characters) for games that already exist.
+- **Install “our core”** = **Codebase Agent Strategy** — optimal codebase management and feature implementation for humans and codebases (Strategy editor + assistant-ui + tool-ui).
+- Value: indies and AAA get narrative content authoring plus a **coding-agent layer** for their repo (feature work, agent-driven dev).
+- Monetization: **clone** the strategy workspace or **download** the core/integration for a price.
+
+MVP = ship one or both paths with **paid clone/download** and plan tiers so we can gate and charge.
+
+---
+
+## Audience
+
+| Segment | What they get |
+|--------|----------------|
+| **Writers** | Narrative/dialogue authoring with AI; ship or sell content. |
+| **Game content / narrative teams** | Dialogue and character graphs, Yarn-compatible workflows, collaboration. |
+| **Indie game devs** | Author a small game with AI, or add content + Codebase Agent Strategy to existing projects. |
+| **AAA (prototype / enhance)** | Prototype narrative; enhance coding agents and analytics for more ambitious games. |
+
+---
+
+## Positioning
+
+- **We are a game/narrative content authoring engine, AI- and chat-first.**
+- **Thin game engine** — we are not a full game engine; we are the **content + agent layer**.
+- Authors build dialogue, characters, and narrative; they can run small playable experiences or plug our core (Strategy) into existing codebases for agent-driven development.
+
+---
+
+## Video editor: locked until after MVP
+
+The Video editor (Twick timeline) is **locked** behind capability `studio.video.editor` and is **not** part of MVP.
+
+- Unlock **after** MVP (after paid clone/download and plan tiers are live).
+- See [ISSUES.md](../../ISSUES.md) and [plan-dockview-restore-video-lock-feature-flags.md](../agent-artifacts/core/plan-dockview-restore-video-lock-feature-flags.md).
+
+---
+
+## Evolution (high level)
+
+| Phase | Focus |
+|-------|--------|
+| **Now** | Studio + Dialogue (primary), Character, Strategy; Video locked. No paid flows. |
+| **MVP** | Two hero moments (small game with AI **or** content + Strategy core on existing projects); **paid clone/download**; plan tiers/capabilities. |
+| **After MVP** | Video unlock; publish/host if needed; more editors/MCP; expand listings and payouts. |
+| **Dream** | Full content authoring platform + Strategy core everywhere; writers, indies, AAA; clone/download and optional host/distribute. |
+
+---
+
+## References
+
+- [Product roadmap](../roadmap/product.mdx) — Active editors, platform initiatives.
+- [STATUS § Next](../agent-artifacts/core/STATUS.md) — Canonical “what can I do next?” with impact sizes; monetization (clone/download) and plan tiers are **MVP-critical**.
+- [Project overview](../10-project-overview.mdx) — Product vision, tech stack, code layout.
+- [Decisions](../agent-artifacts/core/decisions.md) — Copilot not gated; platform features (publish, monetize) gated by plan/capabilities.

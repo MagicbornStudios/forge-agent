@@ -5,7 +5,7 @@ updated: 2026-02-07
 
 # Forge Agent - Agent rules
 
-**Agent artifact index:** See [docs/18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx) for the full list of agent-only docs (agent-artifacts/core: STATUS, decisions, errors-and-attempts, tool-usage, compacting; all AGENTS.md). **Strategy and conventions:** [docs/19-coding-agent-strategy.mdx](docs/19-coding-agent-strategy.mdx). For **current state** and **failures**, read docs/agent-artifacts (index + core); for **area rules**, read this file and the relevant per-package AGENTS.md. Prefer **rg**/list_dir/Read to search and confirm - see [docs/agent-artifacts/core/tool-usage.md](docs/agent-artifacts/core/tool-usage.md).
+**Agent artifact index:** See [docs/18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx) for the full list of agent-only docs (agent-artifacts/core: STATUS, decisions, errors-and-attempts, tool-usage, compacting; all AGENTS.md). **Strategy and conventions:** [docs/19-coding-agent-strategy.mdx](docs/19-coding-agent-strategy.mdx). For **current state** and **failures**, read docs/agent-artifacts (index + core); for **known product/editor issues** (e.g. what's broken or locked), see [ISSUES.md](ISSUES.md); for **area rules**, read this file and the relevant per-package AGENTS.md. Prefer **rg**/list_dir/Read to search and confirm - see [docs/agent-artifacts/core/tool-usage.md](docs/agent-artifacts/core/tool-usage.md).
 
 ## Scoped edits / .tmp
 
@@ -49,6 +49,9 @@ When touching editors (Dialogue, Character, Video, Strategy): use the shared she
 - Vendored dependencies live under `vendor/` (not `.tmp/`).
 - Humans and agents follow the same process: [How-to 24 - Vendoring third-party code](docs/how-to/24-vendoring-third-party-code.mdx) for submodule updates, version alignment, pnpm overrides, and upstream PRs.
 - For local consumer repos, publish vendored packages to Verdaccio (see How-to 24 and [How-to 25](docs/how-to/25-verdaccio-local-registry.mdx)).
+- Forge publish flow: `registry:forge:build` + `registry:forge:publish:local`.
+- Twick publish flow: `vendor:twick:build` + `vendor:twick:publish:local`.
+- Verdaccio login is optional; 409 conflict fix is documented in How-to 25.
 
 ## Enhanced features / ideas backlog
 

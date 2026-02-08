@@ -1,15 +1,14 @@
 ---
 title: Product roadmap
 created: 2026-02-06
-updated: 2026-02-07
+updated: 2026-02-08
 ---
 
 # Product roadmap
 
-Forge Agent is an **AI-first interactive narrative storytelling engine**. This
-roadmap tracks editors, platform initiatives, and integrations. Each item
-follows the **Ralph Wiggum loop**: read STATUS -> implement a slice -> update
-STATUS and artifacts.
+Forge Agent is an **AI-first interactive narrative storytelling engine** — a **game/narrative content authoring engine**, thin on engine, strong on content and AI. This roadmap tracks editors, platform initiatives, and integrations. Each item follows the **Ralph Wiggum loop**: read STATUS -> implement a slice -> update STATUS and artifacts.
+
+**MVP and first revenue:** We focus on **paid clone/download** and two hero moments (author a small game with AI, or layer Studio + Codebase Agent Strategy on existing projects). See **[MVP and first revenue](../product/mvp-and-revenue.mdx)** for audience, positioning, and evolution. Video editor is **locked until after MVP**.
 
 **Production target:** 2/14. We are in development until then; migration and rollback strategy apply after production.
 
@@ -42,9 +41,9 @@ STATUS and artifacts.
 
 ### Video editor
 
-**Status:** In progress (Twick integration).
+**Status:** Locked until after MVP (capability `studio.video.editor`). See [ISSUES.md](../../ISSUES.md).
 
-**Focus:**
+**Focus (when unlocked):**
 
 - Twick timeline editor surface.
 - Track list and timeline panels.
@@ -118,11 +117,11 @@ dialogue scripting language.
 
 ## Platform (future)
 
-These items are tracked in STATUS § Next with impact sizes. Not yet in active development.
+These items are tracked in STATUS § Next with impact sizes. **First revenue = paid clone/download** (see [MVP and first revenue](../product/mvp-and-revenue.mdx)).
 
-- **Publish and host project builds** — Authors publish a project build to our system; we host it as a playable narrative (e.g. playable dialogue/game). Build pipeline, storage, playable runtime. **Impact: Large.**
-- **Monetization (clone to account / download)** — Users can let others clone a project to their (or org) account for a price, or download the build. Listings, checkout, Stripe Connect or similar. **Impact: Epic.**
-- **Plan tiers and capabilities for platform** — Extend plans and `CAPABILITIES` to gate platform features (e.g. publish, monetize). **Impact: Small–Medium.**
+- **Monetization (clone to account / download)** — **MVP-critical.** Users can let others clone a project (or template, or Strategy core) to their account for a price, or download the build. Listings, checkout, Stripe Connect or similar. **Impact: Epic.**
+- **Plan tiers and capabilities for platform** — **MVP-critical.** Extend plans and `CAPABILITIES` to gate platform features (e.g. who can list, who can clone/download paid items). **Impact: Small–Medium.**
+- **Publish and host project builds** — After MVP. Authors publish a project build; we host playable narrative. Build pipeline, storage, playable runtime. **Impact: Large.**
 
 ---
 

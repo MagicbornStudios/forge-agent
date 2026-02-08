@@ -1,0 +1,68 @@
+{
+	"name": "@forge/dev-kit",
+	"versions": {
+		"0.1.0": {
+			"name": "@forge/dev-kit",
+			"private": false,
+			"version": "0.1.0",
+			"types": "dist/index.d.ts",
+			"main": "dist/index.cjs.js",
+			"module": "dist/index.esm.js",
+			"exports": {
+				".": {
+					"types": "./dist/index.d.ts",
+					"import": "./dist/index.esm.js",
+					"require": "./dist/index.cjs.js"
+				}
+			},
+			"files": [
+				"dist"
+			],
+			"sideEffects": false,
+			"scripts": {
+				"build": "tsup"
+			},
+			"publishConfig": {
+				"registry": "http://localhost:4873"
+			},
+			"dependencies": {
+				"@forge/ui": "workspace:*",
+				"@forge/shared": "workspace:*",
+				"@forge/agent-engine": "workspace:*"
+			},
+			"devDependencies": {
+				"tsup": "^8.5.0"
+			},
+			"gitHead": "4070f0e046accf542684f168ae2dec12767fa499",
+			"_id": "@forge/dev-kit@0.1.0",
+			"_nodeVersion": "24.13.0",
+			"_npmVersion": "11.6.2",
+			"dist": {
+				"integrity": "sha512-Oso4ITkeXN+2QHH9BfNVBk7zoEBZVzsSYs08VvADEt2JiN5oXEmmZ2Ma3AtLsDFL60YNqsF1cgTGtQM81b/0nA==",
+				"shasum": "5717d0a079bf28b2773cda46a43a5fee50f6f5a8",
+				"tarball": "http://localhost:4873/@forge/dev-kit/-/@forge/dev-kit-0.1.0.tgz"
+			},
+			"contributors": []
+		}
+	},
+	"time": {
+		"modified": "2026-02-07T21:26:59.621Z",
+		"created": "2026-02-07T21:26:59.621Z",
+		"0.1.0": "2026-02-07T21:26:59.621Z"
+	},
+	"users": {},
+	"dist-tags": {
+		"latest": "0.1.0"
+	},
+	"_uplinks": {},
+	"_distfiles": {},
+	"_attachments": {
+		"dev-kit-0.1.0.tgz": {
+			"shasum": "5717d0a079bf28b2773cda46a43a5fee50f6f5a8",
+			"version": "0.1.0"
+		}
+	},
+	"_rev": "3-bafaabfb51f3a76c",
+	"_id": "@forge/dev-kit",
+	"readme": "ERROR: No README data found!"
+}

@@ -28,7 +28,7 @@ export interface DockPanelProps {
   headerActions?: React.ReactNode;
   /**
    * When true, the title bar (icon + title + headerActions) is not rendered.
-   * Use inside DockLayout when the Dockview tab bar already shows the panel identity.
+   * Use when panel identity is shown elsewhere (e.g. outer chrome or custom tabs).
    */
   hideTitleBar?: boolean;
   /**
@@ -52,7 +52,7 @@ export interface DockPanelProps {
  * DockPanel — a single region within a `DockLayout`.
  *
  * Features:
- * - Optional title bar with icon + actions (set `hideTitleBar` when the Dockview tab bar already shows the panel identity)
+ * - Optional title bar with icon + actions (set `hideTitleBar` when the panel identity is shown elsewhere)
  * - When `tabs` provided → renders `PanelTabs` internally
  * - When `locked` → shows `LockedOverlay`
  * - When `scrollable` → wraps content in `ScrollArea`

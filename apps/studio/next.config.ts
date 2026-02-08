@@ -20,6 +20,47 @@ const nextConfig: NextConfig = {
   experimental: {
     reactCompiler: false,
   },
+  webpack: (config, { webpack }) => {
+    // Avoid Webpack WasmHash crashes during build (hashing undefined buffers).
+    config.output.hashFunction = 'sha256';
+
+    class SanitizeUndefinedAssetSourcePlugin {
+      apply(compiler: { hooks: { thisCompilation: { tap: (name: string, fn: (compilation: any) => void) => void } } }) {
+        compiler.hooks.thisCompilation.tap('SanitizeUndefinedAssetSourcePlugin', (compilation: any) => {
+          compilation.hooks.processAssets.tap(
+            {
+              name: 'SanitizeUndefinedAssetSourcePlugin',
+              stage: webpack.Compilation.PROCESS_ASSETS_STAGE_SUMMARIZE,
+            },
+            (assets: Record<string, { source?: () => string | Buffer }>) => {
+              for (const [name, asset] of Object.entries(assets)) {
+                let source: string | Buffer | undefined;
+                try {
+                  source = asset.source?.();
+                } catch (error) {
+                  compilation.warnings.push(
+                    new Error(`[build] Failed to read asset source for ${name}: ${String(error)}`),
+                  );
+                  continue;
+                }
+                if (typeof source === 'undefined') {
+                  compilation.updateAsset(name, new webpack.sources.RawSource(''));
+                  compilation.warnings.push(
+                    new Error(`[build] Asset ${name} had undefined source; replaced with empty string.`),
+                  );
+                }
+              }
+            },
+          );
+        });
+      }
+    }
+
+    config.plugins = config.plugins ?? [];
+    config.plugins.push(new SanitizeUndefinedAssetSourcePlugin());
+
+    return config;
+  },
 };
 
 const withMDX = createMDX();

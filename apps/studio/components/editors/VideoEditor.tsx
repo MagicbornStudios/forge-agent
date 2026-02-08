@@ -224,22 +224,14 @@ export function VideoEditor() {
 
   const mainContent = (
     <div className="h-full min-h-0">
-      <LivePlayerProvider>
-        <TimelineProvider
-          contextId={`video-${doc?.id ?? 'demo'}`}
-          initialData={INITIAL_TIMELINE_DATA}
-          undoRedoPersistenceKey={`video-${doc?.id ?? 'demo'}-history`}
-        >
-          <TwickStudio
-            studioConfig={{
-              videoProps: {
-                width: docData.resolution.width,
-                height: docData.resolution.height,
-              },
-            }}
-          />
-        </TimelineProvider>
-      </LivePlayerProvider>
+      <TwickStudio
+        studioConfig={{
+          videoProps: {
+            width: docData.resolution.width,
+            height: docData.resolution.height,
+          },
+        }}
+      />
     </div>
   );
 

@@ -1,0 +1,110 @@
+{
+	"name": "@forge/ui",
+	"versions": {
+		"0.1.0": {
+			"name": "@forge/ui",
+			"private": false,
+			"version": "0.1.0",
+			"types": "dist/index.d.ts",
+			"main": "dist/index.cjs.js",
+			"module": "dist/index.esm.js",
+			"exports": {
+				".": {
+					"types": "./dist/index.d.ts",
+					"import": "./dist/index.esm.js",
+					"require": "./dist/index.cjs.js"
+				}
+			},
+			"files": [
+				"dist"
+			],
+			"sideEffects": false,
+			"scripts": {
+				"build": "tsup"
+			},
+			"publishConfig": {
+				"registry": "http://localhost:4873"
+			},
+			"dependencies": {
+				"@radix-ui/react-accordion": "^1.2.12",
+				"@radix-ui/react-alert-dialog": "^1.1.15",
+				"@radix-ui/react-aspect-ratio": "^1.1.8",
+				"@radix-ui/react-avatar": "^1.1.11",
+				"@radix-ui/react-checkbox": "^1.3.3",
+				"@radix-ui/react-collapsible": "^1.1.12",
+				"@radix-ui/react-context-menu": "^2.2.16",
+				"@radix-ui/react-dialog": "^1.1.15",
+				"@radix-ui/react-dropdown-menu": "^2.1.16",
+				"@radix-ui/react-hover-card": "^1.1.15",
+				"@radix-ui/react-label": "^2.1.8",
+				"@radix-ui/react-menubar": "^1.1.16",
+				"@radix-ui/react-navigation-menu": "^1.2.14",
+				"@radix-ui/react-popover": "^1.1.15",
+				"@radix-ui/react-progress": "^1.1.8",
+				"@radix-ui/react-radio-group": "^1.3.8",
+				"@radix-ui/react-scroll-area": "^1.2.10",
+				"@radix-ui/react-select": "^2.2.6",
+				"@radix-ui/react-separator": "^1.1.8",
+				"@radix-ui/react-slider": "^1.3.6",
+				"@radix-ui/react-slot": "^1.2.4",
+				"@radix-ui/react-switch": "^1.2.6",
+				"@radix-ui/react-tabs": "^1.1.13",
+				"@radix-ui/react-toggle": "^1.1.10",
+				"@radix-ui/react-toggle-group": "^1.1.11",
+				"@radix-ui/react-tooltip": "^1.2.8",
+				"class-variance-authority": "^0.7.1",
+				"clsx": "^2.1.1",
+				"cmdk": "^1.1.1",
+				"lucide-react": "^0.563.0",
+				"next-themes": "^0.4.6",
+				"react-hook-form": "^7.62.0",
+				"recharts": "^2.15.4",
+				"react-resizable-panels": "^4.5.9",
+				"shiki": "^2.2.1",
+				"sonner": "^2.0.7",
+				"tailwind-merge": "^3.4.0",
+				"tailwindcss-animate": "^1.0.7",
+				"vaul": "^1.1.2"
+			},
+			"peerDependencies": {
+				"react": "^19",
+				"react-dom": "^19"
+			},
+			"devDependencies": {
+				"@types/react": "^19",
+				"@types/react-dom": "^19",
+				"tsup": "^8.5.0"
+			},
+			"gitHead": "4070f0e046accf542684f168ae2dec12767fa499",
+			"_id": "@forge/ui@0.1.0",
+			"_nodeVersion": "24.13.0",
+			"_npmVersion": "11.6.2",
+			"dist": {
+				"integrity": "sha512-48uucPvdTedIeGcUb2fR8fx7w+U0kQT47AewarT8D65l8cmcHHlh4RD7zsEp3uiDCwYBWpsS15nl09miHnvQmA==",
+				"shasum": "f92915f8465e0216c0f2f67e3773d191a1538d69",
+				"tarball": "http://localhost:4873/@forge/ui/-/@forge/ui-0.1.0.tgz"
+			},
+			"contributors": []
+		}
+	},
+	"time": {
+		"modified": "2026-02-07T21:25:59.289Z",
+		"created": "2026-02-07T21:25:59.289Z",
+		"0.1.0": "2026-02-07T21:25:59.289Z"
+	},
+	"users": {},
+	"dist-tags": {
+		"latest": "0.1.0"
+	},
+	"_uplinks": {},
+	"_distfiles": {},
+	"_attachments": {
+		"ui-0.1.0.tgz": {
+			"shasum": "f92915f8465e0216c0f2f67e3773d191a1538d69",
+			"version": "0.1.0"
+		}
+	},
+	"_rev": "3-a98fbb09976db973",
+	"_id": "@forge/ui",
+	"readme": "ERROR: No README data found!"
+}

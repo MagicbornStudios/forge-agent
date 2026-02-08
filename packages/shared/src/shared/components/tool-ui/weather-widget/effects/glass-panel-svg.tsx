@@ -368,25 +368,25 @@ export function GlassPanel({
 /**
  * Global CSS classes for glass panel styling (background, shadows).
  */
+const glassPanelCss = `
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      0 4px 16px rgba(0, 0, 0, 0.1);
+  }
+  .glass-panel-dark {
+    background: rgba(0, 0, 0, 0.2);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15),
+      0 4px 16px rgba(0, 0, 0, 0.2);
+  }
+`;
+
 export function GlassPanelCSS() {
-  return (
-    <style jsx global>{`
-      .glass-panel {
-        background: rgba(255, 255, 255, 0.15);
-        box-shadow:
-          inset 0 0 0 1px rgba(255, 255, 255, 0.2),
-          inset 0 1px 0 rgba(255, 255, 255, 0.4),
-          0 4px 16px rgba(0, 0, 0, 0.1);
-      }
-      .glass-panel-dark {
-        background: rgba(0, 0, 0, 0.2);
-        box-shadow:
-          inset 0 0 0 1px rgba(255, 255, 255, 0.1),
-          inset 0 1px 0 rgba(255, 255, 255, 0.15),
-          0 4px 16px rgba(0, 0, 0, 0.2);
-      }
-    `}</style>
-  );
+  return <style dangerouslySetInnerHTML={{ __html: glassPanelCss }} />;
 }
 
 export interface GlassPanelUnderlayProps {

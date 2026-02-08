@@ -103,6 +103,8 @@ If you hit CSS import hoist issues, see `apps/studio/scripts/postcss-hoist-impor
 
 When consumer repos need our forked Twick packages, publish to the local registry.
 
+> Forge packages use the **same workflow conventions** as vendors. For `@forge/*` publishing, use `registry:forge:build` and `registry:forge:publish:local` (see [25 - Verdaccio and local registry](25-verdaccio-local-registry.mdx)).
+
 **Build from repo root:**
 
 ```bash
@@ -131,13 +133,13 @@ pnpm vendor:twick:publish:local
 Or run the per-package publishes:
 
 ```bash
-npm publish --registry http://localhost:4873 vendor/twick/packages/media-utils
-npm publish --registry http://localhost:4873 vendor/twick/packages/canvas
-npm publish --registry http://localhost:4873 vendor/twick/packages/timeline
-npm publish --registry http://localhost:4873 vendor/twick/packages/visualizer
-npm publish --registry http://localhost:4873 vendor/twick/packages/live-player
-npm publish --registry http://localhost:4873 vendor/twick/packages/video-editor
-npm publish --registry http://localhost:4873 vendor/twick/packages/studio
+npm publish --registry http://localhost:4873 ./vendor/twick/packages/media-utils
+npm publish --registry http://localhost:4873 ./vendor/twick/packages/canvas
+npm publish --registry http://localhost:4873 ./vendor/twick/packages/timeline
+npm publish --registry http://localhost:4873 ./vendor/twick/packages/visualizer
+npm publish --registry http://localhost:4873 ./vendor/twick/packages/live-player
+npm publish --registry http://localhost:4873 ./vendor/twick/packages/video-editor
+npm publish --registry http://localhost:4873 ./vendor/twick/packages/studio
 ```
 
 **Consumer `.npmrc`:**

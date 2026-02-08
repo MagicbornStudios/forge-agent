@@ -2,7 +2,7 @@
 title: Forge Agent - Project overview
 
 created: 2026-02-04
-updated: 2026-02-07
+updated: 2026-02-08
 ---
 
 # Forge Agent - Project overview
@@ -12,6 +12,15 @@ updated: 2026-02-07
 Forge Agent is an **AI-first interactive narrative storytelling engine**. It
 combines visual graph editing, AI-assisted authoring, and multi-modal content
 creation into a unified editor platform inspired by Unreal Engine's editor UI.
+
+### MVP and first revenue
+
+We focus on **funding quickly** while delivering clear value. **First revenue** is **paid clone/download** (clone a project or template, or download the Codebase Agent Strategy core, for a price). **MVP** has two hero moments: (1) **Author a small game fully with AI** using Studio, or (2) **Layer Studio on existing projects** — create content and install our **Codebase Agent Strategy** for optimal codebase management and feature implementation. See [MVP and first revenue](product/mvp-and-revenue.mdx) for audience, positioning, and evolution. Video editor is **locked until after MVP**.
+
+### Positioning and audience
+
+- **Positioning:** Game/narrative **content authoring engine**, AI- and chat-first. We are a **thin** game engine — the content + agent layer, not a full engine.
+- **Audience:** Writers; game content/narrative teams; indie game devs; AAA teams (prototype or enhance coding agents and analytics for more ambitious games).
 
 ### Core identity
 
@@ -28,7 +37,7 @@ creation into a unified editor platform inspired by Unreal Engine's editor UI.
 |------|---------|--------|
 | **Dialogue** | Yarn Spinner dialogue graph editing (narratives + storylets) | Primary |
 | **Character** | Character relationship graph editing | In progress |
-| **Video** | Twick timeline video editing | In progress |
+| **Video** | Twick timeline video editing | Locked until after MVP |
 | **Strategy** | AI agent strategy chat (assistant-ui + tool-ui) | In progress |
 
 ### Key capabilities
@@ -62,7 +71,7 @@ creation into a unified editor platform inspired by Unreal Engine's editor UI.
 - **Editors**: Dialogue is primary. Character and Video are editors; Strategy is the assistant-ui strategy editor.
 - **Shared**: `packages/shared/src/shared` contains the editor UI kit, headless contracts, assistant-ui/tool-ui components, and styling tokens.
 - **Agent engine**: `packages/agent-engine` provides the workflow runtime (steps + events + SSE helpers).
-- **Dev kit**: `packages/dev-kit` re-exports `@forge/ui`, `@forge/shared`, and `@forge/agent-engine` for consumers.
+- **Dev kit**: `packages/dev-kit` re-exports `@forge/shared` and `@forge/agent-engine` for consumers (UI atoms are in `@forge/ui`).
 - **Systems (domain packages)**: Dialogue system logic lives in `packages/domain-forge` and consumes types from `packages/types`.
 - **Types**: Payload generates types into `packages/types/src/payload-types.ts`. Domain aliases live in `packages/types/src/payload.ts` and `packages/types/src/graph.ts`.
 - **Persistence**: Payload runs inside the Studio app. Collections live under `apps/studio/payload/collections`.
@@ -82,7 +91,7 @@ Note: API routes exist inside the Studio app for CopilotKit, assistant-chat, and
 | **apps/studio/lib/** | App logic (stores, model router, settings, graph operations, utils). |
 | **packages/shared/** | Shared editor UI kit and headless contracts. |
 | **packages/agent-engine/** | Workflow runtime (steps + events + SSE). |
-| **packages/dev-kit/** | Meta-package that re-exports forge foundation packages for consumers. |
+| **packages/dev-kit/** | Meta-package that re-exports forge shared + agent-engine for consumers (UI atoms in `@forge/ui`). |
 | **packages/domain-forge/** | Dialogue system (domain package) logic (types, store, operations, copilot wiring). |
 | **packages/ui/** | Shared shadcn UI atoms (Radix-based primitives). |
 | **packages/types/** | Payload-generated types + domain aliases (source of truth). |

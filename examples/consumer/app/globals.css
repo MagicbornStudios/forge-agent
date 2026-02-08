@@ -1,4 +1,10 @@
 @import "tw-animate-css";
+@import "dockview/dist/styles/dockview.css";
+@import "../../packages/shared/src/shared/styles/dockview-overrides.css";
+@import "../../packages/shared/src/shared/styles/themes.css";
+@import "../../packages/shared/src/shared/styles/contexts.css";
+@import "../../packages/shared/src/shared/styles/graph.css";
+@import "../../packages/shared/src/shared/styles/scrollbar.css";
 
 @plugin "tailwindcss-animate";
 
@@ -11,12 +17,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Forge shared theme + workspace/editor styles */
-@import "../../packages/shared/src/shared/styles/themes.css";
-@import "../../packages/shared/src/shared/styles/contexts.css";
-@import "../../packages/shared/src/shared/styles/graph.css";
-@import "../../packages/shared/src/shared/styles/scrollbar.css";
 
 * {
   box-sizing: border-box;

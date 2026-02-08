@@ -66,6 +66,11 @@ const useCopyToClipboard = ({
   return { isCopied, copyToClipboard };
 };
 
+const stripRef = <T extends { ref?: unknown }>(props: T) => {
+  const { ref: _ref, ...rest } = props;
+  return rest;
+};
+
 const defaultComponents = memoizeMarkdownComponents({
   h1: ({ className, ...props }) => (
     <h1
@@ -73,7 +78,7 @@ const defaultComponents = memoizeMarkdownComponents({
         "aui-md-h1 mb-2 scroll-m-20 font-semibold text-base first:mt-0 last:mb-0",
         className,
       )}
-      {...props}
+      {...stripRef(props)}
     />
   ),
   h2: ({ className, ...props }) => (
@@ -82,7 +87,7 @@ const defaultComponents = memoizeMarkdownComponents({
         "aui-md-h2 mt-3 mb-1.5 scroll-m-20 font-semibold text-sm first:mt-0 last:mb-0",
         className,
       )}
-      {...props}
+      {...stripRef(props)}
     />
   ),
   h3: ({ className, ...props }) => (
@@ -91,7 +96,7 @@ const defaultComponents = memoizeMarkdownComponents({
         "aui-md-h3 mt-2.5 mb-1 scroll-m-20 font-semibold text-sm first:mt-0 last:mb-0",
         className,
       )}
-      {...props}
+      {...stripRef(props)}
     />
   ),
   h4: ({ className, ...props }) => (
@@ -100,7 +105,7 @@ const defaultComponents = memoizeMarkdownComponents({
         "aui-md-h4 mt-2 mb-1 scroll-m-20 font-medium text-sm first:mt-0 last:mb-0",
         className,
       )}
-      {...props}
+      {...stripRef(props)}
     />
   ),
   h5: ({ className, ...props }) => (
@@ -109,7 +114,7 @@ const defaultComponents = memoizeMarkdownComponents({
         "aui-md-h5 mt-2 mb-1 font-medium text-sm first:mt-0 last:mb-0",
         className,
       )}
-      {...props}
+      {...stripRef(props)}
     />
   ),
   h6: ({ className, ...props }) => (
@@ -118,7 +123,7 @@ const defaultComponents = memoizeMarkdownComponents({
         "aui-md-h6 mt-2 mb-1 font-medium text-sm first:mt-0 last:mb-0",
         className,
       )}
-      {...props}
+      {...stripRef(props)}
     />
   ),
   p: ({ className, ...props }) => (
@@ -127,7 +132,7 @@ const defaultComponents = memoizeMarkdownComponents({
         "aui-md-p my-2.5 leading-normal first:mt-0 last:mb-0",
         className,
       )}
-      {...props}
+      {...stripRef(props)}
     />
   ),
   a: ({ className, ...props }) => (
@@ -136,7 +141,7 @@ const defaultComponents = memoizeMarkdownComponents({
         "aui-md-a text-primary underline underline-offset-2 hover:text-primary/80",
         className,
       )}
-      {...props}
+      {...stripRef(props)}
     />
   ),
   blockquote: ({ className, ...props }) => (
@@ -145,7 +150,7 @@ const defaultComponents = memoizeMarkdownComponents({
         "aui-md-blockquote my-2.5 border-muted-foreground/30 border-l-2 pl-3 text-muted-foreground italic",
         className,
       )}
-      {...props}
+      {...stripRef(props)}
     />
   ),
   ul: ({ className, ...props }) => (
@@ -154,7 +159,7 @@ const defaultComponents = memoizeMarkdownComponents({
         "aui-md-ul my-2 ml-4 list-disc marker:text-muted-foreground [&>li]:mt-1",
         className,
       )}
-      {...props}
+      {...stripRef(props)}
     />
   ),
   ol: ({ className, ...props }) => (
@@ -163,13 +168,13 @@ const defaultComponents = memoizeMarkdownComponents({
         "aui-md-ol my-2 ml-4 list-decimal marker:text-muted-foreground [&>li]:mt-1",
         className,
       )}
-      {...props}
+      {...stripRef(props)}
     />
   ),
   hr: ({ className, ...props }) => (
     <hr
       className={cn("aui-md-hr my-2 border-muted-foreground/20", className)}
-      {...props}
+      {...stripRef(props)}
     />
   ),
   table: ({ className, ...props }) => (
@@ -178,7 +183,7 @@ const defaultComponents = memoizeMarkdownComponents({
         "aui-md-table my-2 w-full border-separate border-spacing-0 overflow-y-auto",
         className,
       )}
-      {...props}
+      {...stripRef(props)}
     />
   ),
   th: ({ className, ...props }) => (
@@ -187,7 +192,7 @@ const defaultComponents = memoizeMarkdownComponents({
         "aui-md-th bg-muted px-2 py-1 text-left font-medium first:rounded-tl-lg last:rounded-tr-lg [[align=center]]:text-center [[align=right]]:text-right",
         className,
       )}
-      {...props}
+      {...stripRef(props)}
     />
   ),
   td: ({ className, ...props }) => (
@@ -196,7 +201,7 @@ const defaultComponents = memoizeMarkdownComponents({
         "aui-md-td border-muted-foreground/20 border-b border-l px-2 py-1 text-left last:border-r [[align=center]]:text-center [[align=right]]:text-right",
         className,
       )}
-      {...props}
+      {...stripRef(props)}
     />
   ),
   tr: ({ className, ...props }) => (
@@ -205,16 +210,19 @@ const defaultComponents = memoizeMarkdownComponents({
         "aui-md-tr m-0 border-b p-0 first:border-t [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg",
         className,
       )}
-      {...props}
+      {...stripRef(props)}
     />
   ),
   li: ({ className, ...props }) => (
-    <li className={cn("aui-md-li leading-normal", className)} {...props} />
+    <li
+      className={cn("aui-md-li leading-normal", className)}
+      {...stripRef(props)}
+    />
   ),
   sup: ({ className, ...props }) => (
     <sup
       className={cn("aui-md-sup [&>a]:text-xs [&>a]:no-underline", className)}
-      {...props}
+      {...stripRef(props)}
     />
   ),
   pre: ({ className, ...props }) => (
@@ -223,7 +231,7 @@ const defaultComponents = memoizeMarkdownComponents({
         "aui-md-pre overflow-x-auto rounded-t-none rounded-b-lg border border-border/50 border-t-0 bg-muted/30 p-3 text-xs leading-relaxed",
         className,
       )}
-      {...props}
+      {...stripRef(props)}
     />
   ),
   code: function Code({ className, ...props }) {
@@ -235,7 +243,7 @@ const defaultComponents = memoizeMarkdownComponents({
             "aui-md-inline-code rounded-md border border-border/50 bg-muted/50 px-1.5 py-0.5 font-mono text-[0.85em]",
           className,
         )}
-        {...props}
+        {...stripRef(props)}
       />
     );
   },

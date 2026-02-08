@@ -3,13 +3,7 @@
 import * as React from 'react';
 import type { IDockviewPanelHeaderProps } from 'dockview';
 import { cn } from '@forge/shared/lib/utils';
-import {
-  BookOpen,
-  LayoutDashboard,
-  ScanSearch,
-  Wrench,
-  type LucideIcon,
-} from 'lucide-react';
+import { BookOpen, LayoutDashboard, ScanSearch, Wrench, type LucideIcon } from 'lucide-react';
 
 const SLOT_ICON_MAP: Record<string, LucideIcon> = {
   library: BookOpen,
@@ -23,8 +17,10 @@ const SLOT_ICON_MAP: Record<string, LucideIcon> = {
 
 export type DockLayoutSlotIconKey = keyof typeof SLOT_ICON_MAP;
 
-export function DockviewSlotTab(props: IDockviewPanelHeaderProps) {
-  const { api, params, tabLocation, ...rest } = props;
+export function DockviewSlotTab(
+  props: IDockviewPanelHeaderProps & React.HTMLAttributes<HTMLDivElement>
+) {
+  const { api, containerApi, params, className, ...rest } = props;
   const slotId = (params?.slotId as string) ?? 'main';
   const iconKey = (params?.iconKey as string) ?? slotId;
   const titleOverride = params?.title as string | undefined;
@@ -33,9 +29,9 @@ export function DockviewSlotTab(props: IDockviewPanelHeaderProps) {
   const isActive = api.isGroupActive;
 
   const handleClose = React.useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
+    (event: React.MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
       api.close();
     },
     [api]
@@ -48,7 +44,8 @@ export function DockviewSlotTab(props: IDockviewPanelHeaderProps) {
         'border-b border-border bg-card shrink-0 text-[11px] min-w-0',
         'cursor-pointer select-none transition-colors',
         'hover:bg-muted/50',
-        isActive && 'dv-active-tab border-b-2 border-[var(--context-accent)] bg-card shadow-[var(--glow-panel-accent)]'
+        isActive && 'dv-active-tab border-b-2 border-[var(--context-accent)] bg-card shadow-[var(--glow-panel-accent)]',
+        className
       )}
       data-slot-id={slotId}
       data-active={isActive}

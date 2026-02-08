@@ -1,4 +1,11 @@
+import type { Metadata } from 'next';
 import { PricingSection } from '@/components/sections/PricingSection';
+
+export const metadata: Metadata = {
+  title: 'Pricing – Forge',
+  description:
+    'Simple, transparent pricing. Start free and upgrade for more AI power, collaboration, and integrations.',
+};
 
 export default function PricingPage() {
   return (

@@ -1,7 +1,7 @@
 ---
 title: Errors and attempts
 created: 2026-02-04
-updated: 2026-02-07
+updated: 2026-02-08
 ---
 
 Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx).
@@ -11,6 +11,14 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 > **For coding agents.** See [Agent artifacts index](../../18-agent-artifacts-index.mdx) for the full list.
 
 Log of known failures and fixes so agents and developers avoid repeating the same mistakes.
+
+---
+
+## Marketing Hero: do not use placeholder YouTube IDs
+
+**Problem**: Hero "Watch Demo" previously opened a dialog with a placeholder YouTube embed (generic or test ID), which could confuse users or look unprofessional.
+
+**Fix**: Do not embed real YouTube URLs in Hero until we have a real product demo asset. "Watch Demo" links to `/demo`; the hero product preview block links to `/roadmap` ("See what we're building"). When a real demo video exists, wire it in `HeroBlock` or `HeroVideoDialog` and remove the /demo redirect. See [HeroBlock.tsx](../../apps/marketing/components/sections/HeroBlock.tsx).
 
 ---
 
@@ -35,6 +43,16 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 **Problem**: Using `bg-background` or `text-foreground` inside a different surface (e.g. sidebar, app bar strip) can produce wrong contrast (e.g. dark text on dark background), because those tokens are global.
 
 **Fix**: Use surface-specific tokens. Inside sidebar use `bg-sidebar` / `text-sidebar-foreground` (and `sidebar-accent` for hover). For popovers use `bg-popover` / `text-popover-foreground`; for cards/panels use `bg-card` / `text-card-foreground`. Do not use `bg-background` or `text-foreground` in non-body surfaces. See [01 - Styling and theming — Token system](../../design/01-styling-and-theming.mdx#token-system-layers-and-when-to-use-which).
+
+---
+
+## Toolbar buttons not switching with theme
+
+**Problem**: When switching app theme (e.g. Dark Fantasy to Cyberpunk), some toolbar controls (e.g. project switcher trigger "Demo Project", ghost toolbar buttons) did not update and appeared stuck with a light or default look.
+
+**Cause**: The ghost button variant in `packages/ui` had only hover styles (`hover:bg-accent hover:text-accent-foreground`) and no base `bg-*` or `text-*`, so the default state inherited browser/parent styling, which is not driven by theme CSS variables.
+
+**Fix**: (1) In `packages/ui/src/components/ui/button.tsx`, give the ghost variant an explicit default state: `bg-transparent text-foreground` so the default state is theme-driven. (2) For toolbar triggers, prefer `outline` (or `default`) per design rules; ProjectSwitcher compact trigger was changed to `variant="outline"` to match other app bar buttons. See [styling-and-ui-consistency.md](./styling-and-ui-consistency.md).
 
 ---
 
@@ -120,6 +138,55 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ---
 
+## Twick: useTimelineContext must be used within a TimelineProvider (VideoEditor)
+
+**Problem**: Runtime error "useTimelineContext must be used within a TimelineProvider" when the Video editor panel is opened (stack at TwickStudio).
+
+**Cause (historical)**: Dockview rendered panels in a way that disconnected them from the parent React tree, so app-level providers did not reach panel content.
+
+**Fix (current)**: The Video editor is now **locked by capability** `studio.video.editor` while Dockview is restored. This avoids relying on Twick context until we re-enable Video. If we re-enable Video, either mount Twick providers inside the panel content, or validate Dockview panels stay within the React tree (avoid portal-based panel wrappers).
+
+---
+
+## Lost panels / Reset layout (DockLayout)
+
+**Problem**: Users can end up with an empty content area (all panels gone). Dockview can persist a broken layout if all panels are closed or moved.
+
+**Fix**: DockLayout uses **Dockview** and exposes a **ref with `resetLayout()`**. Call `ref.current.resetLayout()` to clear persisted layout and restore default panels (e.g. from a "Reset layout" or "Restore default layout" button in the editor toolbar or settings). Layout is stored at `localStorage['dockview-{layoutId}']`; clearing that key and remounting restores defaults.
+
+---
+
+## Dockview tab props leaking to DOM
+
+**Problem**: Dockview panel header props include `containerApi` and other non-DOM fields. Spreading them onto a `<div>` triggers React warnings or invalid DOM props.
+
+**Fix**: In `DockviewSlotTab`, destructure `containerApi` (and any Dockview-only props like `tabLocation`) before spreading the rest onto the DOM element.
+
+---
+
+## FlexLayout panels not showing (only overlays visible)
+
+**Problem**: After the Dockview→FlexLayout swap, only overlay UI (e.g. app bar, modals) was visible; no Library/Main/Inspector/Workbench panels.
+
+**Fix**: FlexLayout was removed; DockLayout is back to **Dockview**. If panels disappear, reset the Dockview layout (`resetLayout()` or clear `localStorage['dockview-{layoutId}']`) rather than reintroducing FlexLayout.
+
+---
+
+## MDX build error: missing frontmatter in agent artifacts
+
+**Problem**: `pnpm --filter @forge/studio build` failed with `[MDX] invalid frontmatter ... expected string, received undefined` for `docs/agent-artifacts/core/plan-*.md`.
+
+**Fix**: Add YAML frontmatter (at least `title`) to any `.md` file in `docs/agent-artifacts/core` that is part of the docs collection. Example:
+```
+---
+title: Plan - Editor layout main content not showing
+created: 2026-02-07
+updated: 2026-02-08
+---
+```
+
+---
+
 ## CSS @import must precede all rules (globals.css parse error)
 
 **Problem**: `pnpm dev` fails with "Parsing CSS source code failed" at `globals.css` (compiled line ~1115): `@import rules must precede all rules aside from @charset and @layer statements`. The offending lines are `@import url('https://fonts.googleapis.com/...')` (Inter, JetBrains Mono, Rubik, Mulish, etc.).
@@ -181,6 +248,46 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 **Problem**: Using `@openrouter/ai-sdk-provider` (e.g. `createOpenRouter`) for the CopilotKit agent causes interface mismatch. CopilotKit expects `openai` for the adapter and `@ai-sdk/openai` for BuiltInAgent; the OpenRouter provider uses a different shape. We swapped runtimes multiple times trying to use the OpenRouter SDK.
 
 **Fix**: Do **not** use `@openrouter/ai-sdk-provider` for the CopilotKit route or for `createForgeCopilotRuntime` in shared. Use **OpenAI** (`openai` package) with `baseURL: config.baseUrl` and **createOpenAI** from `@ai-sdk/openai` with the same baseURL. Model fallbacks are implemented via a custom fetch that injects `models: [primary, ...fallbacks]` into the request body (see [openrouter-fetch.ts](../../apps/studio/lib/model-router/openrouter-fetch.ts)). Reference: [06-model-routing-and-openrouter.mdx](../../architecture/06-model-routing-and-openrouter.mdx).
+
+---
+
+## Verdaccio `npm adduser` 409 Conflict / access denied
+
+**Problem**: `npm adduser --registry http://localhost:4873` returns `E409 Conflict` with "bad username/password, access denied".
+
+**Cause**: The username already exists in `verdaccio/storage/htpasswd` (local registry auth file) and the password does not match.
+
+**Fix**: Either log in with the existing user:
+
+```bash
+npm login --registry http://localhost:4873 --auth-type=legacy
+```
+
+Or reset the user by deleting `verdaccio/storage/htpasswd`, restarting Verdaccio, and re-adding the user:
+
+```bash
+rm -f verdaccio/storage/htpasswd
+pnpm registry:start
+npm adduser --registry http://localhost:4873 --auth-type=legacy
+```
+
+**Note**: Even with `publish: $all`, npm expects auth for scoped publishes; log in once (or use `npm-cli-login`) before running publish scripts.
+
+---
+
+## Forge publish pipeline failures (DTS + Verdaccio)
+
+**Problem**: `pnpm registry:forge:build` failed in `@forge/shared` DTS build with React `ref` type conflicts and tool-ui `<style jsx>` props, then `@forge/agent-engine` / `@forge/dev-kit` DTS builds failed to resolve `@forge/*` packages. Publishing failed because `npm publish packages/ui` was interpreted as a GitHub repo (`packages/ui`), and Verdaccio required auth.
+
+**Fix**:
+
+- **React types**: enforce a single `@types/react` + `@types/react-dom` via root `pnpm.overrides`.
+- **Markdown component props**: strip `ref` before spreading props in `markdown-text.tsx` to avoid cross-react-type conflicts.
+- **Tool UI CSS**: replace `<style jsx global>` with a plain `<style>` using `dangerouslySetInnerHTML`.
+- **DTS resolution**: add `tsconfig.json` with `moduleResolution: "bundler"` to `packages/agent-engine` and `packages/dev-kit`.
+- **Dev-kit exports**: avoid duplicate exports by namespacing UI (`export * as ui from '@forge/ui'`).
+- **Publish scripts**: prefix publish paths with `./` so npm treats them as local directories.
+- **Verdaccio auth**: add `auth.htpasswd` config and log in once (or use `pnpm dlx npm-cli-login`) before publish.
 
 ---
 

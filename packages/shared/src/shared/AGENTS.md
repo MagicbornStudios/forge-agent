@@ -28,3 +28,6 @@ Extend the editor types and `DockLayout` (or equivalent) in `packages/shared/src
 
 - Do not duplicate theme tokens in `apps/studio/app/globals.css`; see **docs/agent-artifacts/core/errors-and-attempts.md**.
 - Vendored dependencies (e.g. Twick) live under `vendor/`; follow [How-to 24](../../../../docs/how-to/24-vendoring-third-party-code.mdx) for version alignment, submodule updates, and Verdaccio publishing.
+- Forge publish flow: `registry:forge:build` + `registry:forge:publish:local`.
+- Twick publish flow: `vendor:twick:build` + `vendor:twick:publish:local`.
+- Verdaccio login is optional; 409 conflict fix is documented in [How-to 25](../../../../docs/how-to/25-verdaccio-local-registry.mdx).

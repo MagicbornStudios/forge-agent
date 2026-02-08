@@ -31,10 +31,53 @@ pnpm registry:start
 
 Verdaccio runs at **http://localhost:4873**. Run it in a **separate terminal** (or in the background) when you are publishing or when another repo is installing `@forge/*` or `@twick/*` from this registry.
 
-If the registry asks for login:
+### Login (recommended for publish)
+
+`verdaccio.yaml` allows publish for `@forge/*` and `@twick/*`, but **npm still expects credentials** when publishing scoped packages. Log in once, then publishing works reliably.
 
 ```bash
-npm adduser --registry http://localhost:4873
+npm adduser --registry http://localhost:4873 --auth-type=legacy
+```
+
+Non-interactive login (CI or scripts):
+
+```bash
+pnpm dlx npm-cli-login -u forge -p forge -e forge@local.dev -r http://localhost:4873
+```
+
+If you see `E409 Conflict` (bad username/password, access denied), it usually means the username already exists in `verdaccio/storage/htpasswd`. Fix it by either:
+
+```bash
+npm login --registry http://localhost:4873 --auth-type=legacy
+```
+
+Or reset the user (below).
+
+### Reset registry user
+
+```bash
+# stop Verdaccio
+# delete the local user file
+rm -f verdaccio/storage/htpasswd
+
+# restart Verdaccio
+pnpm registry:start
+
+# re-add user (optional)
+npm adduser --registry http://localhost:4873 --auth-type=legacy
+```
+
+PowerShell equivalent:
+
+```powershell
+# stop Verdaccio
+Remove-Item verdaccio\\storage\\htpasswd -ErrorAction SilentlyContinue
+
+# restart Verdaccio
+pnpm registry:start
+
+# re-add user (optional)
+npm adduser --registry http://localhost:4873 --auth-type=legacy
 ```
 
 ---
@@ -45,16 +88,13 @@ npm adduser --registry http://localhost:4873
 2. **Build** the foundation packages from repo root:
 
    ```bash
-   pnpm build:packages
+   pnpm registry:forge:build
    ```
 
-3. **Publish** from each package directory (one time or after changes):
+3. **Publish** from repo root:
 
    ```bash
-   cd packages/ui && npm publish
-   cd ../shared && npm publish
-   cd ../agent-engine && npm publish
-   cd ../dev-kit && npm publish
+   pnpm registry:forge:publish:local
    ```
 
 For full detail (e.g. `.npmrc` scope, package layout), see [Architecture: Component library and registry](../architecture/04-component-library-and-registry.mdx).
@@ -94,10 +134,11 @@ In the **consumer repo** (a different project, not this monorepo):
 
 4. **Use** in your app:
 
-   ```ts
-   import { EditorShell, DockLayout, Button } from '@forge/dev-kit';
-   import { ForgeCopilotProvider, createForgeCopilotRuntime } from '@forge/dev-kit';
-   ```
+```ts
+import { EditorShell, DockLayout } from '@forge/dev-kit';
+import { Button } from '@forge/ui';
+import { ForgeCopilotProvider, createForgeCopilotRuntime } from '@forge/dev-kit';
+```
 
 This repo includes a minimal consumer app at [examples/consumer](../../examples/consumer) (see [examples/consumer/README.md](../../examples/consumer/README.md)) that uses `workspace:*` when developed inside the monorepo; the same app can be wired to the local registry when used from a separate clone or repo.
 

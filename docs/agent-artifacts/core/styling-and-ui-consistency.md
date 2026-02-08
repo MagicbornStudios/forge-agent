@@ -33,4 +33,4 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 
 - [How-to 26 – Styling debugging with Cursor](../../how-to/26-styling-debugging-with-cursor.mdx) — Full workflow (selectors, screenshots, plans).
 - [01 - Styling and theming](../../design/01-styling-and-theming.mdx) — Includes **Token system** (layers, when to use which, file map) and context-aware UI. [02 - Components](../../design/02-components.mdx).
-- [errors-and-attempts.md](./errors-and-attempts.md) — e.g. "Grey buttons and missing menu/icons," "Theme/surface tokens."
+- [errors-and-attempts.md](./errors-and-attempts.md) — e.g. "Grey buttons and missing menu/icons," "Theme/surface tokens," "Toolbar buttons not switching with theme."

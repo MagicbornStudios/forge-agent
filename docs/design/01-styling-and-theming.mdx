@@ -1,7 +1,7 @@
 ---
 title: Styling and theming
 created: 2026-02-04
-updated: 2026-02-07
+updated: 2026-02-08
 ---
 
 # Styling and theming
@@ -86,7 +86,7 @@ Dropdown and context menus in `packages/ui` use these tokens so all menus get co
 
 - Domain accents and focus rings are defined in `packages/shared/src/shared/styles/contexts.css`.
 - `--context-accent`, `--ring`, and `--sidebar-*` stay aligned to preserve hover/focus clarity.
-- Panel-edge hover glow and Dockview tab active state use `--context-accent` and `--context-glow`; Dockview sash (resize handle) and separator borders are themed via `dockview-overrides.css` when inside `[data-domain]`.
+- Panel-edge hover glow and layout tab active state use `--context-accent` and `--context-glow`; resizable panel separators can be themed when inside `[data-domain]` if needed.
 
 ### Token system (layers and when to use which)
 

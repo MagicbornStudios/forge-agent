@@ -28,8 +28,8 @@ This repo is both **the Studio app** and the **source of publishable building bl
 - Public and system-agnostic; system workflows live in app/domain packages.
 
 ### `@forge/dev-kit`
-- Convenience meta-package that re-exports `@forge/ui`, `@forge/shared`, and `@forge/agent-engine`.
-- Use this when you want a single dependency.
+- Convenience meta-package that re-exports `@forge/shared` and `@forge/agent-engine`.
+- UI atoms are available via `@forge/ui` (or the `ui` namespace export from dev-kit).
 
 ### Not published (kept internal)
 - `@forge/domain-*` (system logic and app-specific UI).
@@ -93,7 +93,7 @@ This ensures only `@forge/*` packages go to the local registry.
 We keep a lightweight config at `verdaccio.yaml`:
 
 - Storage in `./verdaccio/storage`
-- Publishes allowed without auth (local dev)
+- Publishes allowed for local dev (login still required by npm CLI for scoped publishes)
 - Proxies public packages from npmjs
 
 ---
@@ -103,29 +103,28 @@ We keep a lightweight config at `verdaccio.yaml`:
 From repo root:
 
 ```bash
-pnpm --filter @forge/ui build
-pnpm --filter @forge/shared build
-pnpm --filter @forge/agent-engine build
-pnpm --filter @forge/dev-kit build
+pnpm registry:forge:build
 ```
 
-Then publish each package (one time or after changes):
+Then publish (one time or after changes):
 
 ```bash
-cd packages/ui
-npm publish
-
-cd ../shared
-npm publish
-
-cd ../agent-engine
-npm publish
-
-cd ../dev-kit
-npm publish
+pnpm registry:forge:publish:local
 ```
 
-> If Verdaccio requires login, run `npm adduser --registry http://localhost:4873`.
+> **Login is recommended for publish** (npm expects credentials for scoped packages). Use legacy auth:
+>
+> ```bash
+> npm adduser --registry http://localhost:4873 --auth-type=legacy
+> ```
+>
+> Non-interactive login:
+>
+> ```bash
+> pnpm dlx npm-cli-login -u forge -p forge -e forge@local.dev -r http://localhost:4873
+> ```
+>
+> If you hit `E409 Conflict`, the username already exists in `verdaccio/storage/htpasswd`. Either run `npm login --registry http://localhost:4873 --auth-type=legacy` or delete that file and re-add the user (see [How-to 25](../how-to/25-verdaccio-local-registry.mdx)).
 
 ---
 
@@ -156,7 +155,8 @@ pnpm install
 Usage:
 
 ```ts
-import { EditorShell, DockLayout, Button } from '@forge/dev-kit';
+import { EditorShell, DockLayout } from '@forge/dev-kit';
+import { Button } from '@forge/ui';
 import { ForgeCopilotProvider, createForgeCopilotRuntime } from '@forge/dev-kit';
 ```
 

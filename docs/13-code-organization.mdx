@@ -14,7 +14,7 @@ updated: 2026-02-07
 - **apps/studio/payload/** - Payload CMS collections (users, projects, forge-graphs, video-docs, settings-overrides, agent-sessions).
 - **packages/shared/** - Shared editor UI and styles. No app routes or system (domain) imports.
 - **packages/agent-engine/** - Workflow runtime (steps + events + SSE).
-- **packages/dev-kit/** - Meta-package that re-exports forge foundation packages.
+- **packages/dev-kit/** - Meta-package that re-exports `@forge/shared` + `@forge/agent-engine` (UI atoms live in `@forge/ui`).
 - **packages/domain-forge/** - Dialogue system (domain package) logic (types, store, operations, copilot wiring).
 - **packages/types/** - Generated Payload types + system/domain aliases.
 

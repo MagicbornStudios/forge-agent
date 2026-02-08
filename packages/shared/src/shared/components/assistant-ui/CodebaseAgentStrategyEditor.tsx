@@ -43,27 +43,53 @@ const ToolOnlyAssistantMessage: React.FC = () => {
 };
 
 const ToolActivityFeed: React.FC = () => {
+  const messageCount = useAuiState(({ thread }) => thread?.messages?.length ?? 0);
+
   return (
     <ThreadPrimitive.Root className="flex h-full flex-col">
       <ThreadPrimitive.Viewport className="flex-1 overflow-y-auto px-3 py-3">
-        <AuiIf condition={({ thread }) => thread.isEmpty}>
+        <AuiIf condition={({ thread }) => Boolean(thread?.isEmpty)}>
           <div className="rounded-md border border-dashed border-border/60 bg-muted/30 p-3 text-xs text-muted-foreground">
             Tool activity will appear here when the assistant calls tools.
           </div>
         </AuiIf>
-        <ThreadPrimitive.Messages
-          components={{
-            UserMessage: () => null,
-            AssistantMessage: ToolOnlyAssistantMessage,
-            SystemMessage: () => null,
-          }}
-        />
+        {messageCount > 0
+          ? Array.from({ length: messageCount }, (_, index) => (
+              <ThreadPrimitive.MessageByIndex
+                key={index}
+                index={index}
+                components={{
+                  UserMessage: () => null,
+                  AssistantMessage: ToolOnlyAssistantMessage,
+                  SystemMessage: () => null,
+                }}
+              />
+            ))
+          : null}
       </ThreadPrimitive.Viewport>
     </ThreadPrimitive.Root>
   );
 };
 
-export function CodebaseAgentStrategyEditor({
+export function CodebaseAgentStrategyEditor(props: CodebaseAgentStrategyEditorProps) {
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className={cn('flex h-full min-h-0 flex-1 items-center justify-center text-xs text-muted-foreground', props.className)}>
+        Loading strategy editor…
+      </div>
+    );
+  }
+
+  return <CodebaseAgentStrategyEditorClient {...props} />;
+}
+
+function CodebaseAgentStrategyEditorClient({
   apiUrl = '/api/assistant-chat',
   showThreadList = true,
   showToolsPanel = true,

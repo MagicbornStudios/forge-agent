@@ -1,13 +1,13 @@
 ---
 title: Editor Platform - DockLayout and Editor Architecture
 created: 2026-02-06
-updated: 2026-02-07
+updated: 2026-02-08
 ---
 
 # Editor Platform
 
 The editor platform replaces the workspace component hierarchy with an
-Unreal-Engine-inspired system of **resizable, dockable, lockable panels**.
+Unreal-Engine-inspired system of **resizable, lockable panels**.
 
 ## Naming migration
 
@@ -42,7 +42,7 @@ EditorApp                    -> top-level application shell (editor tabs)
       EditorHeader           -> editor title bar (.Left, .Center, .Right)
       EditorToolbar          -> editor toolbar (.Left, .Right, .Menubar, .Button ...)
       EditorReviewBar        -> AI change review bar (revert/accept)
-      DockLayout             -> resizable panel layout (left, main, right, bottom)
+      DockLayout             -> dockable panel layout (left, main, right, bottom)
         DockPanel            -> individual panel (title, tabs, lock, settings)
           PanelTabs          -> tab bar within a panel
           PanelSettings      -> per-panel settings popover
@@ -73,8 +73,9 @@ Title bar and toolbar. Compound components with `.Left`, `.Center`, `.Right`.
 
 ### `DockLayout`
 
-The core layout primitive. Built on **Dockview** (undock, drag, reorder, persist). Replaces
-`WorkspaceLayoutGrid` (which used CSS Grid with hardcoded widths).
+The core layout primitive. Built on **Dockview** for Unreal-style docking:
+drag-to-reorder, floating groups, and tabbed panels. Replaces
+`WorkspaceLayoutGrid` (CSS Grid with hardcoded widths).
 
 ```tsx
 <DockLayout
@@ -84,20 +85,22 @@ The core layout primitive. Built on **Dockview** (undock, drag, reorder, persist
   bottom={<DockPanel panelId="logs" title="Output" />}
   slots={{ main: { title: 'Dialogue Graphs' }, right: { title: 'Inspector' } }}
   viewport={{ viewportId: 'dialogue-graph', viewportType: 'react-flow' }}
-  layoutId="dialogue-editor"    // persists panel sizes to localStorage
-  leftDefaultSize={20}           // % of horizontal space
+  layoutId="dialogue-editor"    // persists layout to localStorage
+  leftDefaultSize={20}           // % of horizontal space (initial width)
   rightDefaultSize={25}
   bottomDefaultSize={25}
 />
 ```
 
 Features:
-- All panels are **user-resizable** (drag handles)
-- Side and bottom panels are **collapsible**
-- Layout sizes **auto-persist** when `layoutId` is provided
+- Panels are **user-resizable** and **dockable** (drag to reorder)
+- Panels can **float** into separate groups
+- Layout **auto-persists** when `layoutId` is provided (`localStorage['dockview-{layoutId}']`)
 - Viewport metadata attributes are applied to the main region
+- **Reset layout:** call `ref.current.resetLayout()` to restore defaults
 
-**Dockview integration:** The Dockview tab bar is customized to match `DockPanel` headers: each panel tab shows an icon and title using the same tokens (`--tab-height`, `--panel-padding`, `bg-card`, `border-border`). Active tab uses `--context-accent` (bottom border and optional glow). Pass the optional `slots` prop to override tab title and icon key per slot (e.g. `slots={{ main: { title: 'Dialogue Graphs' } }}`). Layout persistence, resize, and drag are provided by Dockview and are available to all consumers of `DockLayout`—including devkit users who use `DockLayout` + `DockPanel` from `@forge/shared/components/editor`.
+**Tabbing:** Dockview tabs manage panel grouping; use `PanelTabs` inside
+`DockPanel` when you need in-panel sub-tabs.
 
 ### `DockPanel`
 
@@ -277,8 +280,7 @@ All AI operations go through TanStack Query mutations:
 
 | File | Export | Description |
 |---|---|---|
-| `DockLayout.tsx` | `DockLayout` | Resizable panel layout (Dockview) |
-| `DockviewSlotTab.tsx` | (internal) | Custom Dockview tab (icons + tokens) |
+| `DockLayout.tsx` | `DockLayout` | Dockview layout (dockable + floating panels); ref exposes `resetLayout()` |
 | `DockPanel.tsx` | `DockPanel` | Individual panel with title/tabs/lock |
 | `PanelTabs.tsx` | `PanelTabs` | Tab bar within a panel |
 | `ViewportMeta.tsx` | `ViewportMeta` | Editor viewport metadata |

@@ -18,6 +18,7 @@ import {
   MessagePrimitive,
   SuggestionPrimitive,
   ThreadPrimitive,
+  useAuiState,
 } from "@assistant-ui/react";
 import {
   ArrowDownIcon,
@@ -34,6 +35,28 @@ import {
 } from "lucide-react";
 import type { FC } from "react";
 
+const ThreadMessages: FC = () => {
+  const messageCount = useAuiState(({ thread }) => thread?.messages?.length ?? 0);
+
+  if (messageCount === 0) return null;
+
+  return (
+    <>
+      {Array.from({ length: messageCount }, (_, index) => (
+        <ThreadPrimitive.MessageByIndex
+          key={index}
+          index={index}
+          components={{
+            UserMessage,
+            EditComposer,
+            AssistantMessage,
+          }}
+        />
+      ))}
+    </>
+  );
+};
+
 export const Thread: FC = () => {
   return (
     <ThreadPrimitive.Root
@@ -46,17 +69,11 @@ export const Thread: FC = () => {
         turnAnchor="top"
         className="aui-thread-viewport relative flex flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth px-4 pt-4"
       >
-        <AuiIf condition={({ thread }) => thread.isEmpty}>
+        <AuiIf condition={({ thread }) => Boolean(thread?.isEmpty)}>
           <ThreadWelcome />
         </AuiIf>
 
-        <ThreadPrimitive.Messages
-          components={{
-            UserMessage,
-            EditComposer,
-            AssistantMessage,
-          }}
-        />
+        <ThreadMessages />
 
         <ThreadPrimitive.ViewportFooter className="aui-thread-viewport-footer sticky bottom-0 mx-auto mt-auto flex w-full max-w-(--thread-max-width) flex-col gap-4 overflow-visible rounded-t-3xl pb-4 md:pb-6">
           <ThreadScrollToBottom />
@@ -153,7 +170,7 @@ const ComposerAction: FC = () => {
   return (
     <div className="aui-composer-action-wrapper relative mx-2 mb-2 flex items-center justify-between">
       <ComposerAddAttachment />
-      <AuiIf condition={({ thread }) => !thread.isRunning}>
+      <AuiIf condition={({ thread }) => !thread?.isRunning}>
         <ComposerPrimitive.Send asChild>
           <TooltipIconButton
             tooltip="Send message"
@@ -168,7 +185,7 @@ const ComposerAction: FC = () => {
           </TooltipIconButton>
         </ComposerPrimitive.Send>
       </AuiIf>
-      <AuiIf condition={({ thread }) => thread.isRunning}>
+      <AuiIf condition={({ thread }) => Boolean(thread?.isRunning)}>
         <ComposerPrimitive.Cancel asChild>
           <Button
             type="button"

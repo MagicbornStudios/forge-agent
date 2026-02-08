@@ -41,7 +41,7 @@ const FEATURES = [
     Icon: Package,
     name: 'Dev Kit',
     description:
-      'Ship editors in your own apps. @forge/dev-kit re-exports 150+ UI components, editor shells, and AI integrations.',
+      'Ship editors in your own apps. @forge/dev-kit bundles editor shells and AI integrations; UI atoms live in @forge/ui.',
     className: 'col-span-1 lg:col-span-1',
     href: '/docs/api-reference/dev-kit',
     cta: 'Explore API',

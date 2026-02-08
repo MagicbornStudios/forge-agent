@@ -1,7 +1,21 @@
 /**
- * Public roadmap data. Sourced from docs/roadmap/product.mdx.
+ * Public roadmap data. Sourced from docs/roadmap/product.mdx and docs/product/mvp-and-revenue.mdx.
  * Categories: Active (in progress), Planned (next / later), Shipped (done).
  */
+
+/** Short MVP summary for the roadmap page. See docs/product/mvp-and-revenue.mdx. */
+export const ROADMAP_MVP_SUMMARY = {
+  firstRevenue: 'Paid clone/download',
+  heroMoments: [
+    'Author a small game fully with AI',
+    'Layer Studio on existing projects with our Codebase Agent Strategy',
+  ],
+  audience:
+    'Writers, game content/narrative teams, indie game devs, AAA teams (prototype or enhance coding agents).',
+  positioning:
+    'Game/narrative content authoring engine, AI- and chat-first — a thin engine and content + agent layer.',
+};
+
 export type RoadmapStatus = 'active' | 'planned' | 'shipped';
 
 export interface RoadmapItem {
@@ -113,6 +127,39 @@ export const ROADMAP_ITEMS: RoadmapItem[] = [
     statusLabel: 'Planned',
     description: 'Plan → patch → review workflow for video, mirroring Dialogue editor.',
     impact: 'Medium',
+  },
+  // Shipped
+  {
+    id: 'editor-platform',
+    title: 'Editor platform (DockLayout, EditorShell)',
+    status: 'shipped',
+    statusLabel: 'Shipped',
+    description:
+      'Unified editor shell with DockLayout, panel tabs, and project context at app level. All editors (Dialogue, Character, Video, Strategy) use the same layout primitives.',
+  },
+  {
+    id: 'marketing-site',
+    title: 'Marketing site',
+    status: 'shipped',
+    statusLabel: 'Shipped',
+    description:
+      'Landing page, consumer docs, login, account and billing, waitlist and newsletter, roadmap and changelog pages, pricing.',
+  },
+  {
+    id: 'user-settings-theme',
+    title: 'User-scoped settings and theme',
+    status: 'shipped',
+    statusLabel: 'Shipped',
+    description:
+      'Settings-overrides with optional user relation; theme and density (compact/comfortable) persisted per user; theme switcher in app bar.',
+  },
+  {
+    id: 'assistant-tool-ui',
+    title: 'Strategy editor (assistant-ui + tool-ui)',
+    status: 'shipped',
+    statusLabel: 'Shipped',
+    description:
+      'CodebaseAgentStrategyEditor with streaming chat, plan cards, and 25+ tool-ui components for coding agent workflows.',
   },
 ];
 

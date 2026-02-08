@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import { LivePlayerProvider } from '@twick/live-player';
+import { TimelineProvider, INITIAL_TIMELINE_DATA } from '@twick/timeline';
 import { CopilotKitProvider } from '@/components/providers/CopilotKitProvider';
 import { AppProviders as SharedAppProviders } from '@forge/shared/components/app';
 import { EntitlementsProvider } from '@/components/providers/EntitlementsProvider';
@@ -17,11 +19,19 @@ export function AppProviders({ children, copilotDefaultOpen = true }: AppProvide
     <AppShellPersistGate>
       <DirtyBeforeUnload />
       <EntitlementsProvider>
-        <SharedAppProviders>
-          <CopilotKitProvider defaultOpen={copilotDefaultOpen}>
-            {children}
-          </CopilotKitProvider>
-        </SharedAppProviders>
+        <LivePlayerProvider>
+          <TimelineProvider
+            contextId="studio-video"
+            initialData={INITIAL_TIMELINE_DATA}
+            undoRedoPersistenceKey="studio-video-history"
+          >
+            <SharedAppProviders>
+              <CopilotKitProvider defaultOpen={copilotDefaultOpen}>
+                {children}
+              </CopilotKitProvider>
+            </SharedAppProviders>
+          </TimelineProvider>
+        </LivePlayerProvider>
       </EntitlementsProvider>
     </AppShellPersistGate>
   );

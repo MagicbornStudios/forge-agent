@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { Sparkles, Play } from 'lucide-react';
 import { AnimatedGradientText } from '@/components/ui/animated-gradient-text';
@@ -9,15 +8,8 @@ import { Particles } from '@/components/ui/particles';
 import { ShimmerButton } from '@/components/ui/shimmer-button';
 import { TextAnimate } from '@/components/ui/text-animate';
 import { BlurFade } from '@/components/ui/blur-fade';
-import { HeroVideoDialog } from '@/components/ui/hero-video-dialog';
-
-const DEMO_VIDEO_SRC =
-  'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1';
-const DEMO_THUMBNAIL_SRC =
-  'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg';
 
 export function HeroBlock() {
-  const [demoOpen, setDemoOpen] = useState(false);
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden border-b border-border">
       {/* Background effects */}
@@ -74,14 +66,15 @@ export function HeroBlock() {
                 Get Started Free
               </ShimmerButton>
             </Link>
-            <button
-              type="button"
-              onClick={() => setDemoOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg border border-border bg-background/50 px-8 py-3 font-semibold backdrop-blur transition-all hover:bg-muted hover:scale-105"
-            >
-              <Play className="h-4 w-4" />
-              Watch Demo
-            </button>
+            <Link href="/demo">
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 rounded-lg border border-border bg-background/50 px-8 py-3 font-semibold backdrop-blur transition-all hover:bg-muted hover:scale-105"
+              >
+                <Play className="h-4 w-4" />
+                Watch Demo
+              </button>
+            </Link>
             <Link href="/docs">
               <button className="inline-flex items-center gap-2 rounded-lg border border-border bg-background/50 px-8 py-3 font-semibold backdrop-blur transition-all hover:bg-muted hover:scale-105">
                 <Play className="h-4 w-4" />
@@ -91,26 +84,21 @@ export function HeroBlock() {
           </div>
         </BlurFade>
 
-        <HeroVideoDialog
-          videoSrc={DEMO_VIDEO_SRC}
-          thumbnailSrc={DEMO_THUMBNAIL_SRC}
-          thumbnailAlt="Product demo"
-          open={demoOpen}
-          onOpenChange={setDemoOpen}
-        />
-
-        {/* Product preview placeholder */}
+        {/* Product preview: link to roadmap until we have a real demo asset */}
         <BlurFade delay={0.65}>
-          <div className="mt-8 w-full max-w-4xl overflow-hidden rounded-xl border border-border/50 bg-card/30 backdrop-blur">
+          <Link
+            href="/roadmap"
+            className="mt-8 block w-full max-w-4xl overflow-hidden rounded-xl border border-border/50 bg-card/30 backdrop-blur transition-colors hover:bg-card/50"
+          >
             <div className="aspect-video flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-purple-500/5">
               <div className="flex flex-col items-center gap-3 text-muted-foreground">
                 <div className="rounded-full border border-border/50 bg-background/80 p-4">
                   <Play className="h-8 w-8" />
                 </div>
-                <span className="text-sm font-medium">Product Preview</span>
+                <span className="text-sm font-medium">See what we&apos;re building</span>
               </div>
             </div>
-          </div>
+          </Link>
         </BlurFade>
       </div>
     </section>

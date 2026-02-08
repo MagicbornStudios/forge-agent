@@ -1,14 +1,14 @@
 ---
 title: Design components (atoms to organisms)
 created: 2026-02-05
-updated: 2026-02-07
+updated: 2026-02-08
 ---
 
 # Design: components (atoms -> molecules -> organisms)
 
 This document catalogs the **shared components** we expose for consumers and contributors. It focuses on **real components in the repo** and how they map to our atomic design system.
 
-> **Rule of thumb:** import from `@forge/dev-kit` (or `@forge/ui` / `@forge/shared`) and keep domain code in your own app/system package.
+> **Rule of thumb:** import editor + AI helpers from `@forge/dev-kit` (or `@forge/shared`) and atoms from `@forge/ui`.
 
 ## Density rules (editor UI)
 
@@ -32,7 +32,7 @@ Use **Lucide React** throughout; standard size **16px** (`size-4` or `className=
 | Settings | Section titles or key dropdowns (Model, Theme, Density) | Optional |
 | Tab triggers | `PanelTabs` tab defs (e.g. Narratives, Storylets, Nodes) | Per-tab icon in `PanelTabDef.icon` |
 
-**Avoid:** Unstyled grey buttons and text-only menu items. Reference screenshot: [buttons_dropdowns_menutitems_unstyled.png](../images/buttons_dropdowns_menutitems_unstyled.png). When updating UI patterns, add or update reference screenshots in **docs/images/** as needed. After applying contrast and spacing fixes (toolbar, PanelTabs, Dockview tabs, outline buttons), see [styling_after_contrast_and_spacing.png](../images/styling_after_contrast_and_spacing.png) when available.
+**Avoid:** Unstyled grey buttons and text-only menu items. Reference screenshot: [buttons_dropdowns_menutitems_unstyled.png](../images/buttons_dropdowns_menutitems_unstyled.png). When updating UI patterns, add or update reference screenshots in **docs/images/** as needed. After applying contrast and spacing fixes (toolbar, PanelTabs, editor tabs, outline buttons), see [styling_after_contrast_and_spacing.png](../images/styling_after_contrast_and_spacing.png) when available.
 
 ---
 
@@ -62,7 +62,7 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
-} from '@forge/dev-kit';
+} from '@forge/ui';
 ```
 
 ### Core atoms we use constantly
@@ -96,7 +96,7 @@ Composable UI patterns built on atoms.
 
 #### Editor layout (Dockview)
 
-Editors use **DockLayout** (Dockview) for full layout flexibility: resize splits, collapse panels, drag tabs to reorder, float panels. Layout is saved to `localStorage` on change and restored on load. **Reset layout:** clear `localStorage['dockview-{layoutId}']` for the editor (e.g. `dockview-dialogue-editor`) and reload. Dockview tabs are themed to match DockPanel headers (icons, `--tab-height`, active state with `--context-accent`). Docking, resize, and persist are available to end users and to devkit consumers who use `DockLayout` and `DockPanel`.
+Editors use **DockLayout** (Dockview) for Unreal-style docking: drag-to-reorder, floating groups, and tabbed panels. Layout is saved to `localStorage['dockview-{layoutId}']` and restored on load. **Reset layout:** call `ref.current.resetLayout()` (or clear the persisted key and reload). Use `PanelTabs` inside `DockPanel` for in-panel organization.
 
 ### Gating + AI
 
@@ -173,6 +173,6 @@ To add a new shadcn registry or install components from a registry (e.g. `@lucid
 
 ## Consumer guidance
 
-- **Atoms:** import from `@forge/dev-kit` (or `@forge/ui`).
+- **Atoms:** import from `@forge/ui`.
 - **Editor shell + AI helpers:** import from `@forge/dev-kit` (or `@forge/shared`).
 - **Domain logic:** stays in your app/system package - not in the shared layer.
