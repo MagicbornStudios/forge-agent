@@ -2,6 +2,8 @@ import 'server-only';
 
 import type { ModelDef } from '@/lib/model-router/types';
 import { getOpenRouterConfig } from '@/lib/openrouter-config';
+import { DEFAULT_FREE_CHAT_MODEL_IDS } from '@/lib/model-router/defaults';
+import { getResponsesV2Compatibility } from '@/lib/model-router/responses-compat';
 
 /** OpenRouter API model object (subset we use). */
 interface OpenRouterModelRow {
@@ -26,12 +28,16 @@ function parsePrice(p: string | number | undefined | null): number {
   return Number.isNaN(n) ? 0 : n;
 }
 
-function toModelDef(row: OpenRouterModelRow): ModelDef {
+async function toModelDef(row: OpenRouterModelRow): Promise<ModelDef> {
   const promptCost = parsePrice(row.pricing?.prompt);
   const completionCost = parsePrice(row.pricing?.completion);
   const tier = promptCost === 0 && completionCost === 0 ? 'free' : 'paid';
   const supportsTools =
     Array.isArray(row.supported_parameters) && row.supported_parameters.includes('tools');
+  const probeEnabled = process.env.OPENROUTER_RESPONSES_PROBE !== '0';
+  const shouldProbe =
+    probeEnabled && DEFAULT_FREE_CHAT_MODEL_IDS.includes(row.id);
+  const supportsResponsesV2 = await getResponsesV2Compatibility(row.id, { probe: shouldProbe });
   return {
     id: row.id,
     label: row.name ?? row.id.split('/').pop() ?? row.id,
@@ -42,6 +48,7 @@ function toModelDef(row: OpenRouterModelRow): ModelDef {
     costPerMOutput: completionCost * 1e6,
     supportsTools,
     enabledByDefault: false,
+    supportsResponsesV2,
   };
 }
 
@@ -67,7 +74,7 @@ export async function getOpenRouterModels(): Promise<ModelDef[]> {
     }
     const json = (await res.json()) as { data?: OpenRouterModelRow[] };
     const rows = Array.isArray(json.data) ? json.data : [];
-    const models = rows.map(toModelDef);
+    const models = await Promise.all(rows.map((row) => toModelDef(row)));
     cached = { at: now, models };
     return models;
   } catch (err) {

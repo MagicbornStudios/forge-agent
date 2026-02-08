@@ -24,3 +24,4 @@ export {
   ComposerAddAttachment,
 } from './attachment';
 export { CodebaseAgentStrategyEditor } from './CodebaseAgentStrategyEditor';
+export { AssistantDevToolsBridge } from './devtools-bridge';

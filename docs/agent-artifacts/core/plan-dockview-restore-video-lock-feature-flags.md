@@ -1,3 +1,9 @@
+---
+title: Plan — Restore Dockview, lock Video editor, feature flags
+created: 2026-02-07
+updated: 2026-02-08
+---
+
 # Plan: Restore Dockview, lock Video editor, feature-flag SDK
 
 **Created:** 2026-02-07  

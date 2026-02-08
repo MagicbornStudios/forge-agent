@@ -1,16 +1,20 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { User } from 'lucide-react';
 import { EditorButton } from '@forge/shared/components/editor';
+import { FeatureGate } from '@forge/shared';
+import { CAPABILITIES } from '@forge/shared/entitlements';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@forge/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@forge/ui/avatar';
 import { useMe } from '@/lib/data/hooks';
+import { CreateListingSheet } from '@/components/listings/CreateListingSheet';
 
 function getInitial(name: string | null | undefined, email: string | null | undefined): string {
   if (name?.trim()) {
@@ -33,6 +37,7 @@ function getDisplayName(name: string | null | undefined, email: string | null | 
 export function AppBarUser() {
   const { data, isLoading } = useMe();
   const user = data?.user ?? null;
+  const [createListingOpen, setCreateListingOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -63,6 +68,7 @@ export function AppBarUser() {
   const displayName = getDisplayName(user.name, user.email);
 
   return (
+    <>
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <EditorButton variant="ghost" size="sm" tooltip={`Signed in as ${displayName}`}>
@@ -76,7 +82,20 @@ export function AppBarUser() {
         <DropdownMenuItem disabled className="text-xs font-medium">
           Signed in as {displayName}
         </DropdownMenuItem>
+        <FeatureGate capability={CAPABILITIES.PLATFORM_LIST} mode="hide">
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-xs"
+              onClick={() => setCreateListingOpen(true)}
+            >
+              List in catalog
+            </DropdownMenuItem>
+          </>
+        </FeatureGate>
       </DropdownMenuContent>
     </DropdownMenu>
+    <CreateListingSheet open={createListingOpen} onOpenChange={setCreateListingOpen} />
+  </>
   );
 }

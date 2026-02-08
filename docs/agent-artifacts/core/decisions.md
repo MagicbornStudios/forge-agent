@@ -86,6 +86,16 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 
 ---
 
+## CopilotKit responses v2 compatibility + assistant-ui chat pipeline
+
+**Decision:** CopilotKit BuiltInAgent continues to use the **responses** API, but model selection is **filtered to responses‑v2 compatible models** (with a safe fallback). The assistant‑ui chat surface uses the **chat** pipeline by default so it can use a broader set of OpenRouter models without responses‑v3 failures.
+
+**Rationale:** AI SDK 5 only supports responses spec v2; some OpenRouter‑backed providers (Gemini, Claude) return v3 and cause runtime errors. We keep CopilotKit for agent actions while preventing incompatibilities, and rely on assistant‑ui for a resilient, standard chat UI. This gives us two surfaces without blocking workflows.
+
+**Implementation note:** Model selection stays **global** (ModelSwitcher + model router preferences). CopilotKit enforces responses‑v2 compatibility at runtime; assistant‑ui uses the same model selection via `/api/assistant-chat` but through the chat pipeline.
+
+---
+
 ## Settings overrides scoped by user
 
 **Decision:** Settings overrides can be scoped by user. The `settings-overrides` collection has an optional `user` relationship. When authenticated, GET `/api/settings` returns only overrides where `user` equals the current user; POST sets `user` on create and update. Unauthenticated requests use overrides where `user` is null (global/legacy). Theme and app/editor settings are thus per-user when logged in.
@@ -115,6 +125,14 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 **Decision:** The **Copilot** (AI sidebar, plan/patch/review, model selection in chat) is **not** behind a plan or capability gate. All users with access to an editor can use the Copilot. Future platform features (publish, monetize) may be gated via `user.plan` and `CAPABILITIES`; Copilot remains free to use.
 
 **Rationale:** Product choice to keep AI assistance available without paywall. Update this doc if we introduce any Copilot-related gating (e.g. rate limits or premium models only).
+
+---
+
+## Platform gates and plan
+
+**Decision:** Platform capabilities (`PLATFORM_LIST`, `PLATFORM_PUBLISH`, `PLATFORM_MONETIZE`) are granted to the **pro** plan only; **free** users cannot list, publish, or monetize. Plan is hydrated from `GET /api/me` and stored in the entitlements store; `getStatus(capability)` uses `PLAN_CAPABILITIES[plan]` in `apps/studio/lib/entitlements/store.ts`. No extra wiring is required—EntitlementsProvider already sets plan from `useMe()` and exposes `has`/`get` from the store.
+
+**Rationale:** Single source of truth (plan from API → store → FeatureGate). Update this doc if we add new plan tiers or move platform gates to a different mechanism.
 
 ---
 
@@ -163,6 +181,14 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 **Decision:** The **marketing site** (`apps/marketing`) is the **landing page and platform** (account, catalog, billing, "Open Studio"). We can change this later (e.g. split platform into a separate app).
 
 **Rationale:** Single app for landing and platform at MVP; architecture allows splitting when needed.
+
+---
+
+## Catalog and listings API
+
+**Decision:** The **public catalog** is read-only for marketing: Studio exposes **GET /api/catalog** (published listings only; no auth). Payload REST handles **/api/listings** for create/update/delete (authenticated; Create listing UI is gated by PLATFORM_LIST). Payload collection `listings` holds title, slug, description, listingType, project, price, currency, creator, thumbnail, category, status. Marketing calls GET /api/catalog via `fetchListings()` from `lib/api.ts`; Studio uses Payload SDK for listing CRUD.
+
+**Rationale:** Marketing cannot use Payload SDK directly (different app); a single public route keeps the contract clear and allows filtering to published only.
 
 ---
 

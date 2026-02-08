@@ -22,6 +22,7 @@ export const studioKeys = {
     ['studio', 'blocks', pageId, parentBlockId ?? null] as const,
   block: (id: number) => ['studio', 'block', id] as const,
   elevenlabsVoices: () => ['studio', 'elevenlabs', 'voices'] as const,
+  listings: () => ['studio', 'listings'] as const,
   // AI generation mutation keys
   generateImage: () => ['studio', 'ai', 'generate-image'] as const,
   structuredOutput: () => ['studio', 'ai', 'structured-output'] as const,

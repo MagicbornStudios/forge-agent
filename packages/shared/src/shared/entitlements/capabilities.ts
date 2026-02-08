@@ -7,8 +7,9 @@ export const CAPABILITIES = {
   FORGE_AI_EDIT: 'forge.ai.edit',
   VIDEO_EXPORT: 'video.export',
   IMAGE_GENERATION: 'studio.ai.imageGeneration',
-  // Platform (future): gate publish and monetization when implemented
+  // Platform (future): gate publish, list, and monetization when implemented
   PLATFORM_PUBLISH: 'platform.publish',
+  PLATFORM_LIST: 'platform.list',
   PLATFORM_MONETIZE: 'platform.monetize',
 } as const;
 

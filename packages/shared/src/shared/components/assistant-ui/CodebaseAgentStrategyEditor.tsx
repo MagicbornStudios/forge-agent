@@ -13,6 +13,7 @@ import { DockLayout, DockPanel } from '../editor';
 import { Thread } from './thread';
 import { ThreadList } from './thread-list';
 import { ToolFallback } from './tool-fallback';
+import { AssistantDevToolsBridge } from './devtools-bridge';
 import { ToolUIRegistry } from '../tool-ui/assistant-tools';
 import { cn } from '@forge/shared/lib/utils';
 
@@ -125,6 +126,7 @@ function CodebaseAgentStrategyEditorClient({
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
+      <AssistantDevToolsBridge />
       <ToolUIRegistry />
       <div className={cn('flex h-full min-h-0 flex-1 flex-col', className)}>
         <DockLayout

@@ -35,3 +35,6 @@ export const PAGES_SLUG = 'pages';
 
 /** Collection slug for WriterMode blocks (Payload REST: /api/blocks). */
 export const BLOCKS_SLUG = 'blocks';
+
+/** Collection slug for catalog listings (Payload REST: /api/listings). */
+export const LISTINGS_SLUG = 'listings';

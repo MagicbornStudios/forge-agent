@@ -118,7 +118,7 @@ export async function POST(req: Request) {
         : undefined;
 
   const result = streamText({
-    model: openai(selectedPrimary),
+    model: openai.chat(selectedPrimary),
     messages: aiMessages,
     ...(system ? { system } : {}),
     ...(Object.keys(tools).length > 0 ? { tools } : {}),

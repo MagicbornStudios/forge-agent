@@ -340,7 +340,7 @@ export function AppShell() {
               size="sm"
               onClick={() => openWorkspace('dialogue')}
               tooltip="Open or switch to Dialogue editor"
-              className="text-muted-foreground hover:text-foreground"
+              className="border-0 text-muted-foreground hover:text-foreground"
             >
               <MessageCircle className="size-3 shrink-0" />
               Dialogue
@@ -352,7 +352,7 @@ export function AppShell() {
                 size="sm"
                 onClick={() => openWorkspace('video')}
                 tooltip="Open or switch to Video editor"
-                className="text-muted-foreground hover:text-foreground"
+                className="border-0 text-muted-foreground hover:text-foreground"
               >
                 <Video className="size-3 shrink-0" />
                 Video
@@ -364,9 +364,9 @@ export function AppShell() {
               size="sm"
               onClick={() => openWorkspace('character')}
               tooltip="Open or switch to Character editor"
-              className="text-muted-foreground hover:text-foreground"
+              className="border-0 text-muted-foreground hover:text-foreground"
             >
-              <Users className="size-3.5 shrink-0" />
+              <Users className="size-3 shrink-0" />
               Character
             </EditorButton>
             {strategyEnabled ? (
@@ -376,7 +376,7 @@ export function AppShell() {
                 size="sm"
                 onClick={() => openWorkspace('strategy')}
                 tooltip="Open or switch to Strategy editor"
-                className="text-muted-foreground hover:text-foreground"
+                className="border-0 text-muted-foreground hover:text-foreground"
               >
                 <Target className="size-3 shrink-0" />
                 Strategy

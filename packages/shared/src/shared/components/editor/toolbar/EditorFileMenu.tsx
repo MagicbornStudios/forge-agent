@@ -43,7 +43,7 @@ export function EditorFileMenu({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         {trigger ?? (
-          <EditorButton variant="outline" size="sm" tooltip={tooltip}>
+          <EditorButton variant="outline" size="sm" tooltip={tooltip} className="border-0">
             File
           </EditorButton>
         )}

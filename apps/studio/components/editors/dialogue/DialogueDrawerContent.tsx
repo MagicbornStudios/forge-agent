@@ -3,14 +3,22 @@
 import React, { useState } from 'react';
 import { EditorBottomPanel } from '@forge/shared';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@forge/ui/tabs';
+import { DialogueAssistantPanel } from './DialogueAssistantPanel';
+import { CopilotKitDevToolsPanel } from './CopilotKitDevToolsPanel';
+import { AssistantDevToolsPanel } from './AssistantDevToolsPanel';
 
 const TABS = [
-  { id: 'settings', label: 'Settings' },
-  { id: 'debug', label: 'Debug' },
-  { id: 'logs', label: 'Logs' },
+  { id: 'assistant', label: 'Assistant' },
+  { id: 'workflow', label: 'Workflow' },
+  { id: 'copilotkit', label: 'CopilotKit' },
+  { id: 'assistant-devtools', label: 'Assistant UI' },
 ] as const;
 
-export function DialogueDrawerContent() {
+export interface DialogueDrawerContentProps {
+  workflowPanel?: React.ReactNode;
+}
+
+export function DialogueDrawerContent({ workflowPanel }: DialogueDrawerContentProps) {
   const [activeTab, setActiveTab] = useState<string>(TABS[0].id);
 
   return (
@@ -28,14 +36,21 @@ export function DialogueDrawerContent() {
               </TabsTrigger>
             ))}
           </TabsList>
-          <TabsContent value="settings" className="flex-1 mt-2 min-h-0 p-2 text-sm text-muted-foreground">
-            Workspace and editor settings for Forge. Use the Settings menu in the toolbar for full options.
+          <TabsContent value="assistant" className="flex-1 mt-2 min-h-0 p-0">
+            <DialogueAssistantPanel className="h-full" />
           </TabsContent>
-          <TabsContent value="debug" className="flex-1 mt-2 min-h-0 p-2 text-sm text-muted-foreground">
-            Debug info and selection summary (placeholder).
+          <TabsContent value="workflow" className="flex-1 mt-2 min-h-0 p-2">
+            {workflowPanel ?? (
+              <div className="text-xs text-muted-foreground">
+                Workflow panel is not available in this editor.
+              </div>
+            )}
           </TabsContent>
-          <TabsContent value="logs" className="flex-1 mt-2 min-h-0 p-2 text-sm text-muted-foreground">
-            Logs and console output (placeholder).
+          <TabsContent value="copilotkit" className="flex-1 mt-2 min-h-0 p-2">
+            <CopilotKitDevToolsPanel className="h-full" />
+          </TabsContent>
+          <TabsContent value="assistant-devtools" className="flex-1 mt-2 min-h-0 p-2">
+            <AssistantDevToolsPanel className="h-full" />
           </TabsContent>
         </Tabs>
       </div>

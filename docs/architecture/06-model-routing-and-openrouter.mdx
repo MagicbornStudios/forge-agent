@@ -10,6 +10,7 @@ We use **OpenRouter** for chat, structured output, plan generation, and image ge
 
 - **OpenAI SDK + @ai-sdk/openai**: We use OpenAI SDK with `baseURL` for OpenRouter and `createOpenAI` from `@ai-sdk/openai` (no OpenRouter SDK). We inject fallbacks via a custom fetch that adds `models: [primary, ...fallbacks]` to the request body. See `apps/studio/lib/model-router/openrouter-fetch.ts`.
 - **Model list**: Fetched from OpenRouter `GET /api/v1/models` (see `apps/studio/lib/openrouter-models.ts`). Cached for 5 minutes. Returned by `GET /api/model-settings` as `registry` so the ModelSwitcher and settings can show the current list without maintaining it in code.
+- **Responses compatibility**: CopilotKit BuiltInAgent uses the OpenAI **responses** API, which requires **responses v2**. Some OpenRouter models (e.g. Gemini/Claude) return v3 responses and are incompatible. We tag models with `supportsResponsesV2` and filter CopilotKit selection to v2‑compatible models with a safe fallback. Assistant‑ui chat uses the **chat** pipeline so it can use a broader set of models without responses‑v3 failures.
 - **Static defaults** (only list we maintain): `apps/studio/lib/model-router/defaults.ts` defines:
   - **DEFAULT_FREE_CHAT_MODEL_IDS**: default fallback chain for chat (free models, order = preference). Used when the user has not set preferences.
   - **DEFAULT_IMAGE_MODEL**: default for image generation; override with env `OPENROUTER_IMAGE_MODEL`.
@@ -26,6 +27,8 @@ We use **OpenRouter** for chat, structured output, plan generation, and image ge
 - **Location**: `apps/studio/components/model-switcher/ModelSwitcher.tsx`.
 - **Data**: Gets `registry` (OpenRouter model list) and preferences from `GET /api/model-settings`. Store: `apps/studio/lib/model-router/store.ts`.
 - **UI**: Auto vs Manual; in Auto, user enables/disables models and order = primary then fallbacks; in Manual, user picks one. When `FREE_ONLY` is true (default), only free-tier models from the OpenRouter list are shown. If the registry is empty (e.g. no API key), a short message is shown.
+- **CopilotKit filter**: The ModelSwitcher includes a “Responses v2 only” filter (required for CopilotKit). It defaults on and hides incompatible models when selecting for the CopilotKit surface.
+  - **Setting key**: `ai.responsesCompatOnly` (app scope) persists the filter state.
 
 ## Where model is chosen
 

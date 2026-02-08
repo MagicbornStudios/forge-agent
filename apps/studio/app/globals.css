@@ -101,3 +101,8 @@
     letter-spacing: var(--tracking-normal);
   }
 }
+
+/* Keep CopilotKit sidebar below our Sheet/Drawer/Dropdown overlays (z-[200]) */
+.copilotKitSidebar {
+  z-index: 20;
+}

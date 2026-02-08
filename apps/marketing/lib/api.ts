@@ -88,6 +88,35 @@ export async function fetchPostBySlug(slug: string): Promise<PostDetail | null> 
   return data?.post ?? null;
 }
 
+export type CatalogListing = {
+  id: string | number;
+  title: string;
+  slug: string;
+  description?: string;
+  listingType: 'project' | 'template' | 'strategy-core';
+  price: number;
+  currency: string;
+  category?: string;
+  thumbnailUrl?: string;
+  creatorName?: string;
+};
+
+export async function fetchListings(): Promise<CatalogListing[]> {
+  const res = await fetch(`${STUDIO_API_URL}/api/catalog`, { cache: 'no-store' });
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data?.listings ?? [];
+}
+
+export async function fetchListingBySlug(slug: string): Promise<CatalogListing | null> {
+  const res = await fetch(`${STUDIO_API_URL}/api/catalog?slug=${encodeURIComponent(slug)}`, {
+    cache: 'no-store',
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data?.listing ?? null;
+}
+
 export async function createCheckoutSession(successUrl?: string, cancelUrl?: string): Promise<{ url?: string }> {
   const res = await fetch(`${STUDIO_API_URL}/api/stripe/create-checkout-session`, {
     method: 'POST',

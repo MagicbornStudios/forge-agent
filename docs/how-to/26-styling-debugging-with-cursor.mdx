@@ -33,11 +33,9 @@ Before changing styles, read the design docs and [agent-artifacts/core/styling-a
 - Create a plan (or use an existing plan file) so changes are scoped and tracked.
 - Implement in slices; update STATUS and relevant docs after each slice.
 
-### After: document the outcome
+### After: document the outcome (optional; humans)
 
-- When UI/styling changes are done, take an **after** screenshot using Cursor browser tools (e.g. MCP browser or built-in).
-- Save to **docs/images/** with a descriptive name (e.g. `styling_after_contrast_and_spacing.png`).
-- Add a short reference in the relevant doc (design or how-to) or in the plan/changelog. Example: "After applying contrast and spacing fixes, see [styling_after_contrast_and_spacing.png](../images/styling_after_contrast_and_spacing.png)."
+- When UI/styling changes are done, an **after** screenshot is optional. **Do not use automated browser screenshot tools**—they error too often. If you want a visual reference, **humans** should: run the app, take a screenshot (Cursor browser tools or any screenshot tool), save to **docs/images/** with a descriptive name (e.g. `styling_after_contrast_and_spacing.png`), and add a short reference in the relevant doc or plan/changelog.
 
 ## Agent instructions
 
@@ -45,10 +43,8 @@ When making UI/styling changes as part of a styling or debugging pass:
 
 1. **Before:** If there is an existing "before" screenshot, keep it; do not overwrite it.
 2. **Implement:** Use design tokens and patterns from design/01 and 02; follow [styling-and-ui-consistency.md](../agent-artifacts/core/styling-and-ui-consistency.md).
-3. **After:** Take a screenshot (browser tools), save to `docs/images/<descriptive_name>.png`, and reference it in the doc or STATUS/errors-and-attempts so the outcome is visible.
+3. **After:** Do **not** run browser screenshot automation (it errors too often). Update design docs and STATUS. If an "after" screenshot is needed, note in STATUS that a human can capture and save to `docs/images/<descriptive_name>.png` and reference it in the doc or STATUS.
 4. **Docs:** Update design docs or errors-and-attempts when new patterns or fixes are introduced.
-
-After a styling pass (e.g. contrast and spacing fixes), save an "after" screenshot as **docs/images/styling_after_contrast_and_spacing.png** (or a descriptive name): run the app, use Cursor browser tools (or any screenshot tool) to capture the updated UI, save to **docs/images/**, then reference it in [02 - Components](../design/02-components.mdx) or here.
 
 ## Related
 

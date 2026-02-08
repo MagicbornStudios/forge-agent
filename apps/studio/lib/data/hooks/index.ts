@@ -30,3 +30,5 @@ export type { UpdatePageInput } from './use-update-page';
 export { useBlocks, useBlock } from './use-blocks';
 export { useCreateBlock, useUpdateBlock } from './use-create-block';
 export type { CreateBlockInput } from './use-create-block';
+export { useCreateListing } from './use-listings';
+export type { CreateListingInput } from './use-listings';

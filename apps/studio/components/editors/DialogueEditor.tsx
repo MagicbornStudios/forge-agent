@@ -788,23 +788,18 @@ export function DialogueEditor() {
     [activeScope, applyOperations]
   );
 
-  const workflowSection = useMemo(
-    () => ({
-      id: 'forge-ai-workflow',
-      title: 'AI Workflow',
-      when: () => true,
-      render: () => (
-        <AgentWorkflowPanel
-          graph={activeGraph}
-          selection={activeSelection}
-          toolsEnabled={toolsEnabled}
-          applyOperations={applyActiveOperations}
-          commitGraph={commitGraph}
-          onAIHighlight={onAIHighlight}
-          onApplyingChange={handleApplyingChange}
-        />
-      ),
-    }),
+  const workflowPanel = useMemo(
+    () => (
+      <AgentWorkflowPanel
+        graph={activeGraph}
+        selection={activeSelection}
+        toolsEnabled={toolsEnabled}
+        applyOperations={applyActiveOperations}
+        commitGraph={commitGraph}
+        onAIHighlight={onAIHighlight}
+        onApplyingChange={handleApplyingChange}
+      />
+    ),
     [
       activeGraph,
       activeSelection,
@@ -817,8 +812,8 @@ export function DialogueEditor() {
   );
 
   const inspectorSections = useMemo(
-    () => [...dialogueInspectorSections({ graph: activeGraph, applyOperations: applyActiveOperations }), workflowSection],
-    [activeGraph, applyActiveOperations, workflowSection]
+    () => dialogueInspectorSections({ graph: activeGraph, applyOperations: applyActiveOperations }),
+    [activeGraph, applyActiveOperations]
   );
 
   const nodePaletteItems: NodePaletteItem[] = useMemo(
@@ -1183,9 +1178,9 @@ export function DialogueEditor() {
               variant="outline"
               size="sm"
               tooltip={bottomDrawerOpen ? 'Close workbench' : 'Open workbench'}
-              className="border-border text-foreground"
+              className="border-0 text-foreground"
             >
-              <PanelBottom className="size-3.5 shrink-0" />
+              <PanelBottom className="size-3 shrink-0" />
               Workbench
             </EditorToolbar.Button>
             {dirtyByScope.narrative && (
@@ -1234,7 +1229,7 @@ export function DialogueEditor() {
           <DrawerContent className="max-h-[70vh] min-h-[240px] flex flex-col">
             <DrawerTitle className="sr-only">Workbench</DrawerTitle>
             <div className="flex-1 min-h-0 overflow-auto">
-              <DialogueDrawerContent />
+              <DialogueDrawerContent workflowPanel={workflowPanel} />
             </div>
           </DrawerContent>
         </Drawer>

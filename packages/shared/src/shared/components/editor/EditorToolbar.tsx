@@ -98,6 +98,7 @@ function renderToolbarItem(item: ToolbarItem) {
           data-state={item.pressed ? 'on' : 'off'}
           tooltip={item.tooltip}
           tooltipDisabled={item.tooltipDisabled}
+          className="border-0"
         >
           {item.icon}
           {item.label}

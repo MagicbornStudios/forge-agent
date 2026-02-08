@@ -58,7 +58,7 @@ export function DockviewSlotTab(
     >
       {IconComponent && (
         <span className="shrink-0 text-muted-foreground" aria-hidden>
-          <IconComponent className="size-4" />
+          <IconComponent className="size-3" />
         </span>
       )}
       <Label className="font-semibold text-foreground truncate flex-1">{displayTitle}</Label>

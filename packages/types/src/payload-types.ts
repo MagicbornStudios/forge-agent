@@ -82,6 +82,7 @@ export interface Config {
     'newsletter-subscribers': NewsletterSubscriber;
     promotions: Promotion;
     posts: Post;
+    listings: Listing;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -104,6 +105,7 @@ export interface Config {
     'newsletter-subscribers': NewsletterSubscribersSelect<false> | NewsletterSubscribersSelect<true>;
     promotions: PromotionsSelect<false> | PromotionsSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    listings: ListingsSelect<false> | ListingsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -404,7 +406,7 @@ export interface Relationship {
  */
 export interface SettingsOverride {
   id: number;
-  scope: 'app' | 'editor' | 'viewport';
+  scope: 'app' | 'editor' | 'viewport' | 'project';
   /**
    * Null for app; editorId for editor; editorId:viewportId for viewport.
    */
@@ -540,6 +542,35 @@ export interface Post {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "listings".
+ */
+export interface Listing {
+  id: number;
+  title: string;
+  slug: string;
+  description?: string | null;
+  listingType: 'project' | 'template' | 'strategy-core';
+  /**
+   * Optional — for project or template listings
+   */
+  project?: (number | null) | Project;
+  /**
+   * Price in cents, or 0 for free
+   */
+  price: number;
+  currency?: string | null;
+  creator: number | User;
+  /**
+   * Card image for catalog
+   */
+  thumbnail?: (number | null) | Media;
+  category?: ('narrative' | 'character' | 'template' | 'strategy') | null;
+  status: 'draft' | 'published';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -621,6 +652,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'posts';
         value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'listings';
+        value: number | Listing;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -902,6 +937,25 @@ export interface PostsSelect<T extends boolean = true> {
   excerpt?: T;
   body?: T;
   publishedAt?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "listings_select".
+ */
+export interface ListingsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  description?: T;
+  listingType?: T;
+  project?: T;
+  price?: T;
+  currency?: T;
+  creator?: T;
+  thumbnail?: T;
+  category?: T;
   status?: T;
   updatedAt?: T;
   createdAt?: T;

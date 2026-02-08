@@ -1,7 +1,7 @@
 ---
 title: Styling and UI consistency
 created: 2026-02-07
-updated: 2026-02-07
+updated: 2026-02-08
 ---
 
 Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx).
@@ -13,7 +13,7 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 ## Purpose
 
 - Ensure toolbar, menu, panel, and card styling stays consistent and readable (contrast, tokens, icons).
-- Define the process for styling passes: before/after screenshots, docs/images, and doc updates.
+- Define the process for styling passes: implement, update docs/STATUS; before/after screenshots are optional (humans capture—browser screenshot automation errors too often).
 
 ## Rules
 
@@ -25,12 +25,14 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 6. **Accent for selection** — Use one edge only (e.g. left or bottom) for list item / card selection; not a full border.
 7. **Card and panel padding** — Use `p-[var(--panel-padding)]` (and content padding) for card headers and content so sections (e.g. AI Workflow) are not flush to borders.
 8. **Base shadcn tokens power all UI** — No hardcoded colors, radii, or shadows in editor chrome. Use `--panel-padding`, `--control-*`, `--radius-*`, `--shadow-*`, and semantic colors (`bg-background`, `text-foreground`, `border-border`, etc.). Visual direction is professional, sharp, and modern (VSCode/Photoshop/Spotify/Unreal); see [01 - Styling and theming](../../design/01-styling-and-theming.mdx) and [03 - Design language](../../design/03-design-language.mdx). **Themes:** Only light and dark (Spotify-based); icon size 12px; radius scale 4–8px; prefer minimal full borders (see design docs).
+9. **Input/Textarea focus** — Focus is indicated by `border-ring` and a subtle `ring-1` only (no full ring-2/offset/glow) so inputs do not get a heavy full-border highlight.
+10. **Toolbar outline buttons** — In app bar and editor toolbars, outline-style triggers use `border-0` and rely on `hover:bg-accent` for separation (minimal full borders). Apply via `className="border-0"` on EditorButton/Button where `variant="outline"` is used for toolbar triggers (AppShell editor tabs, File menu, Project select, Workbench, etc.).
 
 ## Process when making UI/styling changes
 
 1. **Before (optional)** — If in a debugging pass, keep or add a "before" screenshot in **docs/images/** (e.g. `half_done_buttons.png`). Reference it in design or how-to docs.
 2. **Implement** — Use tokens and patterns from design/01 and 02. Fix contrast, spacing, and icons as in errors-and-attempts and this doc.
-3. **After** — Take a screenshot (Cursor browser tools), save to **docs/images/** with a descriptive name (e.g. `styling_after_contrast_and_spacing.png`). Reference it in the relevant doc (design or how-to) or in STATUS/changelog.
+3. **After (optional)** — Do **not** run browser screenshot automation (it errors too often). When an "after" visual is needed, **humans** should capture a screenshot (run the app, use Cursor browser tools or any screenshot tool), save to **docs/images/** with a descriptive name (e.g. `styling_after_contrast_and_spacing.png`), and reference it in the relevant doc or STATUS. Agents should skip this step and note in STATUS that an optional after screenshot can be taken by a human.
 4. **Docs** — Update design docs or errors-and-attempts when adding a new pattern or fix (e.g. new button variant rule or screenshot reference).
 
 ## References

@@ -27,6 +27,8 @@ export interface ModelDef {
   costPerMOutput?: number;
   /** Whether this model supports tool use / function calling. */
   supportsTools: boolean;
+  /** Responses API v2 compatibility (needed for CopilotKit BuiltInAgent). */
+  supportsResponsesV2?: boolean | null;
   /** Whether this model is enabled by default. */
   enabledByDefault: boolean;
   /** Whether this model supports image generation (output_modalities includes "image"). Image gen uses OPENROUTER_IMAGE_MODEL in /api/image-generate. */

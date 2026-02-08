@@ -54,7 +54,7 @@ export function EditorProjectSelect({
           aria-expanded={open}
           disabled={disabled}
           tooltip={tooltip}
-          className={cn('min-w-[180px] justify-between', className)}
+          className={cn('min-w-[180px] justify-between border-0', className)}
         >
           <span className="truncate">{selected ? selected.label : placeholder}</span>
           <ChevronsUpDown className="ml-2 size-3 shrink-0 opacity-50" />

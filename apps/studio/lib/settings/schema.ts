@@ -62,6 +62,14 @@ export const SETTINGS_SCHEMA: SettingsSchemaEntry[] = [
     scopes: ["app", "project", "editor", "viewport"],
   },
   {
+    key: "ai.responsesCompatOnly",
+    type: "toggle",
+    label: "Responses v2 compatible only",
+    description: "Required for CopilotKit BuiltInAgent. Filters model picker to v2-compatible models.",
+    default: true,
+    scopes: ["app"],
+  },
+  {
     key: "ai.temperature",
     type: "number",
     label: "Temperature",

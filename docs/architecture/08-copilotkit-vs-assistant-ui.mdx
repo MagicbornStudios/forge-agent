@@ -16,10 +16,10 @@ interchangeable.
 | | CopilotKit | assistant-ui |
 |---|---|---|
 | **Role** | Domain copilot — context, actions, suggestions | Chat UI — threads, messages, tool rendering |
-| **Used by** | Dialogue, Character, Video editors | Strategy editor (CodebaseAgentStrategyEditor) |
+| **Used by** | Dialogue, Character, Video editors (sidebar) | Dialogue Workbench chat + Strategy editor |
 | **Provider** | `CopilotKit` wraps the entire app | `AssistantRuntimeProvider` wraps the Strategy editor |
-| **Backend** | `/api/copilotkit` (CopilotKit runtime) | `/api/assistant-chat` (AI SDK chat transport) |
-| **Model routing** | OpenRouter via OpenAI SDK + `x-forge-model` headers | OpenRouter via AI SDK `streamText` |
+| **Backend** | `/api/copilotkit` (CopilotKit runtime, responses API) | `/api/assistant-chat` (AI SDK chat transport) |
+| **Model routing** | OpenRouter via OpenAI SDK + `x-forge-model` headers; **responses v2 only** | OpenRouter via AI SDK `streamText` (chat pipeline) |
 | **Actions** | `useCopilotAction` + system contracts | Tool calls rendered by tool-ui components |
 | **Context** | `useCopilotReadable` + system context | Thread messages + system prompt |
 
@@ -51,7 +51,12 @@ streaming, threads, and tool rendering. assistant-ui excels at:
 - Streaming responses with real-time rendering.
 
 assistant-ui runs at the **component level** inside a specific editor
-(currently Strategy).
+(Strategy) and the **Dialogue Workbench** chat tab.
+
+> **Compatibility note**: CopilotKit BuiltInAgent uses the OpenAI **responses**
+> API and requires **responses v2** compatible models. We filter model selection
+> for CopilotKit and fall back when needed. assistant-ui uses the **chat** pipeline,
+> so it can use a broader set of OpenRouter models.
 
 ---
 
@@ -92,6 +97,10 @@ AppShell
 3. AI SDK streams a response (may include tool calls).
 4. Tool calls render via tool-ui components (approval cards, terminals, plans).
 5. Tool results flow back to the model for continued generation.
+
+**Workbench tabs**: Dialogue editor exposes the assistant-ui chat in the Workbench, plus
+CopilotKit and assistant-ui devtools tabs for inspection. Workflow panels live inside the
+Workbench (not in the Inspector) to keep workflow UI aligned with chat.
 
 ---
 

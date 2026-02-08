@@ -309,6 +309,39 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 
 ---
 
+## CopilotKit BuiltInAgent fails on OpenRouter v3 responses
+
+**Problem**: `AI_UnsupportedModelVersionError` when CopilotKit BuiltInAgent runs with OpenRouter models like `google/gemini-2.0-flash-exp:free`. AI SDK 5 responses API only supports spec v2, but some OpenRouter-backed providers return v3.
+
+**Cause**: BuiltInAgent uses the OpenAI **responses** API by default. Models that return v3 responses (Gemini, Claude) are incompatible and crash.
+
+**Fix**:
+- Add responses‑compatibility metadata to the model registry (`supportsResponsesV2`).
+- Filter CopilotKit model selection to responses‑v2 compatible models, with a safe fallback (e.g. `openai/gpt-4o-mini`).
+- Keep assistant‑ui chat on the **chat** pipeline so it can use a broader set of models.
+
+---
+
+## createForgeCopilotRuntime import path (server vs client)
+
+**Problem**: `/api/copilotkit` failed with `TypeError: createForgeCopilotRuntime is not a function` when imported from `@forge/shared/copilot/next`.
+
+**Cause**: `@forge/shared/copilot/next` exports **client-only** provider APIs; the runtime factory lives in `@forge/shared/copilot/next/runtime`.
+
+**Fix**: Import `createForgeCopilotRuntime` from `@forge/shared/copilot/next/runtime` in server routes (`apps/studio/app/api/copilotkit/handler.ts` and any consumer API routes).
+
+---
+
+## CopilotKit runtime sync: Agent "default" not found
+
+**Problem**: `useAgent: Agent 'default' not found after runtime sync (runtimeUrl=/api/copilotkit). No agents registered.`
+
+**Cause**: Only `POST /api/copilotkit` existed. CopilotKit syncs agents via `GET /api/copilotkit/info` (and sometimes `/api/copilotkit/agents__unsafe_dev_only`). Without those routes, the client sees no agents.
+
+**Fix**: Add a catch-all route `apps/studio/app/api/copilotkit/[...path]/route.ts` and export `GET` for `/api/copilotkit` so the runtime handler serves `/info` and dev-only endpoints. Share the handler via `apps/studio/app/api/copilotkit/handler.ts`.
+
+---
+
 ## Drawer requires DialogTitle (Workbench)
 
 **Problem**: Opening the Dialogue workbench triggered `DialogContent requires a DialogTitle` from Radix/vaul.
@@ -319,4 +352,15 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 
 ---
 
+## Settings / Workbench drawer or sheet not opening when clicked
+
+**Problem**: Clicking Settings (app bar or editor toolbar) or Workbench (Dialogue editor) did not open the Sheet or Drawer; panels appeared not to respond.
+
+**Cause**: Stacking order: CopilotKit sidebar and other UI (e.g. Dockview) use z-index 30–50. Our Sheet and Drawer used z-50 / z-100 and could render behind another layer or a floating layer could capture clicks before they reached the buttons.
+
+**Fix**: (1) Raise overlay z-index for Sheet, Drawer, and DropdownMenu in `packages/ui`: use `z-[200]` for overlay and content so they sit above CopilotKit and Dockview. (2) In `apps/studio/app/globals.css`, add `.copilotKitSidebar { z-index: 20; }` so the CopilotKit sidebar stays below our overlays. (3) Ensure DropdownMenuContent (editor Settings menu) uses the same z-[200]. See [styling-and-ui-consistency.md](./styling-and-ui-consistency.md) for UI debugging.
+
+---
+
 *(Add new entries when new errors are found and fixed.)*
+

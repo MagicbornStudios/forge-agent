@@ -38,7 +38,9 @@ export function updatePreferences(patch: Partial<ModelPreferences>): ModelPrefer
  * - In `'manual'` mode: primary = user's chosen model, fallbacks = [].
  * - In `'auto'` mode: primary = first of enabled list (or default chain), fallbacks = rest of that list.
  */
-export function resolvePrimaryAndFallbacks(): PrimaryAndFallbacks & { mode: SelectionMode } {
+export function resolvePrimaryAndFallbacks(options?: {
+  allowedModelIds?: Set<string>;
+}): PrimaryAndFallbacks & { mode: SelectionMode } {
   const prefs = currentPrefs;
 
   if (prefs.mode === 'manual' && prefs.manualModelId) {
@@ -51,8 +53,13 @@ export function resolvePrimaryAndFallbacks(): PrimaryAndFallbacks & { mode: Sele
 
   const chain =
     prefs.enabledModelIds.length > 0 ? prefs.enabledModelIds : getDefaultFallbackChain();
-  const primary = chain[0] ?? DEFAULT_FREE_CHAT_MODEL_IDS[0] ?? 'google/gemini-2.0-flash-exp:free';
-  const fallbacks = chain.slice(1);
+  const filtered = options?.allowedModelIds
+    ? chain.filter((id) => options.allowedModelIds?.has(id))
+    : chain;
+  const resolvedChain = filtered.length > 0 ? filtered : chain;
+  const primary =
+    resolvedChain[0] ?? DEFAULT_FREE_CHAT_MODEL_IDS[0] ?? 'google/gemini-2.0-flash-exp:free';
+  const fallbacks = resolvedChain.slice(1);
 
   return { primary, fallbacks, mode: 'auto' };
 }

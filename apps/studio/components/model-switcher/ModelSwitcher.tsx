@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Bot, Check, ChevronsUpDown } from 'lucide-react';
 import { useModelRouterStore } from '@/lib/model-router/store';
+import { useSettingsStore } from '@/lib/settings/store';
 import { FREE_ONLY } from '@/lib/model-router/registry';
 import type { ModelDef, SelectionMode } from '@/lib/model-router/types';
 import { cn } from '@/lib/utils';
@@ -17,6 +18,7 @@ import {
 } from '@forge/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@forge/ui/popover';
 import { Badge } from '@forge/ui/badge';
+import { Switch } from '@forge/ui/switch';
 import { EditorButton } from '@forge/shared';
 
 // ---------------------------------------------------------------------------
@@ -39,6 +41,28 @@ function TierBadge({ tier }: { tier: 'free' | 'paid' }) {
   );
 }
 
+function CompatBadge({ value }: { value: boolean | null | undefined }) {
+  if (value === true) {
+    return (
+      <Badge variant="outline" className="text-[10px] font-medium uppercase px-1.5 py-0.5 rounded shrink-0">
+        v2
+      </Badge>
+    );
+  }
+  if (value === false) {
+    return (
+      <Badge variant="outline" className="text-[10px] font-medium uppercase px-1.5 py-0.5 rounded shrink-0">
+        v3
+      </Badge>
+    );
+  }
+  return (
+    <Badge variant="outline" className="text-[10px] font-medium uppercase px-1.5 py-0.5 rounded shrink-0">
+      ?
+    </Badge>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
@@ -57,6 +81,10 @@ export function ModelSwitcher() {
     fetchSettings,
     isLoading,
   } = useModelRouterStore();
+  const responsesCompatOnlySetting = useSettingsStore((s) => s.getSettingValue('ai.responsesCompatOnly')) as
+    | boolean
+    | undefined;
+  const setSetting = useSettingsStore((s) => s.setSetting);
 
   useEffect(() => {
     fetchSettings();
@@ -73,7 +101,11 @@ export function ModelSwitcher() {
 
   const freeModels = useMemo(() => registry.filter((m) => m.tier === 'free'), [registry]);
   const paidModels = useMemo(() => registry.filter((m) => m.tier === 'paid'), [registry]);
-  const displayModels = FREE_ONLY ? freeModels : [...freeModels, ...paidModels];
+  const baseModels = FREE_ONLY ? freeModels : [...freeModels, ...paidModels];
+  const responsesCompatOnly = responsesCompatOnlySetting !== false;
+  const displayModels = responsesCompatOnly
+    ? baseModels.filter((m) => m.supportsResponsesV2 === true)
+    : baseModels;
   const showTierBadge = !FREE_ONLY;
 
   return (
@@ -111,6 +143,24 @@ export function ModelSwitcher() {
         ) : (
           <Command className="rounded-lg border-0" shouldFilter={true}>
             <CommandInput placeholder="Search models..." className="h-9 text-xs" />
+            <div className="flex items-center justify-between gap-2 px-3 py-2 text-xs border-b">
+              <div className="flex flex-col">
+                <span className="font-medium">Responses v2 only</span>
+                <span className="text-[10px] text-muted-foreground">
+                  Required for CopilotKit BuiltInAgent
+                </span>
+              </div>
+              <Switch
+                checked={responsesCompatOnly}
+                onCheckedChange={(checked) => setSetting('app', 'ai.responsesCompatOnly', checked)}
+              />
+            </div>
+            {responsesCompatOnly && displayModels.length === 0 && registry.length > 0 && (
+              <div className="px-3 py-2 text-[11px] text-muted-foreground border-b">
+                No responses-v2 compatible models detected in the current list. CopilotKit will
+                fall back to a compatible model automatically.
+              </div>
+            )}
             <CommandEmpty className="text-xs">No model found.</CommandEmpty>
             <CommandList>
               <CommandGroup heading="Mode">
@@ -145,7 +195,10 @@ export function ModelSwitcher() {
                         className={cn('mr-2 size-3 shrink-0', enabledModelIds.includes(model.id) ? 'opacity-100' : 'opacity-0')}
                       />
                       <span className="flex-1 truncate">{model.label}</span>
-                      {showTierBadge && <TierBadge tier={model.tier} />}
+                      <div className="flex items-center gap-1">
+                        {showTierBadge && <TierBadge tier={model.tier} />}
+                        <CompatBadge value={model.supportsResponsesV2 ?? null} />
+                      </div>
                     </CommandItem>
                   ))}
                 </CommandGroup>
@@ -165,7 +218,10 @@ export function ModelSwitcher() {
                         className={cn('mr-2 size-3 shrink-0', activeModelId === model.id ? 'opacity-100' : 'opacity-0')}
                       />
                       <span className="flex-1 truncate">{model.label}</span>
-                      {showTierBadge && <TierBadge tier={model.tier} />}
+                      <div className="flex items-center gap-1">
+                        {showTierBadge && <TierBadge tier={model.tier} />}
+                        <CompatBadge value={model.supportsResponsesV2 ?? null} />
+                      </div>
                     </CommandItem>
                   ))}
                 </CommandGroup>

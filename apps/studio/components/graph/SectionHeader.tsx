@@ -117,7 +117,7 @@ export function SectionHeader({
       {onSearchChange !== undefined && (
         <div className="px-2 pb-2">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+            <Search className="pointer-events-none absolute left-2 top-2.5 size-3 text-muted-foreground" />
             <Input
               value={searchValue ?? ''}
               onChange={(e) => onSearchChange(e.target.value)}
