@@ -35,4 +35,6 @@ See `apps/studio/.env.example`.
 - “Upgrade to Pro” calls `createCheckoutSession()` (marketing `lib/api.ts`), then redirects to `url`. After payment, Stripe redirects to `successUrl` (e.g. `/billing?success=1`).
 - No Stripe Elements or custom payment form; everything goes through Stripe’s hosted Checkout.
 
+**One-time clone checkout and Stripe Connect** are documented in [Revenue and Stripe](../../business/revenue-and-stripe.mdx) and the [platform monetization task breakdown](../agent-artifacts/core/task-breakdown-platform-monetization.md). The existing Pro subscription flow above remains as-is.
+
 **Next:** [13 – Marketing email / newsletter](13-marketing-email-newsletter.mdx)

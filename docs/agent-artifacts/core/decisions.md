@@ -154,9 +154,9 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 
 ## Clone semantics (paid clone)
 
-**Decision:** When a user **pays to clone** a project or template, they get **access to that project indefinitely** and can **clone it as many times as they want** (no per-clone fee after purchase). Each clone can be a **different version** — we snapshot the project/data at the time of that clone.
+**Decision:** When a user **pays to clone** a project or template, they receive a **license** and can **clone again** (no per-clone fee after purchase). The **listing creator** chooses per listing: **indefinite** (purchaser always gets current project state on clone-again) or **version-only** (purchaser gets the same snapshot as at purchase). We persist a **license** record (user, listing, Stripe session id, grantedAt, optional snapshot) to enable clone-again and future audio/licenses.
 
-**Rationale:** Aligns with Unity Asset Store / Bandlab style: buy once, use many times; version at clone allows authors to ship updates while purchasers keep their snapshot. See [MVP and first revenue](../../product/mvp-and-revenue.mdx).
+**Rationale:** Aligns with Unity Asset Store / Bandlab style: buy once, use many times; creator choice supports both "always up to date" and "fixed release" offerings. See [MVP and first revenue](../../product/mvp-and-revenue.mdx) and [Listings and clones](../../business/listings-and-clones.mdx).
 
 ---
 
@@ -197,6 +197,46 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 **Decision:** Catalog at MVP includes **creator listings from day one**. Stripe Connect (or similar) and payouts are required at MVP so both platform and creators get paid.
 
 **Rationale:** Creators need to list and get paid from launch; no "creator catalog later" phase for MVP.
+
+---
+
+## Payments and checkout (Stripe hosted)
+
+**Decision:** Use **Stripe hosted Checkout** for one-time clone purchases (and keep existing subscription Checkout for Pro). No custom payment UI. Use **Stripe for invoicing** where needed. Align with Cursor-style defaults (create session, redirect to Stripe, success/cancel URLs).
+
+**Rationale:** Reduces PCI and UX risk; Stripe handles payment form and 3DS. See [Revenue and Stripe](../../business/revenue-and-stripe.mdx) and platform monetization task breakdown.
+
+---
+
+## Stripe Connect (day one)
+
+**Decision:** Use **Stripe Connect from day one** for clone purchases. Payments go to the creator's connected account; platform takes an application fee. Creators must complete **Connect onboarding** (Express or Standard) before they can receive payouts; we store `stripeAccountId` (e.g. on users or a creator-accounts collection).
+
+**Rationale:** Ensures creators get paid directly from launch. Document onboarding flow in business docs and task breakdown. See [Revenue and Stripe](../../business/revenue-and-stripe.mdx).
+
+---
+
+## Clone implementation (full project, media as references)
+
+**Decision:** Clone = **full project copy**: project row, forge-graphs, characters, relationships, pages, blocks, settings. **Media:** do not duplicate files; store **references** to the source project's media. When the **clone owner** replaces or deletes (e.g. in Character), upload new media and remove the reference to the old media. Optional: mark media in the cloned project as "reference" so UI can show "from original project" until replaced.
+
+**Rationale:** Keeps storage and clone cost low; clone owner gains full control when they edit. See [Listings and clones](../../business/listings-and-clones.mdx).
+
+---
+
+## License record (clone-again and future licenses)
+
+**Decision:** Persist a **license** when a user pays to clone (e.g. Payload collection `licenses`: user, listing, stripeSessionId or paymentIntentId, grantedAt, optional versionSnapshotId). Enables clone-again (API and UI) and future audio/generated-content licenses. Webhook on successful payment creates the license and triggers first clone (or queue).
+
+**Rationale:** Single record for "right to clone" and future license types. See [Listings and clones](../../business/listings-and-clones.mdx) and task breakdown.
+
+---
+
+## Listing versioning (clone mode)
+
+**Decision:** Add a field to listings (e.g. `cloneMode: 'indefinite' | 'version-only'`). The **creator** sets it when creating or editing a listing. Backend uses it when handling clone-again: **indefinite** = clone current project state; **version-only** = clone the same snapshot as at first purchase.
+
+**Rationale:** Creator choice per listing; supports both "always latest" and "fixed release" use cases. See [Listings and clones](../../business/listings-and-clones.mdx).
 
 ---
 

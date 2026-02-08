@@ -30,7 +30,7 @@ export interface EditorShellProps {
  * Replaces `WorkspaceShell`. Every editor (Dialogue, Character, Video, etc.)
  * wraps its content in an `EditorShell` which:
  *
- * 1. Sets `data-editor-id`, `data-mode-id` (legacy), `data-domain`, `data-theme`, and `data-density` attributes
+ * 1. Sets `data-editor-id`, `data-domain`, `data-theme`, and `data-density` attributes
  * 2. Provides the flex-column layout skeleton
  * 3. Applies domain-specific theming via CSS custom properties
  *

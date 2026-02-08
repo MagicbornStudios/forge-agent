@@ -1,0 +1,45 @@
+---
+title: Revenue and Stripe
+created: 2026-02-08
+updated: 2026-02-08
+---
+
+# Revenue and Stripe
+
+Revenue model and payment implementation for the platform. Technical decisions live in [agent-artifacts/core/decisions.md](../agent-artifacts/core/decisions.md).
+
+---
+
+## Revenue model
+
+**Both platform and creator get paid** (Unity Asset Store / Bandlab style).
+
+- Creators list projects, templates, or Strategy cores in the catalog. **Listing creation is free**—creators do not pay to upload a listing.
+- **Buyers** pay the price the creator sets to clone. Payment goes to the creator (via Stripe Connect); the platform takes an application fee (take rate TBD).
+- Catalog supports users and orgs. Pro plan gates who can list (PLATFORM_LIST) and who can clone paid items (PLATFORM_MONETIZE) as needed.
+
+---
+
+## Stripe Connect (day one)
+
+We use **Stripe Connect from day one** for clone purchases so creators receive payment directly.
+
+- Creators must complete **Connect onboarding** (Express or Standard) before they can receive payouts. We store the connected account id (e.g. on users or a creator-accounts collection).
+- When a buyer pays to clone a listing, the payment is created with the **listing creator's connected account**; we pass an **application_fee_amount** so the platform keeps a cut.
+- Payouts to creators are handled by Stripe (Connect); we do not manually transfer. See task breakdown for Connect onboarding API and UI.
+
+---
+
+## Checkout and invoicing (Stripe defaults)
+
+We use **Stripe for everything we need**—no custom payment forms.
+
+- **One-time clone purchase:** Stripe **hosted Checkout** (mode `payment`). Same pattern as Cursor and similar products: create a Checkout session, redirect the user to Stripe, handle success/cancel URLs. Session metadata includes `listingId` and `buyerId` for the webhook.
+- **Pro subscription:** Already implemented. [How-to 12 – Marketing Stripe](../how-to/12-marketing-stripe.mdx) documents the existing flow (Create Checkout Session for subscription, webhook sets user.plan to pro).
+- **Invoicing:** Use Stripe for invoicing where needed (e.g. future B2B or custom billing). No custom invoicing UI; rely on Stripe.
+
+---
+
+## Application fee (take rate)
+
+The platform take rate (application fee as a percentage or fixed amount) is TBD. Document the chosen percentage or formula in this doc and in [decisions.md](../agent-artifacts/core/decisions.md) when set.

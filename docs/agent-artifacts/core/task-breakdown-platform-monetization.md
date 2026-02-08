@@ -35,32 +35,51 @@ Catalog and creator listings; create/update/delete listing.
 | platform-mono-list-1 | Listings API: Payload collection + GET /api/listings (published only) | platform-mono | 2 | Medium | done | — |
 | platform-mono-list-2 | Listings UI: catalog page (public grid at /catalog) | platform-mono | 2 | Medium | done | — |
 | platform-mono-list-2b | Create listing flow (Studio or marketing account) | platform-mono | 2 | Medium | done | — |
+| platform-mono-list-3 | Listing clone mode: add `cloneMode` (indefinite \| version-only) to schema and Create/Edit UI | platform-mono | 2 | Small | open | [listings-and-clones](../../business/listings-and-clones.mdx) |
+
+### Lane: Stripe Connect (Tier 1)
+
+Connect account, onboarding, and checkout session for listing (payment to creator + platform fee).
+
+| id | title | parent | tier | impact | status | doc |
+|----|-------|--------|------|--------|--------|-----|
+| platform-mono-pay-1a | Connect account: create Connect account (Express/Standard), store `stripeAccountId` (users or creator-accounts) | platform-mono | 2 | Medium | open | [revenue-and-stripe](../../business/revenue-and-stripe.mdx) |
+| platform-mono-pay-1b | Connect onboarding link: API + UI for creators to complete onboarding; handle return and account status | platform-mono | 2 | Medium | open | — |
+| platform-mono-pay-1c | Checkout session for listing: one-time payment with Connect (application_fee); metadata `listingId`, `buyerId`; success URL | platform-mono | 2 | Medium | open | — |
 
 ### Lane: Checkout (Tier 1)
 
-Payment session and redirects.
+Clone-purchase session and redirects (Stripe hosted Checkout).
 
 | id | title | parent | tier | impact | status | doc |
 |----|-------|--------|------|--------|--------|-----|
-| platform-mono-check-1 | Checkout session API (Stripe or similar) | platform-mono | 2 | Medium | open | — |
-| platform-mono-check-2 | Checkout UI and success/cancel redirect | platform-mono | 2 | Medium | open | — |
+| platform-mono-check-1 | Checkout session API for clone purchase: auth; body `listingId`; create Stripe Checkout (mode payment) with Connect, platform fee; metadata for webhook; return session URL | platform-mono | 2 | Medium | open | [revenue-and-stripe](../../business/revenue-and-stripe.mdx) |
+| platform-mono-check-2 | Checkout UI and redirects: catalog/detail "Get" calls check-1, redirect to Stripe; success/cancel URLs; success page "Open in Studio" / "Clone again" (license + first clone via webhook) | platform-mono | 2 | Medium | open | — |
+
+### Lane: Licenses (Tier 1)
+
+License record and clone-again.
+
+| id | title | parent | tier | impact | status | doc |
+|----|-------|--------|------|--------|--------|-----|
+| platform-mono-license-1 | License model: Payload collection `licenses` (user, listing, stripeSessionId/paymentIntentId, grantedAt, optional snapshot). Webhook on payment creates license and triggers first clone (or queue) | platform-mono | 2 | Medium | open | [listings-and-clones](../../business/listings-and-clones.mdx) |
+| platform-mono-license-2 | Clone-again: API "clone again" for a given license (respects listing indefinite vs version-only); UI to list user's licenses and trigger clone again | platform-mono | 2 | Medium | open | — |
 
 ### Lane: Clone flow (Tier 1)
 
-Clone-to-account and post-purchase.
+Clone-to-account and post-purchase UI.
 
 | id | title | parent | tier | impact | status | doc |
 |----|-------|--------|------|--------|--------|-----|
-| platform-mono-clone-1 | Clone-to-account API (copy project to buyer) | platform-mono | 2 | Medium | open | [mvp-and-revenue](../../product/mvp-and-revenue.mdx) |
-| platform-mono-clone-2 | Clone confirmation and post-purchase UI | platform-mono | 2 | Medium | open | — |
+| platform-mono-clone-1 | Clone-to-account API: input project id (or listing + version), target user. Copy project, forge-graphs, characters, relationships, pages, blocks; media as references; on clone-owner replace/delete upload new media and drop old reference. Return new project id | platform-mono | 2 | Medium | open | [listings-and-clones](../../business/listings-and-clones.mdx) |
+| platform-mono-clone-2 | Clone confirmation and post-purchase UI: success page after payment; "Open in Studio" link; "Clone again" in Studio or account (lists licenses, calls clone-1 per license/listing rules) | platform-mono | 2 | Medium | open | — |
 
 ### Lane: Payouts (Tier 1)
 
-Creator payouts and revenue share.
+Revenue-share tracking (Connect handles payouts to creators).
 
 | id | title | parent | tier | impact | status | doc |
 |----|-------|--------|------|--------|--------|-----|
-| platform-mono-pay-1 | Stripe Connect (or similar) onboarding for creators | platform-mono | 2 | Medium | open | — |
 | platform-mono-pay-2 | Payout and revenue-share tracking | platform-mono | 2 | Medium | open | — |
 
 ---

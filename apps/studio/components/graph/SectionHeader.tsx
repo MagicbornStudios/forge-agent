@@ -88,17 +88,17 @@ export function SectionHeader({
       ? 'var(--status-info)'
       : focusedEditor === 'storylet'
         ? 'var(--graph-edge-choice-1)'
-        : 'var(--text-tertiary)');
+        : 'var(--context-accent)');
 
-  const headerStyle = focusedEditor
-    ? {
-        borderBottomColor: accentColor,
-        backgroundColor: `color-mix(in oklab, ${accentColor} 10%, transparent)`,
-      }
-    : undefined;
+  const headerStyle = {
+    borderBottomColor: accentColor,
+    ...(focusedEditor && {
+      backgroundColor: `color-mix(in oklab, ${accentColor} 10%, transparent)`,
+    }),
+  };
 
   return (
-    <div className={cn('flex flex-col border-b border-border', className)} style={headerStyle}>
+    <div className={cn('flex flex-col border-b', className)} style={headerStyle}>
       <div className="flex items-center justify-between px-2 py-1.5">
         <div className="flex items-center gap-1.5">
           <div style={{ color: accentColor }}>{icon}</div>

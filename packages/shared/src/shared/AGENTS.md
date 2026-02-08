@@ -6,6 +6,7 @@ Workspace Platform Engineer: owns `packages/shared/src/shared` (editor component
 
 ## Conventions
 
+- **Public API:** Use **Editor\*** components only (`EditorShell`, `DockLayout`, `EditorToolbar`, etc.). **Workspace\*** UI components have been removed; Editor* + DockLayout are the only shell. Types (Selection, ToolbarGroup, InspectorSection, OverlaySpec, etc.) live in `shared/workspace` and are re-exported for editor and copilot use.
 - **Editor shell**: Declarative, slot-based. See `components/editor/README.md` for slot map and how to build an editor.
 - **Dock layout**: `DockLayout` is the layout primitive. It wraps the main slot in `ViewportMeta` metadata. Always provide `viewportId` + `viewportType` via the `viewport` prop.
 - **Atomic design**: shadcn atoms live in `packages/ui/src/components/ui/*`; shared editor UI composes those atoms into molecules.

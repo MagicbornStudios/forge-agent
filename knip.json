@@ -1,0 +1,5 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignoreWorkspaces": ["vendor/twick/packages/*", "examples/*"],
+  "ignoreFiles": [".tmp/**", "**/.source/**", "**/dist/**", "**/node_modules/**"]
+}

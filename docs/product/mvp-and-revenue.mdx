@@ -39,13 +39,16 @@ Our **first revenue mechanism** is **paid clone or download** (not publish/host 
 
 ---
 
-## Clone semantics
+## Clone semantics and business rules
 
 When a user **pays to clone**:
 
-- They get **access to that project indefinitely**.
-- They can **clone it as many times as they want** (no per-clone fee after purchase).
-- The **data/game can be different versions at the time of each clone** — each clone is a version snapshot at clone time.
+- **Listing creation is free** — only **buyers** pay the creator-set clone price.
+- **Creator chooses per listing:** **indefinite** (purchaser can always clone, e.g. latest version) or **version-only** (purchaser gets the snapshot at purchase; clone-again returns the same snapshot).
+- **Clone** = full project (settings, characters, graphs, pages, etc.) with **media as references** until the clone owner replaces them; then we upload new media and drop the old reference.
+- We create a **license** record on payment; it enables **clone again** (and future audio/licenses). Purchaser can list "your licenses" and clone again per listing rules.
+
+Full business rules: [Business: listings and clones](../business/listings-and-clones.mdx) and [Revenue and Stripe](../business/revenue-and-stripe.mdx).
 
 ---
 

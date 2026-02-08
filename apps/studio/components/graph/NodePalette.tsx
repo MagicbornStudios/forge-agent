@@ -95,7 +95,7 @@ export function NodePalette({
       <div className="flex-1 overflow-y-auto py-1">
         {Object.entries(groupedItems).map(([category, nodes]) => (
           <div key={category} className="mb-3">
-            <div className="px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+            <div className="border-l-2 border-[var(--context-accent)] px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
               {labels[category] ?? category}
             </div>
             <div className="space-y-0.5">
