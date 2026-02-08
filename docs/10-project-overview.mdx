@@ -15,7 +15,7 @@ creation into a unified editor platform inspired by Unreal Engine's editor UI.
 
 ### MVP and first revenue
 
-We focus on **funding quickly** while delivering clear value. **First revenue** is **paid clone/download** (clone a project or template, or download the Codebase Agent Strategy core, for a price). **MVP** has two hero moments: (1) **Author a small game fully with AI** using Studio, or (2) **Layer Studio on existing projects** — create content and install our **Codebase Agent Strategy** for optimal codebase management and feature implementation. See [MVP and first revenue](product/mvp-and-revenue.mdx) for audience, positioning, and evolution. Video editor is **locked until after MVP**.
+We focus on **funding quickly** while delivering clear value. **MVP** = one end-to-end clone/download; **success** = first paid clone end-to-end; first paid = **cloneable project/template**; **creators list from day one**; **paid + free tier**; **catalog** (users + orgs); **revenue share** (platform + creator). **Yarn export in MVP.** **MVP editors** = Dialogue, Character, Writer, GamePlayer; Video and Strategy editor **not in MVP**. **MVP infra** = Vercel + Payload. **Platform** = marketing site (landing + platform). Two hero moments: (1) **Author a small game fully with AI** using Studio, or (2) **Layer Studio on existing projects** — create content and **download** our **Codebase Agent Strategy** core (docs + AGENTS.md). See [MVP and first revenue](product/mvp-and-revenue.mdx) for audience, positioning, clone semantics, and evolution.
 
 ### Positioning and audience
 
@@ -35,10 +35,12 @@ We focus on **funding quickly** while delivering clear value. **First revenue** 
 
 | Editor | Purpose | Status |
 |------|---------|--------|
-| **Dialogue** | Yarn Spinner dialogue graph editing (narratives + storylets) | Primary |
-| **Character** | Character relationship graph editing | In progress |
-| **Video** | Twick timeline video editing | Locked until after MVP |
-| **Strategy** | AI agent strategy chat (assistant-ui + tool-ui) | In progress |
+| **Dialogue** | Yarn Spinner dialogue graph editing (narratives + storylets) | Primary (MVP) |
+| **Character** | Character relationship graph editing | In progress (MVP) |
+| **Writer** | Lexical-based, branching narrative, interactive narrative + Yarn; thin engine produces Yarn Games | Planned (MVP) |
+| **GamePlayer** | Playable runtime for Yarn Games (thin engine) | MVP (to be built) |
+| **Video** | Twick timeline video editing | Not in MVP (locked until after MVP) |
+| **Strategy** | AI agent strategy chat (assistant-ui + tool-ui); Strategy = core docs + AGENTS.md | Not in MVP (downloadable core in scope) |
 
 ### Key capabilities
 
@@ -47,7 +49,9 @@ We focus on **funding quickly** while delivering clear value. **First revenue** 
 - assistant-ui + tool-ui for conversational AI interfaces.
 - Payload CMS (SQLite) for local-first persistence.
 - Payload-generated types used across systems (domain packages) for consistent schemas.
-- OpenRouter for multi-model AI access; ElevenLabs for voice generation.
+- **Plan tiers** (free vs paid); **cloud subscription** for standard users (no API keys).
+- **OpenRouter** first-class for multi-model AI; **ElevenLabs** and **Sora** (OpenAPI) for advanced media.
+- **Strategy** = core docs + AGENTS.md; downloadable core. Clone semantics: pay once → access indefinitely, clone as many times as desired; version snapshot at clone.
 
 ## Tech stack
 

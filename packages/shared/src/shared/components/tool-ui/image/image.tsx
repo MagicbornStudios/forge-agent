@@ -2,6 +2,7 @@
 "use client";
 
 import * as React from "react";
+import { Button } from "@forge/ui/button";
 import { cn } from "./_adapter";
 import { ActionButtons, normalizeActionsConfig, type ActionsProp } from "../shared";
 import {
@@ -99,7 +100,7 @@ export function Image(props: ImageProps) {
       <div
         className={cn(
           "group @container relative isolate flex w-full min-w-0 flex-col overflow-hidden rounded-xl",
-          "border border-border bg-card text-sm shadow-xs",
+          "border border-border bg-card text-sm shadow-[var(--shadow-xs)]",
         )}
       >
         <>
@@ -217,13 +218,14 @@ function SourceAttribution({
 
   if (hasClickableUrl && hasSource) {
     return (
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        className="flex h-auto w-full items-center gap-3 text-left hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         onClick={onSourceClick}
-        className="flex w-full items-center gap-3 text-left hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
       >
         {content}
-      </button>
+      </Button>
     );
   }
 

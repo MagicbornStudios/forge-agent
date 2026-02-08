@@ -66,6 +66,24 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ---
 
+## Model switcher registry empty (OpenRouter models not loading)
+
+**Problem**: ModelSwitcher showed "Models load from OpenRouter when available. Check API key if empty" even when the API returned a full list. The dropdown never showed the OpenRouter model list.
+
+**Cause**: The model router store's `fetchSettings` called `GET /api/model-settings` (which returns `registry` from `getOpenRouterModels()`) but only updated `activeModelId`, `mode`, `fallbackIds`, `enabledModelIds`, `manualModelId` in state. It never set `registry`, so the client kept the initial `registry: []`.
+
+**Fix**: In `apps/studio/lib/model-router/store.ts`, in `fetchSettings`, add `registry: Array.isArray(data.registry) ? data.registry : []` to the `set()` call so the UI receives the OpenRouter list.
+
+---
+
+## Settings: do not add keys in two places (defaults vs sections)
+
+**Problem:** Previously, adding a new setting required touching both (1) `SETTINGS_CONFIG.appDefaults` (or editor/viewport defaults) and (2) section definitions in `ai-settings.tsx` (APP_SETTINGS_SECTIONS, etc.). Duplicate definitions led to drift and missing controls.
+
+**Fix:** A **single schema** in `apps/studio/lib/settings/schema.ts` is the canonical source. Each entry has key, type, label, default, and which scopes show it. We derive `SETTINGS_CONFIG.appDefaults` and `projectDefaults` from the schema, and section definitions (APP_SETTINGS_SECTIONS, PROJECT_SETTINGS_SECTIONS, EDITOR_SETTINGS_SECTIONS, VIEWPORT_SETTINGS_SECTIONS) via `buildSectionsForScope()`. **Do not** reintroduce separate defaults objects or section field lists for keys that exist in the schema; add or change keys only in `schema.ts`.
+
+---
+
 ## Project switcher at editor level (avoid)
 
 **Context**: Project context is **app-level**. The app-shell store holds `activeProjectId`; `ProjectSwitcher` lives in AppShell (editor tab bar). Dialogue and Character editors sync from app shell into their domain stores.
@@ -288,6 +306,16 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 - **Dev-kit exports**: avoid duplicate exports by namespacing UI (`export * as ui from '@forge/ui'`).
 - **Publish scripts**: prefix publish paths with `./` so npm treats them as local directories.
 - **Verdaccio auth**: add `auth.htpasswd` config and log in once (or use `pnpm dlx npm-cli-login`) before publish.
+
+---
+
+## Drawer requires DialogTitle (Workbench)
+
+**Problem**: Opening the Dialogue workbench triggered `DialogContent requires a DialogTitle` from Radix/vaul.
+
+**Cause**: `DrawerContent` rendered without a `DrawerTitle`, which Radix requires for accessibility.
+
+**Fix**: Add `<DrawerTitle className="sr-only">Workbench</DrawerTitle>` inside the drawer content (DialogueEditor). Use `DrawerTitle` (not a plain `<div>`) so Radix can detect it.
 
 ---
 

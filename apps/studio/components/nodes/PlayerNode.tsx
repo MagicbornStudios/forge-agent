@@ -6,7 +6,7 @@ import type { ForgeNode } from '@forge/types/graph';
 
 export const PlayerNode = memo(({ data }: NodeProps<ForgeNode>) => {
   return (
-    <div className="px-4 py-2 shadow-md rounded-md bg-white border-2 border-blue-500 min-w-[200px]">
+    <div className="px-4 py-2 shadow-[var(--shadow-md)] rounded-md bg-card border-2 border-primary min-w-[200px]">
       <Handle type="target" position={Position.Top} className="w-3 h-3" />
 
       <div className="flex flex-col">

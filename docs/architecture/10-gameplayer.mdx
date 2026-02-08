@@ -1,0 +1,96 @@
+---
+title: GamePlayer — how we build it
+created: 2026-02-08
+updated: 2026-02-08
+---
+
+# GamePlayer — how we build it
+
+**GamePlayer** is an **MVP editor**: a playable runtime for **Yarn Games**. Authors build content in Dialogue, Character, and Writer; they then play the game in GamePlayer. This doc describes how we are going to build it.
+
+---
+
+## Purpose
+
+- **In Studio:** GamePlayer is an editor tab. The user selects a project and hits "Play"; they see a thin runtime that runs the project's dialogue (and later narrative from Writer) with character data.
+- **MVP outcome:** A user can author a small game in Dialogue/Character/Writer and play it end-to-end in the same app, supporting the hero moment "Author a small game fully with AI" and the MVP success criterion (first paid clone E2E).
+
+---
+
+## Inputs (what GamePlayer runs)
+
+| Source | Content | When available |
+|--------|---------|----------------|
+| **Dialogue** | Narrative + storylet graphs; exported as **Yarn** (`.yarn`) or graph payload | After [first-class Yarn Spinner](09-dialogue-domain-and-yarn-spinner.mdx) (export/import in MVP) |
+| **Character** | Character definitions, names, voice IDs (for TTS in play) | Existing Character editor |
+| **Writer** | Branching narrative, choices (future) | Writer editor when built |
+| **Project** | Single project context (same as other editors); project-scoped assets | App shell `activeProjectId` |
+
+MVP GamePlayer runs **Dialogue + Character** first. Writer integration follows when the Writer editor exists.
+
+---
+
+## Runtime (thin engine)
+
+- **Thin engine** = minimal runtime that: (1) loads project dialogue (Yarn or graph format), (2) evaluates dialogue flow (current node, lines, options, variables), (3) presents lines and choices to the player and advances state, (4) optionally plays character voice (ElevenLabs) when a line has a character with `voiceId`.
+- **No full game engine:** We do not ship Unity/Unreal/Godot inside the app. We provide a **dialogue-first playable** that can later be exported to real engines (post-MVP).
+- **In-browser:** Runtime runs in the browser (React + state machine or small interpreter). For MVP, "publish and host builds" (playable URL) can follow after first paid clone; the primary path is play inside Studio.
+
+---
+
+## How we build it (phases)
+
+### Prerequisites (MVP-critical, before GamePlayer)
+
+1. **First-class Yarn Spinner** — Export/import `.yarn` from Dialogue graphs. GamePlayer needs a stable format to load (Yarn script or our own graph serialization). See [09 - Dialogue system and Yarn Spinner](09-dialogue-domain-and-yarn-spinner.mdx) and STATUS § Next.
+2. **Project + character data** — GamePlayer reads the active project's forge-graphs (or Yarn export) and character data via existing APIs (Payload, project context).
+
+### Phase 1: GamePlayer shell and load (MVP)
+
+| Slice | Description | Impact |
+|-------|-------------|--------|
+| **1. GamePlayer editor tab** | Register GamePlayer as an editor in AppShell; same chrome as other editors (EditorShell, project context). Content area = "Play" button + placeholder or minimal UI. | Small |
+| **2. Load project dialogue** | For the active project, load narrative/storylet data (from Yarn export or forge-graphs API). No execution yet; just data load and validation. | Medium |
+| **3. Minimal runtime** | Interpret loaded dialogue: current node, lines, options, variables. State machine or small Yarn-like runner. Render current line and choices; on choice, advance state. No TTS required for slice. | Medium |
+
+### Phase 2: Playable and polish (MVP)
+
+| Slice | Description | Impact |
+|-------|-------------|--------|
+| **4. Character names and voice (optional)** | Resolve character names from Character editor; optionally play voice (ElevenLabs) for lines when `voiceId` is set. | Small–Medium |
+| **5. Variables and persistence** | Persist Yarn variables across the play session (and optionally across "sessions" for save/load later). | Small |
+| **6. Polish** | Full-screen or focused play view, basic styling, restart/restart from node. | Small |
+
+### After MVP
+
+- **Publish and host:** Authors publish a "build" (playable bundle); we host it so others can play via URL. See STATUS § Next "Platform: publish and host builds."
+- **Writer integration:** When Writer editor exists, GamePlayer can run combined Dialogue + Writer branching content.
+- **Export to engines:** Unity/Unreal/Godot export packages (full Yarn Spinner toolchain) are post-MVP.
+
+---
+
+## Where it lives in the repo
+
+- **Editor UI:** `apps/studio` — new GamePlayer editor component (e.g. `GamePlayerEditor`), registered in the app shell next to Dialogue, Character, Writer. Uses shared `EditorShell`, project context, and (optionally) DockLayout or a single play surface.
+- **Runtime / engine:** TBD. Options: (a) new package `packages/gameplayer-runtime` or (b) `apps/studio/lib/gameplayer/` for MVP. Prefer a package if we expect to reuse the runtime for hosted play (same runtime in Studio and on hosted build URL).
+- **Data:** No new Payload collections for MVP. Reads existing forge-graphs (or Yarn export) and project-scoped character data.
+
+---
+
+## Order relative to other work
+
+- **Yarn Spinner (export/import)** is **before** GamePlayer: GamePlayer needs a format to load.
+- **GamePlayer** is **part of MVP** (with Dialogue, Character, Writer).
+- **Editors as MCP Apps** is **after MVP**; we do not block GamePlayer on MCP.
+- **Video editor** is not in MVP; Video work (Twick → VideoDoc, workflow panel) happens when Video is unlocked.
+
+See [STATUS § Next](../agent-artifacts/core/STATUS.md) and [decisions: MVP ordering and what to do next](../agent-artifacts/core/decisions.md).
+
+---
+
+## References
+
+- [09 - Dialogue system and Yarn Spinner](09-dialogue-domain-and-yarn-spinner.mdx)
+- [Product roadmap](../roadmap/product.mdx) — GamePlayer section
+- [MVP and first revenue](../product/mvp-and-revenue.mdx)
+- [STATUS § Next](../agent-artifacts/core/STATUS.md)

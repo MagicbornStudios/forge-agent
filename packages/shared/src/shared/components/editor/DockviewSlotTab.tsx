@@ -3,7 +3,9 @@
 import * as React from 'react';
 import type { IDockviewPanelHeaderProps } from 'dockview';
 import { cn } from '@forge/shared/lib/utils';
-import { BookOpen, LayoutDashboard, ScanSearch, Wrench, type LucideIcon } from 'lucide-react';
+import { BookOpen, LayoutDashboard, ScanSearch, Wrench, X, type LucideIcon } from 'lucide-react';
+import { Button } from '@forge/ui/button';
+import { Label } from '@forge/ui/label';
 
 const SLOT_ICON_MAP: Record<string, LucideIcon> = {
   library: BookOpen,
@@ -59,17 +61,10 @@ export function DockviewSlotTab(
           <IconComponent className="size-4" />
         </span>
       )}
-      <span className="font-semibold text-foreground truncate flex-1">{displayTitle}</span>
-      <button
-        type="button"
-        onClick={handleClose}
-        className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
-        aria-label="Close panel"
-      >
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M2 2l8 8M10 2L2 10" />
-        </svg>
-      </button>
+      <Label className="font-semibold text-foreground truncate flex-1">{displayTitle}</Label>
+      <Button variant="ghost" size="icon" onClick={handleClose} aria-label="Close panel" className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded-sm border-none">
+        <X className="size-4 text-muted-foreground hover:text-foreground" />
+      </Button>
     </div>
   );
 }

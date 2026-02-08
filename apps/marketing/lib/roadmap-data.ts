@@ -6,6 +6,11 @@
 /** Short MVP summary for the roadmap page. See docs/product/mvp-and-revenue.mdx. */
 export const ROADMAP_MVP_SUMMARY = {
   firstRevenue: 'Paid clone/download',
+  mvpEditors: ['Dialogue', 'Character', 'Writer', 'GamePlayer'],
+  creatorsFromDayOne: true,
+  mvpSuccess: 'First paid clone end-to-end',
+  mvpInfra: 'Vercel + Payload',
+  platform: 'Marketing site (landing + platform)',
   heroMoments: [
     'Author a small game fully with AI',
     'Layer Studio on existing projects with our Codebase Agent Strategy',
@@ -14,6 +19,10 @@ export const ROADMAP_MVP_SUMMARY = {
     'Writers, game content/narrative teams, indie game devs, AAA teams (prototype or enhance coding agents).',
   positioning:
     'Game/narrative content authoring engine, AI- and chat-first — a thin engine and content + agent layer.',
+  planTiers: 'Paid and free',
+  catalog: 'Users and orgs',
+  yarnInMvp: true,
+  revenueShare: 'Revenue share with creators (Unity Asset Store / Bandlab style).',
 };
 
 export type RoadmapStatus = 'active' | 'planned' | 'shipped';

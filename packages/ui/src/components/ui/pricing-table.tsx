@@ -49,7 +49,7 @@ export function PricingTable({
             key={plan.id}
             className={cn(
               'flex flex-col h-full transition-all duration-200',
-              plan.highlight && 'border-primary/50 ring-1 ring-primary/20 shadow-lg'
+              plan.highlight && 'border-primary/50 ring-1 ring-primary/20 shadow-[var(--shadow-lg)]'
             )}
           >
             <CardHeader className="space-y-1">

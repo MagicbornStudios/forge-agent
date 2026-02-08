@@ -1,21 +1,21 @@
 'use client';
 
-import React, { useEffect, useMemo } from 'react';
-import { ChevronDown } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Bot, Check, ChevronsUpDown } from 'lucide-react';
 import { useModelRouterStore } from '@/lib/model-router/store';
 import { FREE_ONLY } from '@/lib/model-router/registry';
 import type { ModelDef, SelectionMode } from '@/lib/model-router/types';
 import { cn } from '@/lib/utils';
 import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuCheckboxItem,
-} from '@forge/ui/dropdown-menu';
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from '@forge/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@forge/ui/popover';
 import { Badge } from '@forge/ui/badge';
 import { EditorButton } from '@forge/shared';
 
@@ -28,7 +28,7 @@ function TierBadge({ tier }: { tier: 'free' | 'paid' }) {
     <Badge
       variant="outline"
       className={cn(
-        'text-[10px] font-medium uppercase px-1.5 py-0.5 rounded',
+        'text-[10px] font-medium uppercase px-1.5 py-0.5 rounded shrink-0',
         tier === 'free'
           ? 'bg-emerald-500/15 text-emerald-400'
           : 'bg-amber-500/15 text-amber-300',
@@ -40,31 +40,11 @@ function TierBadge({ tier }: { tier: 'free' | 'paid' }) {
 }
 
 // ---------------------------------------------------------------------------
-// Model option row (no health dot; primary + fallbacks from preferences)
-// ---------------------------------------------------------------------------
-
-function ModelOption({
-  model,
-  showTierBadge,
-  isActive,
-}: {
-  model: ModelDef;
-  showTierBadge: boolean;
-  isActive: boolean;
-}) {
-  return (
-    <div className={cn('flex items-center gap-2', isActive && 'text-foreground font-medium')}>
-      <span className="flex-1 truncate">{model.label}</span>
-      {showTierBadge && <TierBadge tier={model.tier} />}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
 
 export function ModelSwitcher() {
+  const [open, setOpen] = useState(false);
   const {
     registry,
     mode,
@@ -83,119 +63,117 @@ export function ModelSwitcher() {
   }, [fetchSettings]);
 
   const activeModel = useMemo(
-    () => registry.find((model) => model.id === activeModelId),
+    () => registry.find((m) => m.id === activeModelId),
     [registry, activeModelId],
   );
   const activeLabel = activeModel?.label ?? activeModelId.split('/').pop() ?? 'Unknown';
   const fallbackLabel =
     fallbackIds.length > 0 ? ` +${fallbackIds.length} fallback${fallbackIds.length === 1 ? '' : 's'}` : '';
-  const triggerLabel =
-    mode === 'auto' ? `Auto: ${activeLabel}${fallbackLabel}` : activeLabel;
+  const triggerLabel = mode === 'auto' ? `Auto: ${activeLabel}${fallbackLabel}` : activeLabel;
 
-  const freeModels = useMemo(() => registry.filter((model) => model.tier === 'free'), [registry]);
-  const paidModels = useMemo(() => registry.filter((model) => model.tier === 'paid'), [registry]);
+  const freeModels = useMemo(() => registry.filter((m) => m.tier === 'free'), [registry]);
+  const paidModels = useMemo(() => registry.filter((m) => m.tier === 'paid'), [registry]);
+  const displayModels = FREE_ONLY ? freeModels : [...freeModels, ...paidModels];
   const showTierBadge = !FREE_ONLY;
 
-  const handleModeChange = (value: string) => {
-    setMode(value as SelectionMode);
-  };
-
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
         <EditorButton
-          variant="ghost"
+          variant="outline"
           size="sm"
+          role="combobox"
+          aria-expanded={open}
           tooltip="Model routing"
-          className="text-xs text-muted-foreground hover:text-foreground"
+          className={cn(
+            'min-w-[220px] justify-between gap-2 text-xs text-foreground',
+            'hover:bg-accent hover:text-accent-foreground',
+          )}
         >
-          <span className="flex items-center gap-2 max-w-[200px]">
+          <span className="flex items-center gap-2 min-w-0">
             <span
               className={cn(
-                'h-2 w-2 rounded-full',
+                'h-2 w-2 shrink-0 rounded-full',
                 isLoading ? 'bg-muted-foreground/60 animate-pulse' : 'bg-emerald-400',
               )}
             />
+            <Bot className="h-3.5 w-3.5 shrink-0 opacity-70" aria-hidden />
             <span className="truncate">{triggerLabel}</span>
-            <ChevronDown className="h-3 w-3 opacity-60" />
           </span>
+          <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
         </EditorButton>
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent align="end" className="w-80">
-        <DropdownMenuLabel>Model routing</DropdownMenuLabel>
-        <DropdownMenuRadioGroup value={mode} onValueChange={handleModeChange}>
-          <DropdownMenuRadioItem value="auto">
-            Auto (primary + fallbacks)
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="manual">Manual (pick one)</DropdownMenuRadioItem>
-        </DropdownMenuRadioGroup>
-        <DropdownMenuSeparator />
-
+      </PopoverTrigger>
+      <PopoverContent className="p-0 min-w-[20rem] w-80" align="end">
         {registry.length === 0 && !isLoading ? (
-          <DropdownMenuLabel className="text-muted-foreground font-normal">
+          <div className="px-3 py-4 text-xs text-muted-foreground">
             Models load from OpenRouter when available. Check API key if empty.
-          </DropdownMenuLabel>
-        ) : mode === 'auto' ? (
-          <>
-            <DropdownMenuLabel>Enabled models (order = primary, then fallbacks)</DropdownMenuLabel>
-            {(FREE_ONLY ? registry : freeModels).map((model) => (
-              <DropdownMenuCheckboxItem
-                key={model.id}
-                checked={enabledModelIds.includes(model.id)}
-                onCheckedChange={() => toggleModel(model.id)}
-                onSelect={(event) => event.preventDefault()}
-              >
-                <ModelOption
-                  model={model}
-                  showTierBadge={showTierBadge}
-                  isActive={model.id === activeModelId}
-                />
-              </DropdownMenuCheckboxItem>
-            ))}
-            {!FREE_ONLY && paidModels.length > 0 && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel>Paid models</DropdownMenuLabel>
-                {paidModels.map((model) => (
-                  <DropdownMenuCheckboxItem
-                    key={model.id}
-                    checked={enabledModelIds.includes(model.id)}
-                    onCheckedChange={() => toggleModel(model.id)}
-                    onSelect={(event) => event.preventDefault()}
-                  >
-                    <ModelOption
-                      model={model}
-                      showTierBadge={showTierBadge}
-                      isActive={model.id === activeModelId}
-                    />
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </>
-            )}
-          </>
+          </div>
         ) : (
-          <>
-            <DropdownMenuLabel>Manual model</DropdownMenuLabel>
-            {registry.length === 0 ? null : (
-            <DropdownMenuRadioGroup
-              value={activeModelId}
-              onValueChange={(value) => setManualModel(value)}
-            >
-              {registry.map((model) => (
-                <DropdownMenuRadioItem key={model.id} value={model.id}>
-                  <ModelOption
-                    model={model}
-                    showTierBadge={showTierBadge}
-                    isActive={model.id === activeModelId}
-                  />
-                </DropdownMenuRadioItem>
-              ))}
-            </DropdownMenuRadioGroup>
-            )}
-          </>
+          <Command className="rounded-lg border-0" shouldFilter={true}>
+            <CommandInput placeholder="Search models..." className="h-9 text-xs" />
+            <CommandEmpty className="text-xs">No model found.</CommandEmpty>
+            <CommandList>
+              <CommandGroup heading="Mode">
+                <CommandItem
+                  value="auto primary fallbacks"
+                  onSelect={() => setMode('auto')}
+                  className="text-xs"
+                >
+                  <Check className={cn('mr-2 h-4 w-4 shrink-0', mode === 'auto' ? 'opacity-100' : 'opacity-0')} />
+                  Auto (primary + fallbacks)
+                </CommandItem>
+                <CommandItem
+                  value="manual pick one"
+                  onSelect={() => setMode('manual')}
+                  className="text-xs"
+                >
+                  <Check className={cn('mr-2 h-4 w-4 shrink-0', mode === 'manual' ? 'opacity-100' : 'opacity-0')} />
+                  Manual (pick one)
+                </CommandItem>
+              </CommandGroup>
+              <CommandSeparator />
+              {mode === 'auto' ? (
+                <CommandGroup heading="Enabled models">
+                  {displayModels.map((model) => (
+                    <CommandItem
+                      key={model.id}
+                      value={`${model.label} ${model.id}`}
+                      onSelect={() => toggleModel(model.id)}
+                      className="text-xs"
+                    >
+                      <Check
+                        className={cn('mr-2 h-4 w-4 shrink-0', enabledModelIds.includes(model.id) ? 'opacity-100' : 'opacity-0')}
+                      />
+                      <span className="flex-1 truncate">{model.label}</span>
+                      {showTierBadge && <TierBadge tier={model.tier} />}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              ) : (
+                <CommandGroup heading="Pick model">
+                  {displayModels.map((model) => (
+                    <CommandItem
+                      key={model.id}
+                      value={`${model.label} ${model.id}`}
+                      onSelect={() => {
+                        setManualModel(model.id);
+                        setOpen(false);
+                      }}
+                      className="text-xs"
+                    >
+                      <Check
+                        className={cn('mr-2 h-4 w-4 shrink-0', activeModelId === model.id ? 'opacity-100' : 'opacity-0')}
+                      />
+                      <span className="flex-1 truncate">{model.label}</span>
+                      {showTierBadge && <TierBadge tier={model.tier} />}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+            </CommandList>
+          </Command>
         )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </PopoverContent>
+    </Popover>
   );
 }

@@ -65,7 +65,11 @@ export function SettingsMenu({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           {scopes.map((scopeOption) => (
-            <DropdownMenuItem key={scopeOption} onSelect={() => openForScope(scopeOption)}>
+            <DropdownMenuItem
+              key={scopeOption}
+              onSelect={() => openForScope(scopeOption)}
+              className="text-xs"
+            >
               {scopeLabels[scopeOption]}
             </DropdownMenuItem>
           ))}

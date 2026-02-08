@@ -20,7 +20,7 @@ export const CharacterCardNode = memo(function CharacterCardNode({
   return (
     <div
       className={cn(
-        'px-4 py-3 shadow-md rounded-lg border-2 min-w-[180px] bg-card transition-shadow',
+        'px-4 py-3 shadow-[var(--shadow-md)] rounded-lg border-2 min-w-[180px] bg-card transition-shadow',
         data.isActive
           ? 'border-primary ring-2 ring-primary/30'
           : 'border-border',

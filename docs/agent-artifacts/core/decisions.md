@@ -94,6 +94,14 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 
 ---
 
+## Settings UI: single left drawer with scope tabs
+
+**Decision:** Settings are presented in a **single left-side drawer** (shadcn Sheet, `side="left"`). One Settings control in the app bar opens this drawer (no dropdown). The drawer contains **scope tabs**: App, User (same content as App when logged in), Project (when `activeProjectId` is set), Editor (when an editor is active), Viewport (when in context). A **single schema** (`lib/settings/schema.ts`) lists every setting key with type, label, default, and which scopes show it; we **derive** `SETTINGS_CONFIG` defaults (app, project) and section definitions (APP_SETTINGS_SECTIONS, etc.) from this schema so adding or changing a key in one place adds/updates the control and the default.
+
+**Rationale:** One surface for all settings; project scope allows per-project overrides; single schema avoids duplicate definitions (defaults vs section fields) and keeps the form in sync as settings evolve. See plan "Settings drawer (left sidebar) and form strategy."
+
+---
+
 ## AI and media provider stack
 
 **Decision:** We use a split provider stack: **OpenRouter** for text (chat, streaming, structured output, plan) and image (generation, vision); **ElevenLabs** for audio TTS (character voices, previews); **OpenAI Sora** (or equivalent) **planned** for video generation. OpenRouter does not provide audio TTS/STT or video; we use specialized providers.
@@ -123,3 +131,59 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 **Decision:** `DockLayout` is implemented with **Dockview** to restore Unreal-style docking, drag-to-reorder, and floating panels. Layout persists to `localStorage['dockview-{layoutId}']` and exposes a `resetLayout()` ref to recover lost panels.
 
 **Rationale:** Dockview provides the desired editor UX (docked tabs, floating groups, drag-to-group). To avoid known provider/context pitfalls (Twick), the Video editor is locked behind `studio.video.editor` until we re-enable and validate context flow.
+
+---
+
+## Clone semantics (paid clone)
+
+**Decision:** When a user **pays to clone** a project or template, they get **access to that project indefinitely** and can **clone it as many times as they want** (no per-clone fee after purchase). Each clone can be a **different version** — we snapshot the project/data at the time of that clone.
+
+**Rationale:** Aligns with Unity Asset Store / Bandlab style: buy once, use many times; version at clone allows authors to ship updates while purchasers keep their snapshot. See [MVP and first revenue](../../product/mvp-and-revenue.mdx).
+
+---
+
+## Revenue model: platform and creator
+
+**Decision:** **Both platform and creator get paid.** We use a Unity Asset Store / Bandlab style model: presets and packages; we take a cut; creators get payouts (e.g. Stripe Connect). **Catalog** at MVP supports **users and orgs** (browse and list).
+
+**Rationale:** Incentivizes creators to list; platform revenue from take rate. Update this doc when we implement Connect, payouts, and catalog.
+
+---
+
+## MVP infrastructure
+
+**Decision:** We run **Vercel + Payload** for MVP (Studio in the cloud). No self-host requirement for MVP.
+
+**Rationale:** Keeps MVP deployment and ops simple; self-host can be considered after MVP.
+
+---
+
+## Platform and marketing
+
+**Decision:** The **marketing site** (`apps/marketing`) is the **landing page and platform** (account, catalog, billing, "Open Studio"). We can change this later (e.g. split platform into a separate app).
+
+**Rationale:** Single app for landing and platform at MVP; architecture allows splitting when needed.
+
+---
+
+## Creators list from day one
+
+**Decision:** Catalog at MVP includes **creator listings from day one**. Stripe Connect (or similar) and payouts are required at MVP so both platform and creators get paid.
+
+**Rationale:** Creators need to list and get paid from launch; no "creator catalog later" phase for MVP.
+
+---
+
+## MVP ordering: Yarn and GamePlayer in MVP; MCP Apps after MVP
+
+**Decision:** **First-class Yarn Spinner** (export/import `.yarn`) and **GamePlayer** (playable runtime for Yarn Games) are **part of MVP**. We do them before or alongside platform monetization. **Editors as MCP Apps** (McpAppDescriptor, Studio MCP Server) is **after MVP** — we do not block MVP work on MCP.
+
+**Rationale:** MVP success = first paid clone E2E; that requires a playable game (Dialogue + Character + Writer + GamePlayer) and Yarn export. MCP is valuable for post-MVP embedding in hosts (Cursor, Claude Desktop, etc.).
+
+---
+
+## What to do next: prefer MVP-critical; Video when unlocked
+
+**Decision:** When picking work from STATUS § Next, **prefer MVP-critical items** (Yarn Spinner, GamePlayer, plans/capabilities for platform, monetization). **Video** work (Twick → VideoDoc persistence, Video workflow panel) is done **when the Video editor is unlocked** (Video is not in MVP). The default "next slice" is MVP-critical (e.g. Yarn export/import or GamePlayer first slice), not Video.
+
+**Rationale:** Aligns agent and contributor effort with MVP success criterion and avoids spending time on Video until we re-enable it.

@@ -38,18 +38,19 @@ export function TwickTrackList({
         <ScrollArea className="flex-1">
           <div className="flex flex-col gap-2 pr-2">
             {tracks.map((track) => (
-              <button
+              <Button
                 key={track.id}
                 type="button"
+                variant="outline"
                 onClick={() => onSelectTrack?.(track.id)}
                 className={cn(
-                  'rounded-md border px-3 py-2 text-left transition',
+                  'h-auto flex-col items-start justify-center px-3 py-2 text-left',
                   selectedTrackId === track.id
                     ? 'border-primary/60 bg-primary/10'
                     : 'border-border bg-background hover:bg-muted/40'
                 )}
               >
-                <div className="flex items-center justify-between">
+                <div className="flex w-full items-center justify-between">
                   <span className="text-sm font-medium">{track.name}</span>
                   <Badge variant="outline" className="text-[10px]">
                     {track.type}
@@ -58,7 +59,7 @@ export function TwickTrackList({
                 <div className="mt-1 text-xs text-muted-foreground">
                   {track.elements.length} element{track.elements.length === 1 ? '' : 's'}
                 </div>
-              </button>
+              </Button>
             ))}
           </div>
         </ScrollArea>

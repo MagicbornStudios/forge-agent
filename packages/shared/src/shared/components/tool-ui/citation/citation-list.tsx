@@ -12,6 +12,7 @@ import {
   File,
   ExternalLink,
 } from "lucide-react";
+import { Button } from "@forge/ui/button";
 import {
   cn,
   Popover,
@@ -215,12 +216,13 @@ function OverflowIndicator({
     return (
       <Popover open={open}>
         <PopoverTrigger asChild>
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             className={cn(
-              "inline-flex items-center gap-1 rounded-md px-2 py-1",
+              "inline-flex h-auto items-center gap-1 rounded-md px-2 py-1",
               "bg-muted/60 text-sm tabular-nums",
               "transition-colors duration-150",
               "hover:bg-muted",
@@ -228,7 +230,7 @@ function OverflowIndicator({
             )}
           >
             <span className="text-muted-foreground">+{count} more</span>
-          </button>
+          </Button>
         </PopoverTrigger>
         <PopoverContent
           side="top"
@@ -248,22 +250,22 @@ function OverflowIndicator({
   return (
     <Popover open={open}>
       <PopoverTrigger asChild>
-        <button
+        <Button
           type="button"
+          variant="outline"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           className={cn(
-            "flex items-center justify-center rounded-xl px-4 py-3",
-            "border border-dashed border-border bg-card",
+            "flex h-auto items-center justify-center rounded-xl border-dashed px-4 py-3",
             "transition-colors duration-150",
             "hover:border-foreground/25 hover:bg-muted/50",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+            "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
           )}
         >
           <span className="text-muted-foreground text-sm tabular-nums">
             +{count} more sources
           </span>
-        </button>
+        </Button>
       </PopoverTrigger>
       <PopoverContent
         side="bottom"
@@ -288,10 +290,11 @@ function OverflowItem({ citation, onClick }: OverflowItemProps) {
   const TypeIcon = TYPE_ICONS[citation.type ?? "webpage"] ?? Globe;
 
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
       onClick={onClick}
-      className="group flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2 py-2 text-left transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
+      className="group flex h-auto w-full cursor-pointer items-center gap-2.5 rounded-md px-2 py-2 text-left transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
     >
       {citation.favicon ? (
         <img
@@ -312,7 +315,7 @@ function OverflowItem({ citation, onClick }: OverflowItemProps) {
         <p className="truncate text-xs text-muted-foreground">{citation.domain}</p>
       </div>
       <ExternalLink className="mt-0.5 size-3.5 shrink-0 self-start text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
-    </button>
+    </Button>
   );
 }
 
@@ -353,8 +356,9 @@ function StackedCitations({
     <div ref={containerRef} onBlur={handleBlur} className="inline-flex">
       <Popover open={open}>
         <PopoverTrigger asChild>
-          <button
+          <Button
             type="button"
+            variant="ghost"
             data-tool-ui-id={id}
             data-slot="citation-list"
             onMouseEnter={handleMouseEnter}
@@ -366,7 +370,7 @@ function StackedCitations({
               }
             }}
             className={cn(
-              "inline-flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2",
+              "inline-flex h-auto cursor-pointer items-center gap-2 rounded-lg px-3 py-2",
               "bg-muted/40 outline-none",
               "transition-colors duration-150",
               "hover:bg-muted/70",
@@ -406,7 +410,7 @@ function StackedCitations({
             })}
             {remainingCount > 0 && (
               <div
-                className="-ml-2 relative flex size-6 items-center justify-center rounded-full border border-border bg-background shadow-xs dark:border-foreground/20"
+                className="-ml-2 relative flex size-6 items-center justify-center rounded-full border border-border bg-background shadow-[var(--shadow-xs)] dark:border-foreground/20"
                 style={{ zIndex: 0 }}
               >
                 <span className="text-[10px] font-medium text-muted-foreground tracking-tight">•••</span>
@@ -416,7 +420,7 @@ function StackedCitations({
           <span className="text-muted-foreground text-sm tabular-nums">
             {citations.length} source{citations.length !== 1 && "s"}
           </span>
-        </button>
+        </Button>
       </PopoverTrigger>
       <PopoverContent
         side="bottom"

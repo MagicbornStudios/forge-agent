@@ -19,11 +19,11 @@ export function EditorTabGroup({
   tabListClassName,
 }: EditorTabGroupProps) {
   return (
-    <div className={cn('flex items-end border-b border-border bg-muted/40 pl-[var(--panel-padding)] pr-2 py-1.5', className)}>
+    <div className={cn('flex items-end border-b border-border bg-muted/40 pl-[var(--panel-padding)] pr-2 py-[var(--control-padding-y)]', className)}>
       <div
         role="tablist"
         aria-label={label}
-        className={cn('flex items-end gap-1', tabListClassName)}
+        className={cn('flex items-end gap-[var(--control-gap)]', tabListClassName)}
       >
         {children}
       </div>

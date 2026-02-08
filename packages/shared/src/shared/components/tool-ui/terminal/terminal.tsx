@@ -64,7 +64,7 @@ export function Terminal({
       data-tool-ui-id={id}
       data-slot="terminal"
     >
-      <div className="border-border bg-card overflow-hidden rounded-lg border shadow-xs">
+      <div className="border-border bg-card overflow-hidden rounded-lg border shadow-[var(--shadow-xs)]">
         <div className="bg-card flex items-center justify-between border-b px-4 py-2">
           <div className="flex items-center gap-2 overflow-hidden">
             <TerminalIcon className="text-muted-foreground h-4 w-4 shrink-0" />

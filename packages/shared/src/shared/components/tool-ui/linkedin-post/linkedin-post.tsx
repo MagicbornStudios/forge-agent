@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ThumbsUp, Share } from "lucide-react";
+import { Linkedin, ThumbsUp, Share } from "lucide-react";
 import {
   cn,
   Button,
@@ -36,25 +36,7 @@ export interface LinkedInPostProps {
 }
 
 function LinkedInLogo({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 72 72"
-      className={className}
-      role="img"
-      aria-label="LinkedIn logo"
-    >
-      <g fill="none" fillRule="evenodd">
-        <path
-          d="M8 72h56c4.42 0 8-3.58 8-8V8c0-4.42-3.58-8-8-8H8C3.58 0 0 3.58 0 8v56c0 4.42 3.58 8 8 8z"
-          fill="currentColor"
-        />
-        <path
-          d="M62 62H51.3V43.8c0-4.98-1.9-7.78-5.83-7.78-4.3 0-6.54 2.9-6.54 7.78V62H28.63V27.33h10.3v4.67c0 0 3.1-5.73 10.45-5.73 7.36 0 12.62 4.5 12.62 13.8V62zM16.35 22.8c-3.5 0-6.35-2.86-6.35-6.4 0-3.52 2.85-6.4 6.35-6.4 3.5 0 6.35 2.88 6.35 6.4 0 3.54-2.85 6.4-6.35 6.4zM11.03 62h10.74V27.33H11.03V62z"
-          fill="#FFF"
-        />
-      </g>
-    </svg>
-  );
+  return <Linkedin className={className} role="img" aria-label="LinkedIn logo" />;
 }
 
 function Header({
@@ -106,12 +88,13 @@ function PostBody({ text }: { text?: string }) {
         <>
           {text.slice(0, TEXT_PREVIEW_LENGTH)}
           ...
-          <button
+          <Button
+            variant="link"
+            className="ml-1 h-auto p-0 text-muted-foreground hover:text-foreground"
             onClick={() => setIsExpanded(true)}
-            className="text-muted-foreground hover:text-foreground ml-1 font-medium hover:underline"
           >
             see more
-          </button>
+          </Button>
         </>
       ) : (
         text
@@ -274,7 +257,7 @@ export function LinkedInPost({
       data-tool-ui-id={post.id}
       data-slot="linkedin-post"
     >
-      <article className="bg-card flex flex-col gap-3 rounded-lg border p-3 shadow-sm">
+      <article className="bg-card flex flex-col gap-3 rounded-lg border p-3 shadow-[var(--shadow-sm)]">
         <Header author={post.author} createdAt={post.createdAt} />
         <PostBody text={post.text} />
 

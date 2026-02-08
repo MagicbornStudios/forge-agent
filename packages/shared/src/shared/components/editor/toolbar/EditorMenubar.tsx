@@ -35,13 +35,27 @@ export interface EditorMenubarProps {
 
 export function EditorMenubar({ menus, className }: EditorMenubarProps) {
   return (
-    <Menubar className={cn('h-8 border-none bg-transparent p-0 shadow-none', className)}>
+    <Menubar
+      className={cn(
+        'h-[var(--control-height)] border border-border/60 rounded-md bg-muted/30 px-2 py-1 shadow-[var(--shadow-sm)]',
+        'gap-[var(--control-gap)]',
+        className
+      )}
+    >
       {menus.map((menu) => (
         <MenubarMenu key={menu.id}>
-          <MenubarTrigger className="border border-border bg-transparent hover:bg-accent/50 text-foreground">
-            {menu.label}
+          <MenubarTrigger
+            className={cn(
+              'text-xs px-[var(--control-padding-x)] py-[var(--control-padding-y)]',
+              'rounded-sm border border-transparent bg-transparent text-foreground',
+              'hover:bg-accent/50 hover:border-border/50',
+              'data-[state=open]:bg-accent data-[state=open]:border-border/50',
+              'focus:bg-accent focus:border-border/50'
+            )}
+          >
+            <span className="truncate min-w-0">{menu.label}</span>
           </MenubarTrigger>
-          <MenubarContent>
+          <MenubarContent className="py-1">
             {menu.items.map((item) =>
               item.type === 'separator' ? (
                 <MenubarSeparator key={item.id} />
@@ -50,12 +64,14 @@ export function EditorMenubar({ menus, className }: EditorMenubarProps) {
                   key={item.id}
                   disabled={item.disabled}
                   onSelect={item.onSelect}
-                  className="flex items-center gap-2"
+                  className={cn(
+                    'flex min-w-0 items-center gap-[var(--control-gap)] px-[var(--control-padding-x)] py-[var(--control-padding-y)] text-xs'
+                  )}
                 >
                   {item.icon != null && (
-                    <span className="flex shrink-0 size-4 [&>svg]:size-4">{item.icon}</span>
+                    <span className="flex shrink-0 size-4 [&>svg]:size-4" aria-hidden>{item.icon}</span>
                   )}
-                  <span>{item.label}</span>
+                  <span className="truncate">{item.label}</span>
                   {item.shortcut && <MenubarShortcut>{item.shortcut}</MenubarShortcut>}
                 </MenubarItem>
               )

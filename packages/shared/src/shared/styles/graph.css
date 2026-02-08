@@ -16,7 +16,8 @@
 
 .react-flow__node.selected {
   border-color: var(--graph-node-selected);
-  box-shadow: 0 0 0 2px var(--graph-node-selected);
+  border-width: 2px;
+  outline: none;
 }
 
 .react-flow__edge-path {

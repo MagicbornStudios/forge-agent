@@ -115,23 +115,24 @@ export function ProjectSwitcher({
               <DropdownMenuItem
                 key={String(project.id)}
                 onClick={() => onProjectChange(project.id)}
-                className={selectedProjectId === project.id ? 'bg-accent' : ''}
+                className={selectedProjectId === project.id ? 'bg-accent text-xs' : 'text-xs'}
               >
                 {project.title}
               </DropdownMenuItem>
             ))}
             {projects.length === 0 && !isLoading && (
-              <DropdownMenuItem disabled>No projects found</DropdownMenuItem>
+              <DropdownMenuItem disabled className="text-xs">No projects found</DropdownMenuItem>
             )}
             {error && (
-              <DropdownMenuItem disabled className="text-destructive">
+              <DropdownMenuItem disabled className="text-xs text-destructive">
                 {error}
               </DropdownMenuItem>
             )}
             {onCreateProject && (
               <>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setIsCreateDialogOpen(true)}>
+                <DropdownMenuItem onClick={() => setIsCreateDialogOpen(true)} className="text-xs">
+                  <Plus className="mr-2 h-4 w-4 shrink-0" />
                   New project...
                 </DropdownMenuItem>
               </>

@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import { Trash2 } from 'lucide-react';
+import { Button } from '@forge/ui/button';
 import { resolveRelId } from '@/lib/domains/character/operations';
 import type { CharacterDoc, RelationshipDoc } from '@/lib/domains/character/types';
 
@@ -62,16 +64,19 @@ export function RelationshipsList({
                 {rel.description ? ` — ${rel.description.slice(0, 40)}` : ''}
               </div>
             </div>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete(rel.id);
               }}
-              className="text-xs text-destructive hover:underline flex-shrink-0 ml-2"
+              className="ml-2 shrink-0 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
             >
+              <Trash2 className="mr-1 size-3.5" />
               Remove
-            </button>
+            </Button>
           </div>
         );
       })}

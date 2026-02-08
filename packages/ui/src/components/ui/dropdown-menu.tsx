@@ -62,7 +62,7 @@ const DropdownMenuContent = React.forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        "z-50 min-w-[10rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md",
+        "z-50 min-w-[10rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-[var(--shadow-md)]",
         "p-[var(--menu-content-padding,0.25rem)]",
         "animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
         className
@@ -112,7 +112,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
         <Check className="h-4 w-4" />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
-    {children}
+    <span className="flex-1 min-w-0">{children}</span>
   </DropdownMenuPrimitive.CheckboxItem>
 ))
 DropdownMenuCheckboxItem.displayName = DropdownMenuPrimitive.CheckboxItem.displayName
@@ -135,7 +135,7 @@ const DropdownMenuRadioItem = React.forwardRef<
         <Circle className="h-2 w-2 fill-current" />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
-    {children}
+    <span className="flex-1 min-w-0">{children}</span>
   </DropdownMenuPrimitive.RadioItem>
 ))
 DropdownMenuRadioItem.displayName = DropdownMenuPrimitive.RadioItem.displayName

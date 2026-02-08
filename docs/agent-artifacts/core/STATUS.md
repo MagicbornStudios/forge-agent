@@ -13,7 +13,7 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 ## Current
 
 - **Production target:** 2/14. Core and Ralph Wiggum loop only; no legacy or deprecated code in the editor platform.
-- **Product vision**: Forge Agent is an AI-first interactive narrative storytelling engine (game/narrative content authoring, thin engine, AI- and chat-first) with Yarn Spinner compatible dialogue editing, character relationship graphs, video timeline (locked until after MVP), and Codebase Agent Strategy. First revenue: **paid clone/download**. MVP: author a small game with AI, or layer Studio + Strategy core on existing projects. See [product roadmap](../../roadmap/product.mdx) and [MVP and first revenue](../../product/mvp-and-revenue.mdx).
+- **Product vision**: Forge Agent is an AI-first interactive narrative storytelling engine (game/narrative content authoring, thin engine, AI- and chat-first) with Yarn Spinner compatible dialogue editing (Yarn export in MVP), character relationship graphs, video timeline (not in MVP), and Codebase Agent Strategy (downloadable core in scope; Strategy editor not in MVP). First revenue: **paid clone/download**. **MVP editors** = Dialogue, Character, Writer, GamePlayer. **Video** and **Strategy (codebase) editor** are **not in MVP**. **Creators list from day one.** **MVP infra** = Vercel + Payload. **Platform** = marketing site (landing + platform). **MVP success** = first paid clone completed end-to-end. **TRACE** = part of MVP for Strategy (downloadable core) proof only; not for Studio or platform. Paid + free tier; catalog (users + orgs); clone semantics; revenue share. Writer = Lexical, branching, Yarn Games. MVP technical bar: simple game on graphs, all AI/image/audio/gen working, AI-first. Dev-kit: editor components for AI; OpenRouter first-class; ElevenLabs + Sora for advanced; cloud subscription for standard users. See [product roadmap](../../roadmap/product.mdx), [MVP and first revenue](../../product/mvp-and-revenue.mdx), and [Dev-kit and keys](../../product/dev-kit-and-keys.mdx).
 - **Apps**: Studio in `apps/studio`; consumer-facing marketing site in `apps/marketing` (landing, docs, login, account, billing, waitlist, newsletter). Marketing shares Payload (Studio) for auth and data; set `NEXT_PUBLIC_STUDIO_APP_URL` for API and "Open app" link.
 - **pnpm workspaces**: Root scripts filter to `@forge/studio`. Shared packages live under `packages/*`.
 - **Shared UI kit**: `packages/shared/src/shared` provides EditorShell, DockLayout (Dockview docking + floating groups), DockPanel, PanelTabs, and theme tokens. Design language: [03-design-language.mdx](../../design/03-design-language.mdx) (Spotify, neobrutal, Rave, shadcn-first).
@@ -26,7 +26,9 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 - **Plan UI**: Dialogue plans render in chat with `PlanCard` + `PlanActionBar` and `ForgePlanCard`, then review in the editor via `EditorReviewBar`.
 - **Workflow runtime**: `packages/agent-engine` provides a minimal workflow engine (steps + events), SSE route at `POST /api/workflows/run`, and a streaming hook in `apps/studio/lib/ai/use-workflow-run.ts`.
 - **Dialogue system**: `packages/domain-forge` contains Dialogue logic and copilot wiring (domain package = system). Video remains a UI showcase under `apps/studio/lib/domains/video` (not a focus).
-- **Video editor**: Locked until after MVP (capability `studio.video.editor`). Twick surface remains wired; do not assign Video work until MVP (paid clone/download) is in place. See [ISSUES.md](../../ISSUES.md) and [MVP and first revenue](../../product/mvp-and-revenue.mdx).
+- **Video editor**: Not in MVP. Locked until after MVP (capability `studio.video.editor`). Twick surface remains wired; do not assign Video work until MVP (paid clone/download) is in place. See [ISSUES.md](../../ISSUES.md) and [MVP and first revenue](../../product/mvp-and-revenue.mdx).
+- **GamePlayer**: MVP editor (playable runtime for Yarn Games); to be built.
+- **Strategy editor**: Not in MVP; downloadable core + TRACE in scope for MVP. In-app Strategy editor ships after MVP.
 - **App shell**: `EditorApp` is the semantic root for AppLayout; Studio composes providers via `AppProviders` for drop-in usage.
 - **Consumer example**: `examples/consumer` shows a minimal Next app using `@forge/dev-kit` and `CodebaseAgentStrategyEditor` with `/api/assistant-chat`.
 - **Docs**: In-app docs render MDX with JSX components (next-mdx-remote/rsc) and include migration + AI generation guides.
@@ -76,14 +78,21 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 - Done (2026-02-07): User-scoped settings-overrides: optional `user` relation on collection; GET/POST `/api/settings` use payload.auth and filter by current user; theme and app/editor settings persist per user when logged in. See decisions.md.
 - Done (2026-02-07): Forge publish pipeline unblocked: deduped React types for DTS, stripped `ref` in assistant-ui markdown components, replaced tool-ui `style jsx` with plain `<style>`, added `moduleResolution: bundler` tsconfigs for agent-engine/dev-kit, namespaced dev-kit UI exports, added Verdaccio htpasswd auth, and fixed publish scripts to use `./` paths. `registry:forge:build` and `registry:forge:publish:local` succeed.
 - Done (2026-02-07): Toolbar theme switching: ghost button variant given semantic default state (`bg-transparent text-foreground`) in packages/ui so toolbar controls update when theme changes; ProjectSwitcher trigger uses outline variant for app bar consistency. See errors-and-attempts "Toolbar buttons not switching with theme"; after screenshot optional in docs/images/ (e.g. `toolbar_themes_after.png`).
+- Done (2026-02-07): Settings left drawer and form strategy: single left-side SettingsDrawer (Sheet side=left) with tabs App, User, Project, Editor, Viewport; AppShell owns drawer state and one Settings button; project scope (store, API, ProjectSettingsPanel); single schema (lib/settings/schema.ts) drives app/project defaults and section definitions; decisions.md and errors-and-attempts updated. Plan: settings_left_sidebar_and_form_strategy.
 - Done (2026-02-07): Editor layout recovery: replaced FlexLayout DockLayout with react-resizable-panels, removed flexlayout CSS/deps, and updated docs/agent artifacts. Editor panels render inside the React tree again (later restored to Dockview).
 - Done (2026-02-08): Restored Dockview DockLayout (docking + floating panels), added Dockview CSS + slot tabs with containerApi fix, and reintroduced `resetLayout()` for recovery. Locked Video editor behind capability `studio.video.editor` and updated ISSUES.md + agent artifacts.
 - Done (2026-02-07): Marketing and platform small-impact: Hero "Watch Demo" links to /demo (no placeholder YouTube); product preview block links to /roadmap; added Shipped items to public roadmap (editor platform, marketing site, user settings/theme, Strategy editor); placeholder pages note in how-to 10; SEO metadata on landing, pricing, roadmap, docs; decisions.md "Copilot not gated"; CAPABILITIES extended with PLATFORM_PUBLISH and PLATFORM_MONETIZE for future gates.
 - Done (2026-02-08): Marketing analytics: Plausible script in layout (when domain set), trackEvent helper and Waitlist Signup event, env example and README.
+- Done (2026-02-08): MVP and docs alignment: mvp-and-revenue (clone semantics, revenue share, Yarn in MVP, Writer, Strategy definition, MVP bar, users/keys); dev-kit-and-keys doc; roadmap product.mdx; project overview; STATUS; decisions; roadmap-data.
+- Done (2026-02-08): MVP scope and platform docs: creators from day one; MVP editors Dialogue, Character, Writer, GamePlayer; Video and Strategy editor not in MVP; GamePlayer added; Vercel + Payload; platform = marketing site; success = first paid clone E2E; TRACE for Strategy core only.
+- Done (2026-02-08): Roadmap ordering and GamePlayer build doc: Yarn and GamePlayer part of MVP, MCP Apps after MVP; next slice = MVP-critical (Yarn or GamePlayer), Video work when unlocked; [10 - GamePlayer](../../architecture/10-gameplayer.mdx) (how we build it: phases, inputs, runtime); STATUS § Next reordered (MVP first, After MVP, When Video unlocked); decisions ADRs for MVP ordering and what to do next.
+- Done (2026-02-08): Model switcher: store now sets `registry` from GET /api/model-settings so OpenRouter models load; dropdown content min-w-80 and radio/checkbox item labels wrapped in flex-1 min-w-0 to prevent squished text. See errors-and-attempts "Model switcher registry empty". Optional: save after screenshot to docs/images/model_switcher_dropdown_after.png.
+- Done (2026-02-08): Model switcher combobox: replaced dropdown with Popover+Command combobox (search, type-to-filter); outline trigger with status dot, Bot icon, min-width 220px; same pattern as EditorProjectSelect.
+- Done (2026-02-08): React Flow node selection: use inset box-shadow so highlight is on the node border (packages/shared graph.css); outer ring moved to inset 0 0 0 2px.
 - In progress: None.
 - Other agents: None reported.
 - Done: CopilotKit architecture doc + roadmap implementation (image gen, structured output, plan-execute-review-commit).
-- Next slice: Map Twick timeline state to our `VideoDoc` draft and add plan/commit UI for video proposals.
+- Next slice: **MVP-critical work first** — e.g. First-class Yarn Spinner (export/import `.yarn`), then GamePlayer first slice (see [10 - GamePlayer](../../architecture/10-gameplayer.mdx)), or plans/capabilities for platform. Video work (Twick → VideoDoc, workflow panel) is **when Video is unlocked** (not in MVP).
 
 ## Next
 
@@ -98,22 +107,36 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 
 **Where to look:** The list below is the canonical next steps; each item has an **impact size**. For more context, see [product roadmap](../../roadmap/product.mdx) and [enhanced-features backlog](./enhanced-features-backlog.md).
 
+**Ordering:** **Yarn Spinner** and **GamePlayer** are **part of MVP**; do them before or alongside platform monetization. **Editors as MCP Apps** is **after MVP**. Prefer **MVP-critical** items when picking work. **Video** items below are for **when Video is unlocked** (Video is not in MVP). See [decisions: MVP ordering and what to do next](./decisions.md).
+
 **How to pick work:** Prefer **one slice per item**; use impact size to scope (Small = one PR, Epic = break into slices and track in STATUS). If you start an item, add a short "In progress: …" line in the Ralph Wiggum section above so other agents or contributors don't pick the same work.
 
 ### Next steps (with impact sizes)
 
-1. **Editors as MCP Apps** — Define `McpAppDescriptor` per editor; build Studio MCP Server. See [07 - Editors as MCP Apps](../../architecture/07-modes-as-mcp-apps.mdx). **[Impact: Large]**
-2. **First-class Yarn Spinner** — Export/import `.yarn` files; syntax preview panel; variable tracking. See [09 - Dialogue system and Yarn Spinner](../../architecture/09-dialogue-domain-and-yarn-spinner.mdx). **[Impact: Medium]**
-3. **Twick → VideoDoc persistence + plan/commit UI** — Map Twick timeline state to our `VideoDoc` draft and connect persistence (save/load); add plan/commit UI for video proposals. **[Impact: Medium]**
-4. **Video workflow panel** — Plan -> patch -> review mirroring Dialogue. **[Impact: Medium]**
+**MVP (do first)**
+
+1. **First-class Yarn Spinner** — **MVP-critical.** Yarn export (and import) is in MVP. Export/import `.yarn` files; syntax preview panel; variable tracking. See [09 - Dialogue system and Yarn Spinner](../../architecture/09-dialogue-domain-and-yarn-spinner.mdx). **[Impact: Medium]**
+2. **GamePlayer** — **MVP-critical.** Playable runtime for Yarn Games. Build in phases: editor tab, load project dialogue, minimal runtime, then character/voice and polish. See [10 - GamePlayer](../../architecture/10-gameplayer.mdx). Prerequisite: Yarn export (or graph load). **[Impact: Medium–Large]**
+3. **Plans/capabilities for platform** — **MVP-critical.** Extend `user.plan` and `CAPABILITIES` to gate platform features (e.g. publish, monetize, who can list / clone paid). **[Impact: Small–Medium]**
+4. **Platform: monetization (clone / download)** — **MVP-critical.** Clone to user/org for a price; or download build/template/Strategy core. Listings, checkout, Stripe Connect or similar. See [MVP and first revenue](../../product/mvp-and-revenue.mdx). **[Impact: Epic]**
 5. **Apply gates to more surfaces** — Model selection or other surfaces as needed. **Copilot is not gated** (see decisions.md). **[Impact: Small]**
 6. **Project-scoped settings** — Add project scope (or scopeId = projectId) to settings-overrides and GET/POST; project-level defaults shared by project members. **[Impact: Medium]**
-7. **Platform: publish and host builds** — Authors publish project build; we host playable narrative. Build pipeline, storage, playable runtime. **[Impact: Large]**
-8. **Platform: monetization (clone / download)** — **MVP-critical.** Clone to user/org for a price; or download build/template/Strategy core. Listings, checkout, Stripe Connect or similar. See [MVP and first revenue](../../product/mvp-and-revenue.mdx). **[Impact: Epic]**
-9. **Plans/capabilities for platform** — **MVP-critical.** Extend `user.plan` and `CAPABILITIES` to gate platform features (e.g. publish, monetize, who can list / clone paid). **[Impact: Small–Medium]**
+7. **TRACE.md / before-after benchmark for Codebase Agent Strategy** — Proof-of-effectiveness for downloadable Strategy core; log where agent looks and what it finds (e.g. TRACE.md); benchmark before/after installation. **[Impact: Small–Medium]**
+
+**After MVP**
+
+8. **Editors as MCP Apps** — **After MVP.** Define `McpAppDescriptor` per editor; build Studio MCP Server. See [07 - Editors as MCP Apps](../../architecture/07-modes-as-mcp-apps.mdx). **[Impact: Large]**
+9. **Platform: publish and host builds** — Authors publish project build; we host playable narrative. Build pipeline, storage, playable runtime. **[Impact: Large]**
 10. **Marketing site overhaul (Part B)** — Placeholder routes (roadmap, changelog, pricing, demo, privacy, terms); docs content structure and nav; public roadmap and changelog pages; full pricing page; customer admin (sidebar, account/settings, account/billing, account/api-keys); optional login block and Hero “Watch Demo”. Implement as slices 1–8 per plan. **[Impact: Large]** *(Slices 1–8 completed.)*
-11. Track any new build warnings in [errors-and-attempts.md](./errors-and-attempts.md).
-12. Re-run `pnpm --filter @forge/studio build` after package updates.
+**When Video is unlocked (Video not in MVP)**
+
+11. **Twick → VideoDoc persistence + plan/commit UI** — When Video editor is unlocked: map Twick timeline state to our `VideoDoc` draft and connect persistence (save/load); add plan/commit UI for video proposals. **[Impact: Medium]**
+12. **Video workflow panel** — When Video editor is unlocked: plan -> patch -> review mirroring Dialogue. **[Impact: Medium]**
+
+**Ongoing**
+
+13. Track any new build warnings in [errors-and-attempts.md](./errors-and-attempts.md).
+14. Re-run `pnpm --filter @forge/studio build` after package updates.
 
 **Product roadmap:** [docs/roadmap/](../../roadmap/00-roadmap-index.mdx) - [product.mdx](../../roadmap/product.mdx) for editors and initiatives. **Roadmap remaining:** Full Yarn Spinner implementation (compiler, runtime preview, localization); vision/image input (model registry + chat upload); co-agents (documented, not used). Optional future: agent graphs/subgraphs in runtime. See [architecture/03-copilotkit-and-agents.mdx](../../architecture/03-copilotkit-and-agents.mdx) Section 12.
 

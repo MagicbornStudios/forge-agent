@@ -57,7 +57,8 @@ export default function RoadmapPage() {
           <strong className="text-foreground">MVP:</strong> First revenue is{' '}
           <strong className="text-foreground">{ROADMAP_MVP_SUMMARY.firstRevenue}</strong>. Two paths:{' '}
           {ROADMAP_MVP_SUMMARY.heroMoments[0]}, or {ROADMAP_MVP_SUMMARY.heroMoments[1]}.{' '}
-          {ROADMAP_MVP_SUMMARY.positioning}
+          {ROADMAP_MVP_SUMMARY.positioning}{' '}
+          Yarn export and catalog in MVP; {ROADMAP_MVP_SUMMARY.planTiers} tiers; {ROADMAP_MVP_SUMMARY.revenueShare}
         </div>
       </div>
 

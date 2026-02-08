@@ -22,7 +22,6 @@
 .dockview-theme-dark .dv-groupview.dv-active-group .dv-tab.dv-active-tab {
   border-bottom-color: var(--context-accent);
   border-bottom-width: 2px;
-  box-shadow: var(--glow-panel-accent);
 }
 
 /* Sash (resize handle) and separator use context accent when inside a domain */
@@ -32,5 +31,5 @@
 }
 [data-domain] .dockview-theme-dark .dv-sash-container .dv-sash:not(.disabled):hover,
 [data-domain] .dockview-theme-dark .dv-sash-container .dv-sash:not(.disabled):active {
-  box-shadow: 0 0 8px var(--context-glow);
+  box-shadow: 0 0 0 1px var(--context-accent);
 }

@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@forge/ui/tooltip';
+import { Button } from '@forge/ui/button';
 import { Boxes } from 'lucide-react';
 import { cn } from '@forge/shared/lib/utils';
 import { SectionHeader } from './SectionHeader';
@@ -101,21 +102,22 @@ export function NodePalette({
               {nodes.map((item) => (
                 <Tooltip key={item.id}>
                   <TooltipTrigger asChild>
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
                       draggable
                       onDragStart={(e) => handleDragStart(e, item)}
                       onDragEnd={handleDragEnd}
                       onClick={() => onItemClick?.(item)}
                       className={cn(
-                        'flex w-full items-center gap-2 px-2 py-1.5 text-xs text-left',
-                        'cursor-grab active:cursor-grabbing rounded transition-colors',
+                        'flex w-full items-center justify-start gap-2 px-2 py-1.5 text-xs',
+                        'cursor-grab active:cursor-grabbing',
                         'text-muted-foreground hover:bg-muted hover:text-foreground'
                       )}
                     >
                       <span className="shrink-0">{item.icon}</span>
                       <span className="font-medium truncate">{item.label}</span>
-                    </button>
+                    </Button>
                   </TooltipTrigger>
                   {item.description && (
                     <TooltipContent>

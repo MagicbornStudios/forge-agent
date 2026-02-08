@@ -81,6 +81,7 @@ export const useModelRouterStore = create<ModelRouterState>()(
             fallbackIds: data.fallbackIds ?? [],
             enabledModelIds: data.preferences?.enabledModelIds ?? get().enabledModelIds,
             manualModelId: data.preferences?.manualModelId ?? get().manualModelId,
+            registry: Array.isArray(data.registry) ? data.registry : [],
           });
         } catch (err) {
           console.error('[ModelRouter] Failed to fetch settings:', err);

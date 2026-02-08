@@ -33,6 +33,7 @@ export interface SettingsPanelProps {
   sections: SettingsSection[];
   editorId?: string;
   viewportId?: string;
+  projectId?: string;
   className?: string;
 }
 
@@ -142,6 +143,7 @@ export function SettingsPanel({
   sections,
   editorId,
   viewportId,
+  projectId,
   className,
 }: SettingsPanelProps) {
   const {
@@ -150,6 +152,8 @@ export function SettingsPanel({
     getSettingValue,
     getSettingSource,
   } = useSettingsStore();
+
+  const ids = { editorId, viewportId, projectId };
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -163,7 +167,6 @@ export function SettingsPanel({
             <FieldGroup className="gap-3">
               <ItemGroup className="gap-3">
                 {section.fields.map((field, index) => {
-                  const ids = { editorId, viewportId };
                   const value = getSettingValue(field.key, ids);
                   const source = getSettingSource(field.key, ids);
                   const isOverride = source === scope;
@@ -174,12 +177,20 @@ export function SettingsPanel({
                         ? "Inherited from editor"
                         : source === "app"
                           ? "Inherited from app"
-                          : null
+                          : source === "project"
+                            ? "Inherited from project"
+                            : null
                       : scope === "editor"
                         ? source === "app"
                           ? "Inherited from app"
-                          : null
-                        : null;
+                          : source === "project"
+                            ? "Inherited from project"
+                            : null
+                        : scope === "project"
+                          ? source === "app"
+                            ? "Inherited from app"
+                            : null
+                          : null;
                   const inputId = `${section.id}-${field.key}`;
 
                   return (

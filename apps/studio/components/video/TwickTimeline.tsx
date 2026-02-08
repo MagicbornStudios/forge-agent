@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Button } from '@forge/ui/button';
 import { cn } from '@forge/ui/lib/utils';
 import type { VideoDocData, VideoElement, VideoTrack } from '@/lib/domains/video/types';
 
@@ -104,13 +105,14 @@ export function TwickTimeline({
                   const isSelected =
                     track.id === selectedTrackId && element.id === selectedElementId;
                   return (
-                    <button
+                    <Button
                       key={element.id}
                       type="button"
+                      variant="outline"
                       title={`${getElementLabel(element)} (${element.start}s - ${element.end}s)`}
                       className={cn(
-                        'absolute top-1/2 -translate-y-1/2 h-8 rounded border px-2 text-xs font-medium shadow-sm',
-                        'flex items-center gap-2 overflow-hidden truncate',
+                        'absolute top-1/2 h-8 -translate-y-1/2 overflow-hidden truncate rounded border px-2 text-xs font-medium shadow-[var(--shadow-sm)]',
+                        'flex items-center gap-2',
                         isSelected
                           ? 'border-primary bg-primary/20 text-primary'
                           : 'border-border bg-muted/70 text-foreground'
@@ -122,7 +124,7 @@ export function TwickTimeline({
                       }}
                     >
                       <span className="truncate">{getElementLabel(element)}</span>
-                    </button>
+                    </Button>
                   );
                 })}
               </div>

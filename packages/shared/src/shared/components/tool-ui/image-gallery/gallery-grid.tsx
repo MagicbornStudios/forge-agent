@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { cn, ImageOff } from "./_adapter";
+import { cn, Button, ImageOff } from "./_adapter";
 import { useImageGallery } from "./context";
 import type { ImageGalleryItem } from "./schema";
 
@@ -116,13 +116,14 @@ function GridImageCard({
       )}
       style={{ aspectRatio: shouldSpanTwoRows ? undefined : "1 / 1" }}
     >
-      <button
+      <Button
         type="button"
-        onClick={handleClick}
+        variant="ghost"
         className="absolute inset-0 z-20 h-full w-full rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         aria-label={
           overlayCount ? `View ${overlayCount} more images` : image.alt
         }
+        onClick={handleClick}
       />
 
       <div

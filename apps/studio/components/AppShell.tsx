@@ -12,16 +12,16 @@ import { useProjects, useCreateProject } from '@/lib/data/hooks';
 import { ProjectSwitcher } from '@/components/ProjectSwitcher';
 import { EditorApp } from '@forge/shared/components/app';
 import { EditorButton } from '@forge/shared/components/editor';
-import { SettingsMenu } from '@/components/settings/SettingsMenu';
+import { SettingsDrawer } from '@/components/settings/SettingsDrawer';
 import { ThemeSwitcher, AppBarUser } from '@/components/app-bar';
 import { Toaster } from '@forge/ui/sonner';
 import { Separator } from '@forge/ui/separator';
 import { useSettingsStore } from '@/lib/settings/store';
 import { useEntitlements, CAPABILITIES } from '@forge/shared/entitlements';
-import { useVideoEditorEnabled } from '@/lib/feature-flags';
+import { useVideoEditorEnabled, useStrategyEditorEnabled } from '@/lib/feature-flags';
 import { ImageGenerateRender } from '@/components/copilot/ImageGenerateRender';
 import { StructuredOutputRender } from '@/components/copilot/StructuredOutputRender';
-import { MessageCircle, Video, Users, Target } from 'lucide-react';
+import { MessageCircle, Video, Users, Target, Settings } from 'lucide-react';
 import { useGenerateImage, useStructuredOutput } from '@/lib/data/hooks';
 import { createAppAction } from '@forge/shared/copilot';
 
@@ -43,6 +43,7 @@ export function AppShell() {
     closeWorkspace,
   } = useEditorStore();
   const { activeWorkspaceId, openWorkspaceIds } = route;
+  const [settingsDrawerOpen, setSettingsDrawerOpen] = React.useState(false);
   const projectsQuery = useProjects();
   const createProjectMutation = useCreateProject();
 
@@ -55,9 +56,13 @@ export function AppShell() {
   const toastsEnabled = useSettingsStore((s) => s.getSettingValue('ui.toastsEnabled')) as boolean | undefined;
   const entitlements = useEntitlements();
   const videoEnabled = useVideoEditorEnabled();
+  const strategyEnabled = useStrategyEditorEnabled();
   const editorIdsForActions = React.useMemo(
-    () => (videoEnabled ? VALID_EDITOR_IDS : VALID_EDITOR_IDS.filter((id) => id !== 'video')),
-    [videoEnabled],
+    () =>
+      VALID_EDITOR_IDS.filter(
+        (id) => (id !== 'video' || videoEnabled) && (id !== 'strategy' || strategyEnabled),
+      ),
+    [videoEnabled, strategyEnabled],
   );
   const editorNames = React.useMemo(() => {
     const names: Partial<Record<EditorId, string>> = {};
@@ -67,8 +72,11 @@ export function AppShell() {
     return names;
   }, [editorIdsForActions]);
   const visibleWorkspaceIds = React.useMemo(
-    () => openWorkspaceIds.filter((id) => id !== 'video' || videoEnabled),
-    [openWorkspaceIds, videoEnabled],
+    () =>
+      openWorkspaceIds.filter(
+        (id) => (id !== 'video' || videoEnabled) && (id !== 'strategy' || strategyEnabled),
+      ),
+    [openWorkspaceIds, videoEnabled, strategyEnabled],
   );
   const imageGenEnabled = entitlements.has(CAPABILITIES.IMAGE_GENERATION);
   const generateImageMutation = useGenerateImage();
@@ -88,6 +96,23 @@ export function AppShell() {
     openWorkspaceIds,
     setActiveWorkspace,
     videoEnabled,
+    visibleWorkspaceIds,
+  ]);
+
+  React.useEffect(() => {
+    if (strategyEnabled) return;
+    if (openWorkspaceIds.includes('strategy')) {
+      closeWorkspace('strategy');
+    }
+    if (activeWorkspaceId === 'strategy') {
+      setActiveWorkspace(visibleWorkspaceIds[0] ?? 'dialogue');
+    }
+  }, [
+    activeWorkspaceId,
+    closeWorkspace,
+    openWorkspaceIds,
+    setActiveWorkspace,
+    strategyEnabled,
     visibleWorkspaceIds,
   ]);
 
@@ -129,6 +154,9 @@ export function AppShell() {
       if (id === 'video') {
         return { success: false, message: 'Video editor is currently locked.' };
       }
+      if (id === 'strategy') {
+        return { success: false, message: 'Strategy editor is currently locked.' };
+      }
       return { success: false, message: `Unknown editor: ${editorId}. Use ${editorIdsForActions.join(', ')}.` };
     },
   }));
@@ -153,6 +181,9 @@ export function AppShell() {
       }
       if (id === 'video') {
         return { success: false, message: 'Video editor is currently locked.' };
+      }
+      if (id === 'strategy') {
+        return { success: false, message: 'Strategy editor is currently locked.' };
       }
       return { success: false, message: `Unknown editor: ${editorId}.` };
     },
@@ -181,6 +212,9 @@ export function AppShell() {
       }
       if (id === 'video') {
         return { success: false, message: 'Video editor is currently locked.' };
+      }
+      if (id === 'strategy') {
+        return { success: false, message: 'Strategy editor is currently locked.' };
       }
       return { success: false, message: `Unknown editor: ${editorId}.` };
     },
@@ -335,21 +369,38 @@ export function AppShell() {
               <Users className="size-3.5 shrink-0" />
               Character
             </EditorButton>
-            <EditorButton
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => openWorkspace('strategy')}
-              tooltip="Open or switch to Strategy editor"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <Target className="size-3 shrink-0" />
-              Strategy
-            </EditorButton>
+            {strategyEnabled ? (
+              <EditorButton
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => openWorkspace('strategy')}
+                tooltip="Open or switch to Strategy editor"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <Target className="size-3 shrink-0" />
+                Strategy
+              </EditorButton>
+            ) : null}
             <Separator orientation="vertical" className="h-[var(--control-height-sm)]" />
             <ThemeSwitcher />
             <AppBarUser />
-            <SettingsMenu tooltip="App settings" defaultScope="app" />
+            <EditorButton
+              variant="ghost"
+              size="sm"
+              tooltip="Settings"
+              onClick={() => setSettingsDrawerOpen(true)}
+            >
+              <Settings className="h-4 w-4" />
+              <span className="hidden sm:inline">Settings</span>
+            </EditorButton>
+            <SettingsDrawer
+              open={settingsDrawerOpen}
+              onOpenChange={setSettingsDrawerOpen}
+              activeEditorId={activeWorkspaceId}
+              activeProjectId={activeProjectId != null ? String(activeProjectId) : null}
+              viewportId="main"
+            />
           </>
         }
       >
@@ -387,7 +438,7 @@ export function AppShell() {
         {activeWorkspaceId === 'dialogue' && <DialogueEditor />}
         {activeWorkspaceId === 'video' && videoEnabled && <VideoEditor />}
         {activeWorkspaceId === 'character' && <CharacterEditor />}
-        {activeWorkspaceId === 'strategy' && <StrategyEditor />}
+        {activeWorkspaceId === 'strategy' && strategyEnabled && <StrategyEditor />}
       </EditorApp.Content>
       {toastsEnabled !== false && <Toaster />}
     </EditorApp>

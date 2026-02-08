@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Heart, Share } from "lucide-react";
+import { BadgeCheck, Heart, MessageCircle, Share } from "lucide-react";
 import {
   cn,
   Button,
@@ -43,35 +43,11 @@ function Avatar({ src, alt }: { src: string; alt: string }) {
 }
 
 function XLogo({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 300 271"
-      className={className}
-      role="img"
-      aria-label="X (formerly Twitter) logo"
-    >
-      <path
-        fill="currentColor"
-        d="m236 0h46l-101 115 118 156h-92.6l-72.5-94.8-83 94.8h-46l107-123-113-148h94.9l65.5 86.6zm-16.1 244h25.5l-165-218h-27.4z"
-      />
-    </svg>
-  );
+  return <MessageCircle className={className} role="img" aria-label="X (formerly Twitter) logo" />;
 }
 
 function VerifiedBadge({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={className}
-      role="img"
-      aria-label="Verified account"
-    >
-      <path
-        fill="currentColor"
-        d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.415-.165-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .495.083.965.238 1.4-1.272.65-2.147 2.018-2.147 3.6 0 1.495.782 2.798 1.942 3.486-.02.17-.032.34-.032.514 0 2.21 1.708 4 3.818 4 .47 0 .92-.086 1.335-.25.62 1.334 1.926 2.25 3.437 2.25 1.512 0 2.818-.916 3.437-2.25.415.163.865.248 1.336.248 2.11 0 3.818-1.79 3.818-4 0-.174-.012-.344-.033-.513 1.158-.687 1.943-1.99 1.943-3.484zm-6.616-3.334l-4.334 6.5c-.145.217-.382.334-.625.334-.143 0-.288-.04-.416-.126l-.115-.094-2.415-2.415c-.293-.293-.293-.768 0-1.06s.768-.294 1.06 0l1.77 1.767 3.825-5.74c.23-.345.696-.436 1.04-.207.346.23.44.696.21 1.04z"
-      />
-    </svg>
-  );
+  return <BadgeCheck className={className} role="img" aria-label="Verified account" />;
 }
 
 function AuthorInfo({
@@ -128,9 +104,10 @@ function PostMedia({
         : "16/9";
 
   return (
-    <button
+    <Button
       type="button"
-      className="bg-muted mt-2 w-full overflow-hidden rounded-xl"
+      variant="ghost"
+      className="mt-2 w-full overflow-hidden rounded-xl bg-muted hover:bg-muted"
       style={{ aspectRatio }}
       onClick={() => onOpen?.()}
     >
@@ -150,7 +127,7 @@ function PostMedia({
           className="size-full object-contain"
         />
       )}
-    </button>
+    </Button>
   );
 }
 
@@ -325,7 +302,7 @@ export function XPost({
       data-tool-ui-id={post.id}
       data-slot="x-post"
     >
-      <article className="bg-card rounded-xl border p-3 shadow-sm">
+      <article className="bg-card rounded-xl border p-3 shadow-[var(--shadow-sm)]">
         <div className="flex gap-3">
           <Avatar
             src={post.author.avatarUrl}

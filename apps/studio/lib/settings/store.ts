@@ -6,10 +6,11 @@ import { immer } from "zustand/middleware/immer";
 import type { SettingsOverrideRecord } from "@forge/types/payload";
 import { SETTINGS_CONFIG, getEditorDefaults, getViewportDefaults } from "./config";
 
-export type SettingsScope = "app" | "editor" | "viewport";
+export type SettingsScope = "app" | "project" | "editor" | "viewport";
 
 export interface SettingsState {
   appSettings: Record<string, unknown>;
+  projectSettings: Record<string, Record<string, unknown>>;
   editorSettings: Record<string, Record<string, unknown>>;
   viewportSettings: Record<string, Record<string, unknown>>;
 
@@ -17,22 +18,22 @@ export interface SettingsState {
     scope: SettingsScope,
     key: string,
     value: unknown,
-    ids?: { editorId?: string; viewportId?: string }
+    ids?: { editorId?: string; viewportId?: string; projectId?: string }
   ) => void;
   clearSetting: (
     scope: SettingsScope,
     key: string,
-    ids?: { editorId?: string; viewportId?: string }
+    ids?: { editorId?: string; viewportId?: string; projectId?: string }
   ) => void;
 
-  getMergedSettings: (ids?: { editorId?: string; viewportId?: string }) => Record<string, unknown>;
+  getMergedSettings: (ids?: { editorId?: string; viewportId?: string; projectId?: string }) => Record<string, unknown>;
   getSettingValue: (
     key: string,
-    ids?: { editorId?: string; viewportId?: string }
+    ids?: { editorId?: string; viewportId?: string; projectId?: string }
   ) => unknown;
   getSettingSource: (
     key: string,
-    ids?: { editorId?: string; viewportId?: string }
+    ids?: { editorId?: string; viewportId?: string; projectId?: string }
   ) => SettingsScope | "unset";
 
   /** Apply stored overrides (e.g. from Payload) on top of defaults. */
@@ -40,13 +41,14 @@ export interface SettingsState {
   /** Get overridden keys only for a scope (for persisting). */
   getOverridesForScope: (
     scope: SettingsScope,
-    ids?: { editorId?: string; viewportId?: string }
+    ids?: { editorId?: string; viewportId?: string; projectId?: string }
   ) => Record<string, unknown>;
   /** Reset to config defaults (clears any overrides). */
   resetToDefaults: () => void;
 }
 
 const DEFAULT_APP_SETTINGS = SETTINGS_CONFIG.appDefaults;
+const DEFAULT_PROJECT_SETTINGS = SETTINGS_CONFIG.projectDefaults;
 const DEFAULT_EDITOR_SETTINGS = SETTINGS_CONFIG.editorDefaults;
 const DEFAULT_VIEWPORT_SETTINGS = SETTINGS_CONFIG.viewportDefaults;
 
@@ -69,7 +71,7 @@ function buildInitialState() {
 }
 
 function normalizeScope(
-  scope: SettingsOverrideRecord["scope"] | "workspace",
+  scope: SettingsOverrideRecord["scope"] | "workspace" | "project",
   scopeId?: string | null,
 ): SettingsScope {
   if (scope === "workspace") return "editor";
@@ -95,6 +97,15 @@ export const useSettingsStore = create<SettingsState>()(
               state.editorSettings[editorId] = {};
             }
             state.editorSettings[editorId][key] = value;
+            return;
+          }
+          if (scope === "project") {
+            const projectId = ids?.projectId;
+            if (!projectId) return;
+            if (!state.projectSettings[projectId]) {
+              state.projectSettings[projectId] = {};
+            }
+            state.projectSettings[projectId][key] = value;
             return;
           }
           if (scope === "viewport") {
@@ -133,11 +144,13 @@ export const useSettingsStore = create<SettingsState>()(
       },
 
       getMergedSettings: (ids) => {
-        const { appSettings, editorSettings, viewportSettings } = get();
+        const { appSettings, projectSettings, editorSettings, viewportSettings } = get();
         const editorId = ids?.editorId;
         const viewportKey = getViewportKey(ids?.editorId, ids?.viewportId);
+        const projectId = ids?.projectId;
         return {
           ...appSettings,
+          ...(projectId ? { ...DEFAULT_PROJECT_SETTINGS, ...(projectSettings[projectId] ?? {}) } : {}),
           ...(editorId ? { ...getEditorDefaults(editorId), ...(editorSettings[editorId] ?? {}) } : {}),
           ...(viewportKey ? { ...getViewportDefaults(ids?.editorId, ids?.viewportId), ...(viewportSettings[viewportKey] ?? {}) } : {}),
         };
@@ -168,6 +181,7 @@ export const useSettingsStore = create<SettingsState>()(
         set((state) => {
           const initial = buildInitialState();
           state.appSettings = { ...initial.appSettings };
+          state.projectSettings = { ...initial.projectSettings };
           state.editorSettings = { ...initial.editorSettings };
           state.viewportSettings = { ...initial.viewportSettings };
 
@@ -179,6 +193,14 @@ export const useSettingsStore = create<SettingsState>()(
             );
             if (scope === "app") {
               state.appSettings = { ...state.appSettings, ...settings };
+              continue;
+            }
+            if (scope === "project") {
+              const projectId = record.scopeId ?? "unknown";
+              state.projectSettings[projectId] = {
+                ...(state.projectSettings[projectId] ?? {}),
+                ...settings,
+              };
               continue;
             }
             if (scope === "editor") {
@@ -242,6 +264,7 @@ export const useSettingsStore = create<SettingsState>()(
         set((state) => {
           const initial = buildInitialState();
           state.appSettings = { ...initial.appSettings };
+          state.projectSettings = { ...initial.projectSettings };
           state.editorSettings = { ...initial.editorSettings };
           state.viewportSettings = { ...initial.viewportSettings };
         });

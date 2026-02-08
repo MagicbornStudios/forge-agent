@@ -59,7 +59,7 @@ export function RelationshipEdge({
             <span
               className={`
                 inline-block px-2 py-0.5 text-[11px] font-semibold rounded-full
-                border bg-background text-foreground shadow-sm
+                border bg-background text-foreground shadow-[var(--shadow-sm)]
                 ${selected ? 'border-primary text-primary' : 'border-border'}
               `}
             >

@@ -14,4 +14,12 @@
 
 ---
 
+## Strategy (codebase) editor — locked until after MVP
+
+**Status:** Not in use; gated by PostHog feature flag `strategy-editor-enabled` and capability `studio.strategy.editor` (AppShell hides tab + content when flag off; FeatureGate lock-overlay when capability locked).
+
+**Details:** The in-app Strategy editor (CodebaseAgentStrategyEditor) is **out of scope for MVP** and **locked**. The downloadable Strategy core (docs + AGENTS.md) and TRACE are in scope for MVP. The **editor in Studio** ships after MVP. Do not prioritize Strategy editor work for MVP. Same lock pattern as Video: feature flag for shell visibility and copilot actions; `CAPABILITIES.STUDIO_STRATEGY_EDITOR` for plan-based lock-overlay inside the editor (not granted to any plan yet).
+
+---
+
 *(Add other product/editor-level known issues below as needed.)*

@@ -12,6 +12,7 @@ import {
   File,
   ExternalLink,
 } from "lucide-react";
+import { Button } from "@forge/ui/button";
 import {
   cn,
   Popover,
@@ -167,8 +168,9 @@ export function Citation(props: CitationProps) {
     return (
       <Popover open={open}>
         <PopoverTrigger asChild>
-          <button
+          <Button
             type="button"
+            variant="ghost"
             aria-label={title}
             data-tool-ui-id={id}
             data-slot="citation"
@@ -176,7 +178,7 @@ export function Citation(props: CitationProps) {
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             className={cn(
-              "inline-flex cursor-pointer items-center gap-1.5 rounded-md px-2 py-1",
+              "inline-flex h-auto cursor-pointer items-center gap-1.5 rounded-md px-2 py-1",
               "bg-muted/60 text-sm outline-none",
               "transition-colors duration-150",
               "hover:bg-muted",
@@ -186,7 +188,7 @@ export function Citation(props: CitationProps) {
           >
             {iconElement}
             <span className="text-muted-foreground">{domain}</span>
-          </button>
+          </Button>
         </PopoverTrigger>
         <PopoverContent
           side="top"
@@ -226,7 +228,7 @@ export function Citation(props: CitationProps) {
       <div
         className={cn(
           "group @container relative isolate flex w-full min-w-0 flex-col overflow-hidden rounded-xl",
-          "border border-border bg-card text-sm shadow-xs",
+          "border border-border bg-card text-sm shadow-[var(--shadow-xs)]",
           "transition-colors duration-150",
           sanitizedHref && [
             "cursor-pointer",

@@ -15,8 +15,8 @@
 [data-domain] {
   --context-glow: color-mix(in oklab, var(--context-accent) 35%, transparent);
   --context-ring: color-mix(in oklab, var(--context-accent) 60%, transparent);
-  --glow-focus: 0 0 0 2px var(--context-ring), 0 0 12px var(--context-glow);
-  --glow-selection: 0 0 12px var(--context-glow);
+  --glow-focus: 0 0 0 2px var(--context-ring);
+  --glow-selection: 0 0 0 2px var(--context-ring);
   --glow-panel-accent: 0 0 0 1px var(--context-accent);
   --primary: var(--context-accent);
   --primary-foreground: var(--text-primary);

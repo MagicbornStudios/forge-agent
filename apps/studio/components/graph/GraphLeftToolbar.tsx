@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { Panel } from 'reactflow';
-import { Map, Focus } from 'lucide-react';
+import { Focus, Map } from 'lucide-react';
+import { Button } from '@forge/ui/button';
 import { cn } from '@forge/shared/lib/utils';
 
 interface GraphLeftToolbarProps {
@@ -22,29 +23,33 @@ export function GraphLeftToolbar({
 
   return (
     <Panel position="top-left" className={cn('!bg-transparent !border-0 !p-0 !m-2', className)}>
-      <div className="flex flex-col gap-1.5 bg-card border border-border rounded-lg p-1.5 shadow-lg">
+      <div className="flex flex-col gap-1.5 bg-card border border-border rounded-lg p-[var(--panel-padding)] shadow-[var(--shadow-md)]">
         {onFitView && (
-          <button
-            onClick={onFitView}
-            className="p-1.5 rounded bg-background border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          <Button
+            variant="outline"
+            size="icon"
+            className="size-8 border-border text-muted-foreground hover:bg-muted hover:text-foreground"
             title="Fit view"
+            onClick={onFitView}
           >
-            <Focus size={14} />
-          </button>
+            <Focus className="size-3.5" />
+          </Button>
         )}
         {onToggleMiniMap && (
-          <button
-            onClick={onToggleMiniMap}
+          <Button
+            variant="outline"
+            size="icon"
             className={cn(
-              'p-1.5 rounded transition-colors',
+              'size-8 transition-colors',
               showMiniMap
-                ? 'bg-primary/10 text-foreground border border-primary'
-                : 'bg-background border border-border text-muted-foreground hover:text-foreground hover:bg-muted'
+                ? 'border-primary bg-primary/10 text-foreground'
+                : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'
             )}
             title={showMiniMap ? 'Hide minimap' : 'Show minimap'}
+            onClick={onToggleMiniMap}
           >
-            <Map size={14} />
-          </button>
+            <Map className="size-3.5" />
+          </Button>
         )}
       </div>
     </Panel>

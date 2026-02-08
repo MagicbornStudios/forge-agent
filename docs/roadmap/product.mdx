@@ -8,7 +8,7 @@ updated: 2026-02-08
 
 Forge Agent is an **AI-first interactive narrative storytelling engine** — a **game/narrative content authoring engine**, thin on engine, strong on content and AI. This roadmap tracks editors, platform initiatives, and integrations. Each item follows the **Ralph Wiggum loop**: read STATUS -> implement a slice -> update STATUS and artifacts.
 
-**MVP and first revenue:** We focus on **paid clone/download** and two hero moments (author a small game with AI, or layer Studio + Codebase Agent Strategy on existing projects). See **[MVP and first revenue](../product/mvp-and-revenue.mdx)** for audience, positioning, and evolution. Video editor is **locked until after MVP**.
+**MVP and first revenue:** **MVP editors** = Dialogue, Character, Writer, GamePlayer. Video and Strategy codebase editor **not in MVP**. **Creators list from day one.** **MVP** = Vercel + Payload; **platform** = marketing site; **success** = first paid clone end-to-end. See **[MVP and first revenue](../product/mvp-and-revenue.mdx)** for audience, positioning, and evolution.
 
 **Production target:** 2/14. We are in development until then; migration and rollback strategy apply after production.
 
@@ -39,9 +39,20 @@ Forge Agent is an **AI-first interactive narrative storytelling engine** — a *
 - Tabbed sidebar with node palette and drag-drop creation.
 - Character voice integration (ElevenLabs).
 
+### GamePlayer
+
+**Status:** MVP (to be built).
+
+**Focus:**
+
+- Playable runtime for **Yarn Games** (thin engine).
+- Authors build in Dialogue/Character/Writer, then play in GamePlayer.
+
+**How we build it:** See [10 - GamePlayer (how we build it)](../architecture/10-gameplayer.mdx): prerequisites (Yarn export/import), Phase 1 (editor tab, load dialogue, minimal runtime), Phase 2 (character/voice, variables, polish). Yarn Spinner comes before GamePlayer; GamePlayer is part of MVP.
+
 ### Video editor
 
-**Status:** Locked until after MVP (capability `studio.video.editor`). See [ISSUES.md](../../ISSUES.md).
+**Status:** Not in MVP. Locked until after MVP (capability `studio.video.editor`). See [ISSUES.md](../../ISSUES.md).
 
 **Focus (when unlocked):**
 
@@ -51,9 +62,9 @@ Forge Agent is an **AI-first interactive narrative storytelling engine** — a *
 
 ### Strategy editor (CodebaseAgentStrategyEditor)
 
-**Status:** In progress.
+**Status:** Not in MVP. The in-app Strategy editor is out of scope for MVP; it ships after MVP.
 
-**Focus:**
+**Focus (when in scope):**
 
 - assistant-ui and tool-ui based chat editor.
 - Streaming AI SDK chat endpoint (`/api/assistant-chat`).
@@ -64,13 +75,15 @@ codebases and produce plans and agent artifacts for any coding agent (Cursor,
 Codex, Claude, etc.). Support for standard Unity and Unreal codebase
 structures is in scope.
 
+**Strategy definition:** Strategy = our **core docs + AGENTS.md** (agent-artifacts, decisions, STATUS, etc.). The **downloadable Strategy core** and **TRACE** (for proof) are in scope for MVP; the in-app Strategy editor is not.
+
 ---
 
 ## Platform initiatives
 
 ### Editors as MCP Apps
 
-**Status:** Planned (next).
+**Status:** After MVP (not part of MVP).
 
 **Goal:** Expose each editor as an **MCP App** — a self-contained unit
 that MCP hosts (Claude Desktop, Cursor, VS Code) can embed or orchestrate.
@@ -85,14 +98,14 @@ that MCP hosts (Claude Desktop, Cursor, VS Code) can embed or orchestrate.
 
 ### First-class Yarn Spinner support
 
-**Status:** Planned (next).
+**Status:** **MVP** — Yarn export (and import) is in MVP.
 
 **Goal:** Full integration with the [Yarn Spinner](https://yarnspinner.dev)
 dialogue scripting language.
 
-**Scope:**
+**Scope (MVP):**
 
-- Export/import `.yarn` files from dialogue graphs.
+- **Export/import `.yarn` files** from dialogue graphs (in MVP).
 - Yarn syntax preview alongside the visual graph.
 - Variable panel for declaring and tracking Yarn variables.
 - Command palette for common Yarn commands.
@@ -119,6 +132,10 @@ dialogue scripting language.
 
 These items are tracked in STATUS § Next with impact sizes. **First revenue = paid clone/download** (see [MVP and first revenue](../product/mvp-and-revenue.mdx)).
 
+- **Platform** = marketing site (landing + platform); we can change later (e.g. split into a separate app).
+- **Catalog at MVP** — Users and orgs can browse and list. **Creators list from day one** (catalog + Connect + payouts at MVP).
+- **Paid and free tier** — Plan tiers required at MVP.
+- **Revenue share** — Platform and creator both get paid (Unity Asset Store / Bandlab style); Stripe Connect or similar for payouts.
 - **Monetization (clone to account / download)** — **MVP-critical.** Users can let others clone a project (or template, or Strategy core) to their account for a price, or download the build. Listings, checkout, Stripe Connect or similar. **Impact: Epic.**
 - **Plan tiers and capabilities for platform** — **MVP-critical.** Extend plans and `CAPABILITIES` to gate platform features (e.g. who can list, who can clone/download paid items). **Impact: Small–Medium.**
 - **Publish and host project builds** — After MVP. Authors publish a project build; we host playable narrative. Build pipeline, storage, playable runtime. **Impact: Large.**
@@ -131,7 +148,7 @@ These items are tracked in STATUS § Next with impact sizes. **First revenue = p
 
 **Status:** Planned.
 
-Notion-inspired page and block model: **pages** and **blocks** Payload collections and CRUD hooks are in place (`usePages`, `usePage`, `useCreatePage`, `useUpdatePage`, `useBlocks`, `useBlock`, `useCreateBlock`, `useUpdateBlock`). Data structure aligns with Notion API concepts (parent, properties, block type + payload). WriterEditor UI and editor shell not yet implemented. Same loop pattern (artifacts + strategy) as other editors; when the editor is built, it will have its own STATUS/decisions/errors-and-attempts for the writing system.
+**Notion-like, Lexical-based** (Facebook Lexical). Write normally; **branching narrative** (different takes) in the project. **Interactive narrative, choices, dialogue** with AI and graphing. Yarn Spinner for formalized dialogue; thin engine produces **Yarn Games** (simple, opinionated). Content scales to AAA (Unity/Unreal/Godot); Strategy editor helps with agent productivity for bigger engines. **Pages** and **blocks** Payload collections and CRUD hooks are in place (`usePages`, `usePage`, `useCreatePage`, `useUpdatePage`, `useBlocks`, `useBlock`, `useCreateBlock`, `useUpdateBlock`). Data structure aligns with Notion API concepts. WriterEditor UI and editor shell not yet implemented. Same loop pattern (artifacts + strategy) as other editors.
 
 ---
 

@@ -22,7 +22,7 @@ import config from '@/payload.config';
  *           schema:
  *             type: object
  *             properties:
- *               scope: { type: string, enum: [app, editor, viewport] }
+ *               scope: { type: string, enum: [app, project, editor, viewport] }
  *               scopeId: { type: string, nullable: true }
  *               settings: { type: object }
  *     responses:
@@ -80,15 +80,15 @@ export async function POST(request: NextRequest) {
     if (!resolvedScope) {
       return NextResponse.json({ error: 'scope is required' }, { status: 400 });
     }
-    if (!['app', 'editor', 'viewport'].includes(resolvedScope)) {
-      return NextResponse.json({ error: 'scope must be app, editor, or viewport' }, { status: 400 });
+    if (!['app', 'project', 'editor', 'viewport'].includes(resolvedScope)) {
+      return NextResponse.json({ error: 'scope must be app, project, editor, or viewport' }, { status: 400 });
     }
     if (
       resolvedScope !== 'app' &&
       (scopeId === undefined || scopeId === null || scopeId === '')
     ) {
       return NextResponse.json(
-        { error: 'scope "editor" or "viewport" requires scopeId' },
+        { error: 'scope "project", "editor", or "viewport" requires scopeId' },
         { status: 400 }
       );
     }

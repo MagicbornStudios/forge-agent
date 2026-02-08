@@ -338,7 +338,7 @@ export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProp
     return (
       <div
         className={cn(
-          "-space-x-px relative flex w-full items-center rounded-md shadow-sm",
+          "-space-x-px relative flex w-full items-center rounded-md shadow-[var(--shadow-sm)]",
           className,
         )}
         {...(props as any)}
@@ -362,7 +362,7 @@ export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProp
 
     return (
       <div
-        className={cn("-space-x-px flex items-center rounded-md shadow-sm", className)}
+        className={cn("-space-x-px flex items-center rounded-md shadow-[var(--shadow-sm)]", className)}
         {...(props as any)}
       >
         {rgb.map((value, index) => (
@@ -390,7 +390,7 @@ export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProp
       .map(value => Math.round(value))
 
     return (
-      <div className={cn("w-full rounded-md shadow-sm", className)} {...(props as any)}>
+      <div className={cn("w-full rounded-md shadow-[var(--shadow-sm)]", className)} {...(props as any)}>
         <Input
           className="h-8 w-full bg-secondary px-2 text-xs shadow-none"
           readOnly
@@ -410,7 +410,7 @@ export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProp
 
     return (
       <div
-        className={cn("-space-x-px flex items-center rounded-md shadow-sm", className)}
+        className={cn("-space-x-px flex items-center rounded-md shadow-[var(--shadow-sm)]", className)}
         {...(props as any)}
       >
         {hsl.map((value, index) => (

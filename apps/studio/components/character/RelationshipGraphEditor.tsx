@@ -232,7 +232,7 @@ export const RelationshipGraphEditor = forwardRef<CharacterViewportHandle, Props
             onFitSelection={handleFitSelection}
           />
           {showMiniMap && (
-            <FlowMiniMap className="!bg-background !border !shadow-lg" />
+            <FlowMiniMap className="!bg-background !border !shadow-[var(--shadow-lg)]" />
           )}
         </ReactFlow>
       </div>

@@ -41,7 +41,7 @@ These files are maintained for AI/coding agents to read and use when modifying t
 ## Documentation conventions (human vs agent)
 
 - **Living agent artifacts:** `docs/agent-artifacts/core/*.md` (STATUS, decisions, errors-and-attempts, tool-usage, compacting-and-archiving, debugging-zustand-devtools) and `docs/agent-artifacts/archive/` for compacted chunks. Purpose: current state, decisions, failure log, tool guidance, compacting process. Updated after each slice or when something breaks. No number prefix; humans and agents reference this folder.
-- **Official human-facing docs:** Numbered `.mdx` in `docs/` (00, 10–19), `docs/how-to/` (00–09, 20–22), `docs/architecture/` (01–09), `docs/design/` (01–), `docs/product/` (MVP and first revenue), `docs/roadmap/`. Purpose: tutorials, architecture, code organization, product/strategy, and the agent index/strategy (18–19). Kept up to date with the product.
+- **Official human-facing docs:** Numbered `.mdx` in `docs/` (00, 10–19), `docs/how-to/` (00–09, 20–22), `docs/architecture/` (01–09), `docs/design/` (01–), `docs/product/` (MVP and first revenue, [Dev-kit and keys](product/dev-kit-and-keys.mdx)), `docs/roadmap/`. Purpose: tutorials, architecture, code organization, product/strategy, and the agent index/strategy (18–19). Kept up to date with the product.
 - **Root / package:** `README.md`, `SETUP.md`, `AGENTS.md` stay `.md` at repo root or under packages; they point at `docs/18-agent-artifacts-index.mdx` and `docs/agent-artifacts/core/` for artifact locations.
 - **No duplicates:** One canonical file per topic; no parallel .md when a .mdx exists. One artifact folder for the three core living docs.
 

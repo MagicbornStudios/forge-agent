@@ -32,7 +32,6 @@ import { useForgeContract } from '@forge/domain-forge/copilot';
 import { useCreateForgePlan } from '@/lib/data/hooks';
 import {
   EditorShell,
-  EditorHeader,
   EditorToolbar,
   EditorStatusBar,
   EditorOverlaySurface,
@@ -44,8 +43,9 @@ import {
   EditorInspector,
 } from '@forge/shared';
 import { Badge } from '@forge/ui/badge';
+import { Button } from '@forge/ui/button';
 import { Card } from '@forge/ui/card';
-import { Drawer, DrawerContent } from '@forge/ui';
+import { Drawer, DrawerContent, DrawerTitle } from '@forge/ui';
 import { Library, ScanSearch, Wrench } from 'lucide-react';
 import { useEntitlements, CAPABILITIES } from '@forge/shared/entitlements';
 import type { OverlaySpec, ActiveOverlay, Selection } from '@forge/shared';
@@ -197,22 +197,23 @@ function ForgeGraphList({
             {filteredGraphs.map((graph) => {
               const isSelected = activeGraphId === graph.id;
               return (
-                <button
+                <Button
                   key={graph.id}
+                  variant="ghost"
                   type="button"
-                  onClick={() => onSelect(graph.id)}
                   className={cn(
-                    'w-full px-2 py-1.5 text-left text-xs transition-colors duration-200',
+                    'w-full justify-start px-2 py-1.5 text-left text-xs transition-colors duration-200 focus:ring-0 focus-visible:ring-0 focus-visible:outline-none',
                     isSelected
                       ? 'bg-muted text-foreground border-l-2 border-primary'
                       : 'text-muted-foreground hover:bg-muted hover:text-foreground hover:border-l-2 hover:border-accent'
                   )}
+                  onClick={() => onSelect(graph.id)}
                 >
                   <span className="flex items-center gap-1.5 truncate">
                     {icon}
                     <span className="truncate font-medium">{graph.title ?? String(graph.id)}</span>
                   </span>
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -303,7 +304,7 @@ function ForgeGraphPanel({
               onFitView={onFitView}
             />
             <GraphLayoutControls onFitView={onFitView} onFitSelection={onFitSelection} />
-            {showMiniMap && <FlowMiniMap className="!bg-background !border !shadow-lg" />}
+            {showMiniMap && <FlowMiniMap className="!bg-background !border !shadow-[var(--shadow-lg)]" />}
           </GraphEditor>
         ) : (
           <div className="flex items-center justify-center h-full">
@@ -1147,21 +1148,13 @@ export function DialogueEditor() {
         density={editorDensity}
         className="flex flex-col h-full min-h-0 bg-canvas"
       >
-        <EditorHeader>
-          <EditorHeader.Left>
-            <h1 className="text-lg font-bold">Dialogue</h1>
-          </EditorHeader.Left>
-          <EditorHeader.Center>
-            {activeGraph && <span className="text-sm text-muted-foreground">{activeGraph.title}</span>}
-          </EditorHeader.Center>
-        </EditorHeader>
-
         <EditorToolbar className="bg-sidebar border-b border-sidebar-border">
           <EditorToolbar.Left>
             <EditorToolbar.Group className="gap-2">
               <EditorToolbar.Menubar menus={menubarMenus} />
+              <EditorToolbar.Separator />
+              <span className="text-xs text-muted-foreground">{toolbarCounts}</span>
             </EditorToolbar.Group>
-            <span className="text-xs text-muted-foreground">{toolbarCounts}</span>
           </EditorToolbar.Left>
           <EditorToolbar.Right>
             {headerLinks.map((link) => (
@@ -1238,7 +1231,8 @@ export function DialogueEditor() {
         />
 
         <Drawer open={drawerOpen} onOpenChange={(open: boolean) => setBottomDrawerOpen('dialogue', open)}>
-          <DrawerContent className="max-h-[70vh] flex flex-col">
+          <DrawerContent className="max-h-[70vh] min-h-[240px] flex flex-col">
+            <DrawerTitle className="sr-only">Workbench</DrawerTitle>
             <div className="flex-1 min-h-0 overflow-auto">
               <DialogueDrawerContent />
             </div>

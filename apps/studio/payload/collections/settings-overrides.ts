@@ -17,6 +17,7 @@ export const SettingsOverrides: CollectionConfig = {
         { label: 'App', value: 'app' },
         { label: 'Editor', value: 'editor' },
         { label: 'Viewport', value: 'viewport' },
+        { label: 'Project', value: 'project' },
       ],
     },
     {

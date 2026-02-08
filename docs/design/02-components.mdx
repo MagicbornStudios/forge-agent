@@ -32,6 +32,8 @@ Use **Lucide React** throughout; standard size **16px** (`size-4` or `className=
 | Settings | Section titles or key dropdowns (Model, Theme, Density) | Optional |
 | Tab triggers | `PanelTabs` tab defs (e.g. Narratives, Storylets, Nodes) | Per-tab icon in `PanelTabDef.icon` |
 
+**UI audit (icons, buttons, menus, borders):** Button = shadcn `Button` from `@forge/ui/button`. Icons = Lucide React only (no custom SVGs). Menus = shadcn Menubar/DropdownMenu. Selection accent = one edge only (e.g. `border-l-2 border-primary`), never a full four-sided border.
+
 **Avoid:** Unstyled grey buttons and text-only menu items. Reference screenshot: [buttons_dropdowns_menutitems_unstyled.png](../images/buttons_dropdowns_menutitems_unstyled.png). When updating UI patterns, add or update reference screenshots in **docs/images/** as needed. After applying contrast and spacing fixes (toolbar, PanelTabs, editor tabs, outline buttons), see [styling_after_contrast_and_spacing.png](../images/styling_after_contrast_and_spacing.png) when available.
 
 ---

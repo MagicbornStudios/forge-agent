@@ -53,7 +53,7 @@ export function AppBarUser() {
           </EditorButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem disabled>Not signed in</DropdownMenuItem>
+          <DropdownMenuItem disabled className="text-xs">Not signed in</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     );
@@ -73,7 +73,7 @@ export function AppBarUser() {
         </EditorButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem disabled className="font-medium">
+        <DropdownMenuItem disabled className="text-xs font-medium">
           Signed in as {displayName}
         </DropdownMenuItem>
       </DropdownMenuContent>

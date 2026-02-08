@@ -7,6 +7,8 @@ import {
   EditorToolbar,
   EditorStatusBar,
 } from '@forge/shared/components/editor';
+import { FeatureGate } from '@forge/shared';
+import { CAPABILITIES } from '@forge/shared/entitlements';
 import { CodebaseAgentStrategyEditor } from '@forge/shared/components/assistant-ui';
 import { EDITOR_VIEWPORT_IDS } from '@/lib/app-shell/editor-metadata';
 import { useSettingsStore } from '@/lib/settings/store';
@@ -71,12 +73,16 @@ export function StrategyEditor() {
         </EditorToolbar.Right>
       </EditorToolbar>
 
-      <div className="flex-1 min-h-0">
+      <FeatureGate
+        capability={CAPABILITIES.STUDIO_STRATEGY_EDITOR}
+        mode="lock-overlay"
+        className="flex-1 min-h-0"
+      >
         <CodebaseAgentStrategyEditor
           showThreadList={showThreadList !== false}
           showToolsPanel={showToolsPanel !== false}
         />
-      </div>
+      </FeatureGate>
 
       <EditorStatusBar>Strategy assistant ready</EditorStatusBar>
     </EditorShell>

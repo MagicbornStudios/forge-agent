@@ -8,9 +8,9 @@ updated: 2026-02-08
 
 ## Visual direction
 
-- **Design language**: We aim for **Spotify-intense**, **neobrutal dark**, **Rave/glows**, and **shadcn-first** — professional, modern, and elegant. See [03 - Design language](03-design-language.mdx) for the one-pager.
-- **Unreal-style compactness**: dense, editor-first layouts; we keep density tokens but align visuals to the design language (radius, glows, type).
-- **Spotify/Photoshop-inspired**: clean, high-contrast hierarchy; one primary accent; clear sidebar and content areas.
+- **Design language**: We aim for **professional, sharp, and modern** — like VSCode, Photoshop, Spotify, and Unreal Engine. Clean hierarchy, one primary accent, no old/blocky or squishy look. See [03 - Design language](03-design-language.mdx) for the one-pager.
+- **Shadcn-first**: Base shadcn tokens (`--background`, `--foreground`, `--border`, `--radius-*`, `--shadow-*`) power **every** UI surface. No ad-hoc colors, radii, or shadows in editor chrome.
+- **Unreal-style compactness**: dense, editor-first layouts; we keep density tokens and align visuals to the design language (radius, type, soft depth).
 - **Declarative shadcn**: use shadcn UI primitives (DropdownMenu, Select, Sheet, Card, Button, etc.) instead of hand-rolled UI; default appearance should look like shadcn docs.
 - **Editor theming**: app theme is the base (driven by `ui.theme` via `AppThemeProvider`), editors may override via `EditorShell theme`.
 - **Atomic design**: atoms live in `packages/ui/src/components/ui/*` (shadcn). Build molecules and organisms from those primitives.
@@ -34,7 +34,7 @@ This is the **system of record** for density, borders, and cohesion across all e
 ### Principles
 
 - **Density by default**: editor surfaces run compact; marketing/landing pages are free to remain comfortable.
-- **Design language overrides**: We prefer the direction in [03 - Design language](03-design-language.mdx): neobrutal dark with Rave glows, shadcn-first radius and type. Use `--glow-*` and semantic tokens; avoid overly sharp or tiny radii everywhere.
+- **Design language overrides**: We prefer the direction in [03 - Design language](03-design-language.mdx): professional and sharp, shadcn-first radius and type. Use semantic tokens and soft depth; panel/tab active state by border or accent line, not heavy shadow.
 - **Context without redundancy**: if the project name appears in the app header, do not repeat it in panels or sidebars.
 - **One primary label per surface**: top left editor title is the only H1. Panels use compact titles only.
 - **Tokens over ad‑hoc**: spacing, border, shadow, and typography must use tokens.
@@ -79,14 +79,15 @@ Dropdown and context menus in `packages/ui` use these tokens so all menus get co
 
 ### Shadows
 
-- Shadows are **crisp** and offset (no blur) to echo Unreal’s tooling feel.
-- Use `shadow-[var(--shadow-xs)]` or `shadow-none` for most surfaces.
+- Default shadows are **soft and subtle** (low blur, no hard offset block). Use `shadow-[var(--shadow-xs)]`, `shadow-[var(--shadow-sm)]`, or `shadow-none` for surfaces.
+
+- Glows are used only for focus/selection where needed and kept subtle (e.g. 2px ring); panel/tab active state uses **border or accent line**, not heavy box-shadow.
 
 ### Context accents
 
 - Domain accents and focus rings are defined in `packages/shared/src/shared/styles/contexts.css`.
 - `--context-accent`, `--ring`, and `--sidebar-*` stay aligned to preserve hover/focus clarity.
-- Panel-edge hover glow and layout tab active state use `--context-accent` and `--context-glow`; resizable panel separators can be themed when inside `[data-domain]` if needed.
+- Panel and layout tab active state use `--context-accent` as a border (e.g. bottom edge); resizable panel separators can be themed when inside `[data-domain]` if needed.
 
 ### Token system (layers and when to use which)
 

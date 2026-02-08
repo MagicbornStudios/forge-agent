@@ -6,7 +6,6 @@ import { toast } from 'sonner';
 // New editor platform components
 import {
   EditorShell,
-  EditorHeader,
   EditorToolbar,
   EditorStatusBar,
   EditorOverlaySurface,
@@ -45,7 +44,8 @@ import {
 import { useCharacterStore } from '@/lib/domains/character/store';
 
 // Components
-import { Maximize2 } from 'lucide-react';
+import { Maximize2, Plus } from 'lucide-react';
+import { Button } from '@forge/ui/button';
 import { RelationshipGraphEditor, type CharacterViewportHandle } from '@/components/character/RelationshipGraphEditor';
 import { ActiveCharacterPanel } from '@/components/character/ActiveCharacterPanel';
 import { CharacterSidebar } from '@/components/character/CharacterSidebar';
@@ -402,13 +402,15 @@ export function CharacterEditor() {
           <p className="text-muted-foreground text-sm mb-4">
             Create your first character to start building relationships.
           </p>
-          <button
+          <Button
             type="button"
-            className="text-sm text-primary hover:underline"
+            variant="link"
+            className="text-sm text-primary"
             onClick={() => openOverlay(CREATE_CHARACTER_OVERLAY_ID)}
           >
-            + Create Character
-          </button>
+            <Plus className="mr-1 size-4" />
+            Create Character
+          </Button>
         </Card>
       </div>
     );
@@ -431,17 +433,6 @@ export function CharacterEditor() {
         density={editorDensity}
         className="bg-canvas"
       >
-        <EditorHeader>
-          <EditorHeader.Left>
-            <h1 className="text-lg font-bold">Characters</h1>
-          </EditorHeader.Left>
-          <EditorHeader.Center>
-            {activeChar && (
-              <span className="text-sm text-muted-foreground">{activeChar.name}</span>
-            )}
-          </EditorHeader.Center>
-        </EditorHeader>
-
         <EditorToolbar className="bg-sidebar border-b border-sidebar-border">
           <EditorToolbar.Left>
             <EditorToolbar.Group className="gap-2">

@@ -86,7 +86,7 @@ export function ThemeSwitcher() {
           <DropdownMenuItem
             key={t}
             onSelect={() => handleThemeSelect(t)}
-            className={currentTheme === t ? 'bg-accent' : ''}
+            className={currentTheme === t ? 'bg-accent text-xs' : 'text-xs'}
           >
             {THEME_LABELS[t]}
           </DropdownMenuItem>
@@ -96,7 +96,7 @@ export function ThemeSwitcher() {
           <DropdownMenuItem
             key={d}
             onSelect={() => handleDensitySelect(d)}
-            className={currentDensity === d ? 'bg-accent' : ''}
+            className={currentDensity === d ? 'bg-accent text-xs' : 'text-xs'}
           >
             {DENSITY_LABELS[d]}
           </DropdownMenuItem>
