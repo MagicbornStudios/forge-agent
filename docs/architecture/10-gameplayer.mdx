@@ -32,9 +32,12 @@ MVP GamePlayer runs **Dialogue + Character** first. Writer integration follows w
 
 ## Runtime (thin engine)
 
-- **Thin engine** = minimal runtime that: (1) loads project dialogue (Yarn or graph format), (2) evaluates dialogue flow (current node, lines, options, variables), (3) presents lines and choices to the player and advances state, (4) optionally plays character voice (ElevenLabs) when a line has a character with `voiceId`.
+We use **[Pixi'VN](https://pixi-vn.web.app)** as the playable runtime for demos and hosted builds. Pixi'VN accepts a **JSON format** ([Pixi'VN + Json](https://pixi-vn.web.app/json)): labels, dialogue lines, jumps, and end states. This is the same integration path used for Ink and Ren'Py on their side; we feed it from our own format or from adapted formats.
+
+- **How we feed it:** We do **not** run Yarn bytecode directly in the browser. We either: **(A)** export our Dialogue graph (or Yarn export) to **PixiVN Json** (labels + dialogue + `labelToOpen` / `end`) and call `importPixiVNJson()` then `narration.call(label, {})`, or **(B)** use a small runner that produces the same JSON structure from our graph/Yarn for Pixi'VN to consume.
+- **Thin engine:** Pixi'VN handles (1) loading the narrative (via JSON), (2) dialogue flow (current label, lines, jumps), (3) presenting lines and choices and advancing state, (4) optionally character voice (ElevenLabs) when a line has a character with `voiceId`.
 - **No full game engine:** We do not ship Unity/Unreal/Godot inside the app. We provide a **dialogue-first playable** that can later be exported to real engines (post-MVP).
-- **In-browser:** Runtime runs in the browser (React + state machine or small interpreter). **Publish and host** is part of MVP so others can play builds; play-in-Studio and play-via-hosted-URL are both in scope for MVP.
+- **In-browser:** Runtime runs in the browser. **Publish and host** is part of MVP so others can play builds; play-in-Studio and play-via-hosted-URL are both in scope for MVP.
 
 ---
 
@@ -72,8 +75,18 @@ MVP GamePlayer runs **Dialogue + Character** first. Writer integration follows w
 ## Where it lives in the repo
 
 - **Editor UI:** `apps/studio` — new GamePlayer editor component (e.g. `GamePlayerEditor`), registered in the app shell next to Dialogue, Character, Writer. Uses shared `EditorShell`, project context, and (optionally) DockLayout or a single play surface.
-- **Runtime / engine:** TBD. Options: (a) new package `packages/gameplayer-runtime` or (b) `apps/studio/lib/gameplayer/` for MVP. Prefer a package if we expect to reuse the runtime for hosted play (same runtime in Studio and on hosted build URL).
+- **Runtime / engine:** **[Pixi'VN](https://pixi-vn.web.app)** — npm packages `@drincs/pixi-vn` and `@drincs/pixi-vn-json` (see [Pixi'VN + Json Integration](https://pixi-vn.web.app/json)). Implementation can live in `packages/gameplayer-runtime` or `apps/studio/lib/gameplayer/` and depend on these packages; same runtime for in-Studio play and hosted build URL.
 - **Data:** No new Payload collections for MVP. Reads existing forge-graphs (or Yarn export) and project-scoped character data.
+
+---
+
+## Ecosystem adapters (import from other tools)
+
+**Goal:** Pixi'VN + Json is a **universal target**. We add **adapters** (translators) that convert existing project formats into PixiVN Json so they can run in our GamePlayer and be published as playable builds.
+
+- **Order:** **Yarn Spinner first** (we already have Yarn export/import in MVP; adapter = Yarn script or graph → PixiVN Json). Later: **RenPy**, **Ink**, **Twine** (each has existing communities and many "dead" or stalled projects).
+- **Value for us:** Creators from those ecosystems can **import** projects (including dead or abandoned ones) into our system; we **generate assets** (AI) so they don't need to reassemble art/audio elsewhere. That drives **renewed interest**, more catalog content, and customer acquisition from RenPy/Ink/Twine/Yarn communities.
+- **Flow:** RenPy, Ink, Twine, Yarn Spinner → **Adapters** → Pixi'VN + Json → GamePlayer (demos + hosted builds). Four ecosystems into one runtime. See [Ecosystem and import strategy](../business/ecosystem-and-import-strategy.mdx) for business context.
 
 ---
 
@@ -90,7 +103,9 @@ See [STATUS § Next](../agent-artifacts/core/STATUS.md) and [decisions: MVP orde
 
 ## References
 
+- [Pixi'VN + Json Integration](https://pixi-vn.web.app/json) — JSON format for narrative (labels, dialogue, jumps, end).
 - [09 - Dialogue system and Yarn Spinner](09-dialogue-domain-and-yarn-spinner.mdx)
+- [Ecosystem and import strategy](../business/ecosystem-and-import-strategy.mdx) — Adapters and customer acquisition.
 - [Product roadmap](../roadmap/product.mdx) — GamePlayer section
 - [MVP and first revenue](../product/mvp-and-revenue.mdx)
 - [STATUS § Next](../agent-artifacts/core/STATUS.md)

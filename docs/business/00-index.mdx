@@ -14,9 +14,10 @@ Formal business rules for the Studio platform: revenue model, payments, listings
 
 | Doc | Summary |
 |-----|--------|
-| [Revenue and Stripe](revenue-and-stripe.mdx) | Revenue model (platform + creator), Stripe Connect from day one, hosted Checkout and invoicing (Stripe defaults), application fee; developer program usage-based payouts. |
+| [Revenue and Stripe](revenue-and-stripe.mdx) | Revenue model (platform + creator), Stripe Connect from day one, hosted Checkout and invoicing (Stripe defaults), application fee; developer program revenue split while official. |
 | [Listings and clones](listings-and-clones.mdx) | Listing creation free; buyers pay clone price; creator chooses indefinite vs version-only; clone scope and media references; license record and clone-again. |
-| [Developer program and editor ecosystem](developer-program-and-editors.mdx) | Approved editors, data contracts, community vs official apps, submission (GitHub, fork), usage payouts; first-class narrative and preferred integrations (Babylon.js, Kaplay, Phaser, video). |
+| [Developer program and editor ecosystem](developer-program-and-editors.mdx) | Approved editors, data contracts, community vs official apps, submission (GitHub, fork), revenue split while official; first-class narrative and preferred integrations (Babylon.js, Kaplay, Phaser, video). |
+| [Ecosystem and import strategy](ecosystem-and-import-strategy.mdx) | GamePlayer runtime (Pixi'VN + Json); adapters (Yarn first, then RenPy, Ink, Twine); renewed interest and asset generation for creators from other ecosystems. |
 
 ---
 
@@ -25,4 +26,5 @@ Formal business rules for the Studio platform: revenue model, payments, listings
 - **First revenue** = paid clone: buyers pay the price the creator sets to clone a project (or template, or Strategy core). Listing creation is free.
 - **Stripe Connect from day one** so creators get paid directly; platform takes a cut. We use Stripe hosted Checkout and Stripe for invoicing—no custom payment forms.
 - **Clone** = full project copy (settings, characters, graphs, pages, etc.) with media as references until the clone owner replaces them. A **license** record enables "clone again."
-- **Developer program** (after MVP): developers can submit editors/apps (web tech, dev kit); approved editors receive usage-based payouts; community apps are listable and installable without payouts. See [Developer program and editor ecosystem](developer-program-and-editors.mdx).
+- **Developer program** (after MVP): developers can submit editors/apps (web tech, dev kit); approved editors receive a revenue split while in the official suite; community apps are listable and installable without payouts. See [Developer program and editor ecosystem](developer-program-and-editors.mdx).
+- **Ecosystem adapters:** Import from Yarn Spinner (first), then RenPy, Ink, Twine; Pixi'VN as universal runtime; we generate assets so creators get renewed interest. See [Ecosystem and import strategy](ecosystem-and-import-strategy.mdx).
