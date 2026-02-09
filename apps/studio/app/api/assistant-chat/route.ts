@@ -1,8 +1,12 @@
 import { streamText, convertToModelMessages, jsonSchema, tool, type ToolSet } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
+import { getLogger } from '@/lib/logger';
 import { getOpenRouterConfig } from '@/lib/openrouter-config';
 import { resolvePrimaryAndFallbacks } from '@/lib/model-router/server-state';
+import { resolveAssistantChatModel } from '@/lib/model-router/resolve-for-routes';
 import { createFetchWithModelFallbacks } from '@/lib/model-router/openrouter-fetch';
+
+const log = getLogger('assistant-chat');
 
 type ToolSchema = {
   description?: string;
@@ -79,10 +83,15 @@ export async function POST(req: Request) {
   const messages = Array.isArray(body.messages) ? body.messages : [];
   const system = typeof body.system === 'string' ? body.system : undefined;
   const callSettings = body.callSettings ?? {};
+  const { primary: selectedPrimary, fallbacks: selectedFallbacks } = resolveAssistantChatModel(
+    body,
+    resolvePrimaryAndFallbacks,
+  );
   const requestedModel = resolveRequestedModel(body.config);
-  const { primary, fallbacks } = resolvePrimaryAndFallbacks();
-  const selectedPrimary = requestedModel ?? primary;
-  const selectedFallbacks = requestedModel ? [] : fallbacks;
+  log.info(
+    { primary: selectedPrimary, fallbacksCount: selectedFallbacks.length, override: !!requestedModel },
+    'Model resolved',
+  );
 
   const customFetch =
     selectedFallbacks.length > 0

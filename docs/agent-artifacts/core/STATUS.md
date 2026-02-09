@@ -43,6 +43,14 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 
 ## Ralph Wiggum loop
 
+- Done (2026-02-09): Structured logging (pino, file, namespaces), client-to-file optional in dev, PostHog LLM doc, standard-practices doc, health endpoint; td-18; decisions ADR; errors-and-attempts logging entry; verify script docs.
+- Done (2026-02-09): td-12 Apply context tokens to editor primitives: EditorInspector, EditorBottomPanel, EditorTabGroup, EditorReviewBar, EditorToolbar, EditorHeader, EditorStatusBar use border-[var(--context-accent)] for chrome edges; GraphSidebar tab bar same.
+- Done (2026-02-09): td-11 Component-level context override: SectionHeader accepts optional `context` prop; when set, wraps content in `data-domain={context}` for contexts.css; documented in editor README and 01-styling-and-theming.
+- Done (2026-02-09): td-8 Panel and tab accent pass: DockPanel header now has border-b-2 border-[var(--context-accent)]; DockviewSlotTab, EditorTab, PanelTabs, dockview-overrides already used --context-accent; Inspector sections inherit via data-domain.
+- Done (2026-02-09): td-7 Studio UI token audit: replaced ad-hoc px/py/gap in apps/studio/components (graph, model-switcher, ProjectSwitcher, DialogueEditor, CharacterEditor, VideoEditor, settings, character, video, ai, forge, paywall, CreateNodeModal, etc.) with --control-*, --panel-padding.
+- Done (2026-02-09): td-6 Editor chrome token audit: replaced ad-hoc px/py/gap in shared editor components (DockviewSlotTab, EditorFileMenu, EditorTab, EditorMenubar, EditorTabGroup, EditorBottomPanel, EditorReviewBar, PanelSettings) with themes.css tokens (--control-padding-x/y, --control-gap, --panel-padding).
+- Done (2026-02-09): Knip dead-code triage (td-14, td-15, td-16, td-17): ignoreFiles for root legacy + entry/config/scripts/tests/CSS; ignoreDependencies for Radix/ui and false positives; ignoreIssues for barrels and Payload/generated; removed apps/studio/lib/graph-to-sequence.ts; knip-findings and technical-debt-roadmap updated.
+- Done (2026-02-09): td-4 + td-5: ViewportMeta uses only viewport data attrs (no data-editor-*); AppShell openEditor uses only editorId; removed redundant modes/index re-export; legacy removal plan executed (viewport/app-shell clean).
 - Done (2026-02-04): Monorepo reorg to `apps/studio` + `packages/*`, added `packages/ui` for shared shadcn atoms, aligned imports to `@forge/ui`, updated settings to be config-based with overrides, aligned video domain types to Payload `video-docs`, added entitlements + FeatureGate + paywall, and rebuilt Studio.
 - Done (2026-02-04): Added Users + Projects collections, seed data (admin + user + demo graph + demo project), and fixed payload type generation via `scripts/generate-payload-types.mjs`.
 - Done (2026-02-05): Added plan field to users and `/api/me` to hydrate entitlements from the signed-in user plan.
@@ -97,7 +105,18 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 - Done (2026-02-08): Listings API (Payload collection `listings` + GET /api/catalog for published only); catalog page on marketing at /catalog with card grid (Unity Asset Store / Bandlab style).
 - Done (2026-02-08): Create listing flow (list-2b): "List in catalog" opens CreateListingSheet; Payload SDK create for listings; public catalog at GET /api/catalog so Payload REST handles /api/listings with auth.
 - Done (2026-02-08): Platform-mono docs and decisions: added docs/business/ (revenue-and-stripe, listings-and-clones), ADRs in decisions.md (Stripe Connect day one, clone versioning, license, media refs), task breakdown (Connect pay-1a/b/c, license-1/2, list-3), mvp-and-revenue and how-to 12 links.
-- In progress: Platform (another agent).
+- Done (2026-02-08): pay-1a Stripe Connect account: users.stripeConnectAccountId; POST /api/stripe/connect/create-account (idempotent); docs (platform account id, support/legal URLs, payouts single-seller, business backlog); .env.example placeholders.
+- Done (2026-02-08): pay-1b Connect onboarding link: POST /api/stripe/connect/onboarding-link; /api/me returns stripeConnectAccountId; AppBarUser "Set up payouts" for PLATFORM_LIST when no Connect account, opens Stripe hosted onboarding.
+- Done (2026-02-08): Model routing verification and refactor: model-routing matrix in 06-model-routing-and-openrouter.mdx; Jest contract tests (server-state, resolve-for-routes, responses-compat) in apps/studio/__tests__/model-router; optional verify-openrouter script + pnpm run verify-openrouter; root app/api/copilotkit and root lib/openrouter-config + lib/model-router removed; single CopilotKit runtime and model router in apps/studio only; errors-and-attempts and STATUS updated.
+- Done (2026-02-08): license-1 Licenses collection (user, listing, stripeSessionId, grantedAt, optional versionSnapshotId); webhook branches on metadata listingId/buyerId → create license (overrideAccess), else Pro plan upgrade.
+- Done (2026-02-08): clone-1 Clone-to-account API: POST /api/clone (body: projectId, optional slug); copies project, forge-graphs, characters, relationships, pages, blocks; media as refs; returns projectId.
+- Done (2026-02-08): Webhook first clone: clone logic in lib/clone/clone-project-to-user.ts; license.clonedProjectId added; webhook creates license then clones listing.project to buyer and updates license with clonedProjectId.
+- Done (2026-02-08): GET /api/checkout/session-result (auth; session_id; returns clonedProjectId, listingTitle, listingId) for success page.
+- Done (2026-02-08): check-2 + clone-2: Marketing createListingCheckoutSession + fetchCheckoutSessionResult; catalog detail Get button (CatalogCheckoutButton); checkout/success and checkout/cancel pages; Open in Studio and Account links.
+- Done (2026-02-08): POST /api/licenses/[id]/clone (clone-again by license; auth; source = listing.project).
+- Done (2026-02-08): GET /api/licenses (auth; list current user licenses with listing title).
+- Done (2026-02-08): license-2 GET /api/licenses, POST /api/licenses/[id]/clone; marketing account/licenses page with Clone again.
+- In progress: None.
 - Other agents: None reported.
 - Done: CopilotKit architecture doc + roadmap implementation (image gen, structured output, plan-execute-review-commit).
 - Next slice: **MVP-critical work first** — e.g. First-class Yarn Spinner (export/import `.yarn`), then GamePlayer first slice (see [10 - GamePlayer](../../architecture/10-gameplayer.mdx)), or plans/capabilities for platform. Video work (Twick → VideoDoc, workflow panel) is **when Video is unlocked** (not in MVP).
@@ -137,16 +156,17 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 
 8. **Editors as MCP Apps** — **After MVP.** Define `McpAppDescriptor` per editor; build Studio MCP Server. See [07 - Editors as MCP Apps](../../architecture/07-modes-as-mcp-apps.mdx). **[Impact: Large]**
 9. **Platform: publish and host builds** — Authors publish project build; we host playable narrative. Build pipeline, storage, playable runtime. **[Impact: Large]**
-10. **Marketing site overhaul (Part B)** — Placeholder routes (roadmap, changelog, pricing, demo, privacy, terms); docs content structure and nav; public roadmap and changelog pages; full pricing page; customer admin (sidebar, account/settings, account/billing, account/api-keys); optional login block and Hero “Watch Demo”. Implement as slices 1–8 per plan. **[Impact: Large]** *(Slices 1–8 completed.)*
+10. **Developer program and editor ecosystem** — **After MVP.** Approved editors, data contracts, usage-based payouts (Stripe Connect), community vs official apps, MCP Apps for third-party editors, submission (GitHub fork). See [Developer program and editor ecosystem](../../business/developer-program-and-editors.mdx). **[Impact: Epic]**
+11. **Marketing site overhaul (Part B)** — Placeholder routes (roadmap, changelog, pricing, demo, privacy, terms); docs content structure and nav; public roadmap and changelog pages; full pricing page; customer admin (sidebar, account/settings, account/billing, account/api-keys); optional login block and Hero “Watch Demo”. Implement as slices 1–8 per plan. **[Impact: Large]** *(Slices 1–8 completed.)*
 **When Video is unlocked (Video not in MVP)**
 
-11. **Twick → VideoDoc persistence + plan/commit UI** — When Video editor is unlocked: map Twick timeline state to our `VideoDoc` draft and connect persistence (save/load); add plan/commit UI for video proposals. **[Impact: Medium]**
-12. **Video workflow panel** — When Video editor is unlocked: plan -> patch -> review mirroring Dialogue. **[Impact: Medium]**
+12. **Twick → VideoDoc persistence + plan/commit UI** — When Video editor is unlocked: map Twick timeline state to our `VideoDoc` draft and connect persistence (save/load); add plan/commit UI for video proposals. **[Impact: Medium]**
+13. **Video workflow panel** — When Video editor is unlocked: plan -> patch -> review mirroring Dialogue. **[Impact: Medium]**
 
 **Ongoing**
 
-13. Track any new build warnings in [errors-and-attempts.md](./errors-and-attempts.md).
-14. Re-run `pnpm --filter @forge/studio build` after package updates.
+14. Track any new build warnings in [errors-and-attempts.md](./errors-and-attempts.md).
+15. Re-run `pnpm --filter @forge/studio build` after package updates.
 
 **Product roadmap:** [docs/roadmap/](../../roadmap/00-roadmap-index.mdx) - [product.mdx](../../roadmap/product.mdx) for editors and initiatives. **Roadmap remaining:** Full Yarn Spinner implementation (compiler, runtime preview, localization); vision/image input (model registry + chat upload); co-agents (documented, not used). Optional future: agent graphs/subgraphs in runtime. See [architecture/03-copilotkit-and-agents.mdx](../../architecture/03-copilotkit-and-agents.mdx) Section 12.
 

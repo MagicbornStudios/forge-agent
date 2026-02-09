@@ -7,6 +7,7 @@ import {
   SettingsIcon,
   CreditCardIcon,
   KeyIcon,
+  PackageIcon,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -21,6 +22,7 @@ import {
 
 const navItems = [
   { title: 'Overview', href: '/account', icon: LayoutDashboardIcon },
+  { title: 'Licenses', href: '/account/licenses', icon: PackageIcon },
   { title: 'Settings', href: '/account/settings', icon: SettingsIcon },
   { title: 'Billing', href: '/account/billing', icon: CreditCardIcon },
   { title: 'API Keys', href: '/account/api-keys', icon: KeyIcon },

@@ -94,7 +94,7 @@ export function PanelSettings({ settings, panelId, className }: PanelSettingsPro
           <Settings className="h-3.5 w-3.5" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-64 p-2" sideOffset={4}>
+      <PopoverContent align="end" className="w-64 p-[var(--panel-padding)]" sideOffset={4}>
         <div className="space-y-1">
           {settings.map((setting) => (
             <PanelSettingRow key={setting.id} setting={setting} />
@@ -109,7 +109,7 @@ function PanelSettingRow({ setting }: { setting: PanelSettingDef }) {
   switch (setting.type) {
     case 'toggle':
       return (
-        <label className="flex items-center justify-between gap-2 rounded px-2 py-1.5 hover:bg-muted cursor-pointer">
+        <label className="flex items-center justify-between gap-[var(--control-gap)] rounded px-[var(--control-padding-x)] py-[var(--control-padding-y)] hover:bg-muted cursor-pointer">
           <div className="min-w-0">
             <span className="text-xs font-medium">{setting.label}</span>
             {setting.description && (
@@ -148,7 +148,7 @@ function PanelSettingRow({ setting }: { setting: PanelSettingDef }) {
 
     case 'custom':
       return (
-        <div className="px-2 py-1.5">
+        <div className="px-[var(--control-padding-x)] py-[var(--control-padding-y)]">
           <span className="text-xs font-medium">{setting.label}</span>
           {setting.description && (
             <p className="text-[10px] text-muted-foreground mb-1">{setting.description}</p>

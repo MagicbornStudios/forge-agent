@@ -238,7 +238,7 @@ export function ActiveCharacterPanel({ character, onUpdate }: Props) {
         {voicesError && (
           <p className="text-xs text-muted-foreground">{voicesError}</p>
         )}
-        <div className="flex gap-2">
+        <div className="flex gap-[var(--control-gap)]">
           <Input
             value={previewText}
             onChange={(e) => setPreviewText(e.target.value)}
@@ -258,7 +258,7 @@ export function ActiveCharacterPanel({ character, onUpdate }: Props) {
         )}
         {previewUrl && (
           <AudioPlayerProvider>
-            <div className="flex items-center gap-2 rounded-md border border-border bg-muted/40 px-2 py-1.5">
+            <div className="flex items-center gap-[var(--control-gap)] rounded-md border border-border bg-muted/40 px-[var(--control-padding-x)] py-[var(--control-padding-y)]">
               <AudioPlayerButton
                 item={{ id: 'preview', src: previewUrl }}
                 variant="ghost"

@@ -60,7 +60,7 @@ export function GraphSidebar({
           value={currentTab}
           onValueChange={(value) => value && setTab(value)}
           variant="outline"
-          className="w-full flex rounded-none bg-transparent h-8 px-0 gap-0 m-0 min-w-0 overflow-hidden border-b border-border"
+          className="w-full flex rounded-none bg-transparent h-8 px-0 gap-0 m-0 min-w-0 overflow-hidden border-b-2 border-[var(--context-accent)]"
         >
           {tabs.map((tab) => {
             const isActive = tab.id === currentTab;
@@ -75,7 +75,7 @@ export function GraphSidebar({
                 value={tab.id}
                 aria-label={tab.label}
                 className={cn(
-                  'min-w-0 flex-1 text-xs rounded-none px-1 py-0.5 truncate leading-tight relative',
+                  'min-w-0 flex-1 text-xs rounded-none px-[var(--control-padding-x)] py-[var(--control-padding-y)] truncate leading-tight relative',
                   'text-sidebar-foreground/80 hover:text-sidebar-foreground transition-colors',
                   'data-[state=on]:bg-sidebar-accent data-[state=on]:text-sidebar-accent-foreground',
                   'border-l-2'

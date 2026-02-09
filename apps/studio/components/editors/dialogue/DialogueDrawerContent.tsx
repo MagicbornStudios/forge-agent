@@ -39,17 +39,17 @@ export function DialogueDrawerContent({ workflowPanel }: DialogueDrawerContentPr
           <TabsContent value="assistant" className="flex-1 mt-2 min-h-0 p-0">
             <DialogueAssistantPanel className="h-full" />
           </TabsContent>
-          <TabsContent value="workflow" className="flex-1 mt-2 min-h-0 p-2">
+          <TabsContent value="workflow" className="flex-1 mt-2 min-h-0 p-[var(--panel-padding)]">
             {workflowPanel ?? (
               <div className="text-xs text-muted-foreground">
                 Workflow panel is not available in this editor.
               </div>
             )}
           </TabsContent>
-          <TabsContent value="copilotkit" className="flex-1 mt-2 min-h-0 p-2">
+          <TabsContent value="copilotkit" className="flex-1 mt-2 min-h-0 p-[var(--panel-padding)]">
             <CopilotKitDevToolsPanel className="h-full" />
           </TabsContent>
-          <TabsContent value="assistant-devtools" className="flex-1 mt-2 min-h-0 p-2">
+          <TabsContent value="assistant-devtools" className="flex-1 mt-2 min-h-0 p-[var(--panel-padding)]">
             <AssistantDevToolsPanel className="h-full" />
           </TabsContent>
         </Tabs>

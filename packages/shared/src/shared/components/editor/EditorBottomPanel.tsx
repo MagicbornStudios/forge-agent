@@ -16,12 +16,12 @@ export function EditorBottomPanel({ children, className }: EditorBottomPanelProp
       role="region"
       aria-label="Bottom panel"
       className={cn(
-        'flex min-h-[120px] max-h-[280px] flex-col border-t border-border bg-muted',
+        'flex min-h-[120px] max-h-[280px] flex-col border-t-2 border-[var(--context-accent)] bg-muted',
         className,
       )}
     >
       <ScrollArea className="h-full">
-        <div className="p-2">{children}</div>
+        <div className="p-[var(--panel-padding)]">{children}</div>
       </ScrollArea>
     </div>
   );

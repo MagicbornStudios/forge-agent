@@ -27,7 +27,7 @@ export function EditorStatusBar({ children, className }: EditorStatusBarProps) {
     <footer
       role="status"
       className={cn(
-        'min-h-[var(--status-height)] flex items-center px-[var(--panel-padding)] text-[11px] text-muted-foreground border-t border-border bg-muted shrink-0',
+        'min-h-[var(--status-height)] flex items-center px-[var(--panel-padding)] text-[11px] text-muted-foreground border-t-2 border-[var(--context-accent)] bg-muted shrink-0',
         className,
       )}
     >

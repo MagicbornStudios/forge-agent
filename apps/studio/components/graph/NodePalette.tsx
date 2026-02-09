@@ -92,10 +92,10 @@ export function NodePalette({
         searchPlaceholder="Search nodes..."
         focusedEditor={focusedEditor}
       />
-      <div className="flex-1 overflow-y-auto py-1">
+      <div className="flex-1 overflow-y-auto py-[var(--control-padding-y)]">
         {Object.entries(groupedItems).map(([category, nodes]) => (
           <div key={category} className="mb-3">
-            <div className="border-l-2 border-[var(--context-accent)] px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+            <div className="border-l-2 border-[var(--context-accent)] px-[var(--control-padding-x)] py-[var(--control-padding-y)] text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
               {labels[category] ?? category}
             </div>
             <div className="space-y-0.5">
@@ -130,7 +130,7 @@ export function NodePalette({
           </div>
         ))}
         {Object.keys(groupedItems).length === 0 && (
-          <div className="px-3 py-6 text-center text-xs text-muted-foreground">
+          <div className="px-[var(--panel-padding)] py-6 text-center text-xs text-muted-foreground">
             {searchQuery ? 'No nodes found' : 'No nodes available'}
           </div>
         )}

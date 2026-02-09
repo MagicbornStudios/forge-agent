@@ -155,7 +155,7 @@ export function CreateCharacterModal({ onSubmit, onClose }: Props) {
 
       <div className="space-y-2">
         <Label>Voice preview</Label>
-        <div className="flex gap-2">
+        <div className="flex gap-[var(--control-gap)]">
           <Input
             value={previewText}
             onChange={(e) => setPreviewText(e.target.value)}
@@ -175,7 +175,7 @@ export function CreateCharacterModal({ onSubmit, onClose }: Props) {
         )}
         {previewUrl && (
           <AudioPlayerProvider>
-            <div className="flex items-center gap-2 rounded-md border border-border bg-muted/40 px-2 py-1.5">
+            <div className="flex items-center gap-[var(--control-gap)] rounded-md border border-border bg-muted/40 px-[var(--control-padding-x)] py-[var(--control-padding-y)]">
               <AudioPlayerButton
                 item={{ id: 'preview', src: previewUrl }}
                 variant="ghost"
@@ -192,7 +192,7 @@ export function CreateCharacterModal({ onSubmit, onClose }: Props) {
         )}
       </div>
 
-      <div className="flex gap-2 justify-end pt-2">
+      <div className="flex gap-[var(--control-gap)] justify-end pt-2">
         <Button type="button" variant="ghost" onClick={onClose}>
           Cancel
         </Button>

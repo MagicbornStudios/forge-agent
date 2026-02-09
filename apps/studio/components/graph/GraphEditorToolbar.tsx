@@ -14,7 +14,7 @@ interface GraphEditorToolbarProps {
 
 export function GraphEditorToolbar({ label, onCreateNew, className }: GraphEditorToolbarProps) {
   return (
-    <div className={cn('flex items-center gap-2', className)}>
+    <div className={cn('flex items-center gap-[var(--control-gap)]', className)}>
       {onCreateNew && (
         <Tooltip>
           <TooltipTrigger asChild>
@@ -23,7 +23,7 @@ export function GraphEditorToolbar({ label, onCreateNew, className }: GraphEdito
               variant="outline"
               size="sm"
               onClick={onCreateNew}
-              className="h-7 px-2 text-xs border-border text-foreground"
+              className="h-7 px-[var(--control-padding-x)] text-xs border-border text-foreground"
               title={`Create a new ${label.toLowerCase()}`}
             >
               <Plus className="size-3 mr-1.5 shrink-0" />

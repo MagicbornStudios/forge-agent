@@ -172,8 +172,8 @@ export function AppShell() {
         required: true,
       },
     ],
-    handler: async ({ editorId, modeId }) => {
-      const id = String(editorId ?? modeId);
+    handler: async ({ editorId }) => {
+      const id = String(editorId);
       if (editorIdsForActions.includes(id as EditorId)) {
         const nextId = id as EditorId;
         openWorkspace(nextId);

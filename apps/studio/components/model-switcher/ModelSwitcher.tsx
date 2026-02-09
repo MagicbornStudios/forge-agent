@@ -118,11 +118,11 @@ export function ModelSwitcher() {
           aria-expanded={open}
           tooltip="Model routing"
           className={cn(
-            'min-w-[220px] justify-between gap-2 text-xs text-foreground',
+            'min-w-[220px] justify-between gap-[var(--control-gap)] text-xs text-foreground',
             'hover:bg-accent hover:text-accent-foreground',
           )}
         >
-          <span className="flex items-center gap-2 min-w-0">
+          <span className="flex items-center gap-[var(--control-gap)] min-w-0">
             <span
               className={cn(
                 'h-2 w-2 shrink-0 rounded-full',
@@ -137,13 +137,13 @@ export function ModelSwitcher() {
       </PopoverTrigger>
       <PopoverContent className="p-0 min-w-[20rem] w-80" align="end">
         {registry.length === 0 && !isLoading ? (
-          <div className="px-3 py-4 text-xs text-muted-foreground">
+          <div className="px-[var(--panel-padding)] py-4 text-xs text-muted-foreground">
             Models load from OpenRouter when available. Check API key if empty.
           </div>
         ) : (
           <Command className="rounded-lg border-0" shouldFilter={true}>
             <CommandInput placeholder="Search models..." className="h-9 text-xs" />
-            <div className="flex items-center justify-between gap-2 px-3 py-2 text-xs border-b">
+            <div className="flex items-center justify-between gap-[var(--control-gap)] px-[var(--panel-padding)] py-[var(--control-padding-y)] text-xs border-b">
               <div className="flex flex-col">
                 <span className="font-medium">Responses v2 only</span>
                 <span className="text-[10px] text-muted-foreground">
@@ -156,7 +156,7 @@ export function ModelSwitcher() {
               />
             </div>
             {responsesCompatOnly && displayModels.length === 0 && registry.length > 0 && (
-              <div className="px-3 py-2 text-[11px] text-muted-foreground border-b">
+              <div className="px-[var(--panel-padding)] py-[var(--control-padding-y)] text-[11px] text-muted-foreground border-b">
                 No responses-v2 compatible models detected in the current list. CopilotKit will
                 fall back to a compatible model automatically.
               </div>
@@ -195,7 +195,7 @@ export function ModelSwitcher() {
                         className={cn('mr-2 size-3 shrink-0', enabledModelIds.includes(model.id) ? 'opacity-100' : 'opacity-0')}
                       />
                       <span className="flex-1 truncate">{model.label}</span>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-[var(--control-gap)]">
                         {showTierBadge && <TierBadge tier={model.tier} />}
                         <CompatBadge value={model.supportsResponsesV2 ?? null} />
                       </div>
@@ -218,7 +218,7 @@ export function ModelSwitcher() {
                         className={cn('mr-2 size-3 shrink-0', activeModelId === model.id ? 'opacity-100' : 'opacity-0')}
                       />
                       <span className="flex-1 truncate">{model.label}</span>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-[var(--control-gap)]">
                         {showTierBadge && <TierBadge tier={model.tier} />}
                         <CompatBadge value={model.supportsResponsesV2 ?? null} />
                       </div>

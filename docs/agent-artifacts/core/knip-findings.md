@@ -35,6 +35,10 @@ See also [tool-usage.md](./tool-usage.md) (Dead code section).
 
 **Worth dedicated triage:** Root-level `app/`, `lib/`, `types/` (legacy from pre-monorepo?) — see td-16. Unused files in Studio/packages — see td-14. Unused dependencies — see td-15.
 
+## Root legacy (td-16)
+
+Root `app/`, `lib/`, and `types/` are **legacy** from pre-monorepo. The real app is `apps/studio`; Jest maps `@/` to `apps/studio/`, so root `__tests__` use Studio’s lib/types, not root. Root app is not run by any script (`dev`/`build` target `@forge/studio`). Root lib is duplicate of `apps/studio/lib` (e.g. graph-operations); domain-forge’s re-export resolves to Studio’s lib when built. These paths are in **ignoreFiles** so Knip does not report them as unused. Kept for reference; a future slice can delete or move under apps/studio if desired.
+
 ## How to triage
 
 1. Prefer **ignoreFiles** or **ignoreWorkspaces** in [knip.json](../../../knip.json) for known-good patterns (e.g. entry points, config, barrels) rather than deleting code that is actually used.
@@ -43,3 +47,11 @@ See also [tool-usage.md](./tool-usage.md) (Dead code section).
 4. Tech-debt items: [technical-debt-roadmap.md](./technical-debt-roadmap.md) td-14 (unused files), td-15 (unused dependencies), td-16 (root dead code), td-17 (unused exports).
 
 **Triage done:** As of 2026-02-09, `react-resizable-panels` was removed from apps/studio/package.json (only used by @forge/ui resizable; Studio layout uses Dockview). td-15 triage can skip this.
+
+**td-14 (unused files) triage:** Extended ignoreFiles for entry/config (`jest.config.js`, `jest.setup.js`), `scripts/**`, `__mocks__/**`, `__tests__/**`, `vendor/twick/scripts/**`, and `packages/shared/src/shared/styles/*.css`. Removed `apps/studio/lib/graph-to-sequence.ts` (rg-confirmed no imports). Other reported files left as-is (barrels, components, or used at runtime).
+
+**td-15 (unused dependencies) triage:** Added **ignoreDependencies** in knip.json for Radix UI packages (used transitively via @forge/ui or by framework), @twick/*, fumadocs-ui, next-mdx-remote, react-markdown, remark-gfm, vaul, cmdk, class-variance-authority, posthog-js, next-themes, cobe, tailwindcss-animate, and devDependencies (tsup, @testing-library/*, eslint, eslint-config-next, jest-environment-jsdom, tailwindcss, payload). No dependencies removed; all kept or ignored per plan.
+
+**td-17 (unused exports) triage:** Added **ignoreIssues** in knip.json for `**/index.ts`, `**/payload-types.ts`, `**/payload/collections/*.ts`, and `**/source.config.ts` with issue types `["exports","types"]` so barrel and Payload/generated exports are not reported. No exports removed; barrel/runtime/generated ignored per plan.
+
+**Triage done (full):** 2026-02-09. td-14, td-15, td-16, td-17 completed. See technical-debt-roadmap.md (all set to done) and STATUS.md (Ralph Wiggum Done).

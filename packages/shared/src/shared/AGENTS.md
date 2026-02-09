@@ -7,6 +7,16 @@ Workspace Platform Engineer: owns `packages/shared/src/shared` (editor component
 ## Conventions
 
 - **Public API:** Use **Editor\*** components only (`EditorShell`, `DockLayout`, `EditorToolbar`, etc.). **Workspace\*** UI components have been removed; Editor* + DockLayout are the only shell. Types (Selection, ToolbarGroup, InspectorSection, OverlaySpec, etc.) live in `shared/workspace` and are re-exported for editor and copilot use.
+
+## Workspace (internal types only)
+
+- **Not part of public API.** Consume via `@forge/shared` (main entry). Do not document or use subpath `@forge/shared/workspace` for consumers.
+- **Types only** — selection, focus, modal, navigation, draft, proposal, toolbar, overlays, inspector, workspace-ui-spec. No domain logic or store implementation.
+- **Selection** — Discriminant union: `none` | `entity` | `textRange` | `canvasObject`. Use `toEntitySelection(kind, id)` for legacy kinds. Adapters map editor state into this shape.
+- **Overlays** — `OverlaySpec[]` + `ActiveOverlay`; no registry. Editor declares list in one place.
+- **Capabilities** — `WorkspaceCapabilities` interface; editors implement, chat calls. No imperative UI refs.
+- **Workspace UI spec** — Declarative slots: `header`, `toolbar`, `left`, `main`, `right`, `statusBar`, `bottom`, `overlays`.
+- **Modal** — Legacy `ModalRoute` / `ModalRegistry`; prefer OverlaySpec + EditorOverlaySurface for new code.
 - **Editor shell**: Declarative, slot-based. See `components/editor/README.md` for slot map and how to build an editor.
 - **Dock layout**: `DockLayout` is the layout primitive. It wraps the main slot in `ViewportMeta` metadata. Always provide `viewportId` + `viewportType` via the `viewport` prop.
 - **Atomic design**: shadcn atoms live in `packages/ui/src/components/ui/*`; shared editor UI composes those atoms into molecules.

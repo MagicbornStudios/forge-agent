@@ -11,6 +11,7 @@
     "start": "pnpm --filter @forge/studio start",
     "lint": "pnpm --filter @forge/studio lint",
     "test": "pnpm --filter @forge/studio test",
+    "verify-openrouter": "node scripts/verify-openrouter-model-routing.mjs",
     "payload:types": "pnpm --filter @forge/studio payload:types",
     "knip": "knip",
     "registry:start": "verdaccio --config ./verdaccio.yaml",

@@ -30,7 +30,26 @@ We use **OpenRouter** for chat, structured output, plan generation, and image ge
 - **CopilotKit filter**: The ModelSwitcher includes a “Responses v2 only” filter (required for CopilotKit). It defaults on and hides incompatible models when selecting for the CopilotKit surface.
   - **Setting key**: `ai.responsesCompatOnly` (app scope) persists the filter state.
 
-## Where model is chosen
+## Runtime and router location
+
+The **CopilotKit runtime** and **model router** (server-state, registry, openrouter-config, responses-compat) live **only** in `apps/studio`. There is no second runtime or model router at repo root. All API routes in use are under `apps/studio/app/api/`.
+
+## Model routing matrix (contract for tests)
+
+For each surface, this table is the source of truth for which route, which API (chat vs responses), where the model ID comes from, and how override works. Keep in sync with handler code and tests.
+
+| Use case | Route | API | Model source | Override |
+|----------|--------|-----|--------------|----------|
+| CopilotKit (sidebar) | `POST /api/copilotkit` | **Responses** (BuiltInAgent); **v2 only** — responses-compat + fallback model | server-state `resolvePrimaryAndFallbacks()` | Header `x-forge-model` (from settings `ai.model` when not app/auto); when set, fallbacks = [] |
+| assistant-ui (Workbench / Strategy chat) | `POST /api/assistant-chat` | **Chat** (`streamText`); no v2 filter | Same server-state | Body `config.modelName` (optional); when set, fallbacks = [] |
+| forge/plan | `POST /api/forge/plan` | Chat-style with JSON schema | Same server-state | None |
+| structured-output | `POST /api/structured-output` | Chat-style with JSON schema | Same server-state | None |
+| image-generate | `POST /api/image-generate` | OpenRouter image modality | Env `OPENROUTER_IMAGE_MODEL` or `DEFAULT_IMAGE_MODEL` | Env only |
+| video | — | Not implemented (stub) | — | — |
+
+- **Persistence:** Model preferences (mode, manualModelId, enabledModelIds) are in-memory in server-state (reset on restart). Client pushes to server via `POST /api/model-settings`; server does not persist to DB. Settings `ai.model` is used by the client to set `x-forge-model` for CopilotKit only.
+
+## Where model is chosen (summary)
 
 | Use case | Source | Override |
 |----------|--------|----------|
@@ -59,6 +78,16 @@ We use **OpenRouter** for chat, structured output, plan generation, and image ge
 | Video generation | OpenAI Sora | Planned. OpenRouter does not offer video. |
 
 OpenRouter covers text LLMs and limited image; we use **ElevenLabs** for audio TTS and plan **OpenAI Sora** (or equivalent) for video when we add it.
+
+## Verification (optional)
+
+To confirm that the model ID and chat API shape work against OpenRouter (e.g. in CI with a secret or locally), run:
+
+```bash
+OPENROUTER_API_KEY=... pnpm run verify-openrouter
+```
+
+This runs `scripts/verify-openrouter-model-routing.mjs`, which calls OpenRouter's chat completions endpoint with a known model and prints the response. Do not run it from Jest (network + secrets).
 
 ## References
 

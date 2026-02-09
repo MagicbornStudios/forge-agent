@@ -14,6 +14,12 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ---
 
+## Logging: use Studio logger, no ad-hoc console
+
+**Guidance:** Do not add ad-hoc `console.log` / `console.warn` / `console.error` for model routing or API flows. Use the Studio logger: `getLogger('namespace')` from `apps/studio/lib/logger.ts` with the appropriate level and structured fields so logs can be turned off via `LOG_LEVEL` or inspected in the log file. Client-only code (e.g. model-router store) uses `clientLogger` from `@/lib/logger-client` when logging to the server is enabled.
+
+---
+
 ## Marketing Hero: do not use placeholder YouTube IDs
 
 **Problem**: Hero "Watch Demo" previously opened a dialog with a placeholder YouTube embed (generic or test ID), which could confuse users or look unprofessional.
@@ -339,6 +345,12 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 **Cause**: Only `POST /api/copilotkit` existed. CopilotKit syncs agents via `GET /api/copilotkit/info` (and sometimes `/api/copilotkit/agents__unsafe_dev_only`). Without those routes, the client sees no agents.
 
 **Fix**: Add a catch-all route `apps/studio/app/api/copilotkit/[...path]/route.ts` and export `GET` for `/api/copilotkit` so the runtime handler serves `/info` and dev-only endpoints. Share the handler via `apps/studio/app/api/copilotkit/handler.ts`.
+
+---
+
+## Single CopilotKit runtime and model router (no root duplicate)
+
+**Do not** add a second CopilotKit runtime or model router at repo root. The **single** runtime and model router (server-state, registry, openrouter-config, responses-compat) live **only** in `apps/studio`. Root `app/api/copilotkit` and root `lib/openrouter-config` + `lib/model-router` were removed; all API routes in use are under `apps/studio/app/api/`. See [06-model-routing-and-openrouter.mdx](../../architecture/06-model-routing-and-openrouter.mdx).
 
 ---
 

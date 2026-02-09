@@ -37,7 +37,7 @@ export function EditorMenubar({ menus, className }: EditorMenubarProps) {
   return (
     <Menubar
       className={cn(
-        'h-[var(--control-height)] border border-border/60 rounded-md bg-muted/30 px-2 py-1 shadow-[var(--shadow-sm)]',
+        'h-[var(--control-height)] border border-border/60 rounded-md bg-muted/30 px-[var(--control-padding-x)] py-[var(--control-padding-y)] shadow-[var(--shadow-sm)]',
         'gap-[var(--control-gap)]',
         className
       )}
@@ -55,7 +55,7 @@ export function EditorMenubar({ menus, className }: EditorMenubarProps) {
           >
             <span className="truncate min-w-0">{menu.label}</span>
           </MenubarTrigger>
-          <MenubarContent className="py-1">
+          <MenubarContent className="py-[var(--control-padding-y)]">
             {menu.items.map((item) =>
               item.type === 'separator' ? (
                 <MenubarSeparator key={item.id} />

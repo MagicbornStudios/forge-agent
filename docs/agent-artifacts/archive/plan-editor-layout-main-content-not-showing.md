@@ -1,7 +1,12 @@
 ---
-title: Plan - Editor layout main content not showing
+title: Plan - Editor layout main content not showing (archived)
 created: 2026-02-07
 updated: 2026-02-08
+archived: 2026-02-09
+---
+
+**Archived.** Plans are not living docs in core. Resolved: Dockview + resetLayout(). See [errors-and-attempts](../core/errors-and-attempts.md).
+
 ---
 
 # Plan: Editor layout - main content not showing

@@ -19,7 +19,7 @@ export function EditorTabGroup({
   tabListClassName,
 }: EditorTabGroupProps) {
   return (
-    <div className={cn('flex items-end border-b border-border bg-muted/40 pl-[var(--panel-padding)] pr-2 py-[var(--control-padding-y)]', className)}>
+    <div className={cn('flex items-end border-b-2 border-[var(--context-accent)] bg-muted/40 pl-[var(--panel-padding)] pr-[var(--panel-padding)] py-[var(--control-padding-y)]', className)}>
       <div
         role="tablist"
         aria-label={label}
@@ -27,7 +27,7 @@ export function EditorTabGroup({
       >
         {children}
       </div>
-      {actions && <div className="ml-auto flex items-center gap-1">{actions}</div>}
+      {actions && <div className="ml-auto flex items-center gap-[var(--control-gap)]">{actions}</div>}
     </div>
   );
 }

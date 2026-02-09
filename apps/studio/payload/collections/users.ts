@@ -38,5 +38,10 @@ export const Users: CollectionConfig = {
         { label: 'Pro', value: 'pro' },
       ],
     },
+    {
+      name: 'stripeConnectAccountId',
+      type: 'text',
+      admin: { description: 'Stripe Connect Express account id (acct_xxx)' },
+    },
   ],
 };

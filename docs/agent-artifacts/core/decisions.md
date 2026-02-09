@@ -96,6 +96,14 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 
 ---
 
+## Structured logging: pino in Studio, file and optional client-to-file
+
+**Decision:** Studio uses **pino** for structured logging. Env: `LOG_LEVEL` (default `info`), `LOG_FILE` (optional path; when set, logs go to stdout and file). `getLogger(namespace)` returns a child logger so every line has a namespace. Optional in dev: `ALLOW_CLIENT_LOG=1` and `NEXT_PUBLIC_LOG_TO_SERVER=1` enable `POST /api/dev/log`, which appends client log payloads to the same `LOG_FILE` with a `client: true` field. Log file path (e.g. `.logs/`) is in `.gitignore`.
+
+**Rationale:** One file in the codebase for tracing without watching browser or terminal; env-driven level and namespaces; client-to-file is opt-in and dev-only.
+
+---
+
 ## Settings overrides scoped by user
 
 **Decision:** Settings overrides can be scoped by user. The `settings-overrides` collection has an optional `user` relationship. When authenticated, GET `/api/settings` returns only overrides where `user` equals the current user; POST sets `user` on create and update. Unauthenticated requests use overrides where `user` is null (global/legacy). Theme and app/editor settings are thus per-user when logged in.
@@ -168,6 +176,14 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 
 ---
 
+## Usage-based payouts for approved third-party editors
+
+**Decision:** We add **usage-based recurring payouts** for **approved third-party editors** in the official Studio suite. Same Stripe Connect account we use for clone payouts; this is a second payout stream (editor usage share). We measure usage (sessions, actions, or other metrics TBD) and assign value by usage and **complexity** (tier or formula TBD). Metrics and formula are **TBD**; document in [docs/business/revenue-and-stripe.mdx](../../business/revenue-and-stripe.mdx) and update this ADR when defined.
+
+**Rationale:** Rewards developers whose editors are adopted; AI-first bar (if the AI cannot figure out an editor, it is not a good editor). See [Developer program and editor ecosystem](../../business/developer-program-and-editors.mdx).
+
+---
+
 ## MVP infrastructure
 
 **Decision:** We run **Vercel + Payload** for MVP (Studio in the cloud). No self-host requirement for MVP.
@@ -237,6 +253,14 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 **Decision:** Add a field to listings (e.g. `cloneMode: 'indefinite' | 'version-only'`). The **creator** sets it when creating or editing a listing. Backend uses it when handling clone-again: **indefinite** = clone current project state; **version-only** = clone the same snapshot as at first purchase.
 
 **Rationale:** Creator choice per listing; supports both "always latest" and "fixed release" use cases. See [Listings and clones](../../business/listings-and-clones.mdx).
+
+---
+
+## Payouts: single seller now; splits later
+
+**Decision:** **Single seller per listing for now.** Payment goes to the listing creator's Connect account; platform takes an application fee. No split payouts. Splits between multiple sellers (music-industry style) and IP/licensing (e.g. Beatstars-style) are to be figured out later when we have more features and creatable content that could justify splits.
+
+**Rationale:** Keeps checkout and payouts simple at launch. See [Revenue and Stripe](../../business/revenue-and-stripe.mdx).
 
 ---
 

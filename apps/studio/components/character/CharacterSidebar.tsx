@@ -44,7 +44,7 @@ export function CharacterSidebar({
 
   const charactersTab = (
     <div className="flex-1 flex flex-col min-h-0">
-      <div className="p-2 space-y-2 shrink-0">
+      <div className="p-[var(--panel-padding)] space-y-2 shrink-0">
         <Input
           placeholder="Search characters..."
           value={search}

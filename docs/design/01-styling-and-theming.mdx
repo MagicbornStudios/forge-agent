@@ -95,7 +95,7 @@ Dropdown and context menus in `packages/ui` use these tokens so all menus get co
 - `--context-accent`, `--ring`, and `--sidebar-*` stay aligned to preserve hover/focus clarity.
 - Panel and layout tab active state use `--context-accent` as a border (e.g. bottom edge); resizable panel separators can be themed when inside `[data-domain]` if needed.
 
-**Editor color context:** Each editor sets `data-domain` via `EditorShell` (e.g. `domain="dialogue"`). All panels and sections inside the shell inherit `--context-accent` (and related tokens). Use `--context-accent` for section headers, list category accents, and active/selected state so UI stays in-domain. Optional `data-context-node-type` on a subtree refines the accent (e.g. dialogue node types). See editor README: `packages/shared/src/shared/components/editor/README.md`.
+**Editor color context:** Each editor sets `data-domain` via `EditorShell` (e.g. `domain="dialogue"`). All panels and sections inside the shell inherit `--context-accent` (and related tokens). Use `--context-accent` for section headers, list category accents, and active/selected state so UI stays in-domain. Optional `data-context-node-type` on a subtree refines the accent (e.g. dialogue node types). **Context override:** Section components (e.g. `SectionHeader`) can accept an optional `context` prop that wraps the section in `data-domain={context}` so that section uses a different accent; overridable by users. See editor README: `packages/shared/src/shared/components/editor/README.md`.
 
 ### Token system (layers and when to use which)
 

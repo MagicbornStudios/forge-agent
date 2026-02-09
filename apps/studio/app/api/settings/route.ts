@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayload } from 'payload';
 import config from '@/payload.config';
+import { getLogger } from '@/lib/logger';
+
+const log = getLogger('settings');
 
 /**
  * @swagger
@@ -51,7 +54,7 @@ export async function GET(request: NextRequest) {
     });
     return NextResponse.json(result.docs);
   } catch (error) {
-    console.error('Failed to fetch settings overrides:', error);
+    log.error({ err: error instanceof Error ? error.message : String(error) }, 'Failed to fetch settings overrides');
     return NextResponse.json(
       { error: 'Failed to fetch settings' },
       { status: 500 }
@@ -133,7 +136,7 @@ export async function POST(request: NextRequest) {
     });
     return NextResponse.json(doc);
   } catch (error) {
-    console.error('Failed to save settings overrides:', error);
+    log.error({ err: error instanceof Error ? error.message : String(error) }, 'Failed to save settings overrides');
     return NextResponse.json(
       { error: 'Failed to save settings' },
       { status: 500 }

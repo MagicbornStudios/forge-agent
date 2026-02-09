@@ -1,0 +1,34 @@
+# Standard practices (now / soon / as we grow)
+
+Single checklist for agents and humans. Where things live and when to revisit.
+
+## Logging
+
+- **Now:** Env-driven structured logging in Studio (pino); `LOG_LEVEL`, `LOG_FILE`, optional `LOG_NAMESPACES`. See [apps/studio/lib/logger.ts](../../../apps/studio/lib/logger.ts) and [apps/studio/.env.example](../../../apps/studio/.env.example). Client logs can be appended to the same file in dev via `POST /api/dev/log` when `ALLOW_CLIENT_LOG=1` and `NEXT_PUBLIC_LOG_TO_SERVER=1`.
+- **Revisit:** When adding new server routes or model-router code, use `getLogger('namespace')`; no ad-hoc `console.log` (see errors-and-attempts).
+
+## Env and config
+
+- **Now:** Keep `.env.example` in sync with required/optional vars. Validate critical env at app init where it helps (e.g. `OPENROUTER_API_KEY` for Studio AI routes). See errors-and-attempts for env gotchas.
+- **Revisit:** When adding a new required env var, document in .env.example and consider startup check.
+
+## Health and ops
+
+- **Now:** `GET /api/health` in Studio returns 200 when the app is up (optional: check DB or critical deps later for load balancers/scripts).
+- **Revisit:** Add DB/Redis checks to health when we rely on them for readiness.
+
+## Security and resilience (soon)
+
+- Rate limiting on public endpoints (e.g. waitlist, newsletter, checkout).
+- Security headers via Next.js config.
+- CORS if we add cross-origin clients.
+- **Revisit:** Before opening new public API surfaces.
+
+## As we grow
+
+- Request/trace IDs for correlation (middleware that sets `x-request-id` and logs it).
+- OpenTelemetry for distributed tracing.
+- Dependency audit in CI (e.g. `pnpm audit`).
+- Error boundaries and global error reporting.
+- Performance budgets for critical paths.
+- **Revisit:** When scaling or adding more services.

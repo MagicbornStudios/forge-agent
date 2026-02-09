@@ -37,17 +37,18 @@ Refactors, cleanup, and tech debt we address when we have capacity.
 | td-1 | Clarify or remove workspace from shared public API | Small | done | Index + AGENTS + editor README |
 | td-2 | Fix EditorShell JSDoc (data-mode-id) | Small | done | Removed data-mode-id from JSDoc and README |
 | td-3 | Single home for editor/shared types | Small | done | Verified: types only in workspace; note in editor README |
-| td-4 | Execute legacy removal plan (viewport, app-shell, settings, model-router) | Medium | open | See .cursor/plans/remove_legacy_... |
-| td-5 | Remove or isolate deprecated components (WorkspaceEditor, GraphEditor prop, etc.) | Small–Medium | open | |
-| td-6 | Editor chrome token audit (replace ad-hoc px/py/gap/sizing) | Medium | open | themes.css tokens |
-| td-7 | Studio UI token audit | Small–Medium | open | apps/studio components |
-| td-8 | Panel and tab accent pass (context-accent everywhere needed) | Medium | open | DockPanel, PanelTabs, Inspector |
+| td-4 | Execute legacy removal plan (viewport, app-shell, settings, model-router) | Medium | done | ViewportMeta viewport-only attrs; openEditor editorId only; modes re-export removed |
+| td-5 | Remove or isolate deprecated components (WorkspaceEditor, GraphEditor prop, etc.) | Small–Medium | done | ViewportMeta is canonical; redundant modes/ removed; no deprecated props |
+| td-6 | Editor chrome token audit (replace ad-hoc px/py/gap/sizing) | Medium | done | Shared editor chrome now uses --control-*, --panel-padding |
+| td-7 | Studio UI token audit | Small–Medium | done | apps/studio components use --control-*, --panel-padding |
+| td-8 | Panel and tab accent pass (context-accent everywhere needed) | Medium | done | DockPanel header accent; PanelTabs/Dockview/EditorTab already had it |
 | td-9 | Section/list accent audit (SectionHeader, NodePalette, etc.) | Small | done | SectionHeader + NodePalette use --context-accent |
 | td-10 | Document editor color context (domain, tokens) | Small | done | Editor README + 01-styling-and-theming.mdx |
-| td-11 | Component-level context override (optional domain/context on sections) | Medium | open | Overridable by users |
-| td-12 | Apply context tokens to all editor primitives | Medium | open | Default context-colored sections |
+| td-11 | Component-level context override (optional domain/context on sections) | Medium | done | SectionHeader context prop; doc in README + 01-styling-and-theming |
+| td-12 | Apply context tokens to all editor primitives | Medium | done | Chrome edges use --context-accent; GraphSidebar tab bar |
 | td-13 | Knip for dead-code detection | Small | done | Root knip script + config; documented in tool-usage and strategy |
-| td-14 | Triage Knip "unused files" (Studio + packages) | Small | open | Confirm truly dead vs entry/barrel/config; remove or add to knip ignoreFiles |
-| td-15 | Triage Knip "unused dependencies" | Small | open | Verify and remove only confirmed unused; do not remove Radix/ui deps without verification |
-| td-16 | Root-level dead code (app/, lib/, types/) | Small | open | Remove or document as legacy; move under apps/studio if still needed |
-| td-17 | Knip "unused exports" (barrels and runtime) | Medium | open | Document or ignore barrel/runtime exports; fix only clear dead exports |
+| td-14 | Triage Knip "unused files" (Studio + packages) | Small | done | ignoreFiles extended; removed graph-to-sequence.ts (rg-confirmed); documented in knip-findings |
+| td-15 | Triage Knip "unused dependencies" | Small | done | ignoreDependencies for Radix/ui, Twick, fumadocs, devDeps; none removed; documented |
+| td-16 | Root-level dead code (app/, lib/, types/) | Small | done | Root app/lib/types in ignoreFiles; documented as legacy in knip-findings; no deletion |
+| td-17 | Knip "unused exports" (barrels and runtime) | Medium | done | ignoreIssues for **/index.ts, payload-types, collections, source.config; documented |
+| td-18 | Structured logging and log file | Medium | done | pino in Studio; LOG_LEVEL, LOG_FILE, namespaces; optional client-to-file in dev; see standard-practices |

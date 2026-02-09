@@ -14,6 +14,7 @@ import { Characters } from './characters.ts';
 import { Relationships } from './relationships.ts';
 import { Media } from './media.ts';
 import { Listings } from './listings.ts';
+import { Licenses } from './licenses.ts';
 
 export const collections = [
   Users,
@@ -32,6 +33,7 @@ export const collections = [
   Promotions,
   Posts,
   Listings,
+  Licenses,
 ];
 
 export {
@@ -51,4 +53,5 @@ export {
   Promotions,
   Posts,
   Listings,
+  Licenses,
 };

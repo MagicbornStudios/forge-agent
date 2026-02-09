@@ -22,7 +22,7 @@ export function CharacterList({ characters, activeCharacterId, searchQuery, onSe
 
   if (filtered.length === 0) {
     return (
-      <div className="px-3 py-6 text-center text-xs text-muted-foreground">
+      <div className="px-[var(--panel-padding)] py-6 text-center text-xs text-muted-foreground">
         {searchQuery ? 'No characters match your search.' : 'No characters yet.'}
       </div>
     );
@@ -37,7 +37,7 @@ export function CharacterList({ characters, activeCharacterId, searchQuery, onSe
           variant="ghost"
           onClick={() => onSelect(char.id)}
           className={cn(
-            'flex h-auto items-center justify-start gap-3 px-3 py-2 hover:bg-accent/50',
+            'flex h-auto items-center justify-start gap-3 px-[var(--panel-padding)] py-[var(--control-padding-y)] hover:bg-accent/50',
             char.id === activeCharacterId && 'bg-accent',
           )}
         >

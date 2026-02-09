@@ -110,7 +110,7 @@ export function AgentWorkflowPanel({
             placeholder="Describe the change you want to plan and propose"
             className="min-h-[72px] text-sm"
           />
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-[var(--control-gap)]">
             <Button size="sm" onClick={handleRun} disabled={!canRun}>
               {state.isRunning ? 'Running...' : 'Run workflow'}
             </Button>
@@ -163,7 +163,7 @@ export function AgentWorkflowPanel({
 
       {state.patch && (
         <Card className="bg-muted/10 text-xs shadow-none">
-          <CardHeader className="p-3 pb-2">
+          <CardHeader className="p-[var(--panel-padding)] pb-[var(--control-padding-y)]">
             <div className="flex items-center justify-between">
               <CardTitle className="text-xs">Patch</CardTitle>
               <Badge variant="outline" className="text-[10px]">
@@ -173,7 +173,7 @@ export function AgentWorkflowPanel({
             <CardDescription className="text-[11px]">{state.patch.summary}</CardDescription>
           </CardHeader>
           <CardContent className="px-3 pb-3 pt-0">
-            <ItemGroup className="gap-2">
+            <ItemGroup className="gap-[var(--control-gap)]">
               {(Array.isArray(state.patch.ops) ? state.patch.ops : []).map((op, index) => {
                 const item = describePatchOp(op as ForgeGraphPatchOp);
                 return (
@@ -199,7 +199,7 @@ export function AgentWorkflowPanel({
 
       {state.review && (
         <Card className="bg-muted/10 text-xs shadow-none">
-          <CardHeader className="p-3 pb-2">
+          <CardHeader className="p-[var(--panel-padding)] pb-[var(--control-padding-y)]">
             <div className="flex items-center justify-between">
               <CardTitle className="text-xs">Review</CardTitle>
               <Badge variant={state.review.ok ? 'outline' : 'destructive'} className="text-[10px]">

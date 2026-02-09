@@ -22,7 +22,7 @@ export function CopilotKitDevToolsPanel({ className }: CopilotKitDevToolsPanelPr
   return (
     <div className={cn('flex h-full min-h-0 flex-col gap-3 text-xs', className)}>
       <div className="rounded-md border border-border/60 bg-muted/20 p-3">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-[var(--control-gap)]">
           <div className="font-medium">CopilotKit sidebar</div>
           <Button size="xs" variant="outline" onClick={() => setIsOpen(!isOpen)} className="h-6">
             {isOpen ? 'Close' : 'Open'}
@@ -34,7 +34,7 @@ export function CopilotKitDevToolsPanel({ className }: CopilotKitDevToolsPanelPr
       </div>
 
       <div className="rounded-md border border-border/60 bg-muted/20 p-3">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-[var(--control-gap)]">
           <div className="font-medium">Model routing</div>
           <Badge variant="outline" className="text-[10px] uppercase">
             {mode}

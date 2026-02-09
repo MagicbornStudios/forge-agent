@@ -36,7 +36,7 @@ Editor sections are **context-colored** by `EditorShell`’s `domain` prop and `
 - **`--context-glow`** / **`--context-ring`** — focus and selection rings; `--ring` and `--primary` are aligned to context under `[data-domain]`.
 - **`--sidebar-primary`** / **`--sidebar-ring`** — sidebar hover/active when inside a domain.
 
-Optional `data-context-node-type` (e.g. on graph or panel) refines the accent (e.g. dialogue node types). Prefer these tokens over ad-hoc colors; see `docs/design/01-styling-and-theming.mdx` (repo root).
+Optional `data-context-node-type` (e.g. on graph or panel) refines the accent (e.g. dialogue node types). **Context override:** Section primitives (e.g. `SectionHeader` in Studio) can accept an optional `context` prop that wraps the section in `data-domain={context}` so that section uses a different `--context-accent` without changing the whole editor; overridable by consumers. Prefer these tokens over ad-hoc colors; see `docs/design/01-styling-and-theming.mdx` (repo root).
 
 ## Migration notes
 

@@ -22,8 +22,6 @@ export interface ViewportMetaProps {
  * copilot system, settings resolution, and AI highlight overlay to
  * identify which viewport is active.
  *
- * Legacy `data-editor-*` attributes are also set for compatibility.
- *
  * Renamed from `WorkspaceEditor` for clarity - this component provides
  * metadata, not an actual editor.
  *
@@ -49,9 +47,6 @@ export function ViewportMeta({
       {...(viewportId ? { 'data-viewport-id': viewportId } : {})}
       {...(viewportType ? { 'data-viewport-type': viewportType } : {})}
       {...(viewportScope ? { 'data-viewport-scope': viewportScope } : {})}
-      {...(viewportId ? { 'data-editor-id': viewportId } : {})}
-      {...(viewportType ? { 'data-editor-type': viewportType } : {})}
-      {...(viewportScope ? { 'data-editor-scope': viewportScope } : {})}
     >
       {children}
     </div>

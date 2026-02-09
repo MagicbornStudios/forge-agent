@@ -435,7 +435,7 @@ export function CharacterEditor() {
       >
         <EditorToolbar className="bg-sidebar border-b border-sidebar-border">
           <EditorToolbar.Left>
-            <EditorToolbar.Group className="gap-2">
+            <EditorToolbar.Group className="gap-[var(--control-gap)]">
               <EditorToolbar.Menubar menus={menubarMenus} />
             </EditorToolbar.Group>
             <span className="text-xs text-muted-foreground">

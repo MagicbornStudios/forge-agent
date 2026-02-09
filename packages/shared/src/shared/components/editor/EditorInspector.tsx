@@ -35,7 +35,7 @@ export function EditorInspector({
   return (
     <aside
       className={cn(
-        'flex min-w-[280px] max-w-[360px] flex-col border-l border-border bg-background',
+        'flex min-w-[280px] max-w-[360px] flex-col border-l-2 border-[var(--context-accent)] bg-background',
         className,
       )}
     >

@@ -22,8 +22,8 @@ export function GraphLeftToolbar({
   if (!onToggleMiniMap && !onFitView) return null;
 
   return (
-    <Panel position="top-left" className={cn('!bg-transparent !border-0 !p-0 !m-2', className)}>
-      <div className="flex flex-col gap-1.5 bg-card border border-border rounded-lg p-[var(--panel-padding)] shadow-[var(--shadow-md)]">
+    <Panel position="top-left" className={cn('!bg-transparent !border-0 !p-0 !m-[var(--panel-padding)]', className)}>
+      <div className="flex flex-col gap-[var(--control-gap)] bg-card border border-border rounded-lg p-[var(--panel-padding)] shadow-[var(--shadow-md)]">
         {onFitView && (
           <Button
             variant="outline"

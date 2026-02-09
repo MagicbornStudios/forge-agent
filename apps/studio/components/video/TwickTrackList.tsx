@@ -36,7 +36,7 @@ export function TwickTrackList({
         </div>
       ) : (
         <ScrollArea className="flex-1">
-          <div className="flex flex-col gap-2 pr-2">
+          <div className="flex flex-col gap-[var(--control-gap)] pr-[var(--panel-padding)]">
             {tracks.map((track) => (
               <Button
                 key={track.id}
@@ -44,7 +44,7 @@ export function TwickTrackList({
                 variant="outline"
                 onClick={() => onSelectTrack?.(track.id)}
                 className={cn(
-                  'h-auto flex-col items-start justify-center px-3 py-2 text-left',
+                  'h-auto flex-col items-start justify-center px-[var(--panel-padding)] py-[var(--control-padding-y)] text-left',
                   selectedTrackId === track.id
                     ? 'border-primary/60 bg-primary/10'
                     : 'border-border bg-background hover:bg-muted/40'

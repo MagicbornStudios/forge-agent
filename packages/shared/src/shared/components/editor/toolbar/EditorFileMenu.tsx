@@ -58,7 +58,7 @@ export function EditorFileMenu({
               disabled={item.disabled}
               onSelect={() => item.onSelect?.()}
               className={cn(
-                'flex items-center gap-2',
+                'flex items-center gap-[var(--control-gap)]',
                 item.variant === 'destructive' && 'text-destructive'
               )}
             >

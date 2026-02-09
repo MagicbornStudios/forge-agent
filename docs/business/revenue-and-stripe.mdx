@@ -24,9 +24,13 @@ Revenue model and payment implementation for the platform. Technical decisions l
 
 We use **Stripe Connect from day one** for clone purchases so creators receive payment directly.
 
-- Creators must complete **Connect onboarding** (Express or Standard) before they can receive payouts. We store the connected account id (e.g. on users or a creator-accounts collection).
+- Creators must complete **Connect onboarding** (Express or Standard) before they can receive payouts. We store the connected account id on the **users** collection (`stripeConnectAccountId`). Create-account API: `POST /api/stripe/connect/create-account` (idempotent; returns existing or creates Express account and saves id).
 - When a buyer pays to clone a listing, the payment is created with the **listing creator's connected account**; we pass an **application_fee_amount** so the platform keeps a cut.
 - Payouts to creators are handled by Stripe (Connect); we do not manually transfer. See task breakdown for Connect onboarding API and UI.
+
+**Platform Stripe account:** The platform's own Stripe account id is in env as `STRIPE_ACCOUNT_ID` (e.g. `acct_1Lp1yRHb5azKYmYy`) for reference and Stripe Dashboard parity. Code uses the secret key for API calls; the account id is for docs and support.
+
+**Platform requirements (Connect and product):** Stripe Connect and app stores typically require customer support (email + URL), privacy policy URL, terms of service URL, and business address (update in Stripe when final). These can live in env (e.g. `STRIPE_SUPPORT_EMAIL`, `STRIPE_SUPPORT_URL`, `PRIVACY_POLICY_URL`, `TERMS_OF_SERVICE_URL`) or app settings. See [apps/studio/.env.example](../../apps/studio/.env.example) for placeholders; fill when legal and support are in place.
 
 ---
 
@@ -43,3 +47,23 @@ We use **Stripe for everything we need**—no custom payment forms.
 ## Application fee (take rate)
 
 The platform take rate (application fee as a percentage or fixed amount) is TBD. Document the chosen percentage or formula in this doc and in [decisions.md](../agent-artifacts/core/decisions.md) when set.
+
+---
+
+## Payouts: single seller now; splits later
+
+**Single seller per listing for now.** Payment goes to the listing creator's Connect account; platform takes an application fee. No split payouts.
+
+Splits between multiple sellers (music-industry style) and IP/licensing (e.g. Beatstars-style) are to be figured out later when we have more features and creatable content that could justify splits. See [decisions.md](../agent-artifacts/core/decisions.md) for backlog.
+
+---
+
+## Developer program payouts (usage-based)
+
+**Approved editors** in the **official Studio suite** (curated third-party editors) receive a **second payout stream** via the same Stripe Connect account we use for clone payouts.
+
+- **Usage-based payouts:** We measure usage of each approved editor (sessions, actions, or other metrics TBD). We assign value/weight by usage and **complexity** (e.g. complexity tier or formula TBD). Recurring payouts go to the editor's developer (Connect).
+- **Single seller per listing** for clone purchases is unchanged; this is an **additional** payout type for editor usage share.
+- **Rationale (AI-first bar):** If an editor is so complex or opaque that the AI cannot figure it out (with full technical and expert knowledge), it is not a good editor; users would not want to use it. We reward **usage** and **clarity** (complexity can be weighted but not in a way that rewards obscurity).
+
+See [Developer program and editor ecosystem](developer-program-and-editors.mdx) for approved vs community apps and submission. Metrics and formula are TBD; document in this doc and in [decisions.md](../agent-artifacts/core/decisions.md) when defined.

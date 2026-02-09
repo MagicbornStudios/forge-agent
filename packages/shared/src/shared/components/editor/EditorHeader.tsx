@@ -30,7 +30,7 @@ function HeaderRoot({ children, className }: EditorHeaderProps) {
   return (
     <header
       className={cn(
-        'flex min-h-[var(--header-height)] items-center border-b border-border bg-background px-[var(--panel-padding)] gap-[var(--control-gap)] shrink-0',
+        'flex min-h-[var(--header-height)] items-center border-b-2 border-[var(--context-accent)] bg-background px-[var(--panel-padding)] gap-[var(--control-gap)] shrink-0',
         className,
       )}
     >

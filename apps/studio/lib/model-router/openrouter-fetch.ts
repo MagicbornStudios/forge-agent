@@ -1,3 +1,7 @@
+import { getLogger } from '@/lib/logger';
+
+const log = getLogger('model-router');
+
 /**
  * Wraps fetch to inject OpenRouter model fallbacks (models array) into request body.
  * OpenRouter tries the next model in the array on rate limit / 5xx.
@@ -22,6 +26,7 @@ export function createFetchWithModelFallbacks(
     try {
       const body = JSON.parse(init.body as string) as Record<string, unknown>;
       body.models = models;
+      log.debug({ primary, fallbacks }, 'Injecting model fallbacks');
       return baseFetch(input, { ...init, body: JSON.stringify(body) });
     } catch {
       return baseFetch(input, init);

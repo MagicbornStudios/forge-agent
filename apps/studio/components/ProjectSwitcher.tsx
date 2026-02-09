@@ -87,7 +87,7 @@ export function ProjectSwitcher({
     <Button
       variant="outline"
       size={variant === 'full' ? 'default' : 'sm'}
-      className={variant === 'full' ? 'min-w-[200px] justify-between' : 'h-7 px-2 text-xs'}
+      className={variant === 'full' ? 'min-w-[200px] justify-between' : 'h-7 px-[var(--control-padding-x)] text-xs'}
       disabled={isLoading}
     >
       <span className={variant === 'full' ? 'truncate' : 'truncate max-w-[120px]'}>
@@ -99,8 +99,8 @@ export function ProjectSwitcher({
 
   const wrapperClass =
     variant === 'full'
-      ? 'flex items-center gap-2 border-b px-4 py-2 bg-background'
-      : 'flex items-center gap-2';
+      ? 'flex items-center gap-[var(--control-gap)] border-b px-[var(--panel-padding)] py-[var(--control-padding-y)] bg-background'
+      : 'flex items-center gap-[var(--control-gap)]';
 
   return (
     <>

@@ -189,7 +189,7 @@ function ForgeGraphList({
 
       <div className="flex-1 overflow-y-auto">
         {filteredGraphs.length === 0 ? (
-          <div className="px-3 py-6 text-center text-xs text-muted-foreground">
+          <div className="px-[var(--panel-padding)] py-6 text-center text-xs text-muted-foreground">
             {searchQuery ? `No ${label.toLowerCase()}s found` : `No ${label.toLowerCase()}s`}
           </div>
         ) : (
@@ -202,7 +202,7 @@ function ForgeGraphList({
                   variant="ghost"
                   type="button"
                   className={cn(
-                    'w-full justify-start px-2 py-1.5 text-left text-xs transition-colors duration-200 focus:ring-0 focus-visible:ring-0 focus-visible:outline-none',
+                    'w-full justify-start px-[var(--control-padding-x)] py-[var(--control-padding-y)] text-left text-xs transition-colors duration-200 focus:ring-0 focus-visible:ring-0 focus-visible:outline-none',
                     isSelected
                       ? 'bg-muted text-foreground border-l-2 border-primary'
                       : 'text-muted-foreground hover:bg-muted hover:text-foreground hover:border-l-2 hover:border-accent'
@@ -277,8 +277,8 @@ function ForgeGraphPanel({
       data-viewport-scope={scope}
       data-editor-scope={scope}
     >
-      <div className="flex items-center justify-between px-3 py-1.5 border-b border-editor-border bg-card">
-        <div className="flex items-center gap-2 text-xs">
+      <div className="flex items-center justify-between px-[var(--panel-padding)] py-[var(--control-padding-y)] border-b border-editor-border bg-card">
+        <div className="flex items-center gap-[var(--control-gap)] text-xs">
           <span className="text-muted-foreground">{icon}</span>
           <span className="font-semibold text-foreground">{label}</span>
           <span className="text-muted-foreground truncate max-w-[200px]">{graph?.title ?? 'Untitled'}</span>
@@ -1063,7 +1063,7 @@ export function DialogueEditor() {
   );
 
   const mainContent = (
-    <div className="flex h-full w-full flex-col gap-2 p-2">
+    <div className="flex h-full w-full flex-col gap-[var(--control-gap)] p-[var(--panel-padding)]">
       <ForgeGraphPanel
         scope="narrative"
         graph={narrativeGraph}
@@ -1145,7 +1145,7 @@ export function DialogueEditor() {
       >
         <EditorToolbar className="bg-sidebar border-b border-sidebar-border">
           <EditorToolbar.Left>
-            <EditorToolbar.Group className="gap-2">
+            <EditorToolbar.Group className="gap-[var(--control-gap)]">
               <EditorToolbar.Menubar menus={menubarMenus} />
               <EditorToolbar.Separator />
               <span className="text-xs text-muted-foreground">{toolbarCounts}</span>

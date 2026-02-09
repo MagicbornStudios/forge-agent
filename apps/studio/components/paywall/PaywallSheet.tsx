@@ -32,7 +32,7 @@ export function PaywallSheet() {
               Required plan: <Badge>{info.requiredPlan}</Badge>
             </div>
           )}
-          <div className="flex gap-2">
+          <div className="flex gap-[var(--control-gap)]">
             <Button onClick={() => console.info('[Paywall] Upgrade clicked')}>Upgrade</Button>
             <Button variant="outline" onClick={closePaywall}>Close</Button>
           </div>

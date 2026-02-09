@@ -256,7 +256,7 @@ export function VideoEditor() {
 
       <EditorToolbar>
         <EditorToolbar.Left>
-          <EditorToolbar.Group className="gap-2">
+          <EditorToolbar.Group className="gap-[var(--control-gap)]">
             <EditorToolbar.Menubar menus={menubarMenus} />
             <EditorToolbar.ProjectSelect
               value={doc ? String(doc.id) : undefined}

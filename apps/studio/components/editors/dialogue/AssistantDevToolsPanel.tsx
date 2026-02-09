@@ -33,7 +33,7 @@ export function AssistantDevToolsPanel({ className }: AssistantDevToolsPanelProp
     <div className={cn('flex h-full min-h-0 flex-col gap-3', className)}>
       {entries.map(([apiId, entry]) => (
         <div key={apiId} className="rounded-md border border-border/60 bg-muted/20 p-3 text-xs">
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-[var(--control-gap)]">
             <div className="font-medium">Assistant runtime #{apiId}</div>
             <Button
               size="xs"

@@ -12,6 +12,8 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 
 ## When to compact
 
+**Plan docs:** Do not add new plan documents to core. Plans are ephemeral (Cursor/agent run). Legacy plan files belong in [../archive/](../archive/) (see archive README). Main artifacts keep a one-line pointer when a plan was archived.
+
 Compact when a subsection grows beyond a defined threshold:
 
 - **STATUS "Ralph Wiggum" Done list:** When the list exceeds roughly the last **20–30** items, summarize older items and move the full list to an archive file. Keep the most recent 10–15 Done items in STATUS.

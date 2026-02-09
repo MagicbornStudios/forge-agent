@@ -1,0 +1,53 @@
+import type { CollectionConfig } from 'payload';
+
+export const Licenses: CollectionConfig = {
+  slug: 'licenses',
+  access: {
+    read: ({ req }) => !!req.user,
+    create: () => false,
+    update: () => false,
+    delete: () => false,
+  },
+  admin: {
+    useAsTitle: 'id',
+    description: 'License records for clone purchases; created by Stripe webhook.',
+  },
+  fields: [
+    {
+      name: 'user',
+      type: 'relationship',
+      relationTo: 'users',
+      required: true,
+      admin: { description: 'License holder (buyer)' },
+    },
+    {
+      name: 'listing',
+      type: 'relationship',
+      relationTo: 'listings',
+      required: true,
+    },
+    {
+      name: 'stripeSessionId',
+      type: 'text',
+      required: true,
+      admin: { description: 'Stripe Checkout session id (cs_xxx)' },
+    },
+    {
+      name: 'grantedAt',
+      type: 'date',
+      required: true,
+      defaultValue: () => new Date().toISOString(),
+    },
+    {
+      name: 'versionSnapshotId',
+      type: 'text',
+      admin: { description: 'Optional snapshot/version for version-only clone mode' },
+    },
+    {
+      name: 'clonedProjectId',
+      type: 'relationship',
+      relationTo: 'projects',
+      admin: { description: 'Project created by first clone (set by webhook)' },
+    },
+  ],
+};

@@ -50,12 +50,12 @@ export function EditorReviewBar({
       role="region"
       aria-label="Review pending changes"
       className={cn(
-        'flex items-center justify-between gap-2 px-3 py-1.5 text-sm border-b border-border bg-muted/60 shrink-0',
+        'flex items-center justify-between gap-[var(--control-gap)] px-[var(--panel-padding)] py-[var(--control-padding-y)] text-sm border-b-2 border-[var(--context-accent)] bg-muted/60 shrink-0',
         className,
       )}
     >
       <span className="text-muted-foreground">{label}</span>
-      <div className="flex gap-2">
+      <div className="flex gap-[var(--control-gap)]">
         <Button variant="outline" size="sm" onClick={onRevert}>
           {revertLabel}
         </Button>

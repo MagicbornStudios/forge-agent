@@ -8,9 +8,7 @@
 
 **Status:** Not in use; gated by capability `studio.video.editor` (AppShell hides tab + content when locked).
 
-**Details:** The Video editor (Twick-based timeline UI) is currently **non-functional** and **locked until after MVP**. It is not available in the app until we re-enable it. Do not assign work that assumes the Video editor is usable (e.g. "fix Video export" or "add Video timeline persistence") until (1) MVP (paid clone/download + plan tiers) is in place and (2) the editor is unlocked and documented as supported. See [MVP and first revenue](docs/product/mvp-and-revenue.mdx).
-
-**Plan:** [docs/agent-artifacts/core/plan-dockview-restore-video-lock-feature-flags.md](docs/agent-artifacts/core/plan-dockview-restore-video-lock-feature-flags.md) — Restore Dockview, lock Video editor, optional feature-flag SDK.
+**Details:** The Video editor (Twick-based timeline UI) is currently **non-functional** and **locked until after MVP**. It is not available in the app until we re-enable it. Do not assign work that assumes the Video editor is usable (e.g. "fix Video export" or "add Video timeline persistence") until (1) MVP (paid clone/download + plan tiers) is in place and (2) the editor is unlocked and documented as supported. See [MVP and first revenue](docs/product/mvp-and-revenue.mdx). Historical context (Dockview restore, Video lock, feature flags): [agent-artifacts/archive/plan-dockview-restore-video-lock-feature-flags.md](docs/agent-artifacts/archive/plan-dockview-restore-video-lock-feature-flags.md).
 
 ---
 

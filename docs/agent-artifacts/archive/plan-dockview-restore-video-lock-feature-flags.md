@@ -1,7 +1,12 @@
 ---
-title: Plan — Restore Dockview, lock Video editor, feature flags
+title: Plan — Restore Dockview, lock Video editor, feature flags (archived)
 created: 2026-02-07
 updated: 2026-02-08
+archived: 2026-02-09
+---
+
+**Archived.** Plans are not living docs in core. Outcomes: Video locked (ISSUES.md), Dockview restored (STATUS, errors-and-attempts), PostHog for flags. See [ISSUES.md](../../ISSUES.md), [STATUS](../core/STATUS.md).
+
 ---
 
 # Plan: Restore Dockview, lock Video editor, feature-flag SDK

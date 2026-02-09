@@ -34,7 +34,7 @@ export function RelationshipsList({
 
   if (relevant.length === 0) {
     return (
-      <div className="px-3 py-6 text-center text-xs text-muted-foreground">
+      <div className="px-[var(--panel-padding)] py-6 text-center text-xs text-muted-foreground">
         {activeCharacterId ? 'No relationships for this character.' : 'No relationships yet.'}
       </div>
     );
@@ -52,7 +52,7 @@ export function RelationshipsList({
         return (
           <div
             key={rel.id}
-            className="flex items-center justify-between px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer"
+            className="flex items-center justify-between px-[var(--panel-padding)] py-[var(--control-padding-y)] hover:bg-accent/50 transition-colors cursor-pointer"
             onClick={() => onSelect(rel.id)}
           >
             <div className="min-w-0">

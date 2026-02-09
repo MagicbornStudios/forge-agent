@@ -61,6 +61,7 @@ yarn-error.log*
 pnpm-debug.log*
 *.log
 logs/
+.logs/
 
 # OS
 .DS_Store

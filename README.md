@@ -52,7 +52,11 @@ See `examples/consumer/README.md` for environment setup.
 - **How-tos (in order):** In-app [/docs](http://localhost:3000/docs) or [docs/how-to/00-index.mdx](docs/how-to/00-index.mdx) — 01 Foundation → 02 Workspace shell → 03 Styling → 04 Data and state → 05 Building a workspace → 06 ForgeWorkspace walkthrough → 07 Copilot → 08 Adding AI → 09 Twick workspace.
 - **Architecture:** [docs/architecture/](docs/architecture/) — [01-unified-workspace](docs/architecture/01-unified-workspace.mdx), [02-workspace-editor-architecture](docs/architecture/02-workspace-editor-architecture.mdx), [03-copilotkit-and-agents](docs/architecture/03-copilotkit-and-agents.mdx).
 - **Publishing the component library:** See [How-to 25 - Verdaccio and local registry](docs/how-to/25-verdaccio-local-registry.mdx) to run Verdaccio and publish/consume; see [Architecture: Component library and registry](docs/architecture/04-component-library-and-registry.mdx) for full detail.
-- **For coding agents:** [docs/18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx) (index of agent-only docs) and root [AGENTS.md](AGENTS.md).
+- **For coding agents:**
+  - **Index and rules:** [docs/18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx) and root [AGENTS.md](AGENTS.md).
+  - **Strategy (required):** [docs/19-coding-agent-strategy.mdx](docs/19-coding-agent-strategy.mdx) — loop, before/after slice, what to update, doc placement.
+  - **Capabilities and DoD:** [SKILLS.md](SKILLS.md); [CONTRIBUTING.md](CONTRIBUTING.md) and [.github/pull_request_template.md](.github/pull_request_template.md) for same Definition of Done.
+- **Contributing workflow:** [CONTRIBUTING.md](CONTRIBUTING.md) (branch/PR, tests, doc updates). [SKILLS.md](SKILLS.md) — capabilities and expectations (stack, do not assume, doc gates).
 
 ## Contributing: build a workspace, then PR it
 
@@ -62,7 +66,7 @@ We expect every new contributor to **build their own workspace** and **submit a 
 2. Implement your workspace (shell, slots, domain contract, optional AI actions).
 3. Open a PR that adds a subfolder under `packages/shared/contributor_workspaces/` (e.g. `my-awesome-workspace/`) with your code and a short README describing what it does and how to run it.
 
-See [packages/shared/contributor_workspaces/README.md](packages/shared/contributor_workspaces/README.md) for the contribution rules.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for workflow and [packages/shared/contributor_workspaces/README.md](packages/shared/contributor_workspaces/README.md) for contributor workspace rules.
 
 ## Repo structure
 
@@ -76,6 +80,6 @@ See [packages/shared/contributor_workspaces/README.md](packages/shared/contribut
 
 ## Notes
 
-- Forge is the primary workspace; Video is a UI showcase.
+- Forge is the primary workspace. **Video editor** is locked until after MVP ([ISSUES.md](ISSUES.md)).
 - Payload types are the source of truth for persisted shapes; domains import from `@forge/types`.
 - Patch operations are the common currency for AI proposals and draft updates.

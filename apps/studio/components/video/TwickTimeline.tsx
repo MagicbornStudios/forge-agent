@@ -58,7 +58,7 @@ export function TwickTimeline({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex items-center justify-between border-b border-border bg-muted/30 px-3 py-2">
+      <div className="flex items-center justify-between border-b border-border bg-muted/30 px-[var(--panel-padding)] py-[var(--control-padding-y)]">
         <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Timeline
         </div>
@@ -72,7 +72,7 @@ export function TwickTimeline({
             {markers.map((marker) => (
               <div
                 key={marker}
-                className="border-r border-border/50 px-2 py-1"
+                className="border-r border-border/50 px-[var(--control-padding-x)] py-[var(--control-padding-y)]"
                 style={{ width: gridSize }}
               >
                 {marker}s
@@ -112,7 +112,7 @@ export function TwickTimeline({
                       title={`${getElementLabel(element)} (${element.start}s - ${element.end}s)`}
                       className={cn(
                         'absolute top-1/2 h-8 -translate-y-1/2 overflow-hidden truncate rounded border px-2 text-xs font-medium shadow-[var(--shadow-sm)]',
-                        'flex items-center gap-2',
+                        'flex items-center gap-[var(--control-gap)]',
                         isSelected
                           ? 'border-primary bg-primary/20 text-primary'
                           : 'border-border bg-muted/70 text-foreground'

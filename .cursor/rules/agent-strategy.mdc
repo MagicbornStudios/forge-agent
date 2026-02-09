@@ -1,0 +1,13 @@
+---
+description: Agent strategy and loop — read AGENTS and index; follow 19-strategy; check errors-and-attempts before retry; use rg/list_dir/Read per tool-usage
+alwaysApply: true
+---
+
+# Agent strategy
+
+When making code or doc changes in this repo:
+
+1. Read **root [AGENTS.md](AGENTS.md)** and **[docs/18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx)** for context.
+2. Follow **[docs/19-coding-agent-strategy.mdx](docs/19-coding-agent-strategy.mdx):** before a slice read STATUS and relevant AGENTS; after a slice update STATUS (Ralph Wiggum Done) and affected docs.
+3. Check **[docs/agent-artifacts/core/errors-and-attempts.md](docs/agent-artifacts/core/errors-and-attempts.md)** before retrying a failed pattern.
+4. Use **rg / list_dir / Read** per **[docs/agent-artifacts/core/tool-usage.md](docs/agent-artifacts/core/tool-usage.md)**.

@@ -21,7 +21,7 @@ export interface SectionToolbarAction {
 function SectionToolbar({ actions, className }: { actions: SectionToolbarAction[]; className?: string }) {
   if (actions.length === 0) return null;
   return (
-    <div className={cn('flex items-center gap-1', className)}>
+    <div className={cn('flex items-center gap-[var(--control-gap)]', className)}>
       {actions.map((action) => {
         const button = (
           <Button
@@ -57,6 +57,8 @@ interface SectionHeaderProps {
   title: string;
   icon: React.ReactNode;
   iconColor?: string;
+  /** Optional domain/context override so this section uses a different --context-accent (e.g. "dialogue", "character"). Wraps content in data-domain for contexts.css. */
+  context?: string;
   searchValue?: string;
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
@@ -74,6 +76,7 @@ export function SectionHeader({
   title,
   icon,
   iconColor,
+  context: contextOverride,
   searchValue,
   onSearchChange,
   searchPlaceholder = 'Search... ',
@@ -97,10 +100,10 @@ export function SectionHeader({
     }),
   };
 
-  return (
+  const content = (
     <div className={cn('flex flex-col border-b', className)} style={headerStyle}>
-      <div className="flex items-center justify-between px-2 py-1.5">
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center justify-between px-[var(--control-padding-x)] py-[var(--control-padding-y)]">
+        <div className="flex items-center gap-[var(--control-gap)]">
           <div style={{ color: accentColor }}>{icon}</div>
           <span className={cn('text-xs font-medium', focusedEditor ? 'text-foreground' : 'text-muted-foreground')}>
             {title}
@@ -129,4 +132,9 @@ export function SectionHeader({
       )}
     </div>
   );
+
+  if (contextOverride) {
+    return <div data-domain={contextOverride}>{content}</div>;
+  }
+  return content;
 }

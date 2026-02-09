@@ -5,7 +5,9 @@ updated: 2026-02-07
 
 # Forge Agent - Agent rules
 
-**Agent artifact index:** See [docs/18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx) for the full list of agent-only docs (agent-artifacts/core: STATUS, decisions, errors-and-attempts, tool-usage, compacting; all AGENTS.md). **Strategy and conventions:** [docs/19-coding-agent-strategy.mdx](docs/19-coding-agent-strategy.mdx). For **current state** and **failures**, read docs/agent-artifacts (index + core); for **granular "what can I do next?"** (small tasks by tier), see [task-registry](docs/agent-artifacts/core/task-registry.md) and [task-breakdown-system](docs/agent-artifacts/core/task-breakdown-system.md); for **known product/editor issues** (e.g. what's broken or locked), see [ISSUES.md](ISSUES.md); for **technical debt and refactors**, see [technical-debt-roadmap](docs/agent-artifacts/core/technical-debt-roadmap.md); for **area rules**, read this file and the relevant per-package AGENTS.md. Prefer **rg**/list_dir/Read to search and confirm - see [docs/agent-artifacts/core/tool-usage.md](docs/agent-artifacts/core/tool-usage.md).
+**New here?** Read this file, then [18-agent-artifacts-index](docs/18-agent-artifacts-index.mdx) and [19-coding-agent-strategy](docs/19-coding-agent-strategy.mdx). For **current work** use [STATUS](docs/agent-artifacts/core/STATUS.md) and [task-registry](docs/agent-artifacts/core/task-registry.md); for **what's broken** see [ISSUES](ISSUES.md).
+
+**Agent artifact index:** See [docs/18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx) for the full list of agent-only docs (agent-artifacts/core: STATUS, decisions, errors-and-attempts, tool-usage, compacting, standard-practices; all AGENTS.md). **Strategy and conventions:** [docs/19-coding-agent-strategy.mdx](docs/19-coding-agent-strategy.mdx). For **current state** and **failures**, read docs/agent-artifacts (index + core); for **granular "what can I do next?"** (small tasks by tier), see [task-registry](docs/agent-artifacts/core/task-registry.md) and [task-breakdown-system](docs/agent-artifacts/core/task-breakdown-system.md); for **known product/editor issues** (e.g. what's broken or locked), see [ISSUES.md](ISSUES.md); for **technical debt and refactors**, see [technical-debt-roadmap](docs/agent-artifacts/core/technical-debt-roadmap.md); for **area rules**, read this file and the relevant per-package AGENTS.md. Prefer **rg**/list_dir/Read to search and confirm - see [docs/agent-artifacts/core/tool-usage.md](docs/agent-artifacts/core/tool-usage.md). **Capabilities:** [SKILLS.md](SKILLS.md). **Human workflow and DoD:** [CONTRIBUTING.md](CONTRIBUTING.md) and [.github/pull_request_template.md](.github/pull_request_template.md).
 
 ## Scoped edits / .tmp
 
@@ -55,7 +57,7 @@ When touching editors (Dialogue, Character, Video, Strategy): use the shared she
 
 ## Enhanced features / ideas backlog
 
-- **Backlog:** [docs/agent-artifacts/core/enhanced-features-backlog.md](docs/agent-artifacts/core/enhanced-features-backlog.md). Process: [enhanced-features-process.md](docs/agent-artifacts/core/enhanced-features-process.md).
+- **Backlog:** [docs/agent-artifacts/core/enhanced-features-backlog.md](docs/agent-artifacts/core/enhanced-features-backlog.md). Process in same doc.
 - Agents may add ideas with status `proposed` (Title, Context, Suggestion, Date). Do **not** implement proposed items until a human sets status to `accepted`. Human triages; then implement and set status to `implemented` with optional Link.
 
 ## Feature gating

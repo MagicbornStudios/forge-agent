@@ -133,7 +133,7 @@ export function CreateNodeModal({ route, onClose, onSubmit }: Props) {
             </FormItem>
           )}
         />
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="flex justify-end gap-[var(--control-gap)] pt-2">
           <EditorButton type="button" variant="outline" onClick={onClose}>
             Cancel
           </EditorButton>

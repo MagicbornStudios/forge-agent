@@ -42,7 +42,7 @@ export function DockviewSlotTab(
   return (
     <div
       className={cn(
-        'dv-tab flex min-h-[var(--tab-height)] items-center gap-[var(--control-gap)] px-1.5 py-[var(--control-padding-y)]',
+        'dv-tab flex min-h-[var(--tab-height)] items-center gap-[var(--control-gap)] px-[var(--control-padding-x)] py-[var(--control-padding-y)]',
         'border-b border-border bg-card shrink-0 text-[11px] min-w-0',
         'cursor-pointer select-none transition-colors',
         'hover:bg-muted/50',
@@ -62,7 +62,7 @@ export function DockviewSlotTab(
         </span>
       )}
       <Label className="font-semibold text-foreground truncate flex-1">{displayTitle}</Label>
-      <Button variant="ghost" size="icon" onClick={handleClose} aria-label="Close panel" className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded-sm border-none">
+      <Button variant="ghost" size="icon" onClick={handleClose} aria-label="Close panel" className="shrink-0 rounded p-[var(--control-padding-y)] text-muted-foreground hover:text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded-sm border-none">
         <X className="size-3 text-muted-foreground hover:text-foreground" />
       </Button>
     </div>

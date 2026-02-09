@@ -9,6 +9,14 @@ updated: 2026-02-08
 
 These files are maintained for AI/coding agents to read and use when modifying the codebase. Keep them accurate and greppable; avoid redundant copies.
 
+## Agent quick start
+
+**You are in the right place.** This index lists all agent-only docs.
+
+- **Next step:** Read **[Coding agent strategy](19-coding-agent-strategy.mdx)** for the loop and actions.
+- **Loop in one sentence:** STATUS + AGENTS (root + area) → pick one slice from STATUS/task-registry → implement → update STATUS (Ralph Wiggum Done) and any affected docs.
+- Then use the list below to open STATUS, task-registry, errors-and-attempts, etc., as needed.
+
 ## AGENTS.md vs agent-artifacts
 
 - **AGENTS.md** (root + per-package): **Rules, conventions, and boundaries** for an area. Stable; agents read them before a slice. One canonical file per critical area.
@@ -27,18 +35,16 @@ These files are maintained for AI/coding agents to read and use when modifying t
 - **[agent-artifacts/core/knip-findings.md](agent-artifacts/core/knip-findings.md)** — Knip: how it works, what the current run found, how to triage (dead code).
 - **[agent-artifacts/core/compacting-and-archiving.md](agent-artifacts/core/compacting-and-archiving.md)** — When and how to compact sections; archive folder; one-line pointers.
 - **[agent-artifacts/core/debugging-zustand-devtools.md](agent-artifacts/core/debugging-zustand-devtools.md)** — Debugging Zustand stores with Redux DevTools (humans and agents).
-- **[agent-artifacts/core/enhanced-features-backlog.md](agent-artifacts/core/enhanced-features-backlog.md)** — Ideas backlog (propose → triage → implement). Process: [enhanced-features-process.md](agent-artifacts/core/enhanced-features-process.md).
+- **[agent-artifacts/core/enhanced-features-backlog.md](agent-artifacts/core/enhanced-features-backlog.md)** — Ideas backlog (propose → triage → implement). Process in same doc.
 - **[agent-artifacts/core/styling-and-ui-consistency.md](agent-artifacts/core/styling-and-ui-consistency.md)** — Styling and UI consistency rules; process for styling passes (implement, update docs/STATUS; optional screenshots—humans capture, automation errors). See [how-to 26](../../how-to/26-styling-debugging-with-cursor.mdx).
-- **agent-artifacts/archive/** — Compacted chunks (e.g. STATUS-done-YYYY-MM.md). Main docs point here; read main artifact first.
-- **[agent-artifacts/core/plan-editor-layout-main-content-not-showing.md](agent-artifacts/core/plan-editor-layout-main-content-not-showing.md)** — Plan: main content/panels not showing (only Copilot Kit visible); what we tried, tech used, fallback candidate (react-resizable-panels).
-- **[agent-artifacts/core/plan-dockview-restore-video-lock-feature-flags.md](agent-artifacts/core/plan-dockview-restore-video-lock-feature-flags.md)** — Plan: restore Dockview (priority 1), lock Video editor with feature flag (priority 2), optional feature-flag SDK (DB/REST), ISSUES.md and agent "what can I do next."
+- **[agent-artifacts/core/standard-practices.md](agent-artifacts/core/standard-practices.md)** — Logging, env, health, security, and "as we grow" checklist. One place for what we do now vs soon.
+- **agent-artifacts/archive/** — Compacted chunks (e.g. STATUS-done-YYYY-MM.md) and **legacy plan docs** (e.g. plan-dockview-restore-*, plan-editor-layout-*). Plans are **not** living docs in core; do not add new plan docs to core. Track work via STATUS Next, task-registry, ISSUES, roadmap. Main docs point here; read main artifact first.
 - **[ISSUES.md](../ISSUES.md)** (root) — Known product/editor issues (e.g. Video editor non-functional and locked). Check before suggesting work that assumes a feature is available.
 - **[AGENTS.md](../AGENTS.md)** (root) — Global agent rules, loop, conventions.
 
 ## Per-package / per-area AGENTS.md
 
-- [packages/shared/src/shared/AGENTS.md](../packages/shared/src/shared/AGENTS.md)
-- [packages/shared/src/shared/workspace/AGENTS.md](../packages/shared/src/shared/workspace/AGENTS.md) (internal types only; consume via `@forge/shared`)
+- [packages/shared/src/shared/AGENTS.md](../packages/shared/src/shared/AGENTS.md) (includes workspace internal-types rules)
 - [packages/ui/AGENTS.md](../packages/ui/AGENTS.md)
 - [packages/agent-engine/AGENTS.md](../packages/agent-engine/AGENTS.md)
 
@@ -46,7 +52,7 @@ These files are maintained for AI/coding agents to read and use when modifying t
 
 - **Living agent artifacts:** `docs/agent-artifacts/core/*.md` (STATUS, decisions, errors-and-attempts, tool-usage, compacting-and-archiving, debugging-zustand-devtools) and `docs/agent-artifacts/archive/` for compacted chunks. Purpose: current state, decisions, failure log, tool guidance, compacting process. Updated after each slice or when something breaks. No number prefix; humans and agents reference this folder.
 - **Official human-facing docs:** Numbered `.mdx` in `docs/` (00, 10–19), `docs/how-to/` (00–09, 20–22), `docs/architecture/` (01–09), `docs/design/` (01–), `docs/product/` (MVP and first revenue, [Dev-kit and keys](product/dev-kit-and-keys.mdx)), [docs/business/](business/00-index.mdx) (revenue, Stripe, listings and clones), `docs/roadmap/`. Purpose: tutorials, architecture, code organization, product/strategy, and the agent index/strategy (18–19). Kept up to date with the product.
-- **Root / package:** `README.md`, `SETUP.md`, `AGENTS.md` stay `.md` at repo root or under packages; they point at `docs/18-agent-artifacts-index.mdx` and `docs/agent-artifacts/core/` for artifact locations.
+- **Root / package:** `README.md`, `SETUP.md`, `AGENTS.md`, `SKILLS.md` (capabilities contract), `CONTRIBUTING.md` (human workflow) at repo root; they point at `docs/18-agent-artifacts-index.mdx` and `docs/agent-artifacts/core/` for artifact locations.
 - **No duplicates:** One canonical file per topic; no parallel .md when a .mdx exists. One artifact folder for the three core living docs.
 
 ## Link conventions
@@ -58,5 +64,7 @@ These files are maintained for AI/coding agents to read and use when modifying t
 - Keep numbered docs stable; don't renumber. Use indexes (00-index.mdx) as primary navigation; cross-links are secondary. When reorganizing, update indexes first, then audit cross-links.
 
 ## Search strategy
+
+**Before retrying a failed approach**, always check [errors-and-attempts](agent-artifacts/core/errors-and-attempts.md).
 
 For any task: (1) Prefer this index and core artifacts for **current state** and **failure log**; use numbered docs for architecture/how-to. (2) Grep `docs/` and relevant `AGENTS.md` first. (3) Check [agent-artifacts/core/errors-and-attempts.md](agent-artifacts/core/errors-and-attempts.md) before retrying a failed pattern. (4) See [19-coding-agent-strategy.mdx](19-coding-agent-strategy.mdx) for how we use and extend these artifacts. (5) Use [tool-usage.md](agent-artifacts/core/tool-usage.md) for search/navigate (rg, list_dir, Read).

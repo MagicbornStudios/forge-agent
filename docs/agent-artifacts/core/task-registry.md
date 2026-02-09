@@ -23,9 +23,10 @@ Single entry point for "all work in tiers." For **granular, pickable tasks** (es
 | trace-benchmark | TRACE.md / before-after benchmark for Codebase Agent Strategy | Small–Medium | open | — | [Next #7](./STATUS.md) |
 | mcp-apps | Editors as MCP Apps | Large | open | — | [Next #8](./STATUS.md) |
 | publish-host | Platform: publish and host builds | Large | open | — | [Next #9](./STATUS.md) |
-| marketing-part-b | Marketing site overhaul (Part B) | Large | done | — | [Next #10](./STATUS.md) |
-| video-twick | Twick → VideoDoc persistence + plan/commit UI | Medium | open | — | [Next #11](./STATUS.md) |
-| video-workflow | Video workflow panel | Medium | open | — | [Next #12](./STATUS.md) |
+| developer-program | Developer program and editor ecosystem | Epic | open | TBD (task-breakdown-developer-program.md when lanes exist) | [Next #10](./STATUS.md) |
+| marketing-part-b | Marketing site overhaul (Part B) | Large | done | — | [Next #11](./STATUS.md) |
+| video-twick | Twick → VideoDoc persistence + plan/commit UI | Medium | open | — | [Next #12](./STATUS.md) |
+| video-workflow | Video workflow panel | Medium | open | — | [Next #13](./STATUS.md) |
 
 ## Quick picks (Tier 3 or Tier 2, open, Small / Medium)
 

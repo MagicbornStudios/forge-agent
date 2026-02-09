@@ -190,7 +190,7 @@ function ToolbarRoot({ children, groups, className }: EditorToolbarProps) {
     <div
       role="toolbar"
       className={cn(
-        'min-h-[var(--toolbar-height)] flex items-center gap-[var(--control-gap)] px-[var(--panel-padding)] border-b border-border bg-muted text-[11px] shrink-0',
+        'min-h-[var(--toolbar-height)] flex items-center gap-[var(--control-gap)] px-[var(--panel-padding)] border-b-2 border-[var(--context-accent)] bg-muted text-[11px] shrink-0',
         className,
       )}
     >

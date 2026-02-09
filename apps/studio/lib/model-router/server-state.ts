@@ -1,8 +1,11 @@
 import 'server-only';
 
+import { getLogger } from '@/lib/logger';
 import type { ModelPreferences, PrimaryAndFallbacks, SelectionMode } from './types';
 import { getDefaultEnabledIds, getDefaultFallbackChain } from './registry';
 import { DEFAULT_FREE_CHAT_MODEL_IDS } from './defaults';
+
+const log = getLogger('model-router');
 
 /**
  * Server-side preferences for model selection.
@@ -24,7 +27,7 @@ export function getPreferences(): ModelPreferences {
 
 export function updatePreferences(patch: Partial<ModelPreferences>): ModelPreferences {
   currentPrefs = { ...currentPrefs, ...patch };
-  console.log('[ModelRouter] Preferences updated', currentPrefs);
+  log.info({ mode: currentPrefs.mode, manualModelId: currentPrefs.manualModelId, enabledCount: currentPrefs.enabledModelIds.length }, 'Preferences updated');
   return { ...currentPrefs };
 }
 

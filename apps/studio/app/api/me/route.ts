@@ -34,6 +34,7 @@ export async function GET(req: Request) {
       name?: string | null;
       role?: string | null;
       plan?: string | null;
+      stripeConnectAccountId?: string | null;
     };
 
     return NextResponse.json({
@@ -43,6 +44,7 @@ export async function GET(req: Request) {
         name: user.name ?? null,
         role: user.role ?? null,
         plan: user.plan ?? null,
+        stripeConnectAccountId: user.stripeConnectAccountId ?? null,
       },
     });
   } catch (error) {

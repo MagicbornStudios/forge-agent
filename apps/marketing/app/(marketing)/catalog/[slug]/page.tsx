@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { fetchListingBySlug } from '@/lib/api';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { CatalogCheckoutButton } from '@/components/catalog-checkout-button';
 
 function formatPrice(price: number, currency: string): string {
   if (price === 0) return 'Free';
@@ -65,12 +65,10 @@ export default async function CatalogListingPage({
             </p>
           )}
           <div className="mt-8">
-            <Button asChild size="lg">
-              <Link href="#">Get</Link>
-            </Button>
-            <span className="ml-2 text-sm text-muted-foreground">
-              (Checkout coming in a later release)
-            </span>
+            <CatalogCheckoutButton
+              listingId={Number(listing.id)}
+              listingSlug={listing.slug}
+            />
           </div>
         </article>
       </div>

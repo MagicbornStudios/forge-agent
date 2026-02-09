@@ -83,6 +83,7 @@ export interface Config {
     promotions: Promotion;
     posts: Post;
     listings: Listing;
+    licenses: License;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -106,6 +107,7 @@ export interface Config {
     promotions: PromotionsSelect<false> | PromotionsSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     listings: ListingsSelect<false> | ListingsSelect<true>;
+    licenses: LicensesSelect<false> | LicensesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -153,6 +155,10 @@ export interface User {
   name: string;
   role: 'admin' | 'user';
   plan: 'free' | 'pro';
+  /**
+   * Stripe Connect Express account id (acct_xxx)
+   */
+  stripeConnectAccountId?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -570,6 +576,35 @@ export interface Listing {
   createdAt: string;
 }
 /**
+ * License records for clone purchases; created by Stripe webhook.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "licenses".
+ */
+export interface License {
+  id: number;
+  /**
+   * License holder (buyer)
+   */
+  user: number | User;
+  listing: number | Listing;
+  /**
+   * Stripe Checkout session id (cs_xxx)
+   */
+  stripeSessionId: string;
+  grantedAt: string;
+  /**
+   * Optional snapshot/version for version-only clone mode
+   */
+  versionSnapshotId?: string | null;
+  /**
+   * Project created by first clone (set by webhook)
+   */
+  clonedProjectId?: (number | null) | Project;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -656,6 +691,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'listings';
         value: number | Listing;
+      } | null)
+    | ({
+        relationTo: 'licenses';
+        value: number | License;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -707,6 +746,7 @@ export interface UsersSelect<T extends boolean = true> {
   name?: T;
   role?: T;
   plan?: T;
+  stripeConnectAccountId?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -957,6 +997,20 @@ export interface ListingsSelect<T extends boolean = true> {
   thumbnail?: T;
   category?: T;
   status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "licenses_select".
+ */
+export interface LicensesSelect<T extends boolean = true> {
+  user?: T;
+  listing?: T;
+  stripeSessionId?: T;
+  grantedAt?: T;
+  versionSnapshotId?: T;
+  clonedProjectId?: T;
   updatedAt?: T;
   createdAt?: T;
 }

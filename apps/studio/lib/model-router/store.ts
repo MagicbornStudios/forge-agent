@@ -6,6 +6,7 @@ import { immer } from 'zustand/middleware/immer';
 import type { ModelDef, SelectionMode, ModelPreferences } from './types';
 import { getDefaultEnabledIds } from './registry';
 import { ModelService } from '@/lib/api-client';
+import { clientLogger } from '@/lib/logger-client';
 
 // ---------------------------------------------------------------------------
 // Client-side model router store
@@ -84,7 +85,9 @@ export const useModelRouterStore = create<ModelRouterState>()(
             registry: Array.isArray(data.registry) ? data.registry : [],
           });
         } catch (err) {
-          console.error('[ModelRouter] Failed to fetch settings:', err);
+          clientLogger.error('Failed to fetch settings', {
+            err: err instanceof Error ? err.message : String(err),
+          }, 'model-router');
         } finally {
           set({ isLoading: false });
         }
@@ -103,7 +106,9 @@ export const useModelRouterStore = create<ModelRouterState>()(
             fallbackIds: data.fallbackIds ?? [],
           });
         } catch (err) {
-          console.error('[ModelRouter] Failed to save preferences:', err);
+          clientLogger.error('Failed to save preferences', {
+            err: err instanceof Error ? err.message : String(err),
+          }, 'model-router');
         }
       },
     })),

@@ -28,13 +28,13 @@ export function ForgeWorkspaceDrawer() {
               </TabsTrigger>
             ))}
           </TabsList>
-          <TabsContent value="settings" className="flex-1 mt-2 min-h-0 p-2 text-sm text-muted-foreground">
+          <TabsContent value="settings" className="flex-1 mt-2 min-h-0 p-[var(--panel-padding)] text-sm text-muted-foreground">
             Workspace and editor settings for Forge. Use the Settings menu in the toolbar for full options.
           </TabsContent>
-          <TabsContent value="debug" className="flex-1 mt-2 min-h-0 p-2 text-sm text-muted-foreground">
+          <TabsContent value="debug" className="flex-1 mt-2 min-h-0 p-[var(--panel-padding)] text-sm text-muted-foreground">
             Debug info and selection summary (placeholder).
           </TabsContent>
-          <TabsContent value="logs" className="flex-1 mt-2 min-h-0 p-2 text-sm text-muted-foreground">
+          <TabsContent value="logs" className="flex-1 mt-2 min-h-0 p-[var(--panel-padding)] text-sm text-muted-foreground">
             Logs and console output (placeholder).
           </TabsContent>
         </Tabs>

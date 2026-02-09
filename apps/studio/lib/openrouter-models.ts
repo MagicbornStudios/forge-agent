@@ -1,9 +1,12 @@
 import 'server-only';
 
+import { getLogger } from '@/lib/logger';
 import type { ModelDef } from '@/lib/model-router/types';
 import { getOpenRouterConfig } from '@/lib/openrouter-config';
 import { DEFAULT_FREE_CHAT_MODEL_IDS } from '@/lib/model-router/defaults';
 import { getResponsesV2Compatibility } from '@/lib/model-router/responses-compat';
+
+const log = getLogger('openrouter-models');
 
 /** OpenRouter API model object (subset we use). */
 interface OpenRouterModelRow {
@@ -76,9 +79,10 @@ export async function getOpenRouterModels(): Promise<ModelDef[]> {
     const rows = Array.isArray(json.data) ? json.data : [];
     const models = await Promise.all(rows.map((row) => toModelDef(row)));
     cached = { at: now, models };
+    log.debug({ count: models.length }, 'Models fetched');
     return models;
   } catch (err) {
-    console.warn('[OpenRouter] models fetch error', err);
+    log.warn({ err: err instanceof Error ? err.message : String(err) }, 'Models fetch error');
     return cached?.models ?? [];
   }
 }
