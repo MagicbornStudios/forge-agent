@@ -43,6 +43,7 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 
 ## Ralph Wiggum loop
 
+- Done (2026-02-09): Next (tomorrow) tasks: AI agent/model provider plan (0), model switcher stability (1), reduce CopilotKit/Studio calls on load (2); then MVP (Yarn, GamePlayer). Task registry initiative `model-routing-copilotkit-stability` added; errors-and-attempts entry "Model switcher errors and excess CopilotKit/Studio calls on load"; STATUS Next list renumbered (0–2 AI/model, 3+ MVP/after).
 - Done (2026-02-09): Build uncaughtException (data argument undefined): guarded base64() in api-client request.ts; defensive spec write in generate-openapi.mjs; null/undefined guard for assets in SanitizeUndefinedAssetSourcePlugin (next.config.ts). Logged in errors-and-attempts.
 - Done (2026-02-09): Catalog route type fix: `apps/studio/app/api/catalog/route.ts` — `where` was `Record<string, unknown>` and not assignable to Payload `Where`; build the where clause inline so it is inferred. Logged in errors-and-attempts.
 - Done (2026-02-09): Docs frontmatter and loop: added frontmatter to `docs/architecture/README.md` and `docs/how-to/27-posthog-llm-analytics.mdx`; "Docs (MDX build)" section in standard-practices, frontmatter reminder in coding-agent-strategy "After a slice", errors-and-attempts entry generalized to all docs and linked to standard-practices.
@@ -126,7 +127,8 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 - In progress: None.
 - Other agents: None reported.
 - Done: CopilotKit architecture doc + roadmap implementation (image gen, structured output, plan-execute-review-commit).
-- Next slice: **MVP-critical work first** — e.g. First-class Yarn Spinner (export/import `.yarn`), then GamePlayer first slice (see [10 - GamePlayer](../../architecture/10-gameplayer.mdx)), or publish and host builds. Video work (Twick → VideoDoc, workflow panel) is **when Video is unlocked** (not in MVP).
+- **Next (tomorrow):** **AI agent and model provider plan** — Discuss and document: who provides models, how model switcher talks to CopilotKit, load sequence. Then **model switcher stability** (massive errors; reduce and single source of truth) and **CopilotKit/Studio load** (too many calls on Studio load; defer or batch). After that, MVP-critical (Yarn, GamePlayer). See STATUS § Next "AI / model routing (stability)" and [task registry](./task-registry.md) initiative `model-routing-copilotkit-stability`.
+- Next slice (after AI stability): **MVP-critical work first** — e.g. First-class Yarn Spinner (export/import `.yarn`), then GamePlayer first slice (see [10 - GamePlayer](../../architecture/10-gameplayer.mdx)), or publish and host builds. Video work (Twick → VideoDoc, workflow panel) is **when Video is unlocked** (not in MVP).
 
 ## Next
 
@@ -151,31 +153,36 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 
 ### Next steps (with impact sizes)
 
-**MVP (do first)**
+**AI / model routing / CopilotKit (stability — do first tomorrow)**
 
-1. **First-class Yarn Spinner** — **MVP-critical.** Yarn export (and import) is in MVP. Export/import `.yarn` files; syntax preview panel; variable tracking. See [09 - Dialogue system and Yarn Spinner](../../architecture/09-dialogue-domain-and-yarn-spinner.mdx). **[Impact: Medium]**
-2. **GamePlayer** — **MVP-critical.** Playable runtime for Yarn Games. Build in phases: editor tab, load project dialogue, minimal runtime, then character/voice and polish. See [10 - GamePlayer](../../architecture/10-gameplayer.mdx). Prerequisite: Yarn export (or graph load). **[Impact: Medium–Large]**
-3. **Plans/capabilities for platform** — **MVP-critical.** Extend `user.plan` and `CAPABILITIES` to gate platform features (e.g. publish, monetize, who can list / clone paid). **Complete.** CreateListingSheet gates PLATFORM_PUBLISH (status) and PLATFORM_MONETIZE (price); listings beforeChange enforces plan server-side; see task breakdown cap-4, cap-5, cap-6. **[Impact: Small–Medium]**
-4. **Platform: monetization (clone / download)** — **MVP-critical.** Clone to user/org for a price; or download build/template/Strategy core. Listings, checkout, Stripe Connect or similar. **Complete.** See [MVP and first revenue](../../product/mvp-and-revenue.mdx). **[Impact: Epic]**
-5. **Platform: publish and host builds** — **MVP-critical.** Authors publish project build; we host playable narrative so players can play builds. Build pipeline, storage, playable runtime. See [10 - GamePlayer](../../architecture/10-gameplayer.mdx). **[Impact: Large]**
-6. **Apply gates to more surfaces** — Model selection or other surfaces as needed. **Copilot is not gated** (see decisions.md). **[Impact: Small]**
-7. **Project-scoped settings** — Add project scope (or scopeId = projectId) to settings-overrides and GET/POST; project-level defaults shared by project members. **[Impact: Medium]**
-8. **TRACE.md / before-after benchmark for Codebase Agent Strategy** — Proof-of-effectiveness for downloadable Strategy core; log where agent looks and what it finds (e.g. TRACE.md); benchmark before/after installation. **[Impact: Small–Medium]**
+0. **AI agent and model provider plan** — Discuss and document: who provides models (OpenRouter vs others), how the model switcher integrates with CopilotKit, and the intended load sequence. Single source of truth for model state; avoid duplicate fetches and sync loops. **[Impact: Small – planning/doc]**
+1. **Model switcher stability** — Model switcher is producing many errors (sync, registry, UI). Reduce errors: ensure single source of truth (settings ⇄ router), registry hydrated once, no oscillation. See [errors-and-attempts](./errors-and-attempts.md) (Model switcher registry empty, manual mode oscillation) and [06-model-routing-and-openrouter.mdx](../../architecture/06-model-routing-and-openrouter.mdx). **[Impact: Small–Medium]**
+2. **CopilotKit and Studio: reduce calls on load** — Too many CopilotKit/Studio calls on app load. Defer non-critical requests, batch where possible, single init path for runtime/sync so "what's next" is clear. **[Impact: Small–Medium]**
+
+**MVP (do after AI stability)**
+
+3. **First-class Yarn Spinner** — **MVP-critical.** Yarn export (and import) is in MVP. Export/import `.yarn` files; syntax preview panel; variable tracking. See [09 - Dialogue system and Yarn Spinner](../../architecture/09-dialogue-domain-and-yarn-spinner.mdx). **[Impact: Medium]**
+4. **GamePlayer** — **MVP-critical.** Playable runtime for Yarn Games. Build in phases: editor tab, load project dialogue, minimal runtime, then character/voice and polish. See [10 - GamePlayer](../../architecture/10-gameplayer.mdx). Prerequisite: Yarn export (or graph load). **[Impact: Medium–Large]**
+5. **Plans/capabilities for platform** — **MVP-critical.** **Complete.** CreateListingSheet gates PLATFORM_PUBLISH (status) and PLATFORM_MONETIZE (price); listings beforeChange enforces plan server-side. **[Impact: Small–Medium]**
+6. **Platform: monetization (clone / download)** — **MVP-critical.** **Complete.** See [MVP and first revenue](../../product/mvp-and-revenue.mdx). **[Impact: Epic]**
+7. **Platform: publish and host builds** — **MVP-critical.** Authors publish project build; we host playable narrative. Build pipeline, storage, playable runtime. See [10 - GamePlayer](../../architecture/10-gameplayer.mdx). **[Impact: Large]**
+8. **Apply gates to more surfaces** — Model selection or other surfaces as needed. **Copilot is not gated** (see decisions.md). **[Impact: Small]**
+9. **Project-scoped settings** — Add project scope (or scopeId = projectId) to settings-overrides and GET/POST; project-level defaults shared by project members. **[Impact: Medium]**
+10. **TRACE.md / before-after benchmark for Codebase Agent Strategy** — Proof-of-effectiveness for downloadable Strategy core; log where agent looks and what it finds (e.g. TRACE.md); benchmark before/after installation. **[Impact: Small–Medium]**
 
 **After MVP**
 
-9. **Editors as MCP Apps** — **After MVP.** Define `McpAppDescriptor` per editor; build Studio MCP Server. See [07 - Editors as MCP Apps](../../architecture/07-modes-as-mcp-apps.mdx). **[Impact: Large]**
-10. **Developer program and editor ecosystem** — **After MVP.** Approved editors, data contracts, revenue split while official (no usage-based pay in Studio), publish updates to editor, community vs official apps, MCP Apps for third-party editors, submission (GitHub fork). See [Developer program and editor ecosystem](../../business/developer-program-and-editors.mdx). **[Impact: Epic]**
-11. **Marketing site overhaul (Part B)** — Placeholder routes (roadmap, changelog, pricing, demo, privacy, terms); docs content structure and nav; public roadmap and changelog pages; full pricing page; customer admin (sidebar, account/settings, account/billing, account/api-keys); optional login block and Hero “Watch Demo”. Implement as slices 1–8 per plan. **[Impact: Large]** *(Slices 1–8 completed.)*
-**When Video is unlocked (Video not in MVP)**
+11. **Editors as MCP Apps** — **After MVP.** Define `McpAppDescriptor` per editor; build Studio MCP Server. See [07 - Editors as MCP Apps](../../architecture/07-modes-as-mcp-apps.mdx). **[Impact: Large]**
+12. **Developer program and editor ecosystem** — **After MVP.** Approved editors, data contracts, revenue split while official (no usage-based pay in Studio), publish updates to editor, community vs official apps, MCP Apps for third-party editors, submission (GitHub fork). See [Developer program and editor ecosystem](../../business/developer-program-and-editors.mdx). **[Impact: Epic]**
+13. **Marketing site overhaul (Part B)** — **Complete.** Placeholder routes (roadmap, changelog, pricing, demo, privacy, terms); docs content structure and nav; public roadmap and changelog pages; full pricing page; customer admin (sidebar, account/settings, account/billing, account/api-keys); optional login block and Hero “Watch Demo”. Implement as slices 1–8 per plan. **[Impact: Large]****When Video is unlocked (Video not in MVP)**
 
-12. **Twick → VideoDoc persistence + plan/commit UI** — When Video editor is unlocked: map Twick timeline state to our `VideoDoc` draft and connect persistence (save/load); add plan/commit UI for video proposals. **[Impact: Medium]**
-13. **Video workflow panel** — When Video editor is unlocked: plan -> patch -> review mirroring Dialogue. **[Impact: Medium]**
+14. **Twick → VideoDoc persistence + plan/commit UI** — When Video editor is unlocked: map Twick timeline state to our `VideoDoc` draft and connect persistence (save/load); add plan/commit UI for video proposals. **[Impact: Medium]**
+15. **Video workflow panel** — When Video editor is unlocked: plan -> patch -> review mirroring Dialogue. **[Impact: Medium]**
 
 **Ongoing**
 
-14. Track any new build warnings in [errors-and-attempts.md](./errors-and-attempts.md).
-15. Re-run `pnpm --filter @forge/studio build` after package updates.
+16. Track any new build warnings in [errors-and-attempts.md](./errors-and-attempts.md).
+17. Re-run `pnpm --filter @forge/studio build` after package updates.
 
 **Product roadmap:** [docs/roadmap/](../../roadmap/00-roadmap-index.mdx) - [product.mdx](../../roadmap/product.mdx) for editors and initiatives. **Roadmap remaining:** Full Yarn Spinner implementation (compiler, runtime preview, localization); vision/image input (model registry + chat upload); co-agents (documented, not used). Optional future: agent graphs/subgraphs in runtime. See [architecture/03-copilotkit-and-agents.mdx](../../architecture/03-copilotkit-and-agents.mdx) Section 12.
 

@@ -14,19 +14,20 @@ Single entry point for "all work in tiers." For **granular, pickable tasks** (es
 
 | id | title | impact | status | breakdown | STATUS |
 |----|-------|--------|--------|-----------|--------|
-| yarn-spinner | First-class Yarn Spinner | Medium | open | — | [Next #1](./STATUS.md) |
-| gameplayer | GamePlayer | Medium–Large | open | — | [Next #2](./STATUS.md) |
-| plans-capabilities | Plans/capabilities for platform | Small–Medium | done | [breakdown](task-breakdown-platform-monetization.md) Plan/capabilities lane | [Next #3](./STATUS.md) |
-| platform-mono | Platform: monetization (clone/download) | Epic | done | [breakdown](task-breakdown-platform-monetization.md) | [Next #4](./STATUS.md) |
-| apply-gates | Apply gates to more surfaces | Small | open | — | [Next #5](./STATUS.md) |
-| project-settings | Project-scoped settings | Medium | open | — | [Next #6](./STATUS.md) |
-| trace-benchmark | TRACE.md / before-after benchmark for Codebase Agent Strategy | Small–Medium | open | — | [Next #7](./STATUS.md) |
-| mcp-apps | Editors as MCP Apps | Large | open | — | [Next #8](./STATUS.md) |
-| publish-host | Platform: publish and host builds (MVP: playable builds) | Large | open | — | [Next #5](./STATUS.md) |
-| developer-program | Developer program and editor ecosystem | Epic | open | TBD (task-breakdown-developer-program.md when lanes exist) | [Next #10](./STATUS.md) |
-| marketing-part-b | Marketing site overhaul (Part B) | Large | done | — | [Next #11](./STATUS.md) |
-| video-twick | Twick → VideoDoc persistence + plan/commit UI | Medium | open | — | [Next #12](./STATUS.md) |
-| video-workflow | Video workflow panel | Medium | open | — | [Next #13](./STATUS.md) |
+| model-routing-copilotkit-stability | AI agent / model provider plan; model switcher stability; reduce CopilotKit/Studio calls on load | Small–Medium | open | TBD (plan then implement) | [Next § AI/model](./STATUS.md) |
+| yarn-spinner | First-class Yarn Spinner | Medium | open | — | [Next #3](./STATUS.md) |
+| gameplayer | GamePlayer | Medium–Large | open | — | [Next #4](./STATUS.md) |
+| plans-capabilities | Plans/capabilities for platform | Small–Medium | done | [breakdown](task-breakdown-platform-monetization.md) Plan/capabilities lane | [Next #5](./STATUS.md) |
+| platform-mono | Platform: monetization (clone/download) | Epic | done | [breakdown](task-breakdown-platform-monetization.md) | [Next #6](./STATUS.md) |
+| apply-gates | Apply gates to more surfaces | Small | open | — | [Next #8](./STATUS.md) |
+| project-settings | Project-scoped settings | Medium | open | — | [Next #9](./STATUS.md) |
+| trace-benchmark | TRACE.md / before-after benchmark for Codebase Agent Strategy | Small–Medium | open | — | [Next #10](./STATUS.md) |
+| mcp-apps | Editors as MCP Apps | Large | open | — | [Next #11](./STATUS.md) |
+| publish-host | Platform: publish and host builds (MVP: playable builds) | Large | open | — | [Next #7](./STATUS.md) |
+| developer-program | Developer program and editor ecosystem | Epic | open | TBD (task-breakdown-developer-program.md when lanes exist) | [Next #12](./STATUS.md) |
+| marketing-part-b | Marketing site overhaul (Part B) | Large | done | — | [Next #13](./STATUS.md) |
+| video-twick | Twick → VideoDoc persistence + plan/commit UI | Medium | open | — | [Next #14](./STATUS.md) |
+| video-workflow | Video workflow panel | Medium | open | — | [Next #15](./STATUS.md) |
 
 ## Quick picks (Tier 3 or Tier 2, open, Small / Medium)
 

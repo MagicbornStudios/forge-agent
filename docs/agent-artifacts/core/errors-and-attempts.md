@@ -385,6 +385,14 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 
 ---
 
+## Model switcher errors and excess CopilotKit/Studio calls on load (planned work)
+
+**Problem**: Model switcher is producing many errors; Studio and CopilotKit make too many calls on app load. Related: registry hydration, settings ⇄ router sync (see "Model switcher registry empty" and "Model switcher manual mode oscillation" in this file).
+
+**Planned work**: (0) **AI agent and model provider plan** — discuss/document single source of truth, who provides models, avoid duplicate fetches and sync loops. (1) **Model switcher stability** — single source of truth, registry hydrated once, no oscillation. (2) **Reduce CopilotKit/Studio calls on load** — fewer calls, defer/batch, single init path. See [STATUS § Next](./STATUS.md) and initiative `model-routing-copilotkit-stability` in [task-registry](./task-registry.md). Architecture: [06-model-routing-and-openrouter.mdx](../../architecture/06-model-routing-and-openrouter.mdx).
+
+---
+
 ## Single CopilotKit runtime and model router (no root duplicate)
 
 **Do not** add a second CopilotKit runtime or model router at repo root. The **single** runtime and model router (server-state, registry, openrouter-config, responses-compat) live **only** in `apps/studio`. Root `app/api/copilotkit` and root `lib/openrouter-config` + `lib/model-router` were removed; all API routes in use are under `apps/studio/app/api/`. See [06-model-routing-and-openrouter.mdx](../../architecture/06-model-routing-and-openrouter.mdx).
