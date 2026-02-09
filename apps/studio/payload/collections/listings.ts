@@ -1,5 +1,27 @@
 import type { CollectionConfig } from 'payload';
 
+type UserWithPlan = { id: number; plan?: string | null };
+
+function ensurePlatformCapabilities({
+  data,
+  req,
+}: {
+  data: Record<string, unknown>;
+  req: { user?: UserWithPlan | null };
+}): void {
+  const user = req?.user;
+  const plan = user?.plan ?? 'free';
+  const isPro = plan === 'pro';
+
+  if (data.status === 'published' && !isPro) {
+    throw new Error('Publishing listings requires a Pro plan. Upgrade to publish to the catalog.');
+  }
+  const price = typeof data.price === 'number' ? data.price : Number(data.price);
+  if (!Number.isNaN(price) && price > 0 && !isPro) {
+    throw new Error('Paid listings require a Pro plan. Upgrade to set a price.');
+  }
+}
+
 export const Listings: CollectionConfig = {
   slug: 'listings',
   access: {
@@ -7,6 +29,16 @@ export const Listings: CollectionConfig = {
     create: ({ req }) => !!req.user,
     update: ({ req }) => !!req.user,
     delete: ({ req }) => !!req.user,
+  },
+  hooks: {
+    beforeChange: [
+      ({ data, req }) => {
+        if (req?.user && data) {
+          ensurePlatformCapabilities({ data: data as Record<string, unknown>, req });
+        }
+        return data;
+      },
+    ],
   },
   fields: [
     {

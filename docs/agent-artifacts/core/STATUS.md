@@ -43,7 +43,10 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 
 ## Ralph Wiggum loop
 
+- Done (2026-02-09): Docs frontmatter and loop: added frontmatter to `docs/architecture/README.md` and `docs/how-to/27-posthog-llm-analytics.mdx`; "Docs (MDX build)" section in standard-practices, frontmatter reminder in coding-agent-strategy "After a slice", errors-and-attempts entry generalized to all docs and linked to standard-practices.
+- Done (2026-02-09): Build fix: added frontmatter (`title`, `created`, `updated`) to `docs/agent-artifacts/core/standard-practices.md` so fumadocs-mdx accepts it (title was undefined).
 - Done (2026-02-09): Platform next three: list-3 cloneMode (schema, Create sheet, webhook versionSnapshotId, clone-again); pay-1c marked done; pay-2 revenue tracking (licenses amountCents/platformFeeCents, webhook, GET /api/me/revenue, revenue-and-stripe doc).
+- Done (2026-02-09): Model switcher manual mode loop fixed (settings ⇄ model-router sync no longer oscillates auto/manual).
 - Done (2026-02-09): Structured logging (pino, file, namespaces), client-to-file optional in dev, PostHog LLM doc, standard-practices doc, health endpoint; td-18; decisions ADR; errors-and-attempts logging entry; verify script docs.
 - Done (2026-02-09): td-12 Apply context tokens to editor primitives: EditorInspector, EditorBottomPanel, EditorTabGroup, EditorReviewBar, EditorToolbar, EditorHeader, EditorStatusBar use border-[var(--context-accent)] for chrome edges; GraphSidebar tab bar same.
 - Done (2026-02-09): td-11 Component-level context override: SectionHeader accepts optional `context` prop; when set, wraps content in `data-domain={context}` for contexts.css; documented in editor README and 01-styling-and-theming.
@@ -117,10 +120,11 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 - Done (2026-02-08): POST /api/licenses/[id]/clone (clone-again by license; auth; source = listing.project).
 - Done (2026-02-08): GET /api/licenses (auth; list current user licenses with listing title).
 - Done (2026-02-08): license-2 GET /api/licenses, POST /api/licenses/[id]/clone; marketing account/licenses page with Clone again.
+- Done (2026-02-09): Plans/capabilities for platform: PLATFORM_PUBLISH and PLATFORM_MONETIZE gated in CreateListingSheet (status Published disabled for free; price disabled for free, effectivePrice/effectiveStatus on submit); listings beforeChange hook enforces plan for status published and price > 0; capability comments and decisions ADR; task breakdown cap-4, cap-5, cap-6; task-registry plans-capabilities done.
 - In progress: None.
 - Other agents: None reported.
 - Done: CopilotKit architecture doc + roadmap implementation (image gen, structured output, plan-execute-review-commit).
-- Next slice: **MVP-critical work first** — e.g. First-class Yarn Spinner (export/import `.yarn`), then GamePlayer first slice (see [10 - GamePlayer](../../architecture/10-gameplayer.mdx)), or **plans/capabilities for platform** (next platform surface now that platform-mono is complete), or publish and host builds. Video work (Twick → VideoDoc, workflow panel) is **when Video is unlocked** (not in MVP).
+- Next slice: **MVP-critical work first** — e.g. First-class Yarn Spinner (export/import `.yarn`), then GamePlayer first slice (see [10 - GamePlayer](../../architecture/10-gameplayer.mdx)), or publish and host builds. Video work (Twick → VideoDoc, workflow panel) is **when Video is unlocked** (not in MVP).
 
 ## Next
 
@@ -149,7 +153,7 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 
 1. **First-class Yarn Spinner** — **MVP-critical.** Yarn export (and import) is in MVP. Export/import `.yarn` files; syntax preview panel; variable tracking. See [09 - Dialogue system and Yarn Spinner](../../architecture/09-dialogue-domain-and-yarn-spinner.mdx). **[Impact: Medium]**
 2. **GamePlayer** — **MVP-critical.** Playable runtime for Yarn Games. Build in phases: editor tab, load project dialogue, minimal runtime, then character/voice and polish. See [10 - GamePlayer](../../architecture/10-gameplayer.mdx). Prerequisite: Yarn export (or graph load). **[Impact: Medium–Large]**
-3. **Plans/capabilities for platform** — **MVP-critical.** Extend `user.plan` and `CAPABILITIES` to gate platform features (e.g. publish, monetize, who can list / clone paid). Next platform work now that platform-mono is complete. **[Impact: Small–Medium]**
+3. **Plans/capabilities for platform** — **MVP-critical.** Extend `user.plan` and `CAPABILITIES` to gate platform features (e.g. publish, monetize, who can list / clone paid). **Complete.** CreateListingSheet gates PLATFORM_PUBLISH (status) and PLATFORM_MONETIZE (price); listings beforeChange enforces plan server-side; see task breakdown cap-4, cap-5, cap-6. **[Impact: Small–Medium]**
 4. **Platform: monetization (clone / download)** — **MVP-critical.** Clone to user/org for a price; or download build/template/Strategy core. Listings, checkout, Stripe Connect or similar. **Complete.** See [MVP and first revenue](../../product/mvp-and-revenue.mdx). **[Impact: Epic]**
 5. **Platform: publish and host builds** — **MVP-critical.** Authors publish project build; we host playable narrative so players can play builds. Build pipeline, storage, playable runtime. See [10 - GamePlayer](../../architecture/10-gameplayer.mdx). **[Impact: Large]**
 6. **Apply gates to more surfaces** — Model selection or other surfaces as needed. **Copilot is not gated** (see decisions.md). **[Impact: Small]**

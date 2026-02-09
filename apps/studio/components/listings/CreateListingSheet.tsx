@@ -23,6 +23,7 @@ import { useMe } from '@/lib/data/hooks/use-me';
 import { useProjects } from '@/lib/data/hooks/use-projects';
 import { useCreateListing, type CreateListingInput } from '@/lib/data/hooks/use-listings';
 import { useAppShellStore } from '@/lib/app-shell/store';
+import { useEntitlements, CAPABILITIES } from '@forge/shared/entitlements';
 
 function slugFromTitle(title: string): string {
   return title
@@ -87,6 +88,8 @@ export function CreateListingSheet({ open, onOpenChange }: CreateListingSheetPro
       setError('Title is required.');
       return;
     }
+    const effectiveStatus = canPublish ? status : 'draft';
+    const effectivePrice = canMonetize ? priceNum : 0;
     try {
       await createMutation.mutateAsync({
         title: title.trim(),
@@ -94,11 +97,11 @@ export function CreateListingSheet({ open, onOpenChange }: CreateListingSheetPro
         description: description.trim() || undefined,
         listingType,
         project: projectId ? Number(projectId) : null,
-        price: priceNum,
+        price: effectivePrice,
         currency,
         creator: user.id,
         category: category ?? undefined,
-        status,
+        status: effectiveStatus,
         cloneMode,
       });
       onOpenChange(false);
@@ -192,18 +195,24 @@ export function CreateListingSheet({ open, onOpenChange }: CreateListingSheetPro
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="listing-price">Price (USD) *</Label>
+            <Label htmlFor="listing-price">Price (USD) * {!canMonetize && '(Pro to set price)'}</Label>
             <Input
               id="listing-price"
               type="number"
               min="0"
               step="0.01"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              value={canMonetize ? price : '0'}
+              onChange={(e) => (canMonetize ? setPrice(e.target.value) : setPrice('0'))}
               placeholder="0 for free"
               className="text-sm"
+              disabled={!canMonetize}
+              aria-disabled={!canMonetize}
             />
-            <p className="text-xs text-muted-foreground">Enter amount in dollars (e.g. 9.99). Stored in cents.</p>
+            <p className="text-xs text-muted-foreground">
+              {canMonetize
+                ? 'Enter amount in dollars (e.g. 9.99). Stored in cents.'
+                : 'Upgrade to Pro to set a price for paid listings.'}
+            </p>
           </div>
           <div className="space-y-2">
             <Label>Category</Label>
@@ -225,13 +234,18 @@ export function CreateListingSheet({ open, onOpenChange }: CreateListingSheetPro
           </div>
           <div className="space-y-2">
             <Label>Status *</Label>
-            <Select value={status} onValueChange={(v) => setStatus(v as CreateListingInput['status'])}>
+            <Select
+              value={canPublish ? status : 'draft'}
+              onValueChange={(v) => setStatus(canPublish ? (v as CreateListingInput['status']) : 'draft')}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="published">Published</SelectItem>
+                <SelectItem value="published" disabled={!canPublish}>
+                  Published {!canPublish && '(Pro)'}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>

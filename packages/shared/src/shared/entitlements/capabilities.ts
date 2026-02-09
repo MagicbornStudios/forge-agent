@@ -7,7 +7,7 @@ export const CAPABILITIES = {
   FORGE_AI_EDIT: 'forge.ai.edit',
   VIDEO_EXPORT: 'video.export',
   IMAGE_GENERATION: 'studio.ai.imageGeneration',
-  // Platform (future): gate publish, list, and monetization when implemented
+  // Platform: gate who can list, publish, and monetize (Pro plan). PLATFORM_LIST = create listings; PLATFORM_PUBLISH = set listing status to published; PLATFORM_MONETIZE = set listing price > 0.
   PLATFORM_PUBLISH: 'platform.publish',
   PLATFORM_LIST: 'platform.list',
   PLATFORM_MONETIZE: 'platform.monetize',

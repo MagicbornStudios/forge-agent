@@ -7,7 +7,9 @@ import {
   DEFAULT_RESPONSES_V2_FALLBACK_MODEL,
   getResponsesV2Compatibility,
 } from '@/lib/model-router/responses-compat';
+import { getLogger } from '@/lib/logger';
 
+const log = getLogger('copilotkit');
 const config = getOpenRouterConfig();
 
 if (!config.apiKey) {

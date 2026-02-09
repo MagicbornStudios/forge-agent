@@ -1,7 +1,7 @@
 ---
 title: Task breakdown — Platform monetization (clone/download)
 created: 2026-02-08
-updated: 2026-02-08
+updated: 2026-02-09
 ---
 
 # Platform: monetization (clone/download)
@@ -25,6 +25,9 @@ Extend `user.plan` and `CAPABILITIES` to gate platform features (who can list, w
 | platform-mono-cap-1 | Add PLATFORM_LIST capability and gate listing UI | platform-mono | 3 | Small | done | [entitlements](../../packages/shared/src/shared/entitlements) |
 | platform-mono-cap-2 | Add PLATFORM_MONETIZE to CAPABILITIES and plan check | platform-mono | 3 | Small | done | [decisions](./decisions.md) |
 | platform-mono-cap-3 | Wire plan to entitlements store for platform gates | platform-mono | 3 | Small | done | — |
+| platform-mono-cap-4 | Gate PLATFORM_PUBLISH in CreateListingSheet (status Published) | platform-mono | 3 | Small | done | CreateListingSheet |
+| platform-mono-cap-5 | Gate PLATFORM_MONETIZE in CreateListingSheet (price > 0) | platform-mono | 3 | Small | done | CreateListingSheet |
+| platform-mono-cap-6 | Server-side: listings beforeChange check plan for publish/price | platform-mono | 3 | Small | done | [decisions](./decisions.md) |
 
 ### Lane: Listings (Tier 1)
 

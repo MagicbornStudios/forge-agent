@@ -196,11 +196,11 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ---
 
-## MDX build error: missing frontmatter in agent artifacts
+## MDX build error: missing frontmatter
 
-**Problem**: `pnpm --filter @forge/studio build` failed with `[MDX] invalid frontmatter ... expected string, received undefined` for `docs/agent-artifacts/core/plan-*.md`.
+**Problem**: `pnpm --filter @forge/studio build` failed with `[MDX] invalid frontmatter ... expected string, received undefined` for a doc under `docs/` (e.g. `docs/architecture/README.md`, `docs/how-to/27-posthog-llm-analytics.mdx`, or any `.md`/`.mdx` in the docs collection).
 
-**Fix**: Add YAML frontmatter (at least `title`) to any `.md` file in `docs/agent-artifacts/core` that is part of the docs collection. Example:
+**Fix**: The requirement applies to **all** `.md` and `.mdx` under `docs/`: fumadocs-mdx requires YAML frontmatter with at least **`title`** (string). Add frontmatter to the failing file. Example:
 ```
 ---
 title: Plan - Editor layout main content not showing
@@ -208,6 +208,7 @@ created: 2026-02-07
 updated: 2026-02-08
 ---
 ```
+For the ongoing convention (new or moved docs), see [standard-practices](standard-practices.md) § Docs (MDX build).
 
 ---
 
@@ -228,6 +229,14 @@ updated: 2026-02-08
 **Problem**: Console error "The result of getSnapshot should be cached to avoid an infinite loop", often followed by "Maximum update depth exceeded". Triggered when a Zustand selector returns a **new object or array reference** every time (e.g. `state.getMergedSettings(...)` which spreads and returns a new object). React's `useSyncExternalStore` requires the snapshot to be referentially stable when state has not changed; a new reference each time is treated as a change and causes re-render ? getSnapshot again ? infinite loop.
 
 **Fix**: Do not select merged or derived objects from the store in components. Use selectors that return **primitives or stable references** only (e.g. `(s) => s.getSettingValue('ai.agentName', ids)` with stable `ids`). Build any object needed in the component with `useMemo` from those primitive values. Optionally, the store can cache merged result per key and return the same reference when underlying data is unchanged.
+
+---
+
+## Model switcher manual mode oscillation (Maximum update depth exceeded)
+
+**Problem**: Selecting **Manual (pick one)** in ModelSwitcher caused the model router `mode` to flip between `auto` and `manual`, creating a rapid `store.setState` loop and React "Maximum update depth exceeded". The bidirectional sync between `ai.model` (settings) and the model-router store let router-driven changes trigger the settings ? router effect, which forced the mode back to auto before settings could update.
+
+**Fix**: Make the settings ? router sync run **only when the app setting changes** (read current router state via `useModelRouterStore.getState()`), and keep the router ? settings sync to reflect router changes. This prevents router-driven updates from re-triggering the settings sync and eliminates the oscillation.
 
 ---
 
@@ -345,6 +354,18 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 **Cause**: Only `POST /api/copilotkit` existed. CopilotKit syncs agents via `GET /api/copilotkit/info` (and sometimes `/api/copilotkit/agents__unsafe_dev_only`). Without those routes, the client sees no agents.
 
 **Fix**: Add a catch-all route `apps/studio/app/api/copilotkit/[...path]/route.ts` and export `GET` for `/api/copilotkit` so the runtime handler serves `/info` and dev-only endpoints. Share the handler via `apps/studio/app/api/copilotkit/handler.ts`.
+
+**Note:** If the handler throws before returning (e.g. `ReferenceError: log is not defined` in resolveModel), the client will also see "No agents registered" because GET /info never gets a successful response. Ensure the handler does not throw on request (e.g. define logger; validate env at module load).
+
+---
+
+## CopilotKit handler: ReferenceError log is not defined
+
+**Problem**: `ReferenceError: log is not defined` at `handler.ts:35` (resolveModel). POST /api/copilotkit returns 500.
+
+**Cause**: resolveModel used `log.info(...)` without importing or defining `log`. Studio uses structured logging via `getLogger` from `@/lib/logger`.
+
+**Fix**: In `apps/studio/app/api/copilotkit/handler.ts`, add `import { getLogger } from '@/lib/logger';` and `const log = getLogger('copilotkit');`. Do not use ad-hoc `console` for API/routing; use the Studio logger per the existing "Logging: use Studio logger" guidance in this file.
 
 ---
 

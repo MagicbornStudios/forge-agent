@@ -69,16 +69,17 @@ export function CopilotKitProvider({
 
   useEffect(() => {
     if (!appModelPreference) return;
+    const { mode: currentMode, manualModelId: currentManual } = useModelRouterStore.getState();
     if (appModelPreference === 'auto') {
-      if (mode !== 'auto') {
+      if (currentMode !== 'auto') {
         setMode('auto');
       }
       return;
     }
-    if (mode !== 'manual' || manualModelId !== appModelPreference) {
+    if (currentMode !== 'manual' || currentManual !== appModelPreference) {
       setManualModel(appModelPreference);
     }
-  }, [appModelPreference, mode, manualModelId, setMode, setManualModel]);
+  }, [appModelPreference, setMode, setManualModel]);
 
   useEffect(() => {
     const resolved = mode === 'auto' ? 'auto' : manualModelId ?? 'auto';

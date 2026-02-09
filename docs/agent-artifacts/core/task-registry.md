@@ -16,7 +16,7 @@ Single entry point for "all work in tiers." For **granular, pickable tasks** (es
 |----|-------|--------|--------|-----------|--------|
 | yarn-spinner | First-class Yarn Spinner | Medium | open | — | [Next #1](./STATUS.md) |
 | gameplayer | GamePlayer | Medium–Large | open | — | [Next #2](./STATUS.md) |
-| plans-capabilities | Plans/capabilities for platform | Small–Medium | open | — | [Next #3](./STATUS.md) |
+| plans-capabilities | Plans/capabilities for platform | Small–Medium | done | [breakdown](task-breakdown-platform-monetization.md) Plan/capabilities lane | [Next #3](./STATUS.md) |
 | platform-mono | Platform: monetization (clone/download) | Epic | done | [breakdown](task-breakdown-platform-monetization.md) | [Next #4](./STATUS.md) |
 | apply-gates | Apply gates to more surfaces | Small | open | — | [Next #5](./STATUS.md) |
 | project-settings | Project-scoped settings | Medium | open | — | [Next #6](./STATUS.md) |
@@ -38,5 +38,8 @@ For easy small tasks: pick from the table below, or see breakdown docs and filte
 | platform-mono-cap-2 | Add PLATFORM_MONETIZE to CAPABILITIES and plan check | platform-mono | done |
 | platform-mono-cap-3 | Wire plan to entitlements store for platform gates | platform-mono | done |
 | platform-mono-list-2b | Create listing flow (Studio or marketing account) | platform-mono | done |
+| platform-mono-cap-4 | Gate PLATFORM_PUBLISH in CreateListingSheet | platform-mono | done |
+| platform-mono-cap-5 | Gate PLATFORM_MONETIZE in CreateListingSheet | platform-mono | done |
+| platform-mono-cap-6 | Server-side listings beforeChange for publish/price | platform-mono | done |
 
 *(More quick picks and open tasks are in [task-breakdown-platform-monetization.md](./task-breakdown-platform-monetization.md).)*

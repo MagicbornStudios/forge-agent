@@ -1,3 +1,9 @@
+---
+title: Architecture map
+created: 2026-02-09
+updated: 2026-02-09
+---
+
 # Architecture map
 
 **Start here** for a quick mental model. One place for: packages/apps overview, key data flows, where state lives, API boundaries. For depth, use the linked docs.

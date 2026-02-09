@@ -144,6 +144,14 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 
 ---
 
+## Platform capability checks: listing create (server-side)
+
+**Decision:** Listing create (and update) is enforced server-side by **user.plan**. The `listings` collection has a `beforeChange` hook: if `data.status === 'published'`, the user must have `plan === 'pro'`; if `data.price > 0`, the user must have `plan === 'pro'`. Otherwise the hook throws and the request fails. This backs the UI gates in CreateListingSheet (PLATFORM_PUBLISH, PLATFORM_MONETIZE).
+
+**Rationale:** Prevents bypassing client gates (e.g. direct API or Payload REST). Plan is the single source; capability mapping lives in the Studio entitlements store; server only needs plan.
+
+---
+
 ## Analytics and feature flags: PostHog
 
 **Decision:** We use **PostHog** for (1) marketing analytics (page views, custom events e.g. Waitlist Signup), and (2) Studio feature flags (e.g. Video editor via `video-editor-enabled`). Dev and production use separate PostHog project keys (or the same project with environments) so flags can differ. Plan-based entitlements (free/pro) remain for paywall; release/rollout toggles use PostHog.

@@ -72,12 +72,13 @@ export function EditorTab({
         'data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:border-border data-[state=active]:shadow-[var(--shadow-sm)]',
         'data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:text-foreground data-[state=inactive]:hover:bg-muted/70',
         'data-[state=active]:after:content-[\'\'] data-[state=active]:after:absolute data-[state=active]:after:inset-x-[var(--control-padding-x)] data-[state=active]:after:bottom-0 data-[state=active]:after:h-[2px] data-[state=active]:after:bg-[color:var(--context-accent)] data-[state=active]:after:rounded-full',
+        '[&_svg]:w-[var(--icon-size)] [&_svg]:h-[var(--icon-size)] [&_svg]:shrink-0',
         className,
       )}
       onClick={handleSelect}
       onKeyDown={handleKeyDown}
     >
-      <Label className="min-w-0 flex-1 truncate font-semibold text-foreground">{label}</Label>
+      <Label className="min-w-0 flex-1 truncate font-semibold text-inherit">{label}</Label>
       {onClose && (
         <Button
           variant="ghost"

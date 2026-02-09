@@ -1,3 +1,9 @@
+---
+title: Standard practices (now / soon / as we grow)
+created: 2026-02-09
+updated: 2026-02-09
+---
+
 # Standard practices (now / soon / as we grow)
 
 Single checklist for agents and humans. Where things live and when to revisit.
@@ -16,6 +22,11 @@ Single checklist for agents and humans. Where things live and when to revisit.
 
 - **Now:** `GET /api/health` in Studio returns 200 when the app is up (optional: check DB or critical deps later for load balancers/scripts).
 - **Revisit:** Add DB/Redis checks to health when we rely on them for readiness.
+
+## Docs (MDX build)
+
+- **Now:** All `.md` and `.mdx` under `docs/` are built by fumadocs-mdx and **must** have YAML frontmatter with at least **`title`** (string). When creating or moving a doc into `docs/`, add frontmatter; optional `created` / `updated`. See [errors-and-attempts](errors-and-attempts.md) (MDX build error) if the build fails with "invalid frontmatter".
+- **Revisit:** When adding a new doc tree or changing how docs are loaded (e.g. source.config.mjs).
 
 ## Security and resilience (soon)
 
