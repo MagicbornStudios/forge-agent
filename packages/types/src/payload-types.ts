@@ -572,6 +572,10 @@ export interface Listing {
   thumbnail?: (number | null) | Media;
   category?: ('narrative' | 'character' | 'template' | 'strategy') | null;
   status: 'draft' | 'published';
+  /**
+   * Clone again: indefinite = current project; version-only = snapshot at purchase
+   */
+  cloneMode: 'indefinite' | 'version-only';
   updatedAt: string;
   createdAt: string;
 }
@@ -601,6 +605,14 @@ export interface License {
    * Project created by first clone (set by webhook)
    */
   clonedProjectId?: (number | null) | Project;
+  /**
+   * Total paid in cents (set by webhook)
+   */
+  amountCents?: number | null;
+  /**
+   * Platform take in cents (set by webhook)
+   */
+  platformFeeCents?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -997,6 +1009,7 @@ export interface ListingsSelect<T extends boolean = true> {
   thumbnail?: T;
   category?: T;
   status?: T;
+  cloneMode?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1011,6 +1024,8 @@ export interface LicensesSelect<T extends boolean = true> {
   grantedAt?: T;
   versionSnapshotId?: T;
   clonedProjectId?: T;
+  amountCents?: T;
+  platformFeeCents?: T;
   updatedAt?: T;
   createdAt?: T;
 }

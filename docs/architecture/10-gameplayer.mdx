@@ -34,7 +34,7 @@ MVP GamePlayer runs **Dialogue + Character** first. Writer integration follows w
 
 - **Thin engine** = minimal runtime that: (1) loads project dialogue (Yarn or graph format), (2) evaluates dialogue flow (current node, lines, options, variables), (3) presents lines and choices to the player and advances state, (4) optionally plays character voice (ElevenLabs) when a line has a character with `voiceId`.
 - **No full game engine:** We do not ship Unity/Unreal/Godot inside the app. We provide a **dialogue-first playable** that can later be exported to real engines (post-MVP).
-- **In-browser:** Runtime runs in the browser (React + state machine or small interpreter). For MVP, "publish and host builds" (playable URL) can follow after first paid clone; the primary path is play inside Studio.
+- **In-browser:** Runtime runs in the browser (React + state machine or small interpreter). **Publish and host** is part of MVP so others can play builds; play-in-Studio and play-via-hosted-URL are both in scope for MVP.
 
 ---
 
@@ -63,7 +63,7 @@ MVP GamePlayer runs **Dialogue + Character** first. Writer integration follows w
 
 ### After MVP
 
-- **Publish and host:** Authors publish a "build" (playable bundle); we host it so others can play via URL. See STATUS § Next "Platform: publish and host builds."
+- **Publish and host:** Authors publish a "build" (playable bundle); we host it so others can play via URL. In scope for **MVP** (see STATUS § Next "Platform: publish and host builds").
 - **Writer integration:** When Writer editor exists, GamePlayer can run combined Dialogue + Writer branching content.
 - **Export to engines:** Unity/Unreal/Godot export packages (full Yarn Spinner toolchain) are post-MVP.
 

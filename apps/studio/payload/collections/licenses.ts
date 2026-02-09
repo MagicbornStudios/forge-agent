@@ -49,5 +49,15 @@ export const Licenses: CollectionConfig = {
       relationTo: 'projects',
       admin: { description: 'Project created by first clone (set by webhook)' },
     },
+    {
+      name: 'amountCents',
+      type: 'number',
+      admin: { description: 'Total paid in cents (set by webhook)' },
+    },
+    {
+      name: 'platformFeeCents',
+      type: 'number',
+      admin: { description: 'Platform take in cents (set by webhook)' },
+    },
   ],
 };

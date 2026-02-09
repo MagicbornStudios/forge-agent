@@ -35,7 +35,7 @@ Catalog and creator listings; create/update/delete listing.
 | platform-mono-list-1 | Listings API: Payload collection + GET /api/listings (published only) | platform-mono | 2 | Medium | done | — |
 | platform-mono-list-2 | Listings UI: catalog page (public grid at /catalog) | platform-mono | 2 | Medium | done | — |
 | platform-mono-list-2b | Create listing flow (Studio or marketing account) | platform-mono | 2 | Medium | done | — |
-| platform-mono-list-3 | Listing clone mode: add `cloneMode` (indefinite \| version-only) to schema and Create/Edit UI | platform-mono | 2 | Small | open | [listings-and-clones](../../business/listings-and-clones.mdx) |
+| platform-mono-list-3 | Listing clone mode: add `cloneMode` (indefinite \| version-only) to schema and Create/Edit UI | platform-mono | 2 | Small | done | Create sheet + Payload admin; webhook sets versionSnapshotId when version-only; clone-again uses it |
 
 ### Lane: Stripe Connect (Tier 1)
 
@@ -45,7 +45,7 @@ Connect account, onboarding, and checkout session for listing (payment to creato
 |----|-------|--------|------|--------|--------|-----|
 | platform-mono-pay-1a | Connect account: create Connect account (Express/Standard), store `stripeAccountId` (users or creator-accounts) | platform-mono | 2 | Medium | done | [revenue-and-stripe](../../business/revenue-and-stripe.mdx) |
 | platform-mono-pay-1b | Connect onboarding link: API + UI for creators to complete onboarding; handle return and account status | platform-mono | 2 | Medium | done | — |
-| platform-mono-pay-1c | Checkout session for listing: one-time payment with Connect (application_fee); metadata `listingId`, `buyerId`; success URL | platform-mono | 2 | Medium | open | — |
+| platform-mono-pay-1c | Checkout session for listing: one-time payment with Connect (application_fee); metadata `listingId`, `buyerId`; success URL | platform-mono | 2 | Medium | done | Implemented in connect/create-checkout-session route (check-1) |
 
 ### Lane: Checkout (Tier 1)
 
@@ -80,7 +80,7 @@ Revenue-share tracking (Connect handles payouts to creators).
 
 | id | title | parent | tier | impact | status | doc |
 |----|-------|--------|------|--------|--------|-----|
-| platform-mono-pay-2 | Payout and revenue-share tracking | platform-mono | 2 | Medium | open | — |
+| platform-mono-pay-2 | Payout and revenue-share tracking | platform-mono | 2 | Medium | done | amountCents/platformFeeCents on licenses; webhook populates; GET /api/me/revenue for creators |
 
 ---
 

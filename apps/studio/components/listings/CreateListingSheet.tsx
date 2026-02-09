@@ -54,6 +54,7 @@ export function CreateListingSheet({ open, onOpenChange }: CreateListingSheetPro
   const [currency] = useState('USD');
   const [category, setCategory] = useState<CreateListingInput['category']>(null);
   const [status, setStatus] = useState<CreateListingInput['status']>('draft');
+  const [cloneMode, setCloneMode] = useState<CreateListingInput['cloneMode']>('indefinite');
   const [error, setError] = useState<string | null>(null);
 
   const createMutation = useCreateListing();
@@ -98,6 +99,7 @@ export function CreateListingSheet({ open, onOpenChange }: CreateListingSheetPro
         creator: user.id,
         category: category ?? undefined,
         status,
+        cloneMode,
       });
       onOpenChange(false);
       setTitle('');
@@ -232,6 +234,19 @@ export function CreateListingSheet({ open, onOpenChange }: CreateListingSheetPro
                 <SelectItem value="published">Published</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Clone again</Label>
+            <Select value={cloneMode} onValueChange={(v) => setCloneMode(v as CreateListingInput['cloneMode'])}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="indefinite">Indefinite (always current)</SelectItem>
+                <SelectItem value="version-only">That version only</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">Indefinite: buyer gets current project on clone again. Version only: buyer gets the snapshot at purchase.</p>
           </div>
           <div className="flex gap-2 pt-4 mt-auto">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">

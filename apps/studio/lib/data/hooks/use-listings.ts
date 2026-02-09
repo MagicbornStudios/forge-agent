@@ -15,6 +15,7 @@ export type CreateListingInput = {
   creator: number;
   category?: 'narrative' | 'character' | 'template' | 'strategy' | null;
   status: 'draft' | 'published';
+  cloneMode: 'indefinite' | 'version-only';
 };
 
 export function useCreateListing() {
@@ -35,6 +36,7 @@ export function useCreateListing() {
           creator: body.creator,
           category: body.category ?? undefined,
           status: body.status,
+          cloneMode: body.cloneMode ?? 'indefinite',
         },
       }),
     onSuccess: () => {

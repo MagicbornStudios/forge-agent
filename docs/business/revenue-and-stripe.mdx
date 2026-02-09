@@ -50,6 +50,12 @@ The platform take rate (application fee as a percentage or fixed amount) is TBD.
 
 ---
 
+## Revenue and payout tracking
+
+We store per-license **amount and platform fee** (optional fields `amountCents` and `platformFeeCents` on the `licenses` collection). The webhook sets these from the Stripe Checkout session (and expanded PaymentIntent) when a clone purchase completes. **Creators** can see totals via `GET /api/me/revenue` (total earnings, platform fees, and per-license breakdown); a future account or Studio UI can consume this for an "Earnings" page. **Platform** can aggregate from licenses (e.g. Payload admin or an internal report). This is tracking only—Stripe Connect still performs the actual payouts; we do not change who gets paid.
+
+---
+
 ## Payouts: single seller now; splits later
 
 **Single seller per listing for now.** Payment goes to the listing creator's Connect account; platform takes an application fee. No split payouts.
@@ -58,12 +64,8 @@ Splits between multiple sellers (music-industry style) and IP/licensing (e.g. Be
 
 ---
 
-## Developer program payouts (usage-based)
+## Developer program payouts (split while official)
 
-**Approved editors** in the **official Studio suite** (curated third-party editors) receive a **second payout stream** via the same Stripe Connect account we use for clone payouts.
+**Approved editors** in the **official Studio suite** (curated third-party editors) receive a **revenue split** (e.g. share of clone revenue or platform revenue where their editor is used—formula TBD). The split is paid **until the editor is removed** from the official suite; there is **no usage-based pay in Studio**. Developers must be able to **publish updates** to their editor (process TBD). See [Developer program and editor ecosystem](developer-program-and-editors.mdx) for approved vs community apps, submission, and publish-updates.
 
-- **Usage-based payouts:** We measure usage of each approved editor (sessions, actions, or other metrics TBD). We assign value/weight by usage and **complexity** (e.g. complexity tier or formula TBD). Recurring payouts go to the editor's developer (Connect).
-- **Single seller per listing** for clone purchases is unchanged; this is an **additional** payout type for editor usage share.
-- **Rationale (AI-first bar):** If an editor is so complex or opaque that the AI cannot figure it out (with full technical and expert knowledge), it is not a good editor; users would not want to use it. We reward **usage** and **clarity** (complexity can be weighted but not in a way that rewards obscurity).
-
-See [Developer program and editor ecosystem](developer-program-and-editors.mdx) for approved vs community apps and submission. Metrics and formula are TBD; document in this doc and in [decisions.md](../agent-artifacts/core/decisions.md) when defined.
+**Rationale:** Split aligns developer reward with platform/clone revenue; continuing while the editor is official keeps incentives clear. Formula and process TBD; document in this doc and in [decisions.md](../agent-artifacts/core/decisions.md) when defined.

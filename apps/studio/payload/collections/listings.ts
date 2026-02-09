@@ -84,5 +84,16 @@ export const Listings: CollectionConfig = {
         { label: 'Published', value: 'published' },
       ],
     },
+    {
+      name: 'cloneMode',
+      type: 'select',
+      required: true,
+      defaultValue: 'indefinite',
+      options: [
+        { label: 'Indefinite (always current)', value: 'indefinite' },
+        { label: 'That version only', value: 'version-only' },
+      ],
+      admin: { description: 'Clone again: indefinite = current project; version-only = snapshot at purchase' },
+    },
   ],
 };

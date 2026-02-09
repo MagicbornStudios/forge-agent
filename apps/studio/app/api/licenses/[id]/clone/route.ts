@@ -48,16 +48,23 @@ export async function POST(
             id: license.listing as number,
             depth: 1,
           });
-    if (!listing?.project) {
+    const listingProjectId =
+      listing?.project != null
+        ? typeof listing.project === 'object' && listing.project != null
+          ? (listing.project as { id: number }).id
+          : Number(listing.project)
+        : null;
+    const snapshotId =
+      typeof license.versionSnapshotId === 'string' && license.versionSnapshotId.trim() !== ''
+        ? parseInt(license.versionSnapshotId, 10)
+        : null;
+    const projectId = !Number.isNaN(snapshotId) ? snapshotId : listingProjectId;
+    if (projectId == null || projectId === 0) {
       return NextResponse.json(
         { error: 'Listing has no project' },
         { status: 400 }
       );
     }
-    const projectId =
-      typeof listing.project === 'object' && listing.project != null
-        ? (listing.project as { id: number }).id
-        : Number(listing.project);
     const body = await req.json().catch(() => ({}));
     const requestedSlug =
       typeof body?.slug === 'string' && body.slug.trim()

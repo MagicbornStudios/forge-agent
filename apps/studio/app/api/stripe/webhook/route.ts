@@ -34,16 +34,6 @@ export async function POST(req: Request) {
       if (!sessionId) {
         return NextResponse.json({ error: 'No session id' }, { status: 400 });
       }
-      const license = await payload.create({
-        collection: 'licenses',
-        data: {
-          user: Number(buyerId),
-          listing: Number(listingId),
-          stripeSessionId: sessionId,
-          grantedAt: new Date().toISOString(),
-        },
-        overrideAccess: true,
-      });
       const listing = await payload.findByID({
         collection: 'listings',
         id: Number(listingId),
@@ -55,6 +45,47 @@ export async function POST(req: Request) {
             ? (listing.project as { id: number }).id
             : Number(listing.project)
           : null;
+      const cloneMode = listing && 'cloneMode' in listing ? (listing as { cloneMode?: string }).cloneMode : undefined;
+      const versionSnapshotId =
+        cloneMode === 'version-only' && projectId != null ? String(projectId) : undefined;
+      const license = await payload.create({
+        collection: 'licenses',
+        data: {
+          user: Number(buyerId),
+          listing: Number(listingId),
+          stripeSessionId: sessionId,
+          grantedAt: new Date().toISOString(),
+          ...(versionSnapshotId != null ? { versionSnapshotId } : {}),
+        },
+        overrideAccess: true,
+      });
+      let amountCents: number | undefined;
+      let platformFeeCents: number | undefined;
+      try {
+        const expandedSession = await stripe.checkout.sessions.retrieve(sessionId, {
+          expand: ['payment_intent'],
+        });
+        if (typeof expandedSession.amount_total === 'number') {
+          amountCents = expandedSession.amount_total;
+        }
+        const pi = expandedSession.payment_intent as Stripe.PaymentIntent | null | undefined;
+        if (pi && typeof (pi as { application_fee_amount?: number }).application_fee_amount === 'number') {
+          platformFeeCents = (pi as { application_fee_amount: number }).application_fee_amount;
+        }
+      } catch {
+        // optional: leave amountCents/platformFeeCents unset
+      }
+      if (amountCents != null || platformFeeCents != null) {
+        await payload.update({
+          collection: 'licenses',
+          id: license.id as number,
+          data: {
+            ...(amountCents != null ? { amountCents } : {}),
+            ...(platformFeeCents != null ? { platformFeeCents } : {}),
+          },
+          overrideAccess: true,
+        });
+      }
       if (projectId != null) {
         try {
           const newProjectId = await cloneProjectToUser(

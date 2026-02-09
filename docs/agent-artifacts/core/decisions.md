@@ -176,11 +176,11 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 
 ---
 
-## Usage-based payouts for approved third-party editors
+## Developer program: revenue split while official; publish updates
 
-**Decision:** We add **usage-based recurring payouts** for **approved third-party editors** in the official Studio suite. Same Stripe Connect account we use for clone payouts; this is a second payout stream (editor usage share). We measure usage (sessions, actions, or other metrics TBD) and assign value by usage and **complexity** (tier or formula TBD). Metrics and formula are **TBD**; document in [docs/business/revenue-and-stripe.mdx](../../business/revenue-and-stripe.mdx) and update this ADR when defined.
+**Decision:** Approved editors in the **official Studio suite** receive a **revenue split** (not usage-based pay in Studio). The split continues **until the editor is removed** from the official suite; when removed, the split stops. Developers must be able to **publish updates** to their editor (process TBD: repo tag, build, or store update flow). Formula and process are **TBD**; document in [docs/business/revenue-and-stripe.mdx](../../business/revenue-and-stripe.mdx) and [Developer program and editor ecosystem](../../business/developer-program-and-editors.mdx) when defined.
 
-**Rationale:** Rewards developers whose editors are adopted; AI-first bar (if the AI cannot figure out an editor, it is not a good editor). See [Developer program and editor ecosystem](../../business/developer-program-and-editors.mdx).
+**Rationale:** Rewards developers whose editors are in the official suite; split aligns with platform/clone revenue rather than raw usage. See [Developer program and editor ecosystem](../../business/developer-program-and-editors.mdx).
 
 ---
 
@@ -264,11 +264,11 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 
 ---
 
-## MVP ordering: Yarn and GamePlayer in MVP; MCP Apps after MVP
+## MVP ordering: Yarn, GamePlayer, publish/host in MVP; MCP Apps after MVP
 
-**Decision:** **First-class Yarn Spinner** (export/import `.yarn`) and **GamePlayer** (playable runtime for Yarn Games) are **part of MVP**. We do them before or alongside platform monetization. **Editors as MCP Apps** (McpAppDescriptor, Studio MCP Server) is **after MVP** — we do not block MVP work on MCP.
+**Decision:** **First-class Yarn Spinner** (export/import `.yarn`) and **GamePlayer** (playable runtime for Yarn Games) are **part of MVP**. **Publish and host playable builds** (build pipeline, storage, playable URL) is **part of MVP** so that players can play builds; do it alongside or after GamePlayer/Yarn as needed. We do these before or alongside platform monetization. **Editors as MCP Apps** (McpAppDescriptor, Studio MCP Server) is **after MVP** — we do not block MVP work on MCP.
 
-**Rationale:** MVP success = first paid clone E2E; that requires a playable game (Dialogue + Character + Writer + GamePlayer) and Yarn export. MCP is valuable for post-MVP embedding in hosts (Cursor, Claude Desktop, etc.).
+**Rationale:** MVP success = first paid clone E2E and playable builds; that requires a playable game (Dialogue + Character + Writer + GamePlayer), Yarn export, and the ability to publish/host so others can play. MCP is valuable for post-MVP embedding in hosts (Cursor, Claude Desktop, etc.).
 
 ---
 
