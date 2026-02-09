@@ -24,6 +24,27 @@ const nextConfig: NextConfig = {
     // Avoid Webpack WasmHash crashes during build (hashing undefined buffers).
     config.output.hashFunction = 'sha256';
 
+    const sanitizeUndefinedSources = (compilation: any, assets: Record<string, { source?: () => string | Buffer }> | null | undefined) => {
+      if (assets == null || typeof assets !== 'object') return;
+      for (const [name, asset] of Object.entries(assets)) {
+        let source: string | Buffer | undefined;
+        try {
+          source = asset.source?.();
+        } catch (error) {
+          compilation.warnings.push(
+            new Error(`[build] Failed to read asset source for ${name}: ${String(error)}`),
+          );
+          continue;
+        }
+        if (typeof source === 'undefined') {
+          compilation.updateAsset(name, new webpack.sources.RawSource(''));
+          compilation.warnings.push(
+            new Error(`[build] Asset ${name} had undefined source; replaced with empty string.`),
+          );
+        }
+      }
+    };
+
     class SanitizeUndefinedAssetSourcePlugin {
       apply(compiler: { hooks: { thisCompilation: { tap: (name: string, fn: (compilation: any) => void) => void } } }) {
         compiler.hooks.thisCompilation.tap('SanitizeUndefinedAssetSourcePlugin', (compilation: any) => {
@@ -32,25 +53,7 @@ const nextConfig: NextConfig = {
               name: 'SanitizeUndefinedAssetSourcePlugin',
               stage: webpack.Compilation.PROCESS_ASSETS_STAGE_SUMMARIZE,
             },
-            (assets: Record<string, { source?: () => string | Buffer }>) => {
-              for (const [name, asset] of Object.entries(assets)) {
-                let source: string | Buffer | undefined;
-                try {
-                  source = asset.source?.();
-                } catch (error) {
-                  compilation.warnings.push(
-                    new Error(`[build] Failed to read asset source for ${name}: ${String(error)}`),
-                  );
-                  continue;
-                }
-                if (typeof source === 'undefined') {
-                  compilation.updateAsset(name, new webpack.sources.RawSource(''));
-                  compilation.warnings.push(
-                    new Error(`[build] Asset ${name} had undefined source; replaced with empty string.`),
-                  );
-                }
-              }
-            },
+            (assets: Record<string, { source?: () => string | Buffer }>) => sanitizeUndefinedSources(compilation, assets),
           );
         });
       }

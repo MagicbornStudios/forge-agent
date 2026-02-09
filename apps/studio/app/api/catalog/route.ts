@@ -12,14 +12,11 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get('slug');
 
-    const where: Record<string, unknown> = { status: { equals: 'published' } };
-    if (slug) {
-      where.slug = { equals: slug };
-    }
-
     const result = await payload.find({
       collection: 'listings',
-      where,
+      where: slug
+        ? { status: { equals: 'published' }, slug: { equals: slug } }
+        : { status: { equals: 'published' } },
       sort: '-updatedAt',
       limit: slug ? 1 : 100,
       depth: 1,

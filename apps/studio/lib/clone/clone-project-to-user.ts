@@ -195,7 +195,7 @@ export async function cloneProjectToUser(
         parent_block: undefined,
         type: b.type,
         position: b.position,
-        payload: b.payload ?? {},
+        payload: (b.payload ?? {}) as { [k: string]: unknown },
         archived: b.archived ?? false,
         in_trash: b.in_trash ?? false,
         has_children: b.has_children ?? false,

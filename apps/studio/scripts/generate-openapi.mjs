@@ -17,5 +17,6 @@ const spec = createSwaggerSpec({
   },
 });
 
-writeFileSync(path.join(root, 'openapi.json'), JSON.stringify(spec, null, 2), 'utf8');
+const json = spec != null ? JSON.stringify(spec, null, 2) : '{}';
+writeFileSync(path.join(root, 'openapi.json'), json, 'utf8');
 console.log('Wrote openapi.json');

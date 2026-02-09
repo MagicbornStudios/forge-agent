@@ -45,6 +45,9 @@ export function CreateListingSheet({ open, onOpenChange }: CreateListingSheetPro
   const user = meData?.user ?? null;
   const { data: projects = [] } = useProjects();
   const activeProjectId = useAppShellStore((s) => s.activeProjectId);
+  const entitlements = useEntitlements();
+  const canPublish = entitlements.has(CAPABILITIES.PLATFORM_PUBLISH);
+  const canMonetize = entitlements.has(CAPABILITIES.PLATFORM_MONETIZE);
 
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');

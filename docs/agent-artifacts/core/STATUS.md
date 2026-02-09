@@ -43,6 +43,8 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 
 ## Ralph Wiggum loop
 
+- Done (2026-02-09): Build uncaughtException (data argument undefined): guarded base64() in api-client request.ts; defensive spec write in generate-openapi.mjs; null/undefined guard for assets in SanitizeUndefinedAssetSourcePlugin (next.config.ts). Logged in errors-and-attempts.
+- Done (2026-02-09): Catalog route type fix: `apps/studio/app/api/catalog/route.ts` — `where` was `Record<string, unknown>` and not assignable to Payload `Where`; build the where clause inline so it is inferred. Logged in errors-and-attempts.
 - Done (2026-02-09): Docs frontmatter and loop: added frontmatter to `docs/architecture/README.md` and `docs/how-to/27-posthog-llm-analytics.mdx`; "Docs (MDX build)" section in standard-practices, frontmatter reminder in coding-agent-strategy "After a slice", errors-and-attempts entry generalized to all docs and linked to standard-practices.
 - Done (2026-02-09): Build fix: added frontmatter (`title`, `created`, `updated`) to `docs/agent-artifacts/core/standard-practices.md` so fumadocs-mdx accepts it (title was undefined).
 - Done (2026-02-09): Platform next three: list-3 cloneMode (schema, Create sheet, webhook versionSnapshotId, clone-again); pay-1c marked done; pay-2 revenue tracking (licenses amountCents/platformFeeCents, webhook, GET /api/me/revenue, revenue-and-stripe doc).

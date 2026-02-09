@@ -212,6 +212,22 @@ For the ongoing convention (new or moved docs), see [standard-practices](standar
 
 ---
 
+## Build: uncaughtException "data argument must be string or Buffer... Received undefined"
+
+**Problem**: `pnpm --filter @forge/studio build` failed during "Creating an optimized production build" with `TypeError: The "data" argument must be of type string or an instance of Buffer, TypedArray, or DataView. Received undefined` (code `ERR_INVALID_ARG_TYPE`). No stack trace in output; typically from `Buffer.from(undefined)`, `fs.writeFile(path, undefined)`, or `crypto.Hash.update(undefined)`.
+
+**Fixes applied**: (1) **api-client request.ts** — `base64(str)` now guards: if `str` is null/undefined or not a string, return empty-base64 instead of calling `Buffer.from(str)`. (2) **generate-openapi.mjs** — never pass undefined to `writeFileSync`: use `spec != null ? JSON.stringify(spec, null, 2) : '{}'`. (3) **next.config.ts SanitizeUndefinedAssetSourcePlugin** — guard `sanitizeUndefinedSources(compilation, assets)` so if `assets` is null/undefined we return immediately (avoids `Object.entries(assets)` throwing when processAssets calls the hook with undefined at some stages). Re-run build after changes; if the error persists, the source may be inside a dependency (e.g. hashing in webpack).
+
+---
+
+## Catalog route: where type not assignable to Payload Where
+
+**Problem**: `pnpm --filter @forge/studio build` failed with type error in `apps/studio/app/api/catalog/route.ts` (line 22): `Type 'Record<string, unknown>' is not assignable to type 'Where'`. Payload's `find()` expects `where` to be of type `Where`; a variable typed as `Record<string, unknown>` is too loose.
+
+**Fix**: Build the `where` object inline in the `payload.find()` call (e.g. `where: slug ? { status: { equals: 'published' }, slug: { equals: slug } } : { status: { equals: 'published' } }`) so TypeScript infers the correct type. Avoid typing query objects as `Record<string, unknown>` when passing to Payload.
+
+---
+
 ## CSS @import must precede all rules (globals.css parse error)
 
 **Problem**: `pnpm dev` fails with "Parsing CSS source code failed" at `globals.css` (compiled line ~1115): `@import rules must precede all rules aside from @charset and @layer statements`. The offending lines are `@import url('https://fonts.googleapis.com/...')` (Inter, JetBrains Mono, Rubik, Mulish, etc.).

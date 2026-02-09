@@ -21,6 +21,7 @@ export interface SettingsMenuProps {
 
 const scopeLabels: Record<SettingsScope, string> = {
   app: "App settings",
+  project: "Project settings",
   editor: "Editor settings",
   viewport: "Viewport settings",
 };
