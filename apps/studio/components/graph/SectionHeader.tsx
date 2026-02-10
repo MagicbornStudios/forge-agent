@@ -28,7 +28,7 @@ function SectionToolbar({ actions, className }: { actions: SectionToolbarAction[
             key={action.id}
             variant={action.variant ?? 'ghost'}
             size="icon"
-            className="h-6 w-6"
+            className="h-[var(--control-height-sm)] w-[var(--control-height-sm)]"
             onClick={action.onClick}
             disabled={action.disabled}
           >
@@ -102,14 +102,19 @@ export function SectionHeader({
 
   const content = (
     <div className={cn('flex flex-col border-b', className)} style={headerStyle}>
-      <div className="flex items-center justify-between px-[var(--control-padding-x)] py-[var(--control-padding-y)]">
+      <div className="flex items-center justify-between px-[var(--panel-padding)] py-[var(--control-padding-y)]">
         <div className="flex items-center gap-[var(--control-gap)]">
-          <div style={{ color: accentColor }}>{icon}</div>
+          <span className="flex items-center [&_svg]:size-[var(--icon-size)]" style={{ color: accentColor }}>
+            {icon}
+          </span>
           <span className={cn('text-xs font-medium', focusedEditor ? 'text-foreground' : 'text-muted-foreground')}>
             {title}
           </span>
           {badge && (
-            <Badge variant={badge.variant ?? 'secondary'} className={cn('h-4 px-1.5 text-[10px]', badge.className)}>
+            <Badge
+              variant={badge.variant ?? 'secondary'}
+              className={cn('text-[10px] uppercase tracking-wide', badge.className)}
+            >
               {badge.label}
             </Badge>
           )}
@@ -118,14 +123,14 @@ export function SectionHeader({
       </div>
 
       {onSearchChange !== undefined && (
-        <div className="px-2 pb-2">
+        <div className="px-[var(--panel-padding)] pb-[var(--control-padding-y)]">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-2 top-2.5 size-3 text-muted-foreground" />
+            <Search className="pointer-events-none absolute left-[var(--control-padding-x)] top-1/2 size-[var(--icon-size)] -translate-y-1/2 text-muted-foreground/80" />
             <Input
               value={searchValue ?? ''}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder={searchPlaceholder}
-              className="h-8 pl-7 text-xs"
+              className="h-[var(--control-height-sm)] pl-[calc(var(--control-padding-x)+var(--icon-size)+var(--control-gap))] text-xs"
             />
           </div>
         </div>

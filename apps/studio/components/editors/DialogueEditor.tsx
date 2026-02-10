@@ -10,11 +10,11 @@ import { GraphLayoutControls } from '@/components/graph/GraphLayoutControls';
 import { NodeDragProvider } from '@/components/graph/useNodeDrag';
 import { SectionHeader, type SectionToolbarAction } from '@/components/graph/SectionHeader';
 import { CreateNodeModal } from '@/components/CreateNodeModal';
-import { ModelSwitcher } from '@/components/model-switcher';
-import { SettingsMenu } from '@/components/settings/SettingsMenu';
+import { useAppMenubarContribution } from '@/lib/contexts/AppMenubarContext';
 import { dialogueInspectorSections, FlowMiniMap } from '@/components/forge';
 import { AgentWorkflowPanel } from '@/components/ai/AgentWorkflowPanel';
 import { DialogueDrawerContent } from '@/components/editors/dialogue/DialogueDrawerContent';
+import { AppSettingsPanelContent } from '@/components/settings/AppSettingsPanelContent';
 import { useForgeGraphsStore, FORGE_DRAFT_KEY, type ForgeGraphScope } from '@/lib/domains/forge/store';
 import {
   useForgeGraphs,
@@ -25,6 +25,7 @@ import {
 } from '@/lib/data/hooks';
 import { useEditorStore } from '@/lib/app-shell/store';
 import { EDITOR_VIEWPORT_IDS } from '@/lib/app-shell/editor-metadata';
+import { useEditorPanelVisibility } from '@/lib/app-shell/useEditorPanelVisibility';
 import { useSettingsStore } from '@/lib/settings/store';
 import { useAIHighlight } from '@forge/shared/copilot/use-ai-highlight';
 import { useDomainCopilot } from '@forge/shared/copilot/use-domain-copilot';
@@ -36,11 +37,13 @@ import {
   EditorStatusBar,
   EditorOverlaySurface,
   EditorReviewBar,
-  DockLayout,
-  DockPanel,
+  EditorDockLayout,
+  EditorDockPanel,
   usePanelLock,
   type PanelTabDef,
   EditorInspector,
+  createEditorMenubarMenus,
+  type DockLayoutRef,
 } from '@forge/shared';
 import { Badge } from '@forge/ui/badge';
 import { Button } from '@forge/ui/button';
@@ -60,8 +63,11 @@ import {
   Focus,
   GitBranch,
   Layers,
+  LayoutPanelTop,
   Maximize2,
   PanelBottom,
+  PanelLeft,
+  PanelRight,
   Plus,
   Save,
   Shield,
@@ -341,7 +347,6 @@ export function DialogueEditor() {
   const activeProjectId = useEditorStore((s) => s.activeProjectId);
   const bottomDrawerOpen = useEditorStore((s) => s.bottomDrawerOpen.dialogue);
   const setBottomDrawerOpen = useEditorStore((s) => s.setBottomDrawerOpen);
-  const toggleBottomDrawer = useEditorStore((s) => s.toggleBottomDrawer);
 
   // Sync app-level project into forge store so this editor uses the shared project context.
   useEffect(() => {
@@ -944,7 +949,7 @@ export function DialogueEditor() {
       { id: 'separator-1', type: 'separator' as const },
       {
         id: 'save',
-        label: 'Save active',
+        label: 'Save',
         icon: <Save size={16} />,
         disabled: !activeDirty,
         onSelect: () => saveActiveGraph(),
@@ -954,44 +959,88 @@ export function DialogueEditor() {
     [handleCreateGraph, activeDirty, saveActiveGraph]
   );
 
-  const viewMenuItems = useMemo(
-    () => [
-      {
-        id: 'fit-view',
-        label: 'Fit view',
-        icon: <Maximize2 size={16} />,
-        onSelect: fitViewActive,
-      },
-      {
-        id: 'fit-selection',
-        label: 'Fit to selection',
-        icon: <Focus size={16} />,
-        onSelect: fitSelectionActive,
-      },
-    ],
-    [fitViewActive, fitSelectionActive]
-  );
+  const { visibility: panelVisibility, setVisible: setPanelVisible, restoreAll: restoreAllPanels, panelSpecs } = useEditorPanelVisibility('dialogue');
+  const dockLayouts = useEditorStore((s) => s.dockLayouts);
+  const setDockLayout = useEditorStore((s) => s.setDockLayout);
+  const clearDockLayout = useEditorStore((s) => s.clearDockLayout);
+  const requestOpenSettings = useEditorStore((s) => s.requestOpenSettings);
+  const setRequestOpenSettings = useEditorStore((s) => s.setRequestOpenSettings);
+  const layoutRef = useRef<DockLayoutRef>(null);
+  const DIALOGUE_LAYOUT_ID = 'dialogue-mode';
+  const [rightPanelTab, setRightPanelTab] = useState<'inspector' | 'settings'>('inspector');
 
-  const stateMenuItems = useMemo(
-    () => [
-      {
-        id: 'workbench',
-        label: bottomDrawerOpen ? 'Close workbench' : 'Open workbench',
-        icon: <PanelBottom size={16} />,
-        onSelect: () => toggleBottomDrawer('dialogue'),
-      },
-    ],
-    [bottomDrawerOpen, toggleBottomDrawer]
+  useEffect(() => {
+    if (!requestOpenSettings) return;
+    setRightPanelTab('settings');
+    setPanelVisible('panel.visible.dialogue-right', true);
+    setRequestOpenSettings(false);
+  }, [requestOpenSettings, setPanelVisible, setRequestOpenSettings]);
+
+  const viewMenuItems = useMemo(
+    () => {
+      const panelIcons: Record<string, React.ReactNode> = {
+        left: <PanelLeft size={16} />,
+        right: <PanelRight size={16} />,
+        bottom: <PanelBottom size={16} />,
+      };
+      return [
+        {
+          id: 'fit-view',
+          label: 'Fit view',
+          icon: <Maximize2 size={16} />,
+          onSelect: fitViewActive,
+        },
+        {
+          id: 'fit-selection',
+          label: 'Fit to selection',
+          icon: <Focus size={16} />,
+          onSelect: fitSelectionActive,
+        },
+        { id: 'view-sep-panels', type: 'separator' as const },
+        ...panelSpecs.map((spec) => ({
+          id: `panel-${spec.id}`,
+          label: panelVisibility[spec.key] === false ? `Show ${spec.label}` : `Hide ${spec.label}`,
+          icon: panelIcons[spec.id] ?? <LayoutPanelTop size={16} />,
+          onSelect: () => setPanelVisible(spec.key, !(panelVisibility[spec.key] !== false)),
+        })),
+        {
+          id: 'open-settings',
+          label: 'Open Settings',
+          icon: <Wrench size={16} />,
+          onSelect: () => {
+            setRightPanelTab('settings');
+            setPanelVisible('panel.visible.dialogue-right', true);
+          },
+        },
+        {
+          id: 'restore-all-panels',
+          label: 'Restore all panels',
+          icon: <LayoutPanelTop size={16} />,
+          onSelect: () => {
+            restoreAllPanels();
+            layoutRef.current?.resetLayout();
+          },
+        },
+        {
+          id: 'reset-layout',
+          label: 'Reset layout',
+          icon: <LayoutPanelTop size={16} />,
+          onSelect: () => layoutRef.current?.resetLayout(),
+        },
+      ];
+    },
+    [fitViewActive, fitSelectionActive, panelSpecs, panelVisibility, restoreAllPanels, setPanelVisible]
   );
 
   const menubarMenus = useMemo(
-    () => [
-      { id: 'file', label: 'File', items: fileMenuItems },
-      { id: 'view', label: 'View', items: viewMenuItems },
-      { id: 'state', label: 'State', items: stateMenuItems },
-    ],
-    [fileMenuItems, viewMenuItems, stateMenuItems]
+    () =>
+      createEditorMenubarMenus({
+        file: fileMenuItems,
+        view: viewMenuItems,
+      }),
+    [fileMenuItems, viewMenuItems]
   );
+  useAppMenubarContribution(menubarMenus);
 
   const narrativeNodeCount = narrativeGraph?.flow.nodes.length ?? 0;
   const storyletNodeCount = storyletGraph?.flow.nodes.length ?? 0;
@@ -1059,7 +1108,7 @@ export function DialogueEditor() {
   ];
 
   const leftPanel = showLeftPanel === false ? undefined : (
-    <DockPanel panelId="dialogue-left" title="Library" tabs={sidebarTabs} hideTitleBar className="h-full" />
+    <EditorDockPanel panelId="dialogue-left" title="Library" tabs={sidebarTabs} hideTitleBar className="h-full" />
   );
 
   const mainContent = (
@@ -1107,16 +1156,45 @@ export function DialogueEditor() {
     </div>
   );
 
+  const rightPanelTabs: PanelTabDef[] = useMemo(
+    () => [
+      {
+        id: 'inspector',
+        label: 'Inspector',
+        content: <EditorInspector selection={activeSelection} sections={inspectorSections} />,
+      },
+      {
+        id: 'settings',
+        label: 'Settings',
+        content: (
+          <AppSettingsPanelContent
+            activeEditorId="dialogue"
+            activeProjectId={activeProjectId != null ? String(activeProjectId) : null}
+            viewportId="main"
+            className="h-full"
+          />
+        ),
+      },
+    ],
+    [activeSelection, inspectorSections, activeProjectId]
+  );
+
   const inspectorContent =
     showRightPanel === false ? undefined : (
-      <DockPanel panelId="dialogue-right" title="Inspector" hideTitleBar className="h-full">
-        <EditorInspector selection={activeSelection} sections={inspectorSections} />
-      </DockPanel>
+      <EditorDockPanel
+        panelId="dialogue-right"
+        title="Inspector"
+        hideTitleBar
+        className="h-full"
+        tabs={rightPanelTabs}
+        activeTabId={rightPanelTab}
+        onTabChange={(id) => setRightPanelTab(id as 'inspector' | 'settings')}
+      />
     );
 
   const isEditorLocked = editorLock.locked || globalLocked === true;
   const mainPanel = (
-    <DockPanel
+    <EditorDockPanel
       panelId="dialogue-main"
       title="Dialogue Graphs"
       hideTitleBar
@@ -1127,7 +1205,7 @@ export function DialogueEditor() {
       }}
     >
       {mainContent}
-    </DockPanel>
+    </EditorDockPanel>
   );
 
   const drawerOpen = Boolean(bottomDrawerOpen && showBottomPanel !== false);
@@ -1170,19 +1248,7 @@ export function DialogueEditor() {
                 Agent: {agentName ?? 'Default'}
               </Badge>
             )}
-            <ModelSwitcher />
             <EditorToolbar.Separator />
-            <SettingsMenu editorId={editorId} viewportId={viewportId} />
-            <EditorToolbar.Button
-              onClick={() => toggleBottomDrawer('dialogue')}
-              variant="outline"
-              size="sm"
-              tooltip={bottomDrawerOpen ? 'Close workbench' : 'Open workbench'}
-              className="border-0 text-foreground"
-            >
-              <PanelBottom className="size-3 shrink-0" />
-              Workbench
-            </EditorToolbar.Button>
             {dirtyByScope.narrative && (
               <Badge variant="outline" className="text-xs text-amber-500 border-amber-500/50">
                 Narrative unsaved
@@ -1193,15 +1259,7 @@ export function DialogueEditor() {
                 Storylet unsaved
               </Badge>
             )}
-            <EditorToolbar.Button
-              onClick={saveActiveGraph}
-              disabled={!activeDirty}
-              variant="default"
-              size="sm"
-              tooltip={activeDirty ? 'Save active graph' : 'No changes to save'}
-            >
-              Save
-            </EditorToolbar.Button>
+
           </EditorToolbar.Right>
         </EditorToolbar>
 
@@ -1212,22 +1270,26 @@ export function DialogueEditor() {
           label="Pending changes from plan"
         />
 
-        <DockLayout
+        <EditorDockLayout
+          ref={layoutRef}
           left={leftPanel}
           main={mainPanel}
           right={inspectorContent}
           slots={{
             left: { title: 'Library' },
             main: { title: 'Dialogue Graphs' },
-            right: { title: 'Inspector' },
+            right: { title: 'Inspector / Settings' },
           }}
           viewport={{ viewportId, viewportType: 'react-flow' }}
-          layoutId="dialogue-mode"
+          layoutId={DIALOGUE_LAYOUT_ID}
+          layoutJson={dockLayouts[DIALOGUE_LAYOUT_ID] ?? undefined}
+          onLayoutChange={(json) => setDockLayout(DIALOGUE_LAYOUT_ID, json)}
+          clearLayout={() => clearDockLayout(DIALOGUE_LAYOUT_ID)}
         />
 
         <Drawer open={drawerOpen} onOpenChange={(open: boolean) => setBottomDrawerOpen('dialogue', open)}>
           <DrawerContent className="max-h-[70vh] min-h-[240px] flex flex-col">
-            <DrawerTitle className="sr-only">Workbench</DrawerTitle>
+            <DrawerTitle className="sr-only">Assistant</DrawerTitle>
             <div className="flex-1 min-h-0 overflow-auto">
               <DialogueDrawerContent workflowPanel={workflowPanel} />
             </div>

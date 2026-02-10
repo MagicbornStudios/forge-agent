@@ -6,19 +6,20 @@
 //
 // Architecture
 // EditorShell          <- root container (data-editor-id, data-domain, data-theme)
+//   Slots: .Header | .Toolbar | .Layout | .StatusBar | .Overlay | .Settings (recommended); or raw children (legacy)
 //   EditorHeader       <- title bar  (.Left, .Center, .Right)
 //   EditorToolbar      <- toolbar    (.Left, .Center, .Right, .Menubar, .Button ...)
 //   EditorReviewBar    <- AI change review (revert / accept)
-//   DockLayout         <- resizable panel layout (left, main, right, bottom)
-//     DockPanel        <- single panel (title, tabs, lock, scroll)
+//   EditorDockLayout   <- resizable panel layout; slots .Left | .Main | .Right | .Bottom or props (DockLayout alias deprecated)
+//     EditorDockPanel <- single panel (title, tabs, lock, scroll) (DockPanel alias deprecated)
 //       PanelTabs      <- tab bar within a panel
 //     ViewportMeta     <- editor viewport metadata wrapper
 //   EditorStatusBar    <- bottom status bar
 //   EditorOverlaySurface <- modal overlay surface
 // ---------------------------------------------------------------------------
 
-// Layout primitives
-export { DockLayout } from './DockLayout';
+// Layout primitives (Editor* canonical; DockLayout/DockPanel deprecated aliases)
+export { EditorDockLayout, DockLayout } from './DockLayout';
 export type {
   DockLayoutProps,
   DockLayoutViewport,
@@ -27,7 +28,7 @@ export type {
   DockLayoutRef,
 } from './DockLayout';
 
-export { DockPanel } from './DockPanel';
+export { EditorDockPanel, DockPanel } from './DockPanel';
 export type { DockPanelProps } from './DockPanel';
 
 export { PanelTabs } from './PanelTabs';
@@ -55,10 +56,38 @@ export type { EditorHeaderProps } from './EditorHeader';
 export { EditorToolbar } from './EditorToolbar';
 export type { EditorToolbarProps } from './EditorToolbar';
 
-export { EditorFileMenu } from './toolbar/EditorFileMenu';
-export type { EditorFileMenuProps, EditorFileMenuItem } from './toolbar/EditorFileMenu';
+export {
+  EditorFileMenu,
+  EditorFileMenuSwitchProject,
+  EditorFileMenuNew,
+  EditorFileMenuOpen,
+  EditorFileMenuSave,
+  EditorFileMenuSeparator,
+} from './toolbar/EditorFileMenu';
+export type {
+  EditorFileMenuProps,
+  EditorFileMenuItem,
+  EditorFileMenuSwitchProjectOptions,
+  EditorFileMenuActionOptions,
+} from './toolbar/EditorFileMenu';
 export { EditorMenubar } from './toolbar/EditorMenubar';
 export type { EditorMenubarProps, EditorMenubarMenu, EditorMenubarItem } from './toolbar/EditorMenubar';
+export { createEditorMenubarMenus } from './toolbar/createEditorMenubarMenus';
+export type { CreateEditorMenubarMenusOptions } from './toolbar/createEditorMenubarMenus';
+export { EditorViewMenu } from './toolbar/EditorViewMenu';
+export type {
+  EditorViewMenuAppearanceOptions,
+  EditorViewMenuPanelToggleOptions,
+} from './toolbar/EditorViewMenu';
+export { EditorEditMenu } from './toolbar/EditorEditMenu';
+export type { EditorEditMenuItemOptions } from './toolbar/EditorEditMenu';
+export { EditorSettingsMenu } from './toolbar/EditorSettingsMenu';
+export type {
+  EditorSettingsMenuOpenSettingsOptions,
+  EditorSettingsMenuUserOptions,
+} from './toolbar/EditorSettingsMenu';
+export { EditorHelpMenu } from './toolbar/EditorHelpMenu';
+export type { EditorHelpMenuItemOptions } from './toolbar/EditorHelpMenu';
 export { EditorProjectSelect } from './toolbar/EditorProjectSelect';
 export type { EditorProjectSelectProps, EditorProjectOption } from './toolbar/EditorProjectSelect';
 
@@ -100,6 +129,14 @@ export type { EditorReviewBarProps } from './EditorReviewBar';
 
 export { EditorOverlaySurface } from './EditorOverlaySurface';
 export type { EditorOverlaySurfaceProps } from './EditorOverlaySurface';
+
+export { EditorSettingsTrigger } from './EditorSettingsTrigger';
+export type { EditorSettingsTriggerProps } from './EditorSettingsTrigger';
+export {
+  SettingsTriggerProvider,
+  useSettingsTrigger,
+} from './SettingsTriggerContext';
+export type { SettingsTriggerContextValue, SettingsTriggerProviderProps } from './SettingsTriggerContext';
 
 // Panel utilities
 export { PanelSettings } from './PanelSettings';

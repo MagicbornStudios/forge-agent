@@ -99,18 +99,18 @@
     },
     "/api/model-settings": {
       "get": {
-        "summary": "Get model router state (active model, mode, registry from OpenRouter, preferences, primary + fallbacks)",
+        "summary": "Get model registry (OpenRouter) and selected model IDs for copilot and assistantUi",
         "tags": [
           "model"
         ],
         "responses": {
           "200": {
-            "description": "Model settings and preferences; registry is from OpenRouter API"
+            "description": "registry, copilotModelId, assistantUiModelId"
           }
         }
       },
       "post": {
-        "summary": "Update model preferences (mode, manualModelId, enabledModelIds)",
+        "summary": "Set model for a provider (copilot or assistantUi)",
         "tags": [
           "model"
         ],
@@ -120,17 +120,15 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "mode": {
-                    "type": "string"
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "copilot",
+                      "assistantUi"
+                    ]
                   },
-                  "manualModelId": {
+                  "modelId": {
                     "type": "string"
-                  },
-                  "enabledModelIds": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
                   }
                 }
               }
@@ -139,7 +137,7 @@
         },
         "responses": {
           "200": {
-            "description": "New resolved primary and fallbacks"
+            "description": "Updated copilotModelId and assistantUiModelId"
           }
         }
       }

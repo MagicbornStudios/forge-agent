@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   EditorShell,
   EditorHeader,
@@ -11,12 +11,45 @@ import { FeatureGate } from '@forge/shared';
 import { CAPABILITIES } from '@forge/shared/entitlements';
 import { CodebaseAgentStrategyEditor } from '@forge/shared/components/assistant-ui';
 import { EDITOR_VIEWPORT_IDS } from '@/lib/app-shell/editor-metadata';
+import { useEditorPanelVisibility } from '@/lib/app-shell/useEditorPanelVisibility';
 import { useSettingsStore } from '@/lib/settings/store';
-import { SettingsMenu } from '@/components/settings/SettingsMenu';
+import { useAppMenubarContribution } from '@/lib/contexts/AppMenubarContext';
 import { ModelSwitcher } from '@/components/model-switcher';
 import { Badge } from '@forge/ui/badge';
+import { LayoutPanelTop, PanelLeft, PanelRight } from 'lucide-react';
 
 export function StrategyEditor() {
+  const { visibility: panelVisibility, setVisible: setPanelVisible, restoreAll: restoreAllPanels, panelSpecs } = useEditorPanelVisibility('strategy');
+
+  const viewMenuItems = useMemo(
+    () => {
+      const panelIcons: Record<string, React.ReactNode> = {
+        left: <PanelLeft size={16} />,
+        right: <PanelRight size={16} />,
+      };
+      return [
+        ...panelSpecs.map((spec) => ({
+          id: `panel-${spec.id}`,
+          label: panelVisibility[spec.key] === false ? `Show ${spec.label}` : `Hide ${spec.label}`,
+          icon: panelIcons[spec.id] ?? <LayoutPanelTop size={16} />,
+          onSelect: () => setPanelVisible(spec.key, !(panelVisibility[spec.key] !== false)),
+        })),
+        {
+          id: 'restore-all-panels',
+          label: 'Restore all panels',
+          icon: <LayoutPanelTop size={16} />,
+          onSelect: restoreAllPanels,
+        },
+      ];
+    },
+    [panelSpecs, panelVisibility, setPanelVisible, restoreAllPanels],
+  );
+
+  const menubarMenus = useMemo(
+    () => [{ id: 'view', label: 'View', items: viewMenuItems }],
+    [viewMenuItems],
+  );
+  useAppMenubarContribution(menubarMenus);
   const editorId = 'strategy';
   const viewportId = EDITOR_VIEWPORT_IDS.strategy;
   const editorTheme = useSettingsStore((s) =>
@@ -67,9 +100,6 @@ export function StrategyEditor() {
               Agent: {agentName ?? 'Default'}
             </Badge>
           )}
-          <ModelSwitcher />
-          <EditorToolbar.Separator />
-          <SettingsMenu editorId={editorId} viewportId={viewportId} />
         </EditorToolbar.Right>
       </EditorToolbar>
 
@@ -81,6 +111,7 @@ export function StrategyEditor() {
         <CodebaseAgentStrategyEditor
           showThreadList={showThreadList !== false}
           showToolsPanel={showToolsPanel !== false}
+          composerTrailing={<ModelSwitcher provider="assistantUi" variant="composer" />}
         />
       </FeatureGate>
 

@@ -17,8 +17,8 @@ Workspace Platform Engineer: owns `packages/shared/src/shared` (editor component
 - **Capabilities** — `WorkspaceCapabilities` interface; editors implement, chat calls. No imperative UI refs.
 - **Workspace UI spec** — Declarative slots: `header`, `toolbar`, `left`, `main`, `right`, `statusBar`, `bottom`, `overlays`.
 - **Modal** — Legacy `ModalRoute` / `ModalRegistry`; prefer OverlaySpec + EditorOverlaySurface for new code.
-- **Editor shell**: Declarative, slot-based. See `components/editor/README.md` for slot map and how to build an editor.
-- **Dock layout**: `DockLayout` is the layout primitive. It wraps the main slot in `ViewportMeta` metadata. Always provide `viewportId` + `viewportType` via the `viewport` prop.
+- **Editor shell**: Declarative, slot-based. Recommended: use `EditorShell.Header`, `.Toolbar`, `.Layout`, `.StatusBar`, `.Overlay`, `.Settings` so anatomy is explicit; raw children (legacy) remain supported. See `components/editor/README.md` for slot map and how to build an editor.
+- **Dock layout**: `DockLayout` is the layout primitive. Use `DockLayout.Left`, `.Main`, `.Right`, `.Bottom` (recommended) or `left=`, `main=`, `right=`, `bottom=` props; slot children override props. Always provide `viewportId` + `viewportType` via the `viewport` prop.
 - **Atomic design**: shadcn atoms live in `packages/ui/src/components/ui/*`; shared editor UI composes those atoms into molecules.
 - **Styles**: Single source in `packages/shared/src/shared/styles/`. Themes are data-driven (`data-theme` on `<html>` or editor root). Do not duplicate theme tokens elsewhere.
 - **Density**: Editor UI is compact by default. Use tokenized spacing (`--control-*`, `--panel-padding`, `--tab-height`) and set `data-density` on `EditorShell` for overrides.
@@ -29,7 +29,7 @@ Workspace Platform Engineer: owns `packages/shared/src/shared` (editor component
 
 ## Adding a new slot or panel
 
-Extend the editor types and `DockLayout` (or equivalent) in `packages/shared/src/shared/components/editor/`. Document the new slot in `components/editor/README.md`. Do not add one-off layouts per domain.
+Recommended composition is slot-based (`EditorShell.*`, `EditorApp.Tabs.Menubar`/`.Actions`, `EditorDockLayout.*`); raw children and prop-based APIs remain supported for backward compatibility. Follow the "Recommended editor scaffold" in `components/editor/README.md` (and dev-kit docs when present). Extend the editor types and `DockLayout` (or equivalent) in `packages/shared/src/shared/components/editor/`. Document the new slot in `components/editor/README.md`. Do not add one-off layouts per domain.
 
 ## Unified editor / Copilot
 

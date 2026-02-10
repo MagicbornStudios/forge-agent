@@ -1,7 +1,7 @@
 ---
 title: Product roadmap
 created: 2026-02-06
-updated: 2026-02-08
+updated: 2026-02-09
 ---
 
 # Product roadmap
@@ -81,20 +81,20 @@ structures is in scope.
 
 ## Platform initiatives
 
-### Editors as MCP Apps
+### Studio and editors as MCP (chat-first)
 
 **Status:** After MVP (not part of MVP).
 
-**Goal:** Expose each editor as an **MCP App** — a self-contained unit
-that MCP hosts (Claude Desktop, Cursor, VS Code) can embed or orchestrate.
+**Goal:** Studio and editors **controlled completely by chats** across Cursor, Claude, ChatGPT, Atlas, Perplexity, and in-browser assistants. **Studio app** is exposed as MCP (publish, update listing, switch/open/close editor, project context). **Each editor** is an MCP app and **registers** with Studio; new editors bring their MCP and register so the Studio MCP Server can discover and route their tools.
 
 **Phases:**
 
-1. Define `McpAppDescriptor` per editor (tools + UI resources).
-2. Build Studio MCP Server.
-3. Register with MCP hosts; streaming tool results.
+1. **Studio MCP Server and app tools** — studio_switchEditor, studio_openEditor, studio_closeEditor, studio_getProject, studio_listProjects, studio_publish, studio_updateListing. See [07 - Editors as MCP Apps](../architecture/07-modes-as-mcp-apps.mdx).
+2. **Editor registration** — Define `McpAppDescriptor` per editor (tools + UI resources); editors register with Studio; Studio MCP Server aggregates and exposes them. Third-party and community editors implement the same contract ([Developer program](../business/developer-program-and-editors.mdx)).
+3. **MCP vs CopilotKit/assistant-ui** — Document and (optionally) implement unified tool backend or dual-surface approach. Caveats and possible solutions: [11 - MCP vs CopilotKit and assistant-ui](../architecture/11-mcp-copilotkit-assistant-ui.mdx).
+4. **Host integration** — Host matrix and setup docs: Cursor, Claude, VS Code, ChatGPT, Atlas, Perplexity. [12 - MCP hosts and chat-first](../architecture/12-mcp-hosts-and-chat-first.mdx). Register with MCP hosts; streaming tool results.
 
-**Impact: Large.** Architecture: [07 - Editors as MCP Apps](../architecture/07-modes-as-mcp-apps.mdx). Third-party approved and community editors will implement the same MCP App contract.
+**Impact: Large.** Architecture: [07 - Editors as MCP Apps](../architecture/07-modes-as-mcp-apps.mdx). Caveats and auth: [11](../architecture/11-mcp-copilotkit-assistant-ui.mdx). Host matrix and setup: [12](../architecture/12-mcp-hosts-and-chat-first.mdx). Task breakdown: [task-breakdown-mcp-studio-editors.md](../agent-artifacts/core/task-breakdown-mcp-studio-editors.md).
 
 ### Developer program and editor ecosystem
 
@@ -103,6 +103,24 @@ that MCP hosts (Claude Desktop, Cursor, VS Code) can embed or orchestrate.
 **Goal:** Let developers submit editors/apps built with the dev kit (web tech); approved editors in the official Studio suite receive usage-based recurring payouts (Stripe Connect); community apps are listable and installable but do not receive payouts. Submission via GitHub repo (private; we fork for paid users). Approved editors, data contracts, first-class narrative (Forge graph, Yarn), preferred integrations (Babylon.js, Kaplay, Phaser, video). See [Business: Developer program and editor ecosystem](../business/developer-program-and-editors.mdx).
 
 **Impact: Epic.**
+
+### Dev-kit: single entrypoint and ease of use
+
+**Status:** Open. Track in [STATUS § Next #18](../agent-artifacts/core/STATUS.md) and [task breakdown](../agent-artifacts/core/task-breakdown-dev-kit-single-entrypoint.md).
+
+**Goal:** One package (`@forge/dev-kit`), one style import (bundled dockview + overrides), no dockview or internal paths in user code. Extremely easy install → one CSS line → one snippet (or optional create-forge-app). Tons of customer-facing docs (Quick start, guides, reference); internal docs (architecture 04, Verdaccio 25, dev-kit-and-keys).
+
+**Pillars:**
+
+1. **Single entrypoint** — Package + CSS bundle/export; one recommended import path in all customer docs.
+2. **Ease of use** — Quick start; optional CLI (create-forge-app) to scaffold Strategy-first app.
+3. **Customer-facing docs** — Marketing site: Quick start, Install, First editor, Layout/shell, Styling, API keys, Components/API reference, Editors, Private registry.
+4. **Internal docs** — Repo: architecture 04, how-to 25 (Verdaccio), dev-kit-and-keys; STATUS/decisions reference single entrypoint and no dockview leak.
+5. **Optional create-forge-app** — CLI that scaffolds a standalone Next app with Strategy editor.
+
+**Impact: Medium–Large.** Pick by slice/task from [task registry](../agent-artifacts/core/task-registry.md) initiative `dev-kit-single-entrypoint`.
+
+**Reference:** [Dev-kit and keys](../product/dev-kit-and-keys.mdx).
 
 ### First-class Yarn Spinner support
 
@@ -147,6 +165,22 @@ These items are tracked in STATUS § Next with impact sizes. **First revenue = p
 - **Monetization (clone to account / download)** — **MVP-critical.** Users can let others clone a project (or template, or Strategy core) to their account for a price, or download the build. Listings, checkout, Stripe Connect or similar. **Impact: Epic.**
 - **Plan tiers and capabilities for platform** — **MVP-critical.** Extend plans and `CAPABILITIES` to gate platform features (e.g. who can list, who can clone/download paid items). **Impact: Small–Medium.**
 - **Publish and host project builds** — **MVP.** Authors publish a project build; we host playable narrative so players can play builds. Build pipeline, storage, playable runtime. **Impact: Large.**
+
+### Creator dashboard
+
+**Status:** Open. Track in [task registry](../agent-artifacts/core/task-registry.md) initiative `creator-dashboard` and [task breakdown](../agent-artifacts/core/task-breakdown-creator-dashboard.md).
+
+**Goal:** Full account management on the **marketing site** (customer-facing). Dashboard: my listings, my games, licenses, revenue; Settings and billing (existing). **Studio** remains minimal: only **publish** (create listing from current project) and **update listing** (if project already linked) in the app bar—no listings management, catalog, or revenue UI in Studio. Implement using a shadcn-based dashboard template.
+
+**Impact: Large.**
+
+### Import and play
+
+**Status:** Open. Yarn first (MVP); then Ink, Twine, Ren'Py. Optional: AI-assisted import (see [Potential ideas](potential-ideas.md)).
+
+**Goal:** **Adapters** translate existing project formats (Yarn, Ink, Twine, Ren'Py) into our project/graph and Pixi'VN Json so imported projects can play in GamePlayer and be published. **Optional future:** AI-assisted import pipeline to parse and map external formats into our schema when structure differs. See [Ecosystem and import strategy](../business/ecosystem-and-import-strategy.mdx) and [10 - GamePlayer](../architecture/10-gameplayer.mdx).
+
+**Impact: Medium–Large.**
 
 ---
 

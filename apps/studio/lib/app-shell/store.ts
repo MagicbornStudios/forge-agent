@@ -30,8 +30,14 @@ interface AppShellState {
   /** Last opened character project id (legacy/migration). */
   lastCharacterProjectId: number | null;
   workspaceThemes: Partial<Record<EditorId, string>>;
-  /** Bottom drawer (workbench/console) open per editor. */
+  /** Bottom drawer (Assistant/console) open per editor. */
   bottomDrawerOpen: Partial<Record<EditorId, boolean>>;
+  /** App settings sheet (left drawer) open. Not persisted. */
+  appSettingsSheetOpen: boolean;
+  /** Request active editor to open settings in dock panel. Consumed by editor then cleared. Not persisted. */
+  requestOpenSettings: boolean;
+  /** Dock layout JSON by layoutId (Dockview). Persisted. */
+  dockLayouts: Record<string, string>;
   setRoute: (route: Partial<Pick<AppShellRoute, 'activeWorkspaceId' | 'openWorkspaceIds'>>) => void;
   setActiveProjectId: (id: number | null) => void;
   setLastDialogueProjectId: (id: number | null) => void;
@@ -44,6 +50,10 @@ interface AppShellState {
   clearWorkspaceTheme: (id: EditorId) => void;
   setBottomDrawerOpen: (id: EditorId, open: boolean) => void;
   toggleBottomDrawer: (id: EditorId) => void;
+  setAppSettingsSheetOpen: (open: boolean) => void;
+  setRequestOpenSettings: (value: boolean) => void;
+  setDockLayout: (layoutId: string, json: string) => void;
+  clearDockLayout: (layoutId: string) => void;
 }
 
 const DEFAULT_OPEN: EditorId[] = ['dialogue'];
@@ -58,6 +68,7 @@ type PersistedAppState = Partial<
     | 'lastDialogueProjectId'
     | 'lastVideoDocId'
     | 'lastCharacterProjectId'
+    | 'dockLayouts'
   >
 > & {
   route?: {
@@ -96,6 +107,9 @@ export const useAppShellStore = create<AppShellState>()(
         lastCharacterProjectId: null,
         workspaceThemes: { video: 'darcula' },
         bottomDrawerOpen: {},
+        appSettingsSheetOpen: false,
+        requestOpenSettings: false,
+        dockLayouts: {},
 
         setRoute: (route) => {
           set((state) => {
@@ -184,6 +198,30 @@ export const useAppShellStore = create<AppShellState>()(
             state.bottomDrawerOpen[id] = current === true ? false : true;
           });
         },
+
+        setAppSettingsSheetOpen: (open) => {
+          set((state) => {
+            state.appSettingsSheetOpen = open;
+          });
+        },
+
+        setRequestOpenSettings: (value) => {
+          set((state) => {
+            state.requestOpenSettings = value;
+          });
+        },
+
+        setDockLayout: (layoutId: string, json: string) => {
+          set((state) => {
+            state.dockLayouts[layoutId] = json;
+          });
+        },
+
+        clearDockLayout: (layoutId: string) => {
+          set((state) => {
+            delete state.dockLayouts[layoutId];
+          });
+        },
       })),
       {
         name: APP_SESSION_KEY,
@@ -194,6 +232,7 @@ export const useAppShellStore = create<AppShellState>()(
           lastDialogueProjectId: s.lastDialogueProjectId,
           lastVideoDocId: s.lastVideoDocId,
           lastCharacterProjectId: s.lastCharacterProjectId,
+          dockLayouts: s.dockLayouts,
         }),
         migrate: (persisted) => {
           const state = (persisted ?? {}) as PersistedAppState;
@@ -221,6 +260,9 @@ export const useAppShellStore = create<AppShellState>()(
             lastDialogueProjectId: lastDialogue,
             lastVideoDocId: state.lastVideoDocId ?? null,
             lastCharacterProjectId: state.lastCharacterProjectId ?? null,
+            appSettingsSheetOpen: false,
+            requestOpenSettings: false,
+            dockLayouts: state.dockLayouts ?? {},
           } as AppShellState;
         },
         skipHydration: true,

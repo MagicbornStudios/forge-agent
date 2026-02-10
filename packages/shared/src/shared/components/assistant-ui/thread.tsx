@@ -8,6 +8,8 @@ import { ToolFallback } from "./tool-fallback";
 import { TooltipIconButton } from "./tooltip-icon-button";
 import { Button } from "@forge/ui/button";
 import { cn } from "@forge/shared/lib/utils";
+import { FeatureGate } from "../gating/FeatureGate";
+import { CAPABILITIES, useEntitlements } from "../../entitlements";
 import {
   ActionBarMorePrimitive,
   ActionBarPrimitive,
@@ -23,17 +25,25 @@ import {
 import {
   ArrowDownIcon,
   ArrowUpIcon,
+  AudioLinesIcon,
   CheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   CopyIcon,
   DownloadIcon,
+  MicIcon,
+  MicOffIcon,
   MoreHorizontalIcon,
   PencilIcon,
   RefreshCwIcon,
   SquareIcon,
 } from "lucide-react";
-import type { FC } from "react";
+import type { FC, ReactNode } from "react";
+
+export interface ThreadProps {
+  composerLeading?: ReactNode;
+  composerTrailing?: ReactNode;
+}
 
 const ThreadMessages: FC = () => {
   const messageCount = useAuiState(({ thread }) => thread?.messages?.length ?? 0);
@@ -57,7 +67,7 @@ const ThreadMessages: FC = () => {
   );
 };
 
-export const Thread: FC = () => {
+export const Thread: FC<ThreadProps> = ({ composerLeading, composerTrailing }) => {
   return (
     <ThreadPrimitive.Root
       className="aui-root aui-thread-root @container flex h-full flex-col bg-background"
@@ -67,7 +77,7 @@ export const Thread: FC = () => {
     >
       <ThreadPrimitive.Viewport
         turnAnchor="top"
-        className="aui-thread-viewport relative flex flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth px-4 pt-4"
+        className="aui-thread-viewport relative flex flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth px-[var(--panel-padding)] pt-[var(--panel-padding)]"
       >
         <AuiIf condition={({ thread }) => Boolean(thread?.isEmpty)}>
           <ThreadWelcome />
@@ -75,9 +85,9 @@ export const Thread: FC = () => {
 
         <ThreadMessages />
 
-        <ThreadPrimitive.ViewportFooter className="aui-thread-viewport-footer sticky bottom-0 mx-auto mt-auto flex w-full max-w-(--thread-max-width) flex-col gap-4 overflow-visible rounded-t-3xl pb-4 md:pb-6">
+        <ThreadPrimitive.ViewportFooter className="aui-thread-viewport-footer sticky bottom-0 mx-auto mt-auto flex w-full max-w-(--thread-max-width) flex-col gap-[var(--control-gap)] overflow-visible rounded-t-3xl pb-[var(--panel-padding)]">
           <ThreadScrollToBottom />
-          <Composer />
+          <Composer composerLeading={composerLeading} composerTrailing={composerTrailing} />
         </ThreadPrimitive.ViewportFooter>
       </ThreadPrimitive.Viewport>
     </ThreadPrimitive.Root>
@@ -90,7 +100,7 @@ const ThreadScrollToBottom: FC = () => {
       <TooltipIconButton
         tooltip="Scroll to bottom"
         variant="outline"
-        className="aui-thread-scroll-to-bottom absolute -top-12 z-10 self-center rounded-full p-4 disabled:invisible dark:bg-background dark:hover:bg-accent"
+        className="aui-thread-scroll-to-bottom absolute -top-10 z-10 self-center rounded-full p-0 disabled:invisible dark:bg-background dark:hover:bg-accent"
       >
         <ArrowDownIcon />
       </TooltipIconButton>
@@ -118,7 +128,7 @@ const ThreadWelcome: FC = () => {
 
 const ThreadSuggestions: FC = () => {
   return (
-    <div className="aui-thread-welcome-suggestions grid w-full @md:grid-cols-2 gap-2 pb-4">
+    <div className="aui-thread-welcome-suggestions grid w-full gap-[var(--control-gap)] pb-[var(--panel-padding)] @md:grid-cols-2">
       <ThreadPrimitive.Suggestions
         components={{
           Suggestion: ThreadSuggestionItem,
@@ -148,56 +158,140 @@ const ThreadSuggestionItem: FC = () => {
   );
 };
 
-const Composer: FC = () => {
+const Composer: FC<ThreadProps> = ({ composerLeading, composerTrailing }) => {
+  const entitlements = useEntitlements();
+  const attachmentsEnabled = entitlements.has(CAPABILITIES.STUDIO_AI_ATTACHMENTS);
+
+  const content = (
+    <>
+      {attachmentsEnabled ? <ComposerAttachments /> : null}
+      <ComposerPrimitive.Input
+        placeholder="Send a message..."
+        className="aui-composer-input mb-0 max-h-32 min-h-[calc(var(--control-height)*1.6)] w-full resize-none bg-transparent px-[var(--control-padding-x)] pt-[calc(var(--control-padding-y)+2px)] pb-[calc(var(--control-padding-y)+2px)] text-xs outline-none placeholder:text-muted-foreground focus-visible:ring-0"
+        rows={1}
+        autoFocus
+        aria-label="Message input"
+      />
+      <ComposerAction composerLeading={composerLeading} composerTrailing={composerTrailing} />
+    </>
+  );
+
   return (
     <ComposerPrimitive.Root className="aui-composer-root relative flex w-full flex-col">
-      <ComposerPrimitive.AttachmentDropzone className="aui-composer-attachment-dropzone flex w-full flex-col rounded-2xl border border-input bg-background px-1 pt-2 outline-none transition-shadow has-[textarea:focus-visible]:border-ring has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring/20 data-[dragging=true]:border-ring data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
-        <ComposerAttachments />
-        <ComposerPrimitive.Input
-          placeholder="Send a message..."
-          className="aui-composer-input mb-1 max-h-32 min-h-14 w-full resize-none bg-transparent px-4 pt-2 pb-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-0"
-          rows={1}
-          autoFocus
-          aria-label="Message input"
-        />
-        <ComposerAction />
-      </ComposerPrimitive.AttachmentDropzone>
+      {attachmentsEnabled ? (
+        <ComposerPrimitive.AttachmentDropzone className="aui-composer-attachment-dropzone flex w-full flex-col rounded-2xl border border-input bg-background px-[calc(var(--control-padding-x)-2px)] pt-[calc(var(--control-padding-y)+2px)] outline-none transition-shadow has-[textarea:focus-visible]:border-ring has-[textarea:focus-visible]:ring-1 has-[textarea:focus-visible]:ring-ring/20 data-[dragging=true]:border-ring data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
+          {content}
+        </ComposerPrimitive.AttachmentDropzone>
+      ) : (
+        <div className="aui-composer-attachment-dropzone flex w-full flex-col rounded-2xl border border-input bg-background px-[calc(var(--control-padding-x)-2px)] pt-[calc(var(--control-padding-y)+2px)] outline-none transition-shadow has-[textarea:focus-visible]:border-ring has-[textarea:focus-visible]:ring-1 has-[textarea:focus-visible]:ring-ring/20">
+          {content}
+        </div>
+      )}
     </ComposerPrimitive.Root>
   );
 };
 
-const ComposerAction: FC = () => {
+const ComposerAction: FC<ThreadProps> = ({ composerLeading, composerTrailing }) => {
   return (
-    <div className="aui-composer-action-wrapper relative mx-2 mb-2 flex items-center justify-between">
-      <ComposerAddAttachment />
-      <AuiIf condition={({ thread }) => !thread?.isRunning}>
-        <ComposerPrimitive.Send asChild>
+    <div className="aui-composer-action-wrapper relative mx-[calc(var(--control-padding-x)-2px)] mb-[var(--control-padding-y)] flex items-center justify-between">
+      <div className="flex items-center gap-1.5">
+        <FeatureGate
+          capability={CAPABILITIES.STUDIO_AI_ATTACHMENTS}
+          mode="disable"
+          reason="File upload is feature-flagged and currently off."
+        >
+          <ComposerAddAttachment />
+        </FeatureGate>
+        {composerLeading}
+      </div>
+
+      <div className="flex items-center gap-1.5">
+        {composerTrailing}
+
+        <FeatureGate
+          capability={CAPABILITIES.STUDIO_AI_DICTATION}
+          mode="disable"
+          reason="Speech-to-text is feature-flagged and currently off."
+        >
+          <>
+            <ComposerPrimitive.If dictation={false}>
+              <ComposerPrimitive.Dictate asChild>
+                <TooltipIconButton
+                  tooltip="Start dictation"
+                  side="bottom"
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 rounded-full"
+                  aria-label="Start dictation"
+                >
+                  <MicIcon className="size-[var(--icon-size)]" />
+                </TooltipIconButton>
+              </ComposerPrimitive.Dictate>
+            </ComposerPrimitive.If>
+            <ComposerPrimitive.If dictation={true}>
+              <ComposerPrimitive.StopDictation asChild>
+                <TooltipIconButton
+                  tooltip="Stop dictation"
+                  side="bottom"
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 rounded-full"
+                  aria-label="Stop dictation"
+                >
+                  <MicOffIcon className="size-[var(--icon-size)]" />
+                </TooltipIconButton>
+              </ComposerPrimitive.StopDictation>
+            </ComposerPrimitive.If>
+          </>
+        </FeatureGate>
+
+        <FeatureGate
+          capability={CAPABILITIES.STUDIO_AI_VOICE_MODE}
+          mode="disable"
+          reason="Realtime voice mode is coming soon."
+        >
           <TooltipIconButton
-            tooltip="Send message"
+            tooltip="Voice mode"
             side="bottom"
-            type="submit"
-            variant="default"
+            variant="ghost"
             size="icon"
-            className="aui-composer-send size-8 rounded-full"
-            aria-label="Send message"
+            className="size-8 rounded-full"
+            disabled
+            aria-label="Voice mode"
           >
-            <ArrowUpIcon className="aui-composer-send-icon size-4" />
+            <AudioLinesIcon className="size-[var(--icon-size)]" />
           </TooltipIconButton>
-        </ComposerPrimitive.Send>
-      </AuiIf>
-      <AuiIf condition={({ thread }) => Boolean(thread?.isRunning)}>
-        <ComposerPrimitive.Cancel asChild>
-          <Button
-            type="button"
-            variant="default"
-            size="icon"
-            className="aui-composer-cancel size-8 rounded-full"
-            aria-label="Stop generating"
-          >
-            <SquareIcon className="aui-composer-cancel-icon size-3 fill-current" />
-          </Button>
-        </ComposerPrimitive.Cancel>
-      </AuiIf>
+        </FeatureGate>
+
+        <AuiIf condition={({ thread }) => !thread?.isRunning}>
+          <ComposerPrimitive.Send asChild>
+            <TooltipIconButton
+              tooltip="Send message"
+              side="bottom"
+              type="submit"
+              variant="default"
+              size="icon"
+              className="aui-composer-send size-8 rounded-full"
+              aria-label="Send message"
+            >
+              <ArrowUpIcon className="aui-composer-send-icon size-[var(--icon-size-lg)]" />
+            </TooltipIconButton>
+          </ComposerPrimitive.Send>
+        </AuiIf>
+        <AuiIf condition={({ thread }) => Boolean(thread?.isRunning)}>
+          <ComposerPrimitive.Cancel asChild>
+            <Button
+              type="button"
+              variant="default"
+              size="icon"
+              className="aui-composer-cancel size-8 rounded-full"
+              aria-label="Stop generating"
+            >
+              <SquareIcon className="aui-composer-cancel-icon size-3 fill-current" />
+            </Button>
+          </ComposerPrimitive.Cancel>
+        </AuiIf>
+      </div>
     </div>
   );
 };
@@ -275,7 +369,7 @@ const AssistantActionBar: FC = () => {
         >
           <ActionBarPrimitive.ExportMarkdown asChild>
             <ActionBarMorePrimitive.Item className="aui-action-bar-more-item flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
-              <DownloadIcon className="size-4" />
+              <DownloadIcon className="size-[var(--icon-size)]" />
               Export as Markdown
             </ActionBarMorePrimitive.Item>
           </ActionBarPrimitive.ExportMarkdown>
@@ -315,7 +409,7 @@ const UserActionBar: FC = () => {
       className="aui-user-action-bar-root flex flex-col items-end"
     >
       <ActionBarPrimitive.Edit asChild>
-        <TooltipIconButton tooltip="Edit" className="aui-user-action-edit p-4">
+        <TooltipIconButton tooltip="Edit" className="aui-user-action-edit p-0">
           <PencilIcon />
         </TooltipIconButton>
       </ActionBarPrimitive.Edit>

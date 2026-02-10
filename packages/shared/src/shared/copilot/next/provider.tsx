@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { CopilotKit } from '@copilotkit/react-core';
-import { CopilotSidebar } from '@copilotkit/react-ui';
+import { CopilotSidebar, type InputProps } from '@copilotkit/react-ui';
 import '@copilotkit/react-ui/styles.css';
 
 export interface ForgeCopilotProviderLabels {
@@ -18,6 +18,9 @@ export interface ForgeCopilotProviderProps {
   labels?: ForgeCopilotProviderLabels;
   headers?: Record<string, string>;
   forwardedParameters?: Record<string, unknown>;
+  chatInput?: React.ComponentType<InputProps>;
+  imageUploadsEnabled?: boolean;
+  inputFileAccept?: string;
   defaultOpen?: boolean;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -44,6 +47,9 @@ export function ForgeCopilotProvider({
   labels,
   headers,
   forwardedParameters,
+  chatInput,
+  imageUploadsEnabled,
+  inputFileAccept,
   defaultOpen = true,
   open,
   onOpenChange,
@@ -87,6 +93,9 @@ export function ForgeCopilotProvider({
           defaultOpen={isOpen}
           labels={sidebarLabels}
           onSetOpen={setIsOpen}
+          Input={chatInput}
+          imageUploadsEnabled={imageUploadsEnabled}
+          inputFileAccept={inputFileAccept}
         >
           {children}
         </CopilotSidebar>

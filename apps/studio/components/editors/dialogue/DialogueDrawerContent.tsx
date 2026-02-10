@@ -3,15 +3,11 @@
 import React, { useState } from 'react';
 import { EditorBottomPanel } from '@forge/shared';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@forge/ui/tabs';
-import { DialogueAssistantPanel } from './DialogueAssistantPanel';
 import { CopilotKitDevToolsPanel } from './CopilotKitDevToolsPanel';
-import { AssistantDevToolsPanel } from './AssistantDevToolsPanel';
 
 const TABS = [
-  { id: 'assistant', label: 'Assistant' },
   { id: 'workflow', label: 'Workflow' },
   { id: 'copilotkit', label: 'CopilotKit' },
-  { id: 'assistant-devtools', label: 'Assistant UI' },
 ] as const;
 
 export interface DialogueDrawerContentProps {
@@ -36,9 +32,6 @@ export function DialogueDrawerContent({ workflowPanel }: DialogueDrawerContentPr
               </TabsTrigger>
             ))}
           </TabsList>
-          <TabsContent value="assistant" className="flex-1 mt-2 min-h-0 p-0">
-            <DialogueAssistantPanel className="h-full" />
-          </TabsContent>
           <TabsContent value="workflow" className="flex-1 mt-2 min-h-0 p-[var(--panel-padding)]">
             {workflowPanel ?? (
               <div className="text-xs text-muted-foreground">
@@ -48,9 +41,6 @@ export function DialogueDrawerContent({ workflowPanel }: DialogueDrawerContentPr
           </TabsContent>
           <TabsContent value="copilotkit" className="flex-1 mt-2 min-h-0 p-[var(--panel-padding)]">
             <CopilotKitDevToolsPanel className="h-full" />
-          </TabsContent>
-          <TabsContent value="assistant-devtools" className="flex-1 mt-2 min-h-0 p-[var(--panel-padding)]">
-            <AssistantDevToolsPanel className="h-full" />
           </TabsContent>
         </Tabs>
       </div>

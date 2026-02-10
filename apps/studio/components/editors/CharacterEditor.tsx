@@ -9,8 +9,8 @@ import {
   EditorToolbar,
   EditorStatusBar,
   EditorOverlaySurface,
-  DockLayout,
-  DockPanel,
+  EditorDockLayout,
+  EditorDockPanel,
 } from '@forge/shared/components/editor';
 import type { OverlaySpec, ActiveOverlay, Selection } from '@forge/shared';
 import { isEntity } from '@forge/shared';
@@ -23,6 +23,7 @@ import { useCharacterContract } from '@forge/domain-character';
 // AppShell
 import { useEditorStore } from '@/lib/app-shell/store';
 import { EDITOR_VIEWPORT_IDS } from '@/lib/app-shell/editor-metadata';
+import { useEditorPanelVisibility } from '@/lib/app-shell/useEditorPanelVisibility';
 import { useSettingsStore } from '@/lib/settings/store';
 import { useEntitlements, CAPABILITIES } from '@forge/shared/entitlements';
 
@@ -44,14 +45,13 @@ import {
 import { useCharacterStore } from '@/lib/domains/character/store';
 
 // Components
-import { Maximize2, Plus } from 'lucide-react';
+import { LayoutPanelTop, Maximize2, PanelLeft, PanelRight, Plus } from 'lucide-react';
 import { Button } from '@forge/ui/button';
 import { RelationshipGraphEditor, type CharacterViewportHandle } from '@/components/character/RelationshipGraphEditor';
 import { ActiveCharacterPanel } from '@/components/character/ActiveCharacterPanel';
 import { CharacterSidebar } from '@/components/character/CharacterSidebar';
 import { CreateCharacterModal } from '@/components/character/CreateCharacterModal';
-import { ModelSwitcher } from '@/components/model-switcher';
-import { SettingsMenu } from '@/components/settings/SettingsMenu';
+import { useAppMenubarContribution } from '@/lib/contexts/AppMenubarContext';
 import { Badge } from '@forge/ui/badge';
 import { Card } from '@forge/ui/card';
 import type { CharacterDoc, RelationshipDoc } from '@/lib/domains/character/types';
@@ -61,7 +61,16 @@ import { NodeDragProvider } from '@/components/graph/useNodeDrag';
 // Constants
 // ---------------------------------------------------------------------------
 const CREATE_CHARACTER_OVERLAY_ID = 'create-character';
+const EDIT_CHARACTER_OVERLAY_ID = 'edit-character';
 const DEFAULT_VOICE_MODEL_ID = 'eleven_multilingual_v2';
+
+type CharacterUpsertPayload = {
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  voiceId?: string | null;
+  meta?: Record<string, unknown>;
+};
 
 // ---------------------------------------------------------------------------
 // Selection helper
@@ -188,7 +197,7 @@ export function CharacterEditor() {
 
   // ---- CRUD callbacks ----
   const handleCreateCharacter = useCallback(
-    async (data: { name: string; description?: string; imageUrl?: string; voiceId?: string | null }): Promise<CharacterDoc> => {
+    async (data: CharacterUpsertPayload): Promise<CharacterDoc> => {
       const result = await createCharMutation.mutateAsync({ ...data, project: projectId! });
       addCharacter(result as CharacterDoc);
       setActiveCharacter(result.id);
@@ -198,11 +207,17 @@ export function CharacterEditor() {
   );
 
   const handleUpdateCharacter = useCallback(
-    async (id: number, updates: Partial<Pick<CharacterDoc, 'name' | 'description' | 'imageUrl' | 'voiceId'>>) => {
+    async (
+      id: number,
+      updates: Partial<
+        Pick<CharacterDoc, 'name' | 'description' | 'imageUrl' | 'voiceId' | 'meta'>
+      >,
+    ) => {
       const sanitizedUpdates = {
         ...updates,
         description: updates.description ?? undefined,
         imageUrl: updates.imageUrl ?? undefined,
+        meta: updates.meta ?? undefined,
       };
       await updateCharMutation.mutateAsync({ id, ...sanitizedUpdates });
       updateCharacterLocal(id, sanitizedUpdates);
@@ -304,17 +319,45 @@ export function CharacterEditor() {
         size: 'md',
         render: ({ onDismiss }) => (
           <CreateCharacterModal
-            onSubmit={(data) => {
-              handleCreateCharacter(data)
-                .then(() => onDismiss())
-                .catch((err) => toast.error('Failed', { description: err.message }));
-            }}
+            onCreate={handleCreateCharacter}
+            onUpdate={handleUpdateCharacter}
             onClose={onDismiss}
           />
         ),
       },
+      {
+        id: EDIT_CHARACTER_OVERLAY_ID,
+        type: 'modal',
+        title: 'Edit Character',
+        size: 'lg',
+        render: ({ onDismiss, payload }) => {
+          const characterId =
+            typeof payload?.characterId === 'number'
+              ? payload.characterId
+              : Number(payload?.characterId);
+          const editingCharacter = characters.find((c) => c.id === characterId);
+          if (!editingCharacter) {
+            return (
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p>Character not found.</p>
+                <Button type="button" variant="outline" onClick={onDismiss}>
+                  Close
+                </Button>
+              </div>
+            );
+          }
+          return (
+            <CreateCharacterModal
+              character={editingCharacter}
+              onCreate={handleCreateCharacter}
+              onUpdate={handleUpdateCharacter}
+              onClose={onDismiss}
+            />
+          );
+        },
+      },
     ],
-    [handleCreateCharacter],
+    [characters, handleCreateCharacter, handleUpdateCharacter],
   );
 
   // ---- Menubar ----
@@ -328,16 +371,42 @@ export function CharacterEditor() {
     ],
     [openOverlay],
   );
+  const { visibility: panelVisibility, setVisible: setPanelVisible, restoreAll: restoreAllPanels, panelSpecs } = useEditorPanelVisibility('character');
+  const dockLayouts = useEditorStore((s) => s.dockLayouts);
+  const setDockLayout = useEditorStore((s) => s.setDockLayout);
+  const clearDockLayout = useEditorStore((s) => s.clearDockLayout);
+  const layoutRef = useRef<DockLayoutRef>(null);
+  const CHARACTER_LAYOUT_ID = 'character-mode';
+
   const viewMenuItems = useMemo(
-    () => [
-      {
-        id: 'fit-view',
-        label: 'Fit view',
-        icon: <Maximize2 size={16} />,
-        onSelect: () => viewportRef.current?.fitView(),
-      },
-    ],
-    [],
+    () => {
+      const panelIcons: Record<string, React.ReactNode> = {
+        left: <PanelLeft size={16} />,
+        right: <PanelRight size={16} />,
+      };
+      return [
+        {
+          id: 'fit-view',
+          label: 'Fit view',
+          icon: <Maximize2 size={16} />,
+          onSelect: () => viewportRef.current?.fitView(),
+        },
+        { id: 'view-sep-panels', type: 'separator' as const },
+        ...panelSpecs.map((spec) => ({
+          id: `panel-${spec.id}`,
+          label: panelVisibility[spec.key] === false ? `Show ${spec.label}` : `Hide ${spec.label}`,
+          icon: panelIcons[spec.id] ?? <LayoutPanelTop size={16} />,
+          onSelect: () => setPanelVisible(spec.key, !(panelVisibility[spec.key] !== false)),
+        })),
+        {
+          id: 'restore-all-panels',
+          label: 'Restore all panels',
+          icon: <LayoutPanelTop size={16} />,
+          onSelect: restoreAllPanels,
+        },
+      ];
+    },
+    [panelSpecs, panelVisibility, setPanelVisible, restoreAllPanels],
   );
   const menubarMenus = useMemo(
     () => [
@@ -346,13 +415,14 @@ export function CharacterEditor() {
     ],
     [fileMenuItems, viewMenuItems],
   );
+  useAppMenubarContribution(menubarMenus);
 
   // ---- Content ----
   const activeChar = characters.find((c) => c.id === activeCharacterId) ?? null;
 
   const leftPanel =
     showLeftPanel === false ? undefined : (
-      <DockPanel panelId="character-navigator" title="Characters" scrollable={false} hideTitleBar>
+      <EditorDockPanel panelId="character-navigator" title="Characters" scrollable={false} hideTitleBar>
         <CharacterSidebar
           characters={characters}
           relationships={relationships}
@@ -370,7 +440,7 @@ export function CharacterEditor() {
           onDeleteRelationship={handleDeleteRelationship}
           onCreateCharacter={() => openOverlay(CREATE_CHARACTER_OVERLAY_ID)}
         />
-      </DockPanel>
+      </EditorDockPanel>
     );
 
   const mainContent =
@@ -417,9 +487,13 @@ export function CharacterEditor() {
 
   const rightPanel =
     showRightPanel === false ? undefined : (
-      <DockPanel panelId="character-properties" title="Properties" scrollable hideTitleBar>
-        <ActiveCharacterPanel character={activeChar} onUpdate={handleUpdateCharacter} />
-      </DockPanel>
+      <EditorDockPanel panelId="character-properties" title="Properties" scrollable hideTitleBar>
+        <ActiveCharacterPanel
+          character={activeChar}
+          onUpdate={handleUpdateCharacter}
+          onOpenUpsert={(id) => openOverlay(EDIT_CHARACTER_OVERLAY_ID, { characterId: id })}
+        />
+      </EditorDockPanel>
     );
 
   return (
@@ -436,7 +510,6 @@ export function CharacterEditor() {
         <EditorToolbar className="bg-sidebar border-b border-sidebar-border">
           <EditorToolbar.Left>
             <EditorToolbar.Group className="gap-[var(--control-gap)]">
-              <EditorToolbar.Menubar menus={menubarMenus} />
             </EditorToolbar.Group>
             <span className="text-xs text-muted-foreground">
               {characters.length} character{characters.length !== 1 ? 's' : ''} &middot;{' '}
@@ -444,35 +517,37 @@ export function CharacterEditor() {
             </span>
           </EditorToolbar.Left>
           <EditorToolbar.Right>
-            {showAgentName !== false && (
-              <Badge variant="secondary" className="text-xs">
-                Agent: {agentName ?? 'Default'}
-              </Badge>
-            )}
-            <ModelSwitcher />
-            <EditorToolbar.Separator />
-            <SettingsMenu editorId={editorId} viewportId={viewportId} />
-            <EditorToolbar.Button
-              onClick={() => openOverlay(CREATE_CHARACTER_OVERLAY_ID)}
-              variant="outline"
-              size="sm"
-              tooltip="Add a new character"
+          {showAgentName !== false && (
+            <Badge variant="secondary" className="text-xs">
+              Agent: {agentName ?? 'Default'}
+            </Badge>
+          )}
+          <EditorToolbar.Separator />
+          <EditorToolbar.Button
+            onClick={() => openOverlay(CREATE_CHARACTER_OVERLAY_ID)}
+            variant="outline"
+            size="sm"
+            tooltip="Add a new character"
             >
               Add Character
             </EditorToolbar.Button>
           </EditorToolbar.Right>
         </EditorToolbar>
 
-        {/* DockLayout (Dockview): resizable, drag, float, persist */}
-        <DockLayout
+        {/* EditorDockLayout (Dockview): resizable, drag, float, persist */}
+        <EditorDockLayout
+          ref={layoutRef}
           left={leftPanel}
           main={mainContent}
           right={rightPanel}
           slots={{ left: { title: 'Characters' }, right: { title: 'Properties' } }}
           viewport={{ viewportId, viewportType: 'react-flow' }}
-          layoutId="character-mode"
+          layoutId={CHARACTER_LAYOUT_ID}
           leftDefaultSize={20}
           rightDefaultSize={25}
+          layoutJson={dockLayouts[CHARACTER_LAYOUT_ID] ?? undefined}
+          onLayoutChange={(json) => setDockLayout(CHARACTER_LAYOUT_ID, json)}
+          clearLayout={() => clearDockLayout(CHARACTER_LAYOUT_ID)}
         />
 
         <EditorStatusBar>

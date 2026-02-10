@@ -1,7 +1,6 @@
 /* All @import must come first (CSS spec); dependencies may contain font @import url() */
 @import "@twick/studio/dist/studio.css";
-@import "dockview/dist/styles/dockview.css";
-@import "../../../packages/shared/src/shared/styles/dockview-overrides.css";
+@import "@forge/shared/styles/editor";
 @import "tw-animate-css";
 @import "../../../packages/shared/src/shared/styles/themes.css";
 @import "../../../packages/shared/src/shared/styles/contexts.css";

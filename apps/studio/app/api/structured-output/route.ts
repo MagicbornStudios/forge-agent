@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOpenRouterConfig } from '@/lib/openrouter-config';
-import { resolvePrimaryAndFallbacks } from '@/lib/model-router/server-state';
+import { DEFAULT_TASK_MODEL } from '@/lib/model-router/defaults';
 
 /** Predefined JSON schemas for structured extraction. */
 const NAMED_SCHEMAS: Record<string, { name: string; strict: boolean; schema: object }> = {
@@ -127,12 +127,10 @@ export async function POST(request: NextRequest) {
     jsonSchema = NAMED_SCHEMAS.list;
   }
 
-  const { primary, fallbacks } = resolvePrimaryAndFallbacks();
-  const models = [primary, ...fallbacks];
+  const modelId = DEFAULT_TASK_MODEL;
 
   const payload = {
-    model: primary,
-    ...(models.length > 1 && { models }),
+    model: modelId,
     messages: [{ role: 'user' as const, content: prompt }],
     stream: false,
     response_format: {

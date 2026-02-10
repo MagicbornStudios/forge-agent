@@ -19,6 +19,10 @@ Shared registries live here: `@lucide-animated`, `@billingsdk`. To add a shared 
 
 For vendor CLIs (e.g. ElevenLabs), run the vendor's install command **from `packages/ui`** so components land in this package. Use **`pnpm dlx`** not `npx` to avoid "npx is not available". See [docs/how-to/15-shadcn-registries-and-components.mdx](../../docs/how-to/15-shadcn-registries-and-components.mdx) for full steps and troubleshooting. The **audio-player** in `packages/ui` is the shared audio player (character voice preview and other tracks); to add more ElevenLabs components, use their CLI from `packages/ui` and export from `src/index.ts`.
 
+## Label
+
+The `Label` component has **no border, no underline, and no accent** by default. Any underline or accent border must be applied explicitly by the consumer (e.g. via `className` or a wrapper).
+
 ## Adding components
 
 Run shadcn in this package and ensure imports point to `@forge/ui/*`.

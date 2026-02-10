@@ -20,4 +20,12 @@
 
 ---
 
+## Creator dashboard and Studio minimal platform
+
+**Status:** Gap; work tracked in task registry initiative `creator-dashboard`.
+
+**Details:** Platform account, listings, and revenue management belong on the **marketing site** (customer-facing dashboard). **Studio** should only expose **publish** (create listing from current project) and **update listing** (if current project is already linked) in the app bar—no listings management, catalog, or revenue UI in Studio. Until the marketing creator dashboard exists, creators have no in-app place to manage their listings. See [task registry: creator-dashboard](docs/agent-artifacts/core/task-registry.md) and [roadmap: Platform](docs/roadmap/product.mdx).
+
+---
+
 *(Add other product/editor-level known issues below as needed.)*

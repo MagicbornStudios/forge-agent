@@ -21,10 +21,10 @@ export interface EditorOverlaySurfaceProps {
 }
 
 const sizeClasses: Record<NonNullable<OverlaySpec['size']>, string> = {
-  sm: 'max-w-sm',
-  md: 'max-w-lg',
+  sm: 'max-w-md',
+  md: 'max-w-xl',
   lg: 'max-w-2xl',
-  full: 'max-w-[90vw] max-h-[90vh] w-full',
+  full: 'w-[var(--dialog-max-w-full)] max-h-[var(--dialog-max-h-full)]',
 };
 
 /**
@@ -74,7 +74,11 @@ export function EditorOverlaySurface({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
-        className={cn(sizeClasses[spec.size ?? 'md'], className)}
+        className={cn(
+          sizeClasses[spec.size ?? 'md'],
+          '[&>button]:right-[var(--panel-padding)] [&>button]:top-[var(--panel-padding)]',
+          className,
+        )}
         onPointerDownOutside={onDismiss}
         onEscapeKeyDown={onDismiss}
       >

@@ -1,14 +1,59 @@
 ---
 title: Editors as MCP Apps
 created: 2026-02-07
-updated: 2026-02-07
+updated: 2026-02-09
 ---
 
 # Editors as MCP Apps
 
 Each editor in Studio can be exposed as an **MCP App** — a self-contained
 unit that an external MCP host (Claude Desktop, Cursor, VS Code, or another
-MCP-aware client) can embed or orchestrate.
+MCP-aware client) can embed or orchestrate. **Studio itself** also exposes
+**app-level** MCP tools (publish, switch editor, project context) so the
+platform can be driven entirely from chat. See [11 - MCP vs CopilotKit and assistant-ui](11-mcp-copilotkit-assistant-ui.mdx) for caveats and [12 - MCP hosts and chat-first](12-mcp-hosts-and-chat-first.mdx) for host setup.
+
+---
+
+## Studio app-level MCP
+
+Studio exposes **app tools** (not just editor tools) so any MCP host can drive
+the app from chat without opening the Studio UI:
+
+| Tool | Purpose | Current implementation |
+|------|---------|------------------------|
+| `studio_switchEditor` | Switch active editor tab | [AppShell.tsx](../../apps/studio/components/AppShell.tsx) — `useCopilotAction` with `createAppAction` |
+| `studio_openEditor` | Open an editor (add tab) | Same |
+| `studio_closeEditor` | Close an editor tab | Same |
+| `studio_getProject` | Get current project context | App shell store `activeProjectId`; project APIs |
+| `studio_listProjects` | List user's projects | Payload projects collection / API |
+| `studio_publish` | Create listing from current project | [CreateListingSheet](../../apps/studio/components/listings/CreateListingSheet.tsx), [useCreateListing](../../apps/studio/lib/data/hooks/use-listings.ts) |
+| `studio_updateListing` | Update existing listing for current project | Same listing APIs; project ↔ listing link |
+
+When invoked by an **external** MCP host (e.g. Cursor, Claude Desktop), these
+tools may run in a **headless** or **hosted** Studio context. That implies
+session/auth and state: the MCP server must resolve identity and "current
+project" (e.g. via API token, or when Studio is running locally and the
+host talks to it). See [11 - MCP vs CopilotKit and assistant-ui](11-mcp-copilotkit-assistant-ui.mdx) for auth and two control planes.
+
+---
+
+## Editor registration with Studio
+
+When a **new editor** is added, it **comes with an MCP**: it exports an
+`McpAppDescriptor` (id, name, tools, uiResources) and **registers** with
+Studio so the Studio MCP Server can:
+
+- Discover and advertise that editor's tools.
+- Route tool invocations to the correct domain logic.
+- Serve UI resources for hosts that support them.
+
+**Registration contract:** Descriptors are registered in a registry (app shell
+or MCP server process). The Studio MCP Server aggregates all registered
+editors and exposes a single tool surface to hosts. This aligns with the
+existing editor list (Dialogue, Character, Video, Strategy) in
+[AppShell](../../apps/studio/components/AppShell.tsx) and
+[editor metadata](../../packages/shared/src/shared/components/editor/README.md).
+**Third-party and community** editors (see [Developer program and editor ecosystem](../business/developer-program-and-editors.mdx)) implement the same contract so they can register and be exposed alongside built-in editors.
 
 ---
 
@@ -29,26 +74,33 @@ the implementations.
 ## Architecture
 
 ```
-MCP Host (Claude Desktop, Cursor, etc.)
+MCP Host (Cursor, Claude, ChatGPT, Atlas, Perplexity, browser)
   │
-  ├── discovers available apps via MCP registry
+  ├── discovers tools via MCP registry
   │
   ├── invokes tools ──► Studio MCP Server
-  │                         ├── DialogueApp tools
-  │                         ├── CharacterApp tools
-  │                         ├── VideoApp tools
-  │                         └── StrategyApp tools
+  │                         ├── App tools: studio_switchEditor, studio_openEditor,
+  │                         │   studio_closeEditor, studio_getProject, studio_listProjects,
+  │                         │   studio_publish, studio_updateListing
+  │                         ├── Registered editor tools: DialogueApp, CharacterApp,
+  │                         │   VideoApp, StrategyApp (each from McpAppDescriptor)
+  │                         └── → Studio backend / domain logic
   │
-  └── renders UI resources ──► React component trees
-                                 exported from @forge/shared
+  └── renders UI resources ──► React component trees (when host supports them)
+
+Two consumers of the same tool backend:
+  • Studio UI (in-browser) — CopilotKit + assistant-ui call domain logic.
+  • External chat — MCP host calls Studio MCP Server → same domain logic.
 ```
 
 ### Studio MCP Server
 
 A lightweight server (Node or edge) that:
 
-- Registers each editor's tools with the MCP registry.
-- Handles tool invocations by delegating to system logic.
+- Exposes **app tools** (studio_switchEditor, studio_publish, etc.) and
+  **registered editor tools** (from each editor's McpAppDescriptor).
+- Aggregates editor descriptors from the registration registry.
+- Handles tool invocations by delegating to Studio backend / domain logic.
 - Serves UI resources as serialized component descriptors.
 
 ### Per-editor app descriptor
@@ -120,4 +172,6 @@ resource for visual feedback.
 
 - [Editor platform (DockLayout)](05-editor-platform.mdx)
 - [Unified editor (App Shell)](01-unified-workspace.mdx)
+- [11 - MCP vs CopilotKit and assistant-ui](11-mcp-copilotkit-assistant-ui.mdx) — Two control planes, caveats, possible solutions.
+- [12 - MCP hosts and chat-first](12-mcp-hosts-and-chat-first.mdx) — Host matrix, chat-first flows, setup.
 - [Product roadmap](../roadmap/product.mdx)

@@ -47,6 +47,38 @@ Items to figure out later (not product features; legal, ops, strategy). Not impl
 
 (Add new entries at the top; append-only.)
 
+### Dialogue graph state as JSON (Inspector or panel)
+- **Title** — Dialogue graph state as JSON (Inspector or panel).
+- **Context** — Dialogue editor; two graph panels (narrative, storylet). Planning workflow for agents; accurate graphs.
+- **Suggestion** — Expose a clean JSON view of the dialogue graph state in the Inspector or a dedicated panel. Optionally use Monaco (or a simple text area) so users can edit and copy-paste graph data. Make this optional per editor (some editors have it, others don't).
+- **Plausibility / rationale** — High value for power users and agents; JSON is the natural serialization of graph state. Two graphs (narrative + storylet) imply either one combined state object or two keys; needs a clear representation.
+- **Status** — proposed.
+- **Date** — 2026-02-10.
+
+### Graph state editor: IDs and validation
+- **Title** — Graph state editor: IDs and validation.
+- **Context** — Same as above; agent planning workflow.
+- **Suggestion** — When showing/editing graph state as JSON, maintain stable IDs and validate structure (nodes, edges, required fields). Document ID semantics so agents and users can produce valid graphs.
+- **Plausibility / rationale** — Prevents broken graphs and supports relinking and cross-references.
+- **Status** — proposed.
+- **Date** — 2026-02-10.
+
+### Relinking and graph updates
+- **Title** — Relinking and graph updates.
+- **Context** — Editing graph state (e.g. paste new graph, or bulk delete).
+- **Suggestion** — Define behavior when IDs change or nodes/edges are removed: optional "relinking" (map old IDs to new, or place/delete nodes and edges that existed in the previous graph). If user deletes nodes/edges that are referenced elsewhere (e.g. custom runtime directives for video / Canav), warn and offer to "delete all" associated data.
+- **Plausibility / rationale** — Enables safe paste and refactors; cross-editor references (e.g. video directives pointing at dialogue nodes) require clear warnings and delete semantics.
+- **Status** — proposed.
+- **Date** — 2026-02-10.
+
+### Cross-editor references and delete warnings
+- **Title** — Cross-editor references and delete warnings.
+- **Context** — Studio; dialogue graphs and other editors (e.g. video, custom runtimes).
+- **Suggestion** — When graph entities (nodes/edges) are referenced by another editor or feature (e.g. video Canav directives), detect those references and on delete show a warning; allow user to delete the graph entity and all associated references (cascade) or cancel.
+- **Plausibility / rationale** — Avoids orphaned references and data inconsistency.
+- **Status** — proposed.
+- **Date** — 2026-02-10.
+
 ### Usage-based payouts for approved editors
 - **Title** — Usage-based payouts for approved editors.
 - **Context** — Developer program; Stripe Connect.

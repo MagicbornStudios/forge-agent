@@ -22,16 +22,16 @@ const DropdownMenuSubTrigger = React.forwardRef<
   <DropdownMenuPrimitive.SubTrigger
     ref={ref}
     className={cn(
-      "flex cursor-default select-none items-center rounded-sm text-sm outline-none",
+      "flex cursor-default select-none items-center rounded-sm text-xs outline-none",
       "focus:bg-accent data-[state=open]:bg-accent",
       "px-[var(--menu-item-padding-x,0.5rem)] py-[var(--menu-item-padding-y,0.375rem)]",
-      inset && "pl-8",
+      inset && "pl-[calc(var(--menu-item-padding-x,0.5rem)+var(--icon-size)+var(--control-gap))]",
       className
     )}
     {...props}
   >
     {children}
-    <ChevronRight className="ml-auto h-4 w-4" />
+    <ChevronRight className="ml-auto size-[var(--icon-size)]" />
   </DropdownMenuPrimitive.SubTrigger>
 ))
 DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayName
@@ -82,9 +82,9 @@ const DropdownMenuItem = React.forwardRef<
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
+      "relative flex cursor-default select-none items-center rounded-sm px-[var(--menu-item-padding-x,0.5rem)] py-[var(--menu-item-padding-y,0.375rem)] text-xs outline-none",
       "focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      inset && "pl-8",
+      inset && "pl-[calc(var(--menu-item-padding-x,0.5rem)+var(--icon-size)+var(--control-gap))]",
       className
     )}
     {...props}
@@ -99,17 +99,17 @@ const DropdownMenuCheckboxItem = React.forwardRef<
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm pl-8 text-sm outline-none",
-      "py-[var(--menu-item-padding-y,0.375rem)] pr-[var(--menu-item-padding-x,0.5rem)]",
+      "relative flex cursor-default select-none items-center rounded-sm text-xs outline-none",
+      "py-[var(--menu-item-padding-y,0.375rem)] pl-[calc(var(--menu-item-padding-x,0.5rem)+var(--icon-size)+var(--control-gap))] pr-[var(--menu-item-padding-x,0.5rem)]",
       "focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     checked={checked}
     {...props}
   >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+    <span className="absolute left-[var(--menu-item-padding-x,0.5rem)] flex size-[var(--icon-size)] items-center justify-center">
       <DropdownMenuPrimitive.ItemIndicator>
-        <Check className="h-4 w-4" />
+        <Check className="size-[var(--icon-size)]" />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     <span className="flex-1 min-w-0">{children}</span>
@@ -124,15 +124,15 @@ const DropdownMenuRadioItem = React.forwardRef<
   <DropdownMenuPrimitive.RadioItem
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none",
+      "relative flex cursor-default select-none items-center rounded-sm py-[var(--menu-item-padding-y,0.375rem)] pl-[calc(var(--menu-item-padding-x,0.5rem)+var(--icon-size)+var(--control-gap))] pr-[var(--menu-item-padding-x,0.5rem)] text-xs outline-none",
       "focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     {...props}
   >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+    <span className="absolute left-[var(--menu-item-padding-x,0.5rem)] flex size-[var(--icon-size)] items-center justify-center">
       <DropdownMenuPrimitive.ItemIndicator>
-        <Circle className="h-2 w-2 fill-current" />
+        <Circle className="size-[var(--icon-size-sm)] fill-current" />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     <span className="flex-1 min-w-0">{children}</span>
@@ -147,9 +147,9 @@ const DropdownMenuLabel = React.forwardRef<
   <DropdownMenuPrimitive.Label
     ref={ref}
     className={cn(
-      "text-xs font-semibold text-muted-foreground",
+      "text-[10px] font-semibold uppercase tracking-wide text-muted-foreground",
       "px-[var(--menu-item-padding-x,0.5rem)] py-[var(--menu-item-padding-y,0.375rem)]",
-      inset && "pl-8",
+      inset && "pl-[calc(var(--menu-item-padding-x,0.5rem)+var(--icon-size)+var(--control-gap))]",
       className
     )}
     {...props}

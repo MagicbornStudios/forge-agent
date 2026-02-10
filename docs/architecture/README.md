@@ -49,7 +49,7 @@ updated: 2026-02-09
 | Server (graphs, video-docs, users, settings) | TanStack Query cache | Fetched via Payload SDK / API routes |
 | Draft (current graph/video doc) | Zustand (graph store, video store) | Zustand persist (partialize when dirty) |
 | App shell (route, open tabs, active project, last doc ids) | `apps/studio/lib/app-shell/store.ts` | Zustand persist `forge:app-session:v2` |
-| Layout (Dockview) | DockLayout + localStorage | `localStorage['dockview-{layoutId}']` |
+| Layout (Dockview) | App shell store `dockLayouts` | Zustand persist (same session key); DockLayout controlled mode |
 | Settings overrides | Payload `settings-overrides` | GET/POST `/api/settings` |
 | Entitlements / plan | Payload user.plan + overrides | `/api/me`, EntitlementsProvider |
 

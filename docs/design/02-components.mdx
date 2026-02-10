@@ -1,7 +1,7 @@
 ---
 title: Design components (atoms to organisms)
 created: 2026-02-05
-updated: 2026-02-08
+updated: 2026-02-10
 ---
 
 # Design: components (atoms -> molecules -> organisms)
@@ -14,12 +14,13 @@ This document catalogs the **shared components** we expose for consumers and con
 
 - Use tokenized spacing and sizing (`--control-*`, `--panel-padding`, `--tab-height`).
 - Avoid raw `px-*`/`py-*` utilities in editor surfaces.
+- Badge/tag padding uses `--badge-padding-*`; do not override with ad-hoc `px-*`/`h-*`.
 - Prefer `EditorShell` + `DockLayout` + `DockPanel` for consistent padding and borders.
 - **Default appearance** aligns with shadcn (radius, type scale, focus); compact density is available via `data-density` where supported (see [03 - Design language](03-design-language.mdx)).
 
 ## Icon audit checklist
 
-Use **Lucide React** throughout; standard size **12px** (`size-3` or `var(--icon-size)`) and outline style.
+Use **Lucide React** throughout; standard size **12px** (`size-3` or `var(--icon-size)`) and outline style. Use `--icon-size-lg` (14px) sparingly for emphasis (send, primary action). Spinners and loading states use `Loader2` with `animate-spin`.
 
 | Surface | Where | Status |
 |--------|--------|--------|
@@ -111,6 +112,8 @@ Editors use **DockLayout** (Dockview) for Unreal-style docking: drag-to-reorder,
 
 - Assistant UI primitives: thread, thread list, markdown renderer, tool fallback.
 - Tool UI primitives: plan cards, charts, tables, code blocks, media cards, approval cards.
+- Global assistant popup (`AssistantChatPopup`) reuses `DialogueAssistantPanel` and keeps model selection in the composer (`composerTrailing`) for parity with in-editor assistant UI.
+- Model switcher rows (search, filter chips, provider tags, compat badges) must use tokenized spacing (`--control-*`, `--badge-padding-*`) and Lucide icons.
 
 #### Component preview
 
@@ -164,6 +167,32 @@ See `apps/studio/components/CreateNodeModal.tsx` for the canonical form structur
 - `Form` wrapper from `@forge/ui`
 - `FormField` + `FormItem` + `FormControl`
 - `EditorButton` for actions
+
+---
+
+## Character upsert + entity media pattern
+
+Canonical implementation lives in `apps/studio/components/character/CreateCharacterModal.tsx` and acts as the reusable **CharacterUpsertDialog** pattern.
+
+- Use one upsert dialog for both create and edit flows (`character?`, `onCreate`, `onUpdate`).
+- Keep section hierarchy explicit:
+- Basics (`User` icon): `name` (required), description, primary portrait URL.
+- Prompt (`Sparkles` icon): behavior/system-style prompt text persisted in `character.meta`.
+- Voice (`Mic2` icon): voice picker + preview text + playback.
+- Media (`ImagePlus` icon): generated/uploaded image, audio, and video lists with inline actions.
+- Media actions in create mode must auto-save first, then open generation/upload flows against a persisted entity id.
+
+For media generation UI, reuse:
+
+- `apps/studio/components/media/ConnectedGenerateMediaModal.tsx` in Studio.
+- `packages/shared/src/shared/components/media/GenerateMediaModal.tsx` for shared surfaces.
+
+Interim storage model for entity media/prompts:
+
+- `character.meta.prompts.characterBehavior`
+- `character.meta.media.images[]`
+- `character.meta.media.audioTracks[]`
+- `character.meta.media.videos[]`
 
 ---
 

@@ -14,7 +14,6 @@ import {
 } from '@forge/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@forge/ui/avatar';
 import { useMe } from '@/lib/data/hooks';
-import { CreateListingSheet } from '@/components/listings/CreateListingSheet';
 
 async function openConnectOnboarding(): Promise<void> {
   const res1 = await fetch('/api/stripe/connect/create-account', {
@@ -57,7 +56,6 @@ function getDisplayName(name: string | null | undefined, email: string | null | 
 export function AppBarUser() {
   const { data, isLoading } = useMe();
   const user = data?.user ?? null;
-  const [createListingOpen, setCreateListingOpen] = useState(false);
   const [connectLoading, setConnectLoading] = useState(false);
 
   if (isLoading) {
@@ -89,7 +87,6 @@ export function AppBarUser() {
   const displayName = getDisplayName(user.name, user.email);
 
   return (
-    <>
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <EditorButton variant="ghost" size="sm" tooltip={`Signed in as ${displayName}`}>
@@ -122,17 +119,9 @@ export function AppBarUser() {
                 {connectLoading ? 'Opening…' : 'Set up payouts'}
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem
-              className="text-xs"
-              onClick={() => setCreateListingOpen(true)}
-            >
-              List in catalog
-            </DropdownMenuItem>
           </>
         </FeatureGate>
       </DropdownMenuContent>
     </DropdownMenu>
-    <CreateListingSheet open={createListingOpen} onOpenChange={setCreateListingOpen} />
-  </>
   );
 }

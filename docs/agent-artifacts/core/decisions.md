@@ -1,7 +1,7 @@
 ---
 title: Architecture decision records
 created: 2026-02-04
-updated: 2026-02-08
+updated: 2026-02-09
 ---
 
 Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx).
@@ -78,6 +78,14 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 
 ---
 
+## Dev-kit single entrypoint for customers
+
+**Decision:** The customer-facing entrypoint is **one package** (`@forge/dev-kit`) and **one style import** (e.g. `@forge/dev-kit/styles` or shared editor bundle). Users do not import `dockview` or `@forge/shared` directly; we do not expose dockview in our public API or docs.
+
+**Rationale:** Ease of use and clear contract; internal packages (shared, ui, agent-engine) are implementation detail. Update this doc when the CSS export path is finalized.
+
+---
+
 ## CopilotKit + OpenRouter: OpenAI SDK and AI SDK with baseURL only
 
 **Decision:** We use the **OpenAI** npm package and **@ai-sdk/openai** (Vercel AI SDK) with **baseURL** set to OpenRouter (`https://openrouter.ai/api/v1`). We do **not** use `@openrouter/ai-sdk-provider` for the CopilotKit route or shared runtime.
@@ -93,6 +101,14 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 **Rationale:** AI SDK 5 only supports responses spec v2; some OpenRouter‑backed providers (Gemini, Claude) return v3 and cause runtime errors. We keep CopilotKit for agent actions while preventing incompatibilities, and rely on assistant‑ui for a resilient, standard chat UI. This gives us two surfaces without blocking workflows.
 
 **Implementation note:** Model selection stays **global** (ModelSwitcher + model router preferences). CopilotKit enforces responses‑v2 compatibility at runtime; assistant‑ui uses the same model selection via `/api/assistant-chat` but through the chat pipeline.
+
+---
+
+## Studio and editors as MCP-driven, chat-first
+
+**Decision:** Studio and editors will be **MCP-driven and chat-first**. The Studio app exposes MCP tools (publish, update listing, switch/open/close editor, project context); each editor is an MCP app and registers with Studio. **CopilotKit and assistant-ui remain** for **in-Studio** chat (browser); **external** control (Cursor, Claude, ChatGPT, Atlas, Perplexity, etc.) is via the Studio MCP Server. Caveats (two control planes, auth, drift risk) and possible solutions (unified tool backend, MCP-as-transport) are recorded in [11 - MCP vs CopilotKit and assistant-ui](../../architecture/11-mcp-copilotkit-assistant-ui.mdx); we do not re-decide there, we implement from that doc.
+
+**Rationale:** Chat-first control from any host is on the product roadmap; documenting the direction and caveats lets implementation proceed without re-opening the design. In-Studio experience stays CopilotKit/assistant-ui; external experience is MCP.
 
 ---
 
@@ -162,7 +178,7 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 
 ## DockLayout uses Dockview (docking + floating)
 
-**Decision:** `DockLayout` is implemented with **Dockview** to restore Unreal-style docking, drag-to-reorder, and floating panels. Layout persists to `localStorage['dockview-{layoutId}']` and exposes a `resetLayout()` ref to recover lost panels.
+**Decision:** `DockLayout` is implemented with **Dockview** to restore Unreal-style docking, drag-to-reorder, and floating panels. Layout is persisted via **Zustand** (app-shell store `dockLayouts` keyed by layoutId) when used in controlled mode (`layoutJson` / `onLayoutChange` / `clearLayout`); otherwise it falls back to `localStorage['dockview-{layoutId}']`. Exposes a `resetLayout()` ref to recover lost panels.
 
 **Rationale:** Dockview provides the desired editor UX (docked tabs, floating groups, drag-to-group). To avoid known provider/context pitfalls (Twick), the Video editor is locked behind `studio.video.editor` until we re-enable and validate context flow.
 

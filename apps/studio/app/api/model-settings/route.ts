@@ -1,22 +1,20 @@
 import { NextResponse } from 'next/server';
-import {
-  resolvePrimaryAndFallbacks,
-  getPreferences,
-  updatePreferences,
-} from '@/lib/model-router/server-state';
+import type { ModelProviderId } from '@/lib/model-router/types';
 import { getOpenRouterModels } from '@/lib/openrouter-models';
+import { getPersistedModelIds, setPersistedModelId } from '@/lib/model-router/persistence';
+import { resolveModelIdFromRegistry } from '@/lib/model-router/selection';
 
 /**
  * @swagger
  * /api/model-settings:
  *   get:
- *     summary: Get model router state (active model, mode, registry from OpenRouter, preferences, primary + fallbacks)
+ *     summary: Get model registry (OpenRouter) and selected model IDs for copilot and assistantUi
  *     tags: [model]
  *     responses:
  *       200:
- *         description: Model settings and preferences; registry is from OpenRouter API
+ *         description: registry, copilotModelId, assistantUiModelId
  *   post:
- *     summary: Update model preferences (mode, manualModelId, enabledModelIds)
+ *     summary: Set model for a provider (copilot or assistantUi)
  *     tags: [model]
  *     requestBody:
  *       content:
@@ -24,44 +22,57 @@ import { getOpenRouterModels } from '@/lib/openrouter-models';
  *           schema:
  *             type: object
  *             properties:
- *               mode: { type: string }
- *               manualModelId: { type: string }
- *               enabledModelIds: { type: array, items: { type: string } }
+ *               provider: { type: string, enum: [copilot, assistantUi] }
+ *               modelId: { type: string }
  *     responses:
  *       200:
- *         description: New resolved primary and fallbacks
+ *         description: Updated copilotModelId and assistantUiModelId
  */
-export async function GET() {
+export async function GET(req: Request) {
   const registry = await getOpenRouterModels();
-  const { primary, fallbacks, mode } = resolvePrimaryAndFallbacks();
-  const preferences = getPreferences();
+  const { copilotModelId, assistantUiModelId } = await getPersistedModelIds(req);
+
+  const resolvedCopilotModelId = resolveModelIdFromRegistry(copilotModelId, registry, {
+    requireResponsesV2: true,
+  });
+  const resolvedAssistantUiModelId = resolveModelIdFromRegistry(assistantUiModelId, registry);
 
   return NextResponse.json({
-    activeModelId: primary,
-    mode,
     registry,
-    preferences,
-    primaryId: primary,
-    fallbackIds: fallbacks,
+    copilotModelId: resolvedCopilotModelId,
+    assistantUiModelId: resolvedAssistantUiModelId,
   });
 }
 
 export async function POST(req: Request) {
-  const body = await req.json();
+  let body: { provider?: string; modelId?: string };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
 
-  const patch: Record<string, unknown> = {};
-  if (body.mode) patch.mode = body.mode;
-  if (body.manualModelId !== undefined) patch.manualModelId = body.manualModelId;
-  if (body.enabledModelIds) patch.enabledModelIds = body.enabledModelIds;
+  const provider = body.provider as ModelProviderId | undefined;
+  const modelId = typeof body.modelId === 'string' ? body.modelId.trim() : '';
 
-  updatePreferences(patch);
+  if (provider !== 'copilot' && provider !== 'assistantUi') {
+    return NextResponse.json({ error: 'provider must be "copilot" or "assistantUi"' }, { status: 400 });
+  }
+  if (!modelId) {
+    return NextResponse.json({ error: 'modelId is required' }, { status: 400 });
+  }
 
-  const { primary, fallbacks, mode } = resolvePrimaryAndFallbacks();
+  const registry = await getOpenRouterModels();
+  const selectedModelId = resolveModelIdFromRegistry(
+    modelId,
+    registry,
+    provider === 'copilot' ? { requireResponsesV2: true } : undefined,
+  );
+
+  const { copilotModelId, assistantUiModelId } = await setPersistedModelId(req, provider, selectedModelId);
 
   return NextResponse.json({
-    activeModelId: primary,
-    mode,
-    primaryId: primary,
-    fallbackIds: fallbacks,
+    copilotModelId,
+    assistantUiModelId,
   });
 }

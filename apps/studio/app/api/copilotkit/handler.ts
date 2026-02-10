@@ -1,15 +1,13 @@
 import { createForgeCopilotRuntime } from '@forge/shared/copilot/next/runtime';
 import { getOpenRouterConfig } from '@/lib/openrouter-config';
-import { resolvePrimaryAndFallbacks } from '@/lib/model-router/server-state';
-import { resolveCopilotKitModel } from '@/lib/model-router/resolve-for-routes';
-import { createFetchWithModelFallbacks } from '@/lib/model-router/openrouter-fetch';
+import { getOpenRouterModels } from '@/lib/openrouter-models';
+import { getPersistedModelIdForProvider } from '@/lib/model-router/persistence';
+import { resolveModelIdFromRegistry } from '@/lib/model-router/selection';
 import {
   DEFAULT_RESPONSES_V2_FALLBACK_MODEL,
   getResponsesV2Compatibility,
 } from '@/lib/model-router/responses-compat';
-import { getLogger } from '@/lib/logger';
 
-const log = getLogger('copilotkit');
 const config = getOpenRouterConfig();
 
 if (!config.apiKey) {
@@ -29,13 +27,16 @@ export const copilotkitHandler = createForgeCopilotRuntime({
   headers: openRouterHeaders,
   requireResponsesV2: true,
   fallbackModelId: DEFAULT_RESPONSES_V2_FALLBACK_MODEL,
-  wrapFetchForFallbacks: (primary, fallbacks) =>
-    createFetchWithModelFallbacks(primary, fallbacks, config.baseUrl),
-  resolveModel: (req) => {
-    const { modelId, fallbacks } = resolveCopilotKitModel(req, resolvePrimaryAndFallbacks);
-    const { mode } = resolvePrimaryAndFallbacks();
-    log.info({ modelId, mode, fallbacksCount: fallbacks.length }, 'Using model');
-    return { modelId, fallbacks };
+  resolveModel: async (req) => {
+    const modelId = await getPersistedModelIdForProvider(req, 'copilot');
+    const registry = await getOpenRouterModels();
+    const resolvedModelId = resolveModelIdFromRegistry(modelId, registry, {
+      requireResponsesV2: true,
+    });
+    return {
+      modelId: resolvedModelId,
+      fallbacks: [],
+    };
   },
   isResponsesV2Compatible: async (modelId) => {
     const compat = await getResponsesV2Compatibility(modelId, { probe: true });

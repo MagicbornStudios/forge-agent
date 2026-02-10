@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useMemo, useState, createContext, useContext } from 'react';
+import React, { useMemo, useState, createContext, useContext } from 'react';
 import { useAppShellStore } from '@/lib/app-shell/store';
 import { EDITOR_VIEWPORT_IDS, EDITOR_LABELS } from '@/lib/app-shell/editor-metadata';
 import { useSettingsStore } from '@/lib/settings/store';
-import { useModelRouterStore } from '@/lib/model-router/store';
+import { CopilotChatInput } from '@/components/copilot/CopilotChatInput';
 import { CAPABILITIES, useEntitlements } from '@forge/shared/entitlements';
 import { ForgeCopilotProvider } from '@forge/shared/copilot/next';
 
@@ -17,7 +17,6 @@ interface CopilotKitProviderProps {
   labels?: { title?: string; initial?: string };
 }
 
-// Context to control sidebar visibility
 const CopilotSidebarContext = createContext<{
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
@@ -31,15 +30,16 @@ export function useCopilotSidebar() {
   return context;
 }
 
-  /**
-   * Generic CopilotKit provider that can be used by any editor.
-   * Context and actions are provided by system-specific contracts
-   * (via `useDomainCopilot` inside editor components).
-   */
+/**
+ * Generic CopilotKit provider that can be used by any editor.
+ * Context and actions are provided by system-specific contracts
+ * (via `useDomainCopilot` inside editor components).
+ * Model selection is server-state only; use ModelSwitcher (provider="copilot") to change it.
+ */
 export function CopilotKitProvider({
   children,
   instructions,
-  defaultOpen = true,
+  defaultOpen = false,
   labels,
 }: CopilotKitProviderProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -49,46 +49,13 @@ export function CopilotKitProvider({
     () => ({ editorId: activeWorkspaceId, viewportId }),
     [activeWorkspaceId, viewportId],
   );
-  // Primitive selectors only — avoid getMergedSettings() which returns a new object every time (getSnapshot loop).
   const agentNameRaw = useSettingsStore((s) => s.getSettingValue('ai.agentName', ids));
   const instructionsRaw = useSettingsStore((s) => s.getSettingValue('ai.instructions', ids));
   const toolsEnabledRaw = useSettingsStore((s) => s.getSettingValue('ai.toolsEnabled', ids));
   const temperatureRaw = useSettingsStore((s) => s.getSettingValue('ai.temperature', ids));
-  const modelPreferenceRaw = useSettingsStore((s) => s.getSettingValue('ai.model', ids));
-  const modelSource = useSettingsStore((s) => s.getSettingSource('ai.model', ids));
-  const appModelPreference = useSettingsStore((state) => state.getSettingValue('ai.model')) as
-    | string
-    | undefined;
-  const setSetting = useSettingsStore((state) => state.setSetting);
-  const { mode, manualModelId, setMode, setManualModel, fetchSettings } = useModelRouterStore();
+
   const entitlements = useEntitlements();
 
-  useEffect(() => {
-    fetchSettings();
-  }, [fetchSettings]);
-
-  useEffect(() => {
-    if (!appModelPreference) return;
-    const { mode: currentMode, manualModelId: currentManual } = useModelRouterStore.getState();
-    if (appModelPreference === 'auto') {
-      if (currentMode !== 'auto') {
-        setMode('auto');
-      }
-      return;
-    }
-    if (currentMode !== 'manual' || currentManual !== appModelPreference) {
-      setManualModel(appModelPreference);
-    }
-  }, [appModelPreference, setMode, setManualModel]);
-
-  useEffect(() => {
-    const resolved = mode === 'auto' ? 'auto' : manualModelId ?? 'auto';
-    if (appModelPreference !== resolved) {
-      setSetting('app', 'ai.model', resolved);
-    }
-  }, [appModelPreference, manualModelId, mode, setSetting]);
-
-  // publicApiKey is optional when using self-hosted runtime
   const publicApiKey = process.env.NEXT_PUBLIC_COPILOTKIT_API_KEY;
   const agentName =
     typeof agentNameRaw === 'string' ? agentNameRaw : 'AI Assistant';
@@ -98,10 +65,6 @@ export function CopilotKitProvider({
     toolsEnabledRaw !== false && entitlements.has(CAPABILITIES.STUDIO_AI_TOOLS);
   const temperature =
     typeof temperatureRaw === 'number' ? temperatureRaw : Number(temperatureRaw);
-  const modelPreference =
-    typeof modelPreferenceRaw === 'string' ? modelPreferenceRaw : 'auto';
-  const shouldOverrideModel =
-    modelSource !== 'app' && modelSource !== 'unset' && modelPreference !== 'auto';
 
   const finalInstructions = (instructions ?? settingsInstructions).trim()
     ? (instructions ?? settingsInstructions)
@@ -114,33 +77,24 @@ export function CopilotKitProvider({
     if (!Number.isFinite(temperature)) return undefined;
     return { temperature };
   }, [temperature]);
-  const headers = useMemo(() => {
-    const next: Record<string, string> = {
-      'x-forge-workspace-id': activeWorkspaceId, // backward compatibility; prefer x-forge-editor-id
-      'x-forge-workspace-name': EDITOR_LABELS[activeWorkspaceId],
-      'x-forge-editor-id': activeWorkspaceId,
-      'x-forge-tools-enabled': toolsEnabled ? 'true' : 'false',
-    };
-    if (viewportId) {
-      next['x-forge-viewport-id'] = viewportId;
-    }
-    if (agentName) {
-      next['x-forge-agent-name'] = agentName;
-    }
-    if (shouldOverrideModel) {
-      next['x-forge-model'] = modelPreference;
-      next['x-forge-model-source'] = modelSource;
-    }
-    return next;
-  }, [
-    activeWorkspaceId,
-    agentName,
-    viewportId,
-    modelPreference,
-    modelSource,
-    shouldOverrideModel,
-    toolsEnabled,
-  ]);
+  const headers = useMemo(
+    () => {
+      const next: Record<string, string> = {
+        'x-forge-workspace-id': activeWorkspaceId,
+        'x-forge-workspace-name': EDITOR_LABELS[activeWorkspaceId],
+        'x-forge-editor-id': activeWorkspaceId,
+        'x-forge-tools-enabled': toolsEnabled ? 'true' : 'false',
+      };
+      if (viewportId) {
+        next['x-forge-viewport-id'] = viewportId;
+      }
+      if (agentName) {
+        next['x-forge-agent-name'] = agentName;
+      }
+      return next;
+    },
+    [activeWorkspaceId, agentName, viewportId, toolsEnabled],
+  );
 
   return (
     <ForgeCopilotProvider
@@ -153,6 +107,8 @@ export function CopilotKitProvider({
         title: sidebarTitle,
         initial: sidebarInitial,
       }}
+      chatInput={CopilotChatInput}
+      imageUploadsEnabled={true}
       open={activeWorkspaceId === 'strategy' ? false : isOpen}
       onOpenChange={setIsOpen}
     >

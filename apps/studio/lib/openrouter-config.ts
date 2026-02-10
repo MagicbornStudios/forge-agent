@@ -1,7 +1,5 @@
 import 'server-only';
 
-/** Free model defaults (CopilotKit uses model-router resolvePrimaryAndFallbacks(); these are for non-CopilotKit use). */
-const DEFAULT_MODEL_FREE = 'google/gemini-2.0-flash-exp:free';
 const DEFAULT_TIMEOUT_MS = 60000;
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 
@@ -20,10 +18,6 @@ export type OpenRouterConfig = {
   apiKey?: string;
   baseUrl: string;
   timeoutMs: number;
-  models: {
-    fast: string;
-    reasoning: string;
-  };
 };
 
 export const getOpenRouterConfig = (): OpenRouterConfig => {
@@ -33,18 +27,13 @@ export const getOpenRouterConfig = (): OpenRouterConfig => {
     apiKey,
     baseUrl,
     timeoutMs: parseTimeout(process.env.OPENROUTER_TIMEOUT_MS),
-    models: {
-      fast: process.env.OPENROUTER_MODEL_FAST ?? DEFAULT_MODEL_FREE,
-      reasoning: process.env.OPENROUTER_MODEL_REASONING ?? DEFAULT_MODEL_FREE,
-    },
   };
-  // Log config at resolve time (key masked) for debugging
-  console.log('[OpenRouter] config resolved', {
-    baseUrl: config.baseUrl,
-    hasApiKey: !!config.apiKey,
-    apiKeyPrefix: config.apiKey ? `${config.apiKey.slice(0, 10)}...` : 'none',
-    modelFast: config.models.fast,
-    modelReasoning: config.models.reasoning,
-  });
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[OpenRouter] config resolved', {
+      baseUrl: config.baseUrl,
+      hasApiKey: !!config.apiKey,
+      apiKeyPrefix: config.apiKey ? `${config.apiKey.slice(0, 10)}...` : 'none',
+    });
+  }
   return config;
 };

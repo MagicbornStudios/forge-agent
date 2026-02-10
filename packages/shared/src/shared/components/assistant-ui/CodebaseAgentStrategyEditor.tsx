@@ -6,10 +6,11 @@ import {
   ThreadPrimitive,
   MessagePrimitive,
   AuiIf,
+  WebSpeechDictationAdapter,
   useAuiState,
 } from '@assistant-ui/react';
 import { AssistantChatTransport, useChatRuntime } from '@assistant-ui/react-ai-sdk';
-import { DockLayout, DockPanel } from '../editor';
+import { EditorDockLayout, EditorDockPanel } from '../editor';
 import { Thread } from './thread';
 import { ThreadList } from './thread-list';
 import { ToolFallback } from './tool-fallback';
@@ -21,6 +22,8 @@ export interface CodebaseAgentStrategyEditorProps {
   apiUrl?: string;
   showThreadList?: boolean;
   showToolsPanel?: boolean;
+  composerLeading?: React.ReactNode;
+  composerTrailing?: React.ReactNode;
   className?: string;
 }
 
@@ -94,34 +97,43 @@ function CodebaseAgentStrategyEditorClient({
   apiUrl = '/api/assistant-chat',
   showThreadList = true,
   showToolsPanel = true,
+  composerLeading,
+  composerTrailing,
   className,
 }: CodebaseAgentStrategyEditorProps) {
   const transport = React.useMemo(
     () => new AssistantChatTransport({ api: apiUrl }),
     [apiUrl],
   );
-  const runtime = useChatRuntime({ transport });
+  const dictationAdapter = React.useMemo(() => {
+    if (!WebSpeechDictationAdapter.isSupported()) return undefined;
+    return new WebSpeechDictationAdapter();
+  }, []);
+  const runtime = useChatRuntime({
+    transport,
+    ...(dictationAdapter ? { adapters: { dictation: dictationAdapter } } : {}),
+  });
 
   const leftPanel =
     showThreadList === false ? undefined : (
-      <DockPanel panelId="strategy-threads" title="Threads" scrollable={false} className="h-full">
+      <EditorDockPanel panelId="strategy-threads" title="Threads" scrollable={false} className="h-full">
         <div className="h-full p-3">
           <ThreadList />
         </div>
-      </DockPanel>
+      </EditorDockPanel>
     );
 
   const rightPanel =
     showToolsPanel === false ? undefined : (
-      <DockPanel panelId="strategy-tools" title="Tool Activity" scrollable={false} className="h-full">
+      <EditorDockPanel panelId="strategy-tools" title="Tool Activity" scrollable={false} className="h-full">
         <ToolActivityFeed />
-      </DockPanel>
+      </EditorDockPanel>
     );
 
   const mainPanel = (
-    <DockPanel panelId="strategy-thread" scrollable={false} className="h-full">
-      <Thread />
-    </DockPanel>
+    <EditorDockPanel panelId="strategy-thread" scrollable={false} className="h-full">
+      <Thread composerLeading={composerLeading} composerTrailing={composerTrailing} />
+    </EditorDockPanel>
   );
 
   return (
@@ -129,7 +141,7 @@ function CodebaseAgentStrategyEditorClient({
       <AssistantDevToolsBridge />
       <ToolUIRegistry />
       <div className={cn('flex h-full min-h-0 flex-1 flex-col', className)}>
-        <DockLayout
+        <EditorDockLayout
           left={leftPanel}
           main={mainPanel}
           right={rightPanel}

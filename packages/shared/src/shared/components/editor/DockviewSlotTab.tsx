@@ -58,12 +58,12 @@ export function DockviewSlotTab(
     >
       {IconComponent && (
         <span className="shrink-0 text-muted-foreground" aria-hidden>
-          <IconComponent className="size-3" />
+          <IconComponent className="size-[var(--icon-size)]" />
         </span>
       )}
       <Label className="font-semibold text-foreground truncate flex-1">{displayTitle}</Label>
       <Button variant="ghost" size="icon" onClick={handleClose} aria-label="Close panel" className="shrink-0 rounded p-[var(--control-padding-y)] text-muted-foreground hover:text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded-sm border-none">
-        <X className="size-3 text-muted-foreground hover:text-foreground" />
+        <X className="size-[var(--icon-size)] text-muted-foreground hover:text-foreground" />
       </Button>
     </div>
   );

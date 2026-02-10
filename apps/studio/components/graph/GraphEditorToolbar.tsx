@@ -23,10 +23,10 @@ export function GraphEditorToolbar({ label, onCreateNew, className }: GraphEdito
               variant="outline"
               size="sm"
               onClick={onCreateNew}
-              className="h-7 px-[var(--control-padding-x)] text-xs border-border text-foreground"
+              className="h-[var(--control-height-sm)] px-[var(--control-padding-x)] text-xs border-border text-foreground"
               title={`Create a new ${label.toLowerCase()}`}
             >
-              <Plus className="size-3 mr-1.5 shrink-0" />
+              <Plus className="mr-1.5 size-[var(--icon-size)] shrink-0" />
               New {label}
             </Button>
           </TooltipTrigger>

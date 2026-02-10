@@ -4,7 +4,6 @@
  * adds the control and the default.
  */
 
-import { DEFAULT_MODEL_OPTIONS } from "@/lib/model-router/defaults";
 import type { SettingsOption, SettingsSection } from "@/components/settings/types";
 
 export type SettingsScopeId = "app" | "project" | "editor" | "viewport";
@@ -30,8 +29,6 @@ const densityOptions: SettingsOption[] = [
   { value: "comfortable", label: "Comfortable" },
 ];
 
-const modelOptions: SettingsOption[] = DEFAULT_MODEL_OPTIONS;
-
 /** Canonical list: add or change a key here to add/update the control and default everywhere. */
 export const SETTINGS_SCHEMA: SettingsSchemaEntry[] = [
   // AI – app, project, editor, viewport
@@ -50,15 +47,6 @@ export const SETTINGS_SCHEMA: SettingsSchemaEntry[] = [
     placeholder: "Describe the assistant's role and safety rules.",
     default:
       "You are an AI assistant for a creative workspace. Use available actions to help users edit their projects.",
-    scopes: ["app", "project", "editor", "viewport"],
-  },
-  {
-    key: "ai.model",
-    type: "select",
-    label: "Default model",
-    options: modelOptions,
-    description: "Auto uses the router. Picking a model sets the global default.",
-    default: "auto",
     scopes: ["app", "project", "editor", "viewport"],
   },
   {

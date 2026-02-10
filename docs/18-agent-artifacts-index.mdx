@@ -2,7 +2,7 @@
 title: Agent artifacts index
 
 created: 2026-02-04
-updated: 2026-02-08
+updated: 2026-02-10
 ---
 
 # Agent artifacts index
@@ -26,8 +26,9 @@ These files are maintained for AI/coding agents to read and use when modifying t
 ## Living agent artifacts (core)
 
 - **[agent-artifacts/core/STATUS.md](agent-artifacts/core/STATUS.md)** — Current state, Ralph Wiggum loop, next steps. For **"what can I do next?"**, see STATUS § Next and § What you can do next (impact sizes). Next work can be **coding** (STATUS, task-registry) or **business/strategy docs** (`docs/business/`, `docs/product/`): marketing plan, revenue narrative, ecosystem strategy, unit economics, etc.; same slice-and-update loop. For **granular tasks** (tiers, small pickable work), see task-registry and task-breakdown-system.
-- **[agent-artifacts/core/task-registry.md](agent-artifacts/core/task-registry.md)** — Index of initiatives (Tier 0) and quick picks for granular tasks. Use for "what can I do next?" at task level.
+- **[agent-artifacts/core/task-registry.md](agent-artifacts/core/task-registry.md)** — Index of initiatives (Tier 0) and quick picks for granular tasks. Use for "what can I do next?" at task level. Initiatives include platform-mono (done), developer-program, and **dev-kit-single-entrypoint** (single entrypoint, docs, optional create-forge-app).
 - **[agent-artifacts/core/task-breakdown-system.md](agent-artifacts/core/task-breakdown-system.md)** — Process and format for tiered breakdowns; when to create; how to pick and update tasks.
+- **[agent-artifacts/core/task-breakdown-ui-polish.md](agent-artifacts/core/task-breakdown-ui-polish.md)** — UI polish initiative breakdown (compact modern, icons, spacing).
 - **[agent-artifacts/core/technical-debt-roadmap.md](agent-artifacts/core/technical-debt-roadmap.md)** — Technical debt and refactors; pre-production and ongoing. For "what's next for technical debt," read this file.
 - **[agent-artifacts/core/decisions.md](agent-artifacts/core/decisions.md)** — Architecture decisions and rationale.
 - **[agent-artifacts/core/errors-and-attempts.md](agent-artifacts/core/errors-and-attempts.md)** — Known failures and fixes (do not repeat). DockLayout: Dockview restored; lost panels → `resetLayout()` ref; Twick context → see entry.
@@ -36,6 +37,7 @@ These files are maintained for AI/coding agents to read and use when modifying t
 - **[agent-artifacts/core/compacting-and-archiving.md](agent-artifacts/core/compacting-and-archiving.md)** — When and how to compact sections; archive folder; one-line pointers.
 - **[agent-artifacts/core/debugging-zustand-devtools.md](agent-artifacts/core/debugging-zustand-devtools.md)** — Debugging Zustand stores with Redux DevTools (humans and agents).
 - **[agent-artifacts/core/enhanced-features-backlog.md](agent-artifacts/core/enhanced-features-backlog.md)** — Ideas backlog (propose → triage → implement). Process in same doc.
+- **[roadmap/potential-ideas.md](roadmap/potential-ideas.md)** — Exploratory ideas (not yet committed). Triage or add; when accepted, promote to STATUS, task registry, or backlog. See [roadmap index](roadmap/00-roadmap-index.mdx).
 - **[agent-artifacts/core/styling-and-ui-consistency.md](agent-artifacts/core/styling-and-ui-consistency.md)** — Styling and UI consistency rules; process for styling passes (implement, update docs/STATUS; optional screenshots—humans capture, automation errors). See [how-to 26](../../how-to/26-styling-debugging-with-cursor.mdx).
 - **[agent-artifacts/core/standard-practices.md](agent-artifacts/core/standard-practices.md)** — Logging, env, health, security, and "as we grow" checklist. One place for what we do now vs soon.
 - **agent-artifacts/archive/** — Compacted chunks (e.g. STATUS-done-YYYY-MM.md) and **legacy plan docs** (e.g. plan-dockview-restore-*, plan-editor-layout-*). Plans are **not** living docs in core; do not add new plan docs to core. Track work via STATUS Next, task-registry, ISSUES, roadmap. Main docs point here; read main artifact first.

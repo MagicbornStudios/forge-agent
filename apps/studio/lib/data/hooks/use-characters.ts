@@ -4,6 +4,26 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { studioKeys } from '../keys';
 import { payloadSdk, CHARACTERS_SLUG } from '@/lib/api-client/payload-sdk';
 
+type CharacterMetaRecord = Record<string, unknown>;
+
+type CharacterCreateInput = {
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  voiceId?: string | null;
+  meta?: CharacterMetaRecord;
+  project: number;
+};
+
+type CharacterUpdateInput = {
+  id: number;
+  name?: string;
+  description?: string;
+  imageUrl?: string;
+  voiceId?: string | null;
+  meta?: CharacterMetaRecord;
+};
+
 /** Fetch all characters for a given project. */
 export function useCharacters(projectId: number | null) {
   return useQuery({
@@ -25,13 +45,8 @@ export function useCreateCharacter() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (body: {
-      name: string;
-      description?: string;
-      imageUrl?: string;
-      voiceId?: string | null;
-      project: number;
-    }) => payloadSdk.create({ collection: CHARACTERS_SLUG, data: body }),
+    mutationFn: async (body: CharacterCreateInput) =>
+      payloadSdk.create({ collection: CHARACTERS_SLUG, data: body }),
     onSuccess: (data) => {
       const projectId =
         typeof data?.project === 'number' ? data.project : (data?.project as { id: number })?.id;
@@ -47,16 +62,8 @@ export function useUpdateCharacter() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      id,
-      ...data
-    }: {
-      id: number;
-      name?: string;
-      description?: string;
-      imageUrl?: string;
-      voiceId?: string | null;
-    }) => payloadSdk.update({ collection: CHARACTERS_SLUG, id, data }),
+    mutationFn: async ({ id, ...data }: CharacterUpdateInput) =>
+      payloadSdk.update({ collection: CHARACTERS_SLUG, id, data }),
     onSuccess: (data) => {
       if (data?.id != null) {
         queryClient.invalidateQueries({ queryKey: studioKeys.character(data.id) });

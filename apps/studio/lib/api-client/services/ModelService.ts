@@ -7,8 +7,8 @@ import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class ModelService {
     /**
-     * Get model router state (active model, mode, registry from OpenRouter, preferences, primary + fallbacks)
-     * @returns any Model settings and preferences; registry is from OpenRouter API
+     * Get model registry (OpenRouter) and selected model IDs for copilot and assistantUi
+     * @returns any registry, copilotModelId, assistantUiModelId
      * @throws ApiError
      */
     public static getApiModelSettings(): CancelablePromise<any> {
@@ -18,16 +18,15 @@ export class ModelService {
         });
     }
     /**
-     * Update model preferences (mode, manualModelId, enabledModelIds)
+     * Set model for a provider (copilot or assistantUi)
      * @param requestBody
-     * @returns any New resolved primary and fallbacks
+     * @returns any Updated copilotModelId and assistantUiModelId
      * @throws ApiError
      */
     public static postApiModelSettings(
         requestBody?: {
-            mode?: string;
-            manualModelId?: string;
-            enabledModelIds?: Array<string>;
+            provider?: 'copilot' | 'assistantUi';
+            modelId?: string;
         },
     ): CancelablePromise<any> {
         return __request(OpenAPI, {

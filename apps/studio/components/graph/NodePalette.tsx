@@ -105,17 +105,18 @@ export function NodePalette({
                     <Button
                       type="button"
                       variant="ghost"
+                      size="sm"
                       draggable
                       onDragStart={(e) => handleDragStart(e, item)}
                       onDragEnd={handleDragEnd}
                       onClick={() => onItemClick?.(item)}
                       className={cn(
-                        'flex w-full items-center justify-start gap-2 px-2 py-1.5 text-xs',
+                        'flex w-full items-center justify-start gap-[var(--control-gap)] text-xs',
                         'cursor-grab active:cursor-grabbing',
                         'text-muted-foreground hover:bg-muted hover:text-foreground'
                       )}
                     >
-                      <span className="shrink-0">{item.icon}</span>
+                      <span className="shrink-0 [&_svg]:size-[var(--icon-size)]">{item.icon}</span>
                       <span className="font-medium truncate">{item.label}</span>
                     </Button>
                   </TooltipTrigger>

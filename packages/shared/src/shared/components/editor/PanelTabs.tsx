@@ -91,7 +91,7 @@ export function PanelTabs({
               key={tab.id}
               value={tab.id}
               className={cn(
-                'min-w-0 flex-1 text-xs rounded-none px-[var(--control-padding-x)] py-[var(--control-padding-y)] truncate leading-tight',
+                'min-w-0 flex-1 text-xs rounded-none px-[var(--control-padding-x)] py-[var(--control-padding-y)] truncate leading-tight flex items-center gap-[var(--control-gap)]',
                 'relative shadow-none ring-0 border-b-2 border-transparent',
                 'bg-transparent text-foreground/80 hover:text-foreground hover:bg-accent/40 transition-colors',
                 'data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-[var(--context-accent,hsl(var(--primary)))]',
@@ -104,7 +104,7 @@ export function PanelTabs({
             >
               {tab.icon && (
                 <span
-                  className="mr-1 shrink-0"
+                  className="shrink-0 [&_svg]:size-[var(--icon-size)]"
                   style={{
                     color: isActive
                       ? accent

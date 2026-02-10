@@ -1,68 +1,36 @@
 import 'server-only';
 
 import { getLogger } from '@/lib/logger';
-import type { ModelPreferences, PrimaryAndFallbacks, SelectionMode } from './types';
-import { getDefaultEnabledIds, getDefaultFallbackChain } from './registry';
-import { DEFAULT_FREE_CHAT_MODEL_IDS } from './defaults';
+import type { ModelProviderId } from './types';
+import { getDefaultChatModelId } from './defaults';
 
 const log = getLogger('model-router');
 
 /**
- * Server-side preferences for model selection.
+ * Server-side model selection (two slots: copilot, assistantUi).
  * In production this would be backed by Redis/KV. For the PoC we use in-memory state (reset on server restart).
  */
-let currentPrefs: ModelPreferences = {
-  mode: 'auto',
-  manualModelId: null,
-  enabledModelIds: getDefaultEnabledIds(),
-};
+let copilotModelId = getDefaultChatModelId();
+let assistantUiModelId = getDefaultChatModelId();
 
-// ---------------------------------------------------------------------------
-// Preferences
-// ---------------------------------------------------------------------------
-
-export function getPreferences(): ModelPreferences {
-  return { ...currentPrefs };
+export function getModelIds(): { copilotModelId: string; assistantUiModelId: string } {
+  return { copilotModelId, assistantUiModelId };
 }
 
-export function updatePreferences(patch: Partial<ModelPreferences>): ModelPreferences {
-  currentPrefs = { ...currentPrefs, ...patch };
-  log.info({ mode: currentPrefs.mode, manualModelId: currentPrefs.manualModelId, enabledCount: currentPrefs.enabledModelIds.length }, 'Preferences updated');
-  return { ...currentPrefs };
-}
-
-// ---------------------------------------------------------------------------
-// Resolve primary + fallbacks (for OpenRouter models array)
-// ---------------------------------------------------------------------------
-
-/**
- * Resolve primary model and fallback list for the current request.
- *
- * - In `'manual'` mode: primary = user's chosen model, fallbacks = [].
- * - In `'auto'` mode: primary = first of enabled list (or default chain), fallbacks = rest of that list.
- */
-export function resolvePrimaryAndFallbacks(options?: {
-  allowedModelIds?: Set<string>;
-}): PrimaryAndFallbacks & { mode: SelectionMode } {
-  const prefs = currentPrefs;
-
-  if (prefs.mode === 'manual' && prefs.manualModelId) {
-    return {
-      primary: prefs.manualModelId,
-      fallbacks: [],
-      mode: 'manual',
-    };
+export function setModelId(provider: ModelProviderId, modelId: string): void {
+  if (provider === 'copilot') {
+    copilotModelId = modelId;
+    log.info({ copilotModelId: modelId }, 'Copilot model updated');
+  } else {
+    assistantUiModelId = modelId;
+    log.info({ assistantUiModelId: modelId }, 'Assistant UI model updated');
   }
+}
 
-  const chain =
-    prefs.enabledModelIds.length > 0 ? prefs.enabledModelIds : getDefaultFallbackChain();
-  const filtered = options?.allowedModelIds
-    ? chain.filter((id) => options.allowedModelIds?.has(id))
-    : chain;
-  const resolvedChain = filtered.length > 0 ? filtered : chain;
-  const primary =
-    resolvedChain[0] ?? DEFAULT_FREE_CHAT_MODEL_IDS[0] ?? 'google/gemini-2.0-flash-exp:free';
-  const fallbacks = resolvedChain.slice(1);
+export function getCopilotModelId(): string {
+  return copilotModelId;
+}
 
-  return { primary, fallbacks, mode: 'auto' };
+export function getAssistantUiModelId(): string {
+  return assistantUiModelId;
 }

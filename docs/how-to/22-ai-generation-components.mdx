@@ -1,7 +1,7 @@
 ---
 title: AI generation components
 created: 2026-02-07
-updated: 2026-02-07
+updated: 2026-02-10
 ---
 
 # AI generation components
@@ -28,7 +28,7 @@ const result = await generateImage.mutateAsync({ prompt: 'A neon city at dusk' }
 
 File: `packages/shared/src/shared/components/media/GenerateMediaModal.tsx`
 
-Supports text-to-image, upload, and text-to-speech. To enable text-to-speech, provide the `generateSpeech` callback and a list of `voices`.
+Supports text-to-image, image-to-video, upload, and text-to-speech. (Text-to-video is a placeholder tab for a future slice.) To enable text-to-speech, provide the `generateSpeech` callback and a list of `voices`.
 
 ```tsx
 <GenerateMediaModal
@@ -55,6 +55,34 @@ Supports text-to-image, upload, and text-to-speech. To enable text-to-speech, pr
 File: `apps/studio/components/media/ConnectedGenerateMediaModal.tsx`
 
 Use this in Studio when you want the modal wired automatically. It provides `useGenerateImage`, `useGenerateSpeech`, and `useElevenLabsVoices` internally. Consumers only pass `open`, `onOpenChange`, `onGenerated`, and `enabledTabs`.
+
+## Entity media in upsert flows (interim model)
+
+Current Studio pattern (Character upsert) keeps media generation/upload in the upsert dialog and persists metadata in `character.meta`.
+
+Interim shape:
+
+- `meta.prompts.characterBehavior`
+- `meta.media.images[]`
+- `meta.media.audioTracks[]`
+- `meta.media.videos[]`
+
+Helpers:
+
+- `apps/studio/lib/domains/character/media-meta.ts`
+
+Rules:
+
+- No media generation without a persisted entity id.
+- In create mode, validate required fields, auto-create draft entity, then open media generation modal.
+- On image generate/upload, append to `meta.media.images`; set primary portrait if `imageUrl` is empty.
+- On audio/video generate/upload, append to `meta.media.audioTracks` or `meta.media.videos`.
+- Preserve unrelated metadata keys when writing media/prompt data.
+
+Character references:
+
+- Upsert dialog: `apps/studio/components/character/CreateCharacterModal.tsx`
+- Panel integration: `apps/studio/components/character/ActiveCharacterPanel.tsx`
 
 ## GenerationStatus
 

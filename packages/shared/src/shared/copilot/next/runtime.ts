@@ -23,6 +23,7 @@ export interface ForgeCopilotRuntimeOptions {
   ) =>
     | string
     | { modelId: string | null | undefined; fallbacks?: string[] }
+    | Promise<string | { modelId: string | null | undefined; fallbacks?: string[] } | null | undefined>
     | null
     | undefined;
   /** Optional fallback chain when using OpenRouter model fallbacks. */
@@ -74,7 +75,7 @@ export function createForgeCopilotRuntime(options: ForgeCopilotRuntimeOptions) {
   };
 
   return async function handleRequest(req: Request) {
-    const resolved = resolveModel ? resolveModel(req) : null;
+    const resolved = resolveModel ? await resolveModel(req) : null;
     const resolvedModel =
       typeof resolved === 'string' || resolved == null
         ? { modelId: resolved, fallbacks }

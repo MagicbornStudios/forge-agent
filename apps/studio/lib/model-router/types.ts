@@ -1,9 +1,14 @@
 /**
  * Model router types.
  *
- * Defines the model registry, selection modes, and preferences
- * for OpenRouter model selection with fallbacks.
+ * Modular naming: copilot and assistantUi. Two slots; no mode/fallbacks.
  */
+
+// ---------------------------------------------------------------------------
+// Provider / slot
+// ---------------------------------------------------------------------------
+
+export type ModelProviderId = 'copilot' | 'assistantUi';
 
 // ---------------------------------------------------------------------------
 // Model definition
@@ -15,10 +20,14 @@ export type ModelSpeed = 'fast' | 'standard' | 'reasoning';
 export interface ModelDef {
   /** OpenRouter model ID (e.g. `'openai/gpt-4o-mini'`). */
   id: string;
+  /** Provider inferred from model id prefix (e.g. `openai`, `google`, `anthropic`). */
+  provider?: string;
   /** Human-readable label. */
   label: string;
   /** Short description. */
   description?: string;
+  /** Max context window if provided by OpenRouter metadata. */
+  contextLength?: number;
   tier: ModelTier;
   speed: ModelSpeed;
   /** Cost per million input tokens (0 for free). */
@@ -31,50 +40,32 @@ export interface ModelDef {
   supportsResponsesV2?: boolean | null;
   /** Whether this model is enabled by default. */
   enabledByDefault: boolean;
-  /** Whether this model supports image generation (output_modalities includes "image"). Image gen uses OPENROUTER_IMAGE_MODEL in /api/image-generate. */
+  /** Whether this model supports image generation. */
   supportsImages?: boolean;
 }
 
 // ---------------------------------------------------------------------------
-// Selection
+// Server state (two slots)
 // ---------------------------------------------------------------------------
 
-export type SelectionMode = 'auto' | 'manual';
-
-/** Persisted user preferences for model selection. */
-export interface ModelPreferences {
-  mode: SelectionMode;
-  /** When mode is `'manual'`, this is the user's chosen model ID. */
-  manualModelId: string | null;
-  /** Model IDs for auto mode: first = primary, rest = fallback chain. */
-  enabledModelIds: string[];
-}
-
-/** Resolved primary model and fallback list (for OpenRouter models array). */
-export interface PrimaryAndFallbacks {
-  primary: string;
-  fallbacks: string[];
+export interface ModelIds {
+  copilotModelId: string;
+  assistantUiModelId: string;
 }
 
 // ---------------------------------------------------------------------------
 // API types (client ↔ server)
 // ---------------------------------------------------------------------------
 
-/** Sent from client to server via header/cookie/param. */
-export interface ModelSelectionRequest {
-  mode: SelectionMode;
-  manualModelId: string | null;
-  enabledModelIds: string[];
+/** POST body to set model for a provider. */
+export interface ModelSettingsPostBody {
+  provider: ModelProviderId;
+  modelId: string;
 }
 
-/** Returned by the server settings endpoint. */
+/** GET response from /api/model-settings. */
 export interface ModelSettingsResponse {
-  activeModelId: string;
-  mode: SelectionMode;
   registry: ModelDef[];
-  preferences: ModelPreferences;
-  /** Primary model ID (same as activeModelId). */
-  primaryId: string;
-  /** Fallback model IDs in order (empty in manual mode). */
-  fallbackIds: string[];
+  copilotModelId: string;
+  assistantUiModelId: string;
 }

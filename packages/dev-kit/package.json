@@ -10,14 +10,15 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.esm.js",
       "require": "./dist/index.cjs.js"
-    }
+    },
+    "./styles/editor": "./dist/styles/editor.css"
   },
   "files": [
     "dist"
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsup"
+    "build": "tsup && node scripts/copy-editor-styles.cjs"
   },
   "publishConfig": {
     "registry": "http://localhost:4873"

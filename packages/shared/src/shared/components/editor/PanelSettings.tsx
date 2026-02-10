@@ -40,43 +40,24 @@ export interface PanelSettingsProps {
 /**
  * PanelSettings — a popover for per-panel settings.
  *
- * Designed to be placed in a `DockPanel`'s `headerActions` slot.
+ * Designed to be placed in an `EditorDockPanel`'s `headerActions` slot.
  * Renders a gear icon button that opens a popover with panel-specific
  * settings (e.g. show minimap, auto-layout, lock editor).
  *
  * @example
  * ```tsx
- * <DockPanel
+ * <EditorDockPanel
  *   panelId="graph-editor"
  *   title="Graph"
  *   headerActions={
  *     <PanelSettings
  *       panelId="graph-editor"
- *       settings={[
- *         {
- *           id: 'show-minimap',
- *           label: 'Show Minimap',
- *           type: 'toggle',
- *           value: showMiniMap,
- *           onChange: (v) => setShowMiniMap(v as boolean),
- *         },
- *         {
- *           id: 'auto-layout',
- *           label: 'Auto Layout',
- *           type: 'select',
- *           value: layoutAlgorithm,
- *           options: [
- *             { label: 'Dagre', value: 'dagre' },
- *             { label: 'Force', value: 'force' },
- *           ],
- *           onChange: (v) => setLayoutAlgorithm(v as string),
- *         },
- *       ]}
+ *       settings={[...]}
  *     />
  *   }
  * >
  *   ...
- * </DockPanel>
+ * </EditorDockPanel>
  * ```
  */
 export function PanelSettings({ settings, panelId, className }: PanelSettingsProps) {

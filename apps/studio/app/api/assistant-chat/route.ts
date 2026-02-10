@@ -2,9 +2,9 @@ import { streamText, convertToModelMessages, jsonSchema, tool, type ToolSet } fr
 import { createOpenAI } from '@ai-sdk/openai';
 import { getLogger } from '@/lib/logger';
 import { getOpenRouterConfig } from '@/lib/openrouter-config';
-import { resolvePrimaryAndFallbacks } from '@/lib/model-router/server-state';
-import { resolveAssistantChatModel } from '@/lib/model-router/resolve-for-routes';
-import { createFetchWithModelFallbacks } from '@/lib/model-router/openrouter-fetch';
+import { getOpenRouterModels } from '@/lib/openrouter-models';
+import { getPersistedModelIdForProvider } from '@/lib/model-router/persistence';
+import { resolveModelIdFromRegistry } from '@/lib/model-router/selection';
 
 const log = getLogger('assistant-chat');
 
@@ -45,15 +45,6 @@ function buildToolSet(schema: ToolSchemaRecord | undefined | null): ToolSet {
   return toolSet;
 }
 
-function resolveRequestedModel(configOverride: unknown): string | null {
-  if (!configOverride || typeof configOverride !== 'object') return null;
-  const modelName = (configOverride as { modelName?: unknown }).modelName;
-  if (typeof modelName !== 'string') return null;
-  const trimmed = modelName.trim();
-  if (!trimmed || trimmed === 'auto') return null;
-  return trimmed;
-}
-
 export async function POST(req: Request) {
   if (!config.apiKey) {
     return new Response(JSON.stringify({ error: 'OpenRouter API key not configured' }), {
@@ -67,7 +58,6 @@ export async function POST(req: Request) {
     system?: unknown;
     tools?: ToolSchemaRecord;
     callSettings?: Record<string, unknown>;
-    config?: Record<string, unknown>;
   };
 
   try {
@@ -83,26 +73,18 @@ export async function POST(req: Request) {
   const messages = Array.isArray(body.messages) ? body.messages : [];
   const system = typeof body.system === 'string' ? body.system : undefined;
   const callSettings = body.callSettings ?? {};
-  const { primary: selectedPrimary, fallbacks: selectedFallbacks } = resolveAssistantChatModel(
-    body,
-    resolvePrimaryAndFallbacks,
-  );
-  const requestedModel = resolveRequestedModel(body.config);
-  log.info(
-    { primary: selectedPrimary, fallbacksCount: selectedFallbacks.length, override: !!requestedModel },
-    'Model resolved',
-  );
-
-  const customFetch =
-    selectedFallbacks.length > 0
-      ? createFetchWithModelFallbacks(selectedPrimary, selectedFallbacks, config.baseUrl)
-      : undefined;
+  const selectedModel = await getPersistedModelIdForProvider(req, 'assistantUi');
+  const registry = await getOpenRouterModels();
+  const resolvedModel = resolveModelIdFromRegistry(selectedModel, registry);
+  if (resolvedModel !== selectedModel) {
+    log.warn({ selectedModel, resolvedModel }, 'Assistant model fallback applied');
+  }
+  log.info({ modelId: resolvedModel }, 'Model resolved');
 
   const openai = createOpenAI({
     apiKey: config.apiKey,
     baseURL: config.baseUrl,
     headers: openRouterHeaders,
-    fetch: customFetch,
   });
 
   const aiMessages = await convertToModelMessages(messages as any, {
@@ -118,7 +100,7 @@ export async function POST(req: Request) {
         : undefined;
 
   const result = streamText({
-    model: openai.chat(selectedPrimary),
+    model: openai.chat(resolvedModel),
     messages: aiMessages,
     ...(system ? { system } : {}),
     ...(Object.keys(tools).length > 0 ? { tools } : {}),

@@ -160,6 +160,8 @@ import { Button } from '@forge/ui';
 import { ForgeCopilotProvider, createForgeCopilotRuntime } from '@forge/dev-kit';
 ```
 
+For DockLayout/editor chrome styles, import once in your CSS: `@import '@forge/dev-kit/styles/editor'` (or `@forge/shared/styles/editor`). Do not import dockview directly.
+
 ### Local consumer example
 
 This repo includes a minimal consumer app at `examples/consumer/` that demonstrates:

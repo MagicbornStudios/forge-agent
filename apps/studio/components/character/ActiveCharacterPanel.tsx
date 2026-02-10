@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
-import { Sparkles, Trash2 } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { PencilLine, Sparkles, Trash2, WandSparkles } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@forge/ui/button';
 import { Input } from '@forge/ui/input';
 import { Textarea } from '@forge/ui/textarea';
@@ -20,37 +21,55 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@forge/ui/select';
-import { MediaCard } from '@forge/shared/components/media';
+import { MediaCard, type GenerateMediaResult } from '@forge/shared/components/media';
 import { ConnectedGenerateMediaModal } from '@/components/media/ConnectedGenerateMediaModal';
 import { getInitials } from '@/lib/domains/character/operations';
 import type { CharacterDoc } from '@/lib/domains/character/types';
 import { useElevenLabsVoices, useGenerateSpeech } from '@/lib/data/hooks';
-
-// ---------------------------------------------------------------------------
-// Props
-// ---------------------------------------------------------------------------
+import {
+  appendCharacterMedia,
+  getCharacterMedia,
+  getPrimaryImageUrl,
+  removeCharacterMedia,
+  type CharacterMediaType,
+} from '@/lib/domains/character/media-meta';
 
 interface Props {
   character: CharacterDoc | null;
-  onUpdate: (id: number, updates: Partial<Pick<CharacterDoc, 'name' | 'description' | 'imageUrl' | 'voiceId'>>) => void;
+  onUpdate: (
+    id: number,
+    updates: Partial<
+      Pick<CharacterDoc, 'name' | 'description' | 'imageUrl' | 'voiceId' | 'meta'>
+    >,
+  ) => Promise<void> | void;
+  onOpenUpsert?: (characterId: number) => void;
 }
-
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
 
 const NO_VOICE_VALUE = '__none__';
 const DEFAULT_MODEL_ID = 'eleven_multilingual_v2';
 
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
+function trimToUndefined(value: string | null | undefined): string | undefined {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
 
-export function ActiveCharacterPanel({ character, onUpdate }: Props) {
+function toMediaType(type: GenerateMediaResult['type']): CharacterMediaType {
+  if (type === 'audio') return 'audio';
+  if (type === 'video') return 'video';
+  return 'image';
+}
+
+export function ActiveCharacterPanel({
+  character,
+  onUpdate,
+  onOpenUpsert,
+}: Props) {
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [previewText, setPreviewText] = useState('');
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [mediaError, setMediaError] = useState<string | null>(null);
 
   const voicesQuery = useElevenLabsVoices();
   const generateSpeechMutation = useGenerateSpeech();
@@ -62,43 +81,49 @@ export function ActiveCharacterPanel({ character, onUpdate }: Props) {
       : 'Unable to load voices'
     : null;
   const previewLoading = generateSpeechMutation.isPending;
+  const media = useMemo(
+    () => getCharacterMedia(character?.meta as Record<string, unknown> | null | undefined),
+    [character?.meta],
+  );
+  const primaryImageUrl = getPrimaryImageUrl(
+    character?.imageUrl,
+    character?.meta as Record<string, unknown> | null | undefined,
+  );
 
-  // ---- Audio preview cleanup ---------------------------------------------
   useEffect(() => {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
   }, [previewUrl]);
 
-  // ---- Handlers -----------------------------------------------------------
   const handleNameBlur = useCallback(
-    (e: React.FocusEvent<HTMLInputElement>) => {
+    async (e: React.FocusEvent<HTMLInputElement>) => {
       if (!character) return;
       const name = e.target.value.trim();
       if (name && name !== character.name) {
-        onUpdate(character.id, { name });
+        await onUpdate(character.id, { name });
       }
     },
     [character, onUpdate],
   );
 
   const handleDescBlur = useCallback(
-    (e: React.FocusEvent<HTMLTextAreaElement>) => {
+    async (e: React.FocusEvent<HTMLTextAreaElement>) => {
       if (!character) return;
       const description = e.target.value.trim();
       if (description !== (character.description ?? '')) {
-        onUpdate(character.id, { description });
+        await onUpdate(character.id, { description });
       }
     },
     [character, onUpdate],
   );
 
   const handleVoiceChange = useCallback(
-    (value: string) => {
+    async (value: string) => {
       if (!character) return;
       const nextVoiceId = value === NO_VOICE_VALUE ? null : value;
       if (nextVoiceId !== (character.voiceId ?? null)) {
-        onUpdate(character.id, { voiceId: nextVoiceId });
+        await onUpdate(character.id, { voiceId: nextVoiceId });
       }
     },
     [character, onUpdate],
@@ -119,7 +144,70 @@ export function ActiveCharacterPanel({ character, onUpdate }: Props) {
     }
   }, [character, previewText, generateSpeechMutation]);
 
-  // ---- Empty state --------------------------------------------------------
+  const handleGeneratedMedia = useCallback(
+    async (result: GenerateMediaResult) => {
+      if (!character) return;
+      setMediaError(null);
+      try {
+        const nextMeta = appendCharacterMedia(
+          character.meta as Record<string, unknown> | null | undefined,
+          {
+            type: toMediaType(result.type),
+            url: result.url,
+            source: 'generated',
+          },
+        );
+
+        const updates: Partial<Pick<CharacterDoc, 'imageUrl' | 'meta'>> = { meta: nextMeta };
+        const existingImage = trimToUndefined(character.imageUrl);
+        if (result.type === 'image' && !existingImage) {
+          updates.imageUrl = result.url;
+        }
+        await onUpdate(character.id, updates);
+      } catch (err) {
+        setMediaError(err instanceof Error ? err.message : 'Failed to save generated media.');
+      }
+    },
+    [character, onUpdate],
+  );
+
+  const handleRemoveMedia = useCallback(
+    async (type: CharacterMediaType, mediaId: string, url?: string) => {
+      if (!character) return;
+      setMediaError(null);
+      try {
+        const nextMeta = removeCharacterMedia(
+          character.meta as Record<string, unknown> | null | undefined,
+          type,
+          mediaId,
+        );
+        const updates: Partial<Pick<CharacterDoc, 'imageUrl' | 'meta'>> = { meta: nextMeta };
+
+        if (type === 'image' && trimToUndefined(character.imageUrl) === trimToUndefined(url)) {
+          updates.imageUrl = getPrimaryImageUrl(undefined, nextMeta) ?? '';
+        }
+        await onUpdate(character.id, updates);
+      } catch (err) {
+        setMediaError(err instanceof Error ? err.message : 'Failed to remove media.');
+      }
+    },
+    [character, onUpdate],
+  );
+
+  const handleSetPrimaryImage = useCallback(
+    async (url: string) => {
+      if (!character) return;
+      try {
+        await onUpdate(character.id, { imageUrl: url });
+      } catch (err) {
+        toast.error('Failed to set portrait', {
+          description: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+    },
+    [character, onUpdate],
+  );
+
   if (!character) {
     return (
       <div className="flex items-center justify-center h-full p-4 text-center text-sm text-muted-foreground">
@@ -129,10 +217,21 @@ export function ActiveCharacterPanel({ character, onUpdate }: Props) {
   }
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto p-4 space-y-4">
-      {/* Portrait — MediaCard */}
+    <div className="flex flex-col h-full overflow-y-auto p-[var(--panel-padding)] space-y-[var(--panel-padding)]">
+      <div className="flex items-center justify-end">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => onOpenUpsert?.(character.id)}
+        >
+          <PencilLine />
+          Edit character
+        </Button>
+      </div>
+
       <MediaCard
-        src={character.imageUrl ?? undefined}
+        src={primaryImageUrl}
         type="image"
         alt={character.name}
         aspectRatio="3/4"
@@ -143,15 +242,15 @@ export function ActiveCharacterPanel({ character, onUpdate }: Props) {
         }
         actions={[
           {
-            label: 'Generate Portrait',
-            icon: <Sparkles size={14} />,
+            label: 'Generate portrait',
+            icon: <Sparkles />,
             onClick: () => setShowGenerateModal(true),
           },
-          ...(character.imageUrl
+          ...(primaryImageUrl
             ? [
                 {
-                  label: 'Remove Image',
-                  icon: <Trash2 size={14} />,
+                  label: 'Clear portrait',
+                  icon: <Trash2 />,
                   variant: 'destructive' as const,
                   onClick: () => onUpdate(character.id, { imageUrl: '' }),
                 },
@@ -160,40 +259,104 @@ export function ActiveCharacterPanel({ character, onUpdate }: Props) {
         ]}
       />
 
-      {/* Generate Media Modal */}
       <ConnectedGenerateMediaModal
         open={showGenerateModal}
         onOpenChange={setShowGenerateModal}
         defaultTab="text-to-image"
-        enabledTabs={['text-to-image', 'image-to-video']}
+        enabledTabs={['text-to-image', 'image-to-video', 'text-to-speech', 'upload']}
         context={{
           name: character.name,
           description: character.description ?? undefined,
-          existingImageUrl: character.imageUrl ?? undefined,
+          existingImageUrl: primaryImageUrl,
         }}
         onGenerated={(result) => {
-          if (result.type === 'image') {
-            onUpdate(character.id, { imageUrl: result.url });
-          }
+          void handleGeneratedMedia(result);
         }}
       />
 
+      {mediaError && <p className="text-xs text-destructive">{mediaError}</p>}
+
+      {media.images.length > 0 && (
+        <div className="space-y-[var(--control-gap)]">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            Image variants
+          </p>
+          <div className="grid grid-cols-2 gap-[var(--control-gap)]">
+            {media.images.map((image) => (
+              <div
+                key={image.id}
+                className="space-y-[var(--control-gap)] rounded-[var(--radius-md)] border border-border p-[var(--control-padding-y)]"
+              >
+                <img
+                  src={image.url}
+                  alt={character.name}
+                  className="h-20 w-full rounded-[var(--radius-sm)] object-cover"
+                />
+                <div className="flex gap-[var(--control-gap)]">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => {
+                      void handleSetPrimaryImage(image.url);
+                    }}
+                  >
+                    Set primary
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      void handleRemoveMedia('image', image.id, image.url);
+                    }}
+                  >
+                    <Trash2 />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {media.audioTracks.length > 0 && (
+        <div className="space-y-[var(--control-gap)]">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            Audio tracks
+          </p>
+          {media.audioTracks.map((track) => (
+            <div
+              key={track.id}
+              className="flex items-center gap-[var(--control-gap)] rounded-[var(--radius-md)] border border-border px-[var(--control-padding-x)] py-[var(--control-padding-y)]"
+            >
+              {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+              <audio controls className="w-full" src={track.url} />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  void handleRemoveMedia('audio', track.id, track.url);
+                }}
+              >
+                <Trash2 />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <Separator />
 
-      {/* Name */}
       <div className="space-y-1">
         <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           Name
         </label>
-        <Input
-          key={character.id}
-          defaultValue={character.name}
-          onBlur={handleNameBlur}
-          className="text-sm"
-        />
+        <Input key={character.id} defaultValue={character.name} onBlur={handleNameBlur} />
       </div>
 
-      {/* Description */}
       <div className="space-y-1">
         <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           Description
@@ -203,26 +366,42 @@ export function ActiveCharacterPanel({ character, onUpdate }: Props) {
           defaultValue={character.description ?? ''}
           onBlur={handleDescBlur}
           rows={5}
-          className="text-sm resize-none"
+          className="resize-none"
         />
       </div>
 
       <Separator />
 
-      {/* Voice */}
-      <div className="space-y-2">
-        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Voice
-        </label>
+      <div className="space-y-[var(--control-gap)]">
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            Voice
+          </label>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setShowGenerateModal(true)}
+          >
+            <WandSparkles />
+            Add media
+          </Button>
+        </div>
         <Select
           value={character.voiceId ?? NO_VOICE_VALUE}
-          onValueChange={handleVoiceChange}
+          onValueChange={(value) => {
+            void handleVoiceChange(value);
+          }}
           disabled={voicesLoading || !!voicesError}
         >
           <SelectTrigger>
             <SelectValue
               placeholder={
-                voicesLoading ? 'Loading voices...' : voicesError ? 'Voice not configured' : 'Select voice'
+                voicesLoading
+                  ? 'Loading voices...'
+                  : voicesError
+                    ? 'Voice not configured'
+                    : 'Select voice'
               }
             />
           </SelectTrigger>
@@ -235,30 +414,28 @@ export function ActiveCharacterPanel({ character, onUpdate }: Props) {
             ))}
           </SelectContent>
         </Select>
-        {voicesError && (
-          <p className="text-xs text-muted-foreground">{voicesError}</p>
-        )}
+        {voicesError && <p className="text-xs text-muted-foreground">{voicesError}</p>}
         <div className="flex gap-[var(--control-gap)]">
           <Input
             value={previewText}
             onChange={(e) => setPreviewText(e.target.value)}
-            placeholder={`Hello, I'm ${character.name}.`}
+            placeholder={`Hello, I am ${character.name}.`}
           />
           <Button
             type="button"
             variant="outline"
-            onClick={handlePreview}
+            onClick={() => {
+              void handlePreview();
+            }}
             disabled={!character.voiceId || !previewText.trim() || previewLoading}
           >
             {previewLoading ? 'Playing...' : 'Play'}
           </Button>
         </div>
-        {previewError && (
-          <p className="text-xs text-destructive">{previewError}</p>
-        )}
+        {previewError && <p className="text-xs text-destructive">{previewError}</p>}
         {previewUrl && (
           <AudioPlayerProvider>
-            <div className="flex items-center gap-[var(--control-gap)] rounded-md border border-border bg-muted/40 px-[var(--control-padding-x)] py-[var(--control-padding-y)]">
+            <div className="flex items-center gap-[var(--control-gap)] rounded-[var(--radius-md)] border border-border bg-muted/40 px-[var(--control-padding-x)] py-[var(--control-padding-y)]">
               <AudioPlayerButton
                 item={{ id: 'preview', src: previewUrl }}
                 variant="ghost"

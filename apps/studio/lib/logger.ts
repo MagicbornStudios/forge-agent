@@ -13,22 +13,21 @@ const logLevel = validLevels.includes(level as (typeof validLevels)[number])
   ? (level as (typeof validLevels)[number])
   : 'info';
 
-const streams: pino.DestinationStream[] = [{ dest: 1, sync: false }];
+const streams: pino.StreamEntry[] = [
+  { stream: pino.destination({ dest: 1, sync: false }) },
+];
 const logFile = process.env.LOG_FILE?.trim();
 if (logFile) {
   try {
     const dir = path.dirname(logFile);
     fs.mkdirSync(dir, { recursive: true });
-    streams.push(pino.destination({ dest: logFile, append: true }));
+    streams.push({ stream: pino.destination({ dest: logFile, append: true }) });
   } catch {
     // ignore; log to stdout only
   }
 }
 
-const base =
-  streams.length === 1
-    ? pino({ level: logLevel })
-    : pino({ level: logLevel }, pino.multistream(streams));
+const base = pino({ level: logLevel }, pino.multistream(streams));
 
 export type Logger = pino.Logger;
 

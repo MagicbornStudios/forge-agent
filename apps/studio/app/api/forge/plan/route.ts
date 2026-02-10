@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOpenRouterConfig } from '@/lib/openrouter-config';
-import { resolvePrimaryAndFallbacks } from '@/lib/model-router/server-state';
+import { DEFAULT_TASK_MODEL } from '@/lib/model-router/defaults';
 
 /**
  * @swagger
@@ -46,8 +46,7 @@ export async function POST(request: NextRequest) {
   }
 
   const graphSummary = body.graphSummary ?? {};
-  const { primary, fallbacks } = resolvePrimaryAndFallbacks();
-  const models = [primary, ...fallbacks];
+  const modelId = DEFAULT_TASK_MODEL;
 
   const systemPrompt =
     'You are a planning assistant for a dialogue graph editor. Given a goal and optional graph summary, output a JSON array of operations to perform. ' +
@@ -96,8 +95,7 @@ export async function POST(request: NextRequest) {
   };
 
   const payload = {
-    model: primary,
-    ...(models.length > 1 && { models }),
+    model: modelId,
     messages: [
       { role: 'system' as const, content: systemPrompt },
       { role: 'user' as const, content: userContent },

@@ -1,7 +1,7 @@
 ---
 title: Standard practices (now / soon / as we grow)
 created: 2026-02-09
-updated: 2026-02-09
+updated: 2026-02-10
 ---
 
 # Standard practices (now / soon / as we grow)
@@ -26,6 +26,7 @@ Single checklist for agents and humans. Where things live and when to revisit.
 ## Docs (MDX build)
 
 - **Now:** All `.md` and `.mdx` under `docs/` are built by fumadocs-mdx and **must** have YAML frontmatter with at least **`title`** (string). When creating or moving a doc into `docs/`, add frontmatter; optional `created` / `updated`. See [errors-and-attempts](errors-and-attempts.md) (MDX build error) if the build fails with "invalid frontmatter".
+- **Now:** Every change requires a **doc scan**: check relevant docs for drift (design/architecture/how-to/agent artifacts) and update them alongside the code change. Record the doc scan in STATUS.
 - **Revisit:** When adding a new doc tree or changing how docs are loaded (e.g. source.config.mjs).
 
 ## Security and resilience (soon)

@@ -3,89 +3,44 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
-import type { ModelDef, SelectionMode, ModelPreferences } from './types';
-import { getDefaultEnabledIds } from './registry';
-import { ModelService } from '@/lib/api-client';
+import type { ModelDef, ModelProviderId } from './types';
+import { getDefaultChatModelId } from './defaults';
+import { getModelSettings, setModelSettingsModelId } from '@/lib/api-client/model-settings';
 import { clientLogger } from '@/lib/logger-client';
 
 // ---------------------------------------------------------------------------
-// Client-side model router store
+// Client-side model router store (two slots: copilot, assistantUi)
 // ---------------------------------------------------------------------------
 
 interface ModelRouterState {
-  /** Full registry (static). */
   registry: ModelDef[];
-  /** Current selection mode. */
-  mode: SelectionMode;
-  /** When manual, the chosen model ID. */
-  manualModelId: string | null;
-  /** Which models the user has enabled (auto mode: order = primary then fallbacks). */
-  enabledModelIds: string[];
-  /** Current active/primary model ID. */
-  activeModelId: string;
-  /** Fallback model IDs (for display). */
-  fallbackIds: string[];
-  /** Whether we're loading settings from server. */
+  copilotModelId: string;
+  assistantUiModelId: string;
   isLoading: boolean;
 
-  // Actions
-  setMode: (mode: SelectionMode) => void;
-  setManualModel: (modelId: string) => void;
-  toggleModel: (modelId: string) => void;
-  /** Fetch settings from server. */
   fetchSettings: () => Promise<void>;
-  /** Push preferences to server. */
-  savePreferences: () => Promise<void>;
+  setModelId: (provider: ModelProviderId, modelId: string) => Promise<void>;
 }
 
 export const useModelRouterStore = create<ModelRouterState>()(
   devtools(
     immer((set, get) => ({
-    registry: [],
-    mode: 'auto',
-    manualModelId: null,
-    enabledModelIds: getDefaultEnabledIds(),
-    activeModelId: getDefaultEnabledIds()[0] ?? 'google/gemini-2.0-flash-exp:free',
-      fallbackIds: [],
+      registry: [],
+      copilotModelId: getDefaultChatModelId(),
+      assistantUiModelId: getDefaultChatModelId(),
       isLoading: false,
-
-      setMode: (mode) => {
-        set({ mode });
-        if (mode === 'manual' && !get().manualModelId) {
-          set({ manualModelId: get().activeModelId });
-        }
-        get().savePreferences();
-      },
-
-      setManualModel: (modelId) => {
-        set({ manualModelId: modelId, mode: 'manual' });
-        get().savePreferences();
-      },
-
-      toggleModel: (modelId) => {
-        const { enabledModelIds } = get();
-        const next = enabledModelIds.includes(modelId)
-          ? enabledModelIds.filter((id) => id !== modelId)
-          : [...enabledModelIds, modelId];
-        if (next.length === 0) return;
-        set({ enabledModelIds: next });
-        get().savePreferences();
-      },
 
       fetchSettings: async () => {
         set({ isLoading: true });
         try {
-          const data = await ModelService.getApiModelSettings();
+          const data = await getModelSettings();
           set({
-            activeModelId: data.activeModelId,
-            mode: data.mode,
-            fallbackIds: data.fallbackIds ?? [],
-            enabledModelIds: data.preferences?.enabledModelIds ?? get().enabledModelIds,
-            manualModelId: data.preferences?.manualModelId ?? get().manualModelId,
             registry: Array.isArray(data.registry) ? data.registry : [],
+            copilotModelId: typeof data.copilotModelId === 'string' ? data.copilotModelId : get().copilotModelId,
+            assistantUiModelId: typeof data.assistantUiModelId === 'string' ? data.assistantUiModelId : get().assistantUiModelId,
           });
         } catch (err) {
-          clientLogger.error('Failed to fetch settings', {
+          clientLogger.error('Failed to fetch model settings', {
             err: err instanceof Error ? err.message : String(err),
           }, 'model-router');
         } finally {
@@ -93,20 +48,16 @@ export const useModelRouterStore = create<ModelRouterState>()(
         }
       },
 
-      savePreferences: async () => {
-        const { mode, manualModelId, enabledModelIds } = get();
+      setModelId: async (provider, modelId) => {
         try {
-          const data = await ModelService.postApiModelSettings({
-            mode,
-            manualModelId: manualModelId ?? undefined,
-            enabledModelIds,
-          });
+          const data = await setModelSettingsModelId(provider, modelId);
           set({
-            activeModelId: data.activeModelId,
-            fallbackIds: data.fallbackIds ?? [],
+            copilotModelId: data.copilotModelId ?? get().copilotModelId,
+            assistantUiModelId: data.assistantUiModelId ?? get().assistantUiModelId,
           });
         } catch (err) {
-          clientLogger.error('Failed to save preferences', {
+          clientLogger.error('Failed to set model', {
+            provider,
             err: err instanceof Error ? err.message : String(err),
           }, 'model-router');
         }

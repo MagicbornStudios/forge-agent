@@ -14,7 +14,7 @@ export interface CopilotKitDevToolsPanelProps {
 
 export function CopilotKitDevToolsPanel({ className }: CopilotKitDevToolsPanelProps) {
   const { isOpen, setIsOpen } = useCopilotSidebar();
-  const { mode, activeModelId, fallbackIds } = useModelRouterStore();
+  const { copilotModelId } = useModelRouterStore();
   const responsesCompatOnly = useSettingsStore((s) => s.getSettingValue('ai.responsesCompatOnly')) as
     | boolean
     | undefined;
@@ -37,14 +37,11 @@ export function CopilotKitDevToolsPanel({ className }: CopilotKitDevToolsPanelPr
         <div className="flex items-center justify-between gap-[var(--control-gap)]">
           <div className="font-medium">Model routing</div>
           <Badge variant="outline" className="text-[10px] uppercase">
-            {mode}
+            server-state
           </Badge>
         </div>
         <div className="mt-2 text-[11px] text-muted-foreground">
-          Primary: <span className="text-foreground">{activeModelId}</span>
-        </div>
-        <div className="mt-1 text-[11px] text-muted-foreground">
-          Fallbacks: {fallbackIds.length}
+          Copilot model: <span className="text-foreground">{copilotModelId}</span>
         </div>
         <div className="mt-2 text-[11px] text-muted-foreground">
           Responses v2 filter: {responsesCompatOnly === false ? 'Off' : 'On'}

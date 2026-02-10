@@ -13,11 +13,17 @@ interface OpenRouterModelRow {
   id: string;
   name?: string;
   description?: string | null;
+  context_length?: number | null;
+  top_provider?: { context_length?: number | null } | null;
   pricing?: {
     prompt?: string | number;
     completion?: string | number;
   } | null;
-  architecture?: { modality?: string } | null;
+  architecture?: {
+    modality?: string | null;
+    input_modalities?: string[] | null;
+    output_modalities?: string[] | null;
+  } | null;
   supported_parameters?: string[] | null;
 }
 
@@ -29,6 +35,32 @@ function parsePrice(p: string | number | undefined | null): number {
   if (typeof p === 'number') return p;
   const n = Number.parseFloat(p);
   return Number.isNaN(n) ? 0 : n;
+}
+
+function parseProvider(id: string): string | undefined {
+  const trimmed = id.trim();
+  if (!trimmed) return undefined;
+  const slashIndex = trimmed.indexOf('/');
+  if (slashIndex <= 0) return undefined;
+  return trimmed.slice(0, slashIndex);
+}
+
+function parseContextLength(row: OpenRouterModelRow): number | undefined {
+  const raw = row.context_length ?? row.top_provider?.context_length;
+  if (typeof raw !== 'number' || !Number.isFinite(raw) || raw <= 0) return undefined;
+  return raw;
+}
+
+function supportsImages(row: OpenRouterModelRow): boolean {
+  const modalities = [
+    row.architecture?.modality ?? '',
+    ...(Array.isArray(row.architecture?.input_modalities) ? row.architecture?.input_modalities : []),
+    ...(Array.isArray(row.architecture?.output_modalities) ? row.architecture?.output_modalities : []),
+  ]
+    .join(' ')
+    .toLowerCase();
+
+  return modalities.includes('image');
 }
 
 async function toModelDef(row: OpenRouterModelRow): Promise<ModelDef> {
@@ -43,8 +75,10 @@ async function toModelDef(row: OpenRouterModelRow): Promise<ModelDef> {
   const supportsResponsesV2 = await getResponsesV2Compatibility(row.id, { probe: shouldProbe });
   return {
     id: row.id,
+    provider: parseProvider(row.id),
     label: row.name ?? row.id.split('/').pop() ?? row.id,
     description: row.description ?? undefined,
+    contextLength: parseContextLength(row),
     tier,
     speed: 'standard',
     costPerMInput: promptCost * 1e6,
@@ -52,6 +86,7 @@ async function toModelDef(row: OpenRouterModelRow): Promise<ModelDef> {
     supportsTools,
     enabledByDefault: false,
     supportsResponsesV2,
+    supportsImages: supportsImages(row),
   };
 }
 
@@ -72,7 +107,7 @@ export async function getOpenRouterModels(): Promise<ModelDef[]> {
       next: { revalidate: 300 },
     });
     if (!res.ok) {
-      console.warn('[OpenRouter] models fetch failed', res.status);
+      log.warn({ status: res.status }, 'OpenRouter models fetch failed');
       return cached?.models ?? [];
     }
     const json = (await res.json()) as { data?: OpenRouterModelRow[] };

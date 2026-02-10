@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const model = process.env.OPENROUTER_IMAGE_MODEL?.trim() || DEFAULT_IMAGE_MODEL;
+  const model = DEFAULT_IMAGE_MODEL;
   // Image gen uses a single default (or env); no fallbacks. See docs for model list.
   const imageConfig: Record<string, string> = {};
   if (body.aspectRatio) imageConfig.aspect_ratio = body.aspectRatio;

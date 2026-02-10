@@ -6,28 +6,30 @@ import {
   EditorHeader,
   EditorToolbar,
   EditorStatusBar,
-  DockLayout,
-  DockPanel,
+  EditorDockLayout,
+  EditorDockPanel,
 } from '@forge/shared/components/editor';
-import { ModelSwitcher } from '@/components/model-switcher';
 import { useVideoStore, VIDEO_DRAFT_KEY } from '@/lib/domains/video/store';
 import { useSaveVideoDoc, useVideoDocs, useVideoDoc, useCreateVideoDoc } from '@/lib/data/hooks';
 import { useEditorStore } from '@/lib/app-shell/store';
 import { EDITOR_VIEWPORT_IDS } from '@/lib/app-shell/editor-metadata';
+import { useEditorPanelVisibility } from '@/lib/app-shell/useEditorPanelVisibility';
 import { useSettingsStore } from '@/lib/settings/store';
 import { useAIHighlight } from '@forge/shared/copilot/use-ai-highlight';
 import { useDomainCopilot } from '@forge/shared/copilot/use-domain-copilot';
 import { useVideoContract } from '@/lib/domains/video/copilot';
 import { DEFAULT_VIDEO_DOC_DATA, getVideoDocData } from '@/lib/domains/video/types';
-import { SettingsMenu } from '@/components/settings/SettingsMenu';
+import { useAppMenubarContribution } from '@/lib/contexts/AppMenubarContext';
 import { Badge } from '@forge/ui/badge';
-import { FeatureGate } from '@forge/shared';
+import { FeatureGate, type DockLayoutRef } from '@forge/shared';
 import { CAPABILITIES, useEntitlements } from '@forge/shared/entitlements';
 import { TwickTrackList } from '@/components/video/TwickTrackList';
 import { TwickTimeline } from '@/components/video/TwickTimeline';
 import { LivePlayerProvider } from '@twick/live-player';
 import { TimelineProvider, INITIAL_TIMELINE_DATA } from '@twick/timeline';
 import { TwickStudio } from '@twick/studio';
+import { LayoutPanelTop, PanelBottom, PanelRight } from 'lucide-react';
+
 export function VideoEditor() {
   const lastVideoDocId = useEditorStore((s) => s.lastVideoDocId);
   const setLastVideoDocId = useEditorStore((s) => s.setLastVideoDocId);
@@ -198,29 +200,59 @@ export function VideoEditor() {
       },
     },
   ];
-  const viewMenuItems = [
-    {
-      id: 'zoom-in',
-      label: 'Zoom in',
-      disabled: true,
-      onSelect: () => {
-        console.info('[Video] Zoom in action not implemented yet.');
-      },
+  const { visibility: panelVisibility, setVisible: setPanelVisible, restoreAll: restoreAllPanels, panelSpecs } = useEditorPanelVisibility('video');
+  const dockLayouts = useEditorStore((s) => s.dockLayouts);
+  const setDockLayout = useEditorStore((s) => s.setDockLayout);
+  const clearDockLayout = useEditorStore((s) => s.clearDockLayout);
+  const layoutRef = useRef<DockLayoutRef>(null);
+  const VIDEO_LAYOUT_ID = 'video-mode';
+
+  const viewMenuItems = useMemo(
+    () => {
+      const panelIcons: Record<string, React.ReactNode> = {
+        right: <PanelRight size={16} />,
+        bottom: <PanelBottom size={16} />,
+      };
+      return [
+        {
+          id: 'zoom-in',
+          label: 'Zoom in',
+          disabled: true,
+          onSelect: () => {
+            console.info('[Video] Zoom in action not implemented yet.');
+          },
+        },
+        {
+          id: 'zoom-out',
+          label: 'Zoom out',
+          disabled: true,
+          onSelect: () => {
+            console.info('[Video] Zoom out action not implemented yet.');
+          },
+        },
+        { id: 'view-sep-panels', type: 'separator' as const },
+        ...panelSpecs.map((spec) => ({
+          id: `panel-${spec.id}`,
+          label: panelVisibility[spec.key] === false ? `Show ${spec.label}` : `Hide ${spec.label}`,
+          icon: panelIcons[spec.id] ?? <LayoutPanelTop size={16} />,
+          onSelect: () => setPanelVisible(spec.key, !(panelVisibility[spec.key] !== false)),
+        })),
+        {
+          id: 'restore-all-panels',
+          label: 'Restore all panels',
+          icon: <LayoutPanelTop size={16} />,
+          onSelect: restoreAllPanels,
+        },
+      ];
     },
-    {
-      id: 'zoom-out',
-      label: 'Zoom out',
-      disabled: true,
-      onSelect: () => {
-        console.info('[Video] Zoom out action not implemented yet.');
-      },
-    },
-  ];
+    [panelSpecs, panelVisibility, setPanelVisible, restoreAllPanels],
+  );
   const menubarMenus = [
     { id: 'file', label: 'File', items: fileMenuItems },
     { id: 'edit', label: 'Edit', items: editMenuItems },
     { id: 'view', label: 'View', items: viewMenuItems },
   ];
+  useAppMenubarContribution(menubarMenus);
 
   const mainContent = (
     <div className="h-full min-h-0">
@@ -236,6 +268,7 @@ export function VideoEditor() {
   );
 
   return (
+    <>
     <EditorShell
       editorId="video"
       title="Video"
@@ -257,7 +290,6 @@ export function VideoEditor() {
       <EditorToolbar>
         <EditorToolbar.Left>
           <EditorToolbar.Group className="gap-[var(--control-gap)]">
-            <EditorToolbar.Menubar menus={menubarMenus} />
             <EditorToolbar.ProjectSelect
               value={doc ? String(doc.id) : undefined}
               options={projectOptions}
@@ -277,7 +309,6 @@ export function VideoEditor() {
               Agent: {agentName ?? 'Default'}
             </Badge>
           )}
-          <ModelSwitcher />
           <FeatureGate
             capability={CAPABILITIES.VIDEO_EXPORT}
             mode="lock-overlay"
@@ -292,20 +323,19 @@ export function VideoEditor() {
               Export
             </EditorToolbar.Button>
           </FeatureGate>
-          <EditorToolbar.Separator />
-          <SettingsMenu editorId={editorId} viewportId={viewportId} />
         </EditorToolbar.Right>
       </EditorToolbar>
 
-      <DockLayout
+      <EditorDockLayout
+        ref={layoutRef}
         main={
-          <DockPanel panelId="video-main" scrollable={false} hideTitleBar className="h-full">
+          <EditorDockPanel panelId="video-main" scrollable={false} hideTitleBar className="h-full">
             {mainContent}
-          </DockPanel>
+          </EditorDockPanel>
         }
         right={
           showRightPanel === false ? undefined : (
-            <DockPanel panelId="video-right" title="Tracks" hideTitleBar className="h-full">
+            <EditorDockPanel panelId="video-right" title="Tracks" hideTitleBar className="h-full">
               <TwickTrackList
                 tracks={docData.tracks}
                 selectedTrackId={selectedTrackId}
@@ -315,12 +345,12 @@ export function VideoEditor() {
                 }}
                 onAddTrack={() => console.info('[Video] Add track not implemented yet.')}
               />
-            </DockPanel>
+            </EditorDockPanel>
           )
         }
         bottom={
           showBottomPanel === false ? undefined : (
-            <DockPanel panelId="video-bottom" title="Timeline" scrollable={false} hideTitleBar className="h-full">
+            <EditorDockPanel panelId="video-bottom" title="Timeline" scrollable={false} hideTitleBar className="h-full">
               <TwickTimeline
                 data={docData}
                 selectedTrackId={selectedTrackId}
@@ -334,17 +364,21 @@ export function VideoEditor() {
                   setSelectedElementId(elementId);
                 }}
               />
-            </DockPanel>
+            </EditorDockPanel>
           )
         }
         slots={{ right: { title: 'Tracks' }, bottom: { title: 'Timeline' } }}
         viewport={{ viewportId, viewportType: 'timeline' }}
-        layoutId="video-mode"
+        layoutId={VIDEO_LAYOUT_ID}
+        layoutJson={dockLayouts[VIDEO_LAYOUT_ID] ?? undefined}
+        onLayoutChange={(json) => setDockLayout(VIDEO_LAYOUT_ID, json)}
+        clearLayout={() => clearDockLayout(VIDEO_LAYOUT_ID)}
       />
 
       <EditorStatusBar>
         {isDirty ? 'Unsaved changes' : 'Ready'} - Twick editor (timeline state not yet synced)
       </EditorStatusBar>
     </EditorShell>
+  </>
   );
 }

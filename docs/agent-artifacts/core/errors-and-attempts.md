@@ -1,7 +1,7 @@
 ---
 title: Errors and attempts
 created: 2026-02-04
-updated: 2026-02-08
+updated: 2026-02-10
 ---
 
 Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx).
@@ -36,6 +36,14 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ---
 
+## Input icons and badge padding (overlap + cramped tags)
+
+**Problem**: Search inputs and command palettes showed oversized icons that overlapped text; tag/badge pills (e.g. model provider + v2 chips) appeared cramped with no padding.
+
+**Fix**: Use `--icon-size` for input/command icons and calculate left padding with `pl-[calc(var(--control-padding-x)+var(--icon-size)+var(--control-gap))]` to ensure text never collides. Tokenize command/menu/select padding to `--control-*` and `--menu-*`. For tags, rely on `--badge-padding-x/y` in `Badge` and avoid overriding with ad-hoc `px-*`/`h-*`. See [styling-and-ui-consistency.md](./styling-and-ui-consistency.md) and [design/01-styling-and-theming.mdx](../../design/01-styling-and-theming.mdx).
+
+---
+
 ## Styling: theme variables overridden by globals
 
 **Problem**: Semantic tokens (`--background`, `--foreground`, etc.) were defined in both `packages/shared/src/shared/styles/themes.css` (via `--color-df-*`) and `apps/studio/app/globals.css` (`:root` / `.dark` with raw oklch). Import order caused globals to override the theme.
@@ -62,13 +70,17 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ---
 
+## Model routing: two providers, server-state only
+
+**Design**: Two slots — `copilotModelId` and `assistantUiModelId` — in in-memory server-state. **No model ID in request**: CopilotKit and assistant-chat handlers use only `getCopilotModelId()` and `getAssistantUiModelId()`; do not send `x-forge-model` or body `modelName`. Client updates model only via POST to `/api/model-settings` with `{ provider: 'copilot' | 'assistantUi', modelId }`. One **ModelSwitcher** component with `provider` prop; same UX for both. Default from code via `getDefaultChatModelId()` (no model IDs in .env). Use naming `copilot` / `assistantUi` everywhere (type `ModelProviderId`); no "sidebar" or "strategy" in the model layer. See [06-model-routing-and-openrouter.mdx](../../architecture/06-model-routing-and-openrouter.mdx).
+
+---
+
 ## Model 429 / 5xx (custom cooldown removed)
 
 **Problem**: Repeated requests to a rate-limited or failing model can exhaust the provider.
 
-**Previous fix (removed)**: We used to record errors via `reportModelError(modelId)` and auto-switch with cooldown. That behavior has been **removed**.
-
-**Current fix**: We use **OpenRouter model fallbacks**: the request body includes `models: [primary, ...fallbacks]`. OpenRouter retries with the next model in the array on rate limit / 5xx within the same request. No app-level health or cooldown. Preferences (primary + fallback chain) are in `server-state.ts`; the CopilotKit route and other OpenRouter call sites (forge/plan, structured-output) pass the `models` array.
+**Current fix**: CopilotKit and assistant-chat use a **single model** from server-state (no fallbacks). Task routes (forge/plan, structured-output) use `DEFAULT_TASK_MODEL`. No app-level health or cooldown. If we reintroduce fallbacks later, use OpenRouter's `models: [primary, ...fallbacks]` in the request body.
 
 ---
 
@@ -78,7 +90,7 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 **Cause**: The model router store's `fetchSettings` called `GET /api/model-settings` (which returns `registry` from `getOpenRouterModels()`) but only updated `activeModelId`, `mode`, `fallbackIds`, `enabledModelIds`, `manualModelId` in state. It never set `registry`, so the client kept the initial `registry: []`.
 
-**Fix**: In `apps/studio/lib/model-router/store.ts`, in `fetchSettings`, add `registry: Array.isArray(data.registry) ? data.registry : []` to the `set()` call so the UI receives the OpenRouter list.
+**Fix**: In `apps/studio/lib/model-router/store.ts`, in `fetchSettings`, set `registry` (and `copilotModelId`, `assistantUiModelId`) from the GET response so the UI receives the OpenRouter list and current slot values.
 
 ---
 
@@ -261,6 +273,43 @@ For the ongoing convention (new or moved docs), see [standard-practices](standar
 **Problem**: "Maximum update depth exceeded" in React, with stack pointing to Radix UI `setRef` and `EditorApp.Tab` / `EditorTooltip` / `AppShell`. Nested Radix Tooltips (e.g. one around the tab, one around the close button) and ref merging (`TooltipTrigger asChild`) can trigger setState inside ref callbacks, causing a re-render loop.
 
 **Fix**: Avoid nested tooltips: use a native `title` attribute for the close button instead of wrapping it in a second `EditorTooltip`. When the tab has no tooltip, do not wrap the tab in `EditorTooltip` at all (render the tab element directly). If the loop persists, wrap the tab root in a `React.forwardRef` component so the ref target has a stable identity.
+
+---
+
+## Wide form dialogs + left-side close button regression
+
+**Problem**: Character/create upsert dialogs rendered too wide (near edge-to-edge) for simple forms, with low visual hierarchy and inconsistent close placement (left-side close icon). This reduced readability and made the UI feel unpolished.
+
+**Cause**: Overlay surfaces used broad width presets and did not enforce a consistent close-position contract. Some dialogs bypassed shadcn form section patterns and lacked tokenized spacing.
+
+**Fix**: Standardize overlay/dialog sizing and close placement:
+
+- `EditorOverlaySurface` size mapping is compact by default (`sm -> max-w-md`, `md -> max-w-xl`, `lg -> max-w-2xl`).
+- `full` remains constrained (`min(94vw, 72rem)`) with max-height cap; never edge-to-edge for standard forms.
+- Close button is icon-only and top-right for all dialogs.
+- Upsert forms use shadcn `Form` primitives plus section layout with tokenized spacing.
+
+References: `packages/shared/src/shared/components/editor/EditorOverlaySurface.tsx`, `packages/ui/src/components/ui/dialog.tsx`, `apps/studio/components/character/CreateCharacterModal.tsx`, and [styling-and-ui-consistency.md](./styling-and-ui-consistency.md).
+
+---
+
+## Copilot sidebar closes when selecting a model
+
+**Problem**: Selecting a model from the ModelSwitcher inside the Copilot sidebar caused the sidebar to close immediately.
+
+**Cause**: The model picker popover was portaled to `document.body` (Radix Popover default). CopilotKit renders the sidebar as a Dialog; clicking inside a portaled popover is treated as an "outside click" and closes the dialog.
+
+**Fix**: Add a `portalled` option to `@forge/ui/popover` and set `portalled={false}` for ModelSwitcher in the `composer` variant (Copilot sidebar / assistant-ui). Keep the portal for toolbar usage so popovers can escape overflow when not inside a dialog.
+
+---
+
+## Cmd+K assistant popup: no model switcher + stale model ID ("No endpoints found")
+
+**Problem**: Global assistant chat opened from Cmd+K had no in-composer model switcher, so users could not recover when the selected model became invalid. Requests failed with OpenRouter `"No endpoints found for google/gemini-2.0-flash-exp:free"`.
+
+**Cause**: (1) `DialogueAssistantPanel` did not expose composer slot props to `Thread`, so `AssistantChatPopup` could not inject `ModelSwitcher`. (2) Legacy persisted model IDs were still read as-is, and the old default (`google/gemini-2.0-flash-exp:free`) could be unavailable.
+
+**Fix**: (1) Forward `composerLeading` / `composerTrailing` through `DialogueAssistantPanel` to `Thread` and mount `ModelSwitcher provider="assistantUi" variant="composer"` in `AssistantChatPopup`. (2) Move default chat model to `openai/gpt-oss-120b:free`, normalize legacy unavailable IDs in persistence, and resolve selected model against the current OpenRouter registry before use (`resolveModelIdFromRegistry`) in `/api/model-settings`, `/api/assistant-chat`, and Copilot runtime resolver.
 
 ---
 

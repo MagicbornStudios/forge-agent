@@ -1,17 +1,18 @@
 ---
 title: Design language
 created: 2026-02-07
-updated: 2026-02-08
+updated: 2026-02-10
 ---
 
 # Design language
 
-One-pager for the editor’s visual direction: professional, modern, elegant — **technical and powerful**, with clear hierarchy and shadcn-first UI. We aim to look **much more shadcn** than before while keeping density where it matters.
+One-pager for the editor’s visual direction: professional, modern, soft-but-strong — **Spotify tone with technical power**, clear hierarchy, and shadcn-first UI. Unreal/Unity are references for **structure** only; the surface should feel softer and more modern.
 
-## 1. Technical and powerful
+## 1. Soft, strong, and technical
 
 - **Clear hierarchy** — Navigation, content, and inspector are distinct; one primary accent used sparingly (active state, primary actions, selection). No visual clutter.
 - **Shadcn-first** — Prefer shadcn UI (Button, Label, Menubar, Tabs, etc.) for all editor chrome; avoid plain HTML elements unless necessary.
+- **Soft surfaces, strong contrast** — Muted surfaces, subtle shadows, and clear separation between layers. Avoid harsh borders; keep focus/selection crisp.
 - **Text and icons within containers** — Truncation, `min-w-0`, and constrained layout so text and icons stay inside their containers (no overflow).
 - **Accent bordering: one edge only** — For list items, cards, and tab-like surfaces, use accent on **one edge only** (top, or one side, or bottom). **No full border** (no four-sided purple/primary border) for narrative graph list items or similar.
 
@@ -44,8 +45,17 @@ One-pager for the editor’s visual direction: professional, modern, elegant —
 ## 6. Professional and elegant
 
 - **Consistent spacing** — Use tokens only (`--panel-padding`, `--control-gap`, etc.); no ad-hoc `px-*`/`py-*` in editor chrome.
-- **Consistent icon set** — Lucide React throughout; standard size **12px** (`size-3` or `var(--icon-size)`) and outline style. Menu items and toolbar actions must include an icon where the action benefits from visual recognition (e.g. Fit view, Open workbench, Save, editor creation buttons).
+- **Consistent icon set** — Lucide React throughout; standard size **12px** (`size-3` or `var(--icon-size)`) and outline style. Use `--icon-size-lg` sparingly for emphasis (send, primary action). Menu items and toolbar actions must include an icon where the action benefits from visual recognition (e.g. Fit view, Open workbench, Save, editor creation buttons). Spinners use `Loader2` with `animate-spin`.
 - **Semantic tokens only** — No hardcoded colors; use `--background`, `--foreground`, `--border`, `--context-accent`, `--glow-*`, etc.
+
+## 7. Dialog and form standards
+
+- **Default modal widths are compact** — Use `sm`/`md`/`lg` widths for upsert flows (`max-w-md`, `max-w-xl`, `max-w-2xl`). Avoid edge-to-edge dialogs for forms.
+- **Wide dialogs are constrained** — For media-heavy flows use `full` as constrained wide (`min(94vw, 72rem)`) with capped height, not full-screen width.
+- **Close affordance is always top-right** — Use icon-only close (`X`) on the right in all overlay dialogs for consistency and discoverability.
+- **Shadcn form structure is canonical** — Build forms with `Form`, `FormField`, `FormItem`, `FormLabel`, `FormControl`, `FormMessage`. Avoid ad-hoc label/input stacking.
+- **Sectioned upsert hierarchy** — Prefer named sections with icon + heading (Basics, Prompt, Voice, Media). Keep each section card/panel padded with tokens.
+- **Entity media areas are inline, not detached** — In entity upserts, media actions and current media lists live in the same dialog so users can generate/upload and immediately review.
 
 ## Relation to other design docs
 

@@ -28,9 +28,11 @@ export interface DockLayoutSlotConfig {
 
 export interface DockLayoutProps {
   left?: React.ReactNode;
-  main: React.ReactNode;
+  main?: React.ReactNode;
   right?: React.ReactNode;
   bottom?: React.ReactNode;
+  /** When using slot children (DockLayout.Left etc.), omit props or use as fallback. Slot children override props. */
+  children?: React.ReactNode;
   /** Optional per-slot tab config (title + iconKey) for Dockview tab bar. */
   slots?: {
     left?: DockLayoutSlotConfig;
@@ -47,6 +49,10 @@ export interface DockLayoutProps {
   bottomMinSize?: number;
   layoutId?: string;
   className?: string;
+  /** When provided with onLayoutChange and clearLayout, layout is controlled (no localStorage). */
+  layoutJson?: string | null;
+  onLayoutChange?: (json: string) => void;
+  clearLayout?: () => void;
 }
 
 const SLOT_IDS = ['left', 'main', 'right', 'bottom'] as const;
@@ -85,12 +91,55 @@ const DEFAULT_SLOT_CONFIG: Record<SlotId, { title: string; iconKey: DockLayoutSl
   left: { title: 'Library', iconKey: 'library' },
   main: { title: 'Main', iconKey: 'main' },
   right: { title: 'Inspector', iconKey: 'inspector' },
-  bottom: { title: 'Workbench', iconKey: 'workbench' },
+  bottom: { title: 'Assistant', iconKey: 'workbench' },
 };
+
+/** Slot components for declarative layout. Use with EditorDockLayout: <EditorDockLayout><EditorDockLayout.Left>…</EditorDockLayout.Left>…</EditorDockLayout>. */
+function DockLayoutLeft({ children }: { children?: React.ReactNode }) {
+  return <>{children}</>;
+}
+DockLayoutLeft.displayName = 'DockLayout.Left';
+
+function DockLayoutMain({ children }: { children?: React.ReactNode }) {
+  return <>{children}</>;
+}
+DockLayoutMain.displayName = 'DockLayout.Main';
+
+function DockLayoutRight({ children }: { children?: React.ReactNode }) {
+  return <>{children}</>;
+}
+DockLayoutRight.displayName = 'DockLayout.Right';
+
+function DockLayoutBottom({ children }: { children?: React.ReactNode }) {
+  return <>{children}</>;
+}
+DockLayoutBottom.displayName = 'DockLayout.Bottom';
+
+const SLOT_COMPONENTS: Record<SlotId, React.ComponentType<{ children?: React.ReactNode }>> = {
+  left: DockLayoutLeft,
+  main: DockLayoutMain,
+  right: DockLayoutRight,
+  bottom: DockLayoutBottom,
+};
+
+function collectSlotsFromChildren(children: React.ReactNode): Partial<Record<SlotId, React.ReactNode>> {
+  const collected: Partial<Record<SlotId, React.ReactNode>> = {};
+  React.Children.forEach(children, (child) => {
+    if (!React.isValidElement(child)) return;
+    const type = child.type as React.ComponentType<{ children?: React.ReactNode }>;
+    for (const slotId of SLOT_IDS) {
+      if (type === SLOT_COMPONENTS[slotId]) {
+        collected[slotId] = (child as React.ReactElement<{ children?: React.ReactNode }>).props.children;
+        break;
+      }
+    }
+  });
+  return collected;
+}
 
 type LayoutSlots = {
   left?: React.ReactNode;
-  main: React.ReactNode;
+  main?: React.ReactNode;
   right?: React.ReactNode;
   bottom?: React.ReactNode;
 };
@@ -167,12 +216,13 @@ function buildDefaultLayout(
   }
 }
 
-export const DockLayout = forwardRef<DockLayoutRef, DockLayoutProps>(function DockLayout(
+const DockLayoutRoot = forwardRef<DockLayoutRef, DockLayoutProps>(function DockLayout(
   {
-    left,
-    main,
-    right,
-    bottom,
+    left: leftProp,
+    main: mainProp,
+    right: rightProp,
+    bottom: bottomProp,
+    children,
     slots: slotConfig,
     viewport,
     leftDefaultSize,
@@ -183,9 +233,24 @@ export const DockLayout = forwardRef<DockLayoutRef, DockLayoutProps>(function Do
     bottomMinSize,
     layoutId,
     className,
+    layoutJson,
+    onLayoutChange,
+    clearLayout,
   },
   ref
 ) {
+  const isControlled =
+    typeof onLayoutChange === 'function' && typeof clearLayout === 'function';
+
+  const collected = React.useMemo(
+    () => (children != null ? collectSlotsFromChildren(children) : {}),
+    [children]
+  );
+  const left = collected.left ?? leftProp;
+  const main = collected.main ?? mainProp;
+  const right = collected.right ?? rightProp;
+  const bottom = collected.bottom ?? bottomProp;
+
   const [api, setApi] = useState<DockviewReadyEvent['api'] | null>(null);
   const [layoutSeed, setLayoutSeed] = useState(0);
   const dockviewRef = useRef<HTMLDivElement | null>(null);
@@ -196,12 +261,14 @@ export const DockLayout = forwardRef<DockLayoutRef, DockLayoutProps>(function Do
   const layoutKey = layoutId ?? 'dockview-default';
 
   const resetLayout = useCallback(() => {
-    if (storageKey && typeof window !== 'undefined') {
+    if (isControlled) {
+      clearLayout?.();
+    } else if (storageKey && typeof window !== 'undefined') {
       window.localStorage.removeItem(storageKey);
     }
     setApi(null);
     setLayoutSeed((value) => value + 1);
-  }, [storageKey]);
+  }, [isControlled, clearLayout, storageKey]);
 
   useImperativeHandle(ref, () => ({ resetLayout }), [resetLayout]);
 
@@ -243,7 +310,16 @@ export const DockLayout = forwardRef<DockLayoutRef, DockLayoutProps>(function Do
       };
 
       let loaded = false;
-      if (storageKey && typeof window !== 'undefined') {
+      if (isControlled && layoutJson && layoutJson.trim()) {
+        try {
+          const layout = JSON.parse(layoutJson);
+          dockApi.fromJSON(layout);
+          loaded = true;
+        } catch {
+          // ignore invalid layout
+        }
+      }
+      if (!loaded && !isControlled && storageKey && typeof window !== 'undefined') {
         try {
           const raw = window.localStorage.getItem(storageKey);
           if (raw) {
@@ -255,7 +331,6 @@ export const DockLayout = forwardRef<DockLayoutRef, DockLayoutProps>(function Do
           // ignore invalid layout
         }
       }
-
       if (!loaded) {
         buildDefaultLayout(dockApi, { left: l, main: m, right: r, bottom: b }, config, sizeOverrides);
       }
@@ -274,17 +349,30 @@ export const DockLayout = forwardRef<DockLayoutRef, DockLayoutProps>(function Do
   );
 
   useEffect(() => {
-    if (!api || !storageKey) return;
-    const disposable = api.onDidLayoutChange(() => {
-      try {
-        const layout = api.toJSON();
-        window.localStorage.setItem(storageKey, JSON.stringify(layout));
-      } catch {
-        // ignore
-      }
-    });
-    return () => disposable.dispose();
-  }, [api, storageKey]);
+    if (!api) return;
+    if (isControlled && onLayoutChange) {
+      const disposable = api.onDidLayoutChange(() => {
+        try {
+          const layout = api.toJSON();
+          onLayoutChange(JSON.stringify(layout));
+        } catch {
+          // ignore
+        }
+      });
+      return () => disposable.dispose();
+    }
+    if (storageKey) {
+      const disposable = api.onDidLayoutChange(() => {
+        try {
+          const layout = api.toJSON();
+          window.localStorage.setItem(storageKey, JSON.stringify(layout));
+        } catch {
+          // ignore
+        }
+      });
+      return () => disposable.dispose();
+    }
+  }, [api, isControlled, onLayoutChange, storageKey]);
 
   const viewportAttrs = viewport
     ? {
@@ -319,3 +407,14 @@ export const DockLayout = forwardRef<DockLayoutRef, DockLayoutProps>(function Do
     </DockLayoutContentContext.Provider>
   );
 });
+
+/** Canonical editor dock layout. Use EditorDockLayout in new code. */
+export const EditorDockLayout = Object.assign(DockLayoutRoot, {
+  Left: DockLayoutLeft,
+  Main: DockLayoutMain,
+  Right: DockLayoutRight,
+  Bottom: DockLayoutBottom,
+});
+
+/** @deprecated Use EditorDockLayout. Kept for backward compatibility. */
+export const DockLayout = EditorDockLayout;

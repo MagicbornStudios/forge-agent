@@ -35,6 +35,9 @@ export interface ProjectSwitcherProps {
   /** compact: dropdown + plus only. full: label + dropdown + plus + children */
   variant?: 'compact' | 'full';
   children?: React.ReactNode;
+  /** When provided, the dropdown is controlled (e.g. open from File > Switch project). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function ProjectSwitcher({
@@ -46,6 +49,8 @@ export function ProjectSwitcher({
   error = null,
   variant = 'compact',
   children,
+  open: controlledOpen,
+  onOpenChange: onControlledOpenChange,
 }: ProjectSwitcherProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [projectName, setProjectName] = useState('');
@@ -108,7 +113,10 @@ export function ProjectSwitcher({
         {variant === 'full' && (
           <span className="text-sm font-medium text-muted-foreground">Project:</span>
         )}
-        <DropdownMenu>
+        <DropdownMenu
+          open={controlledOpen}
+          onOpenChange={onControlledOpenChange}
+        >
           <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="min-w-[200px]">
             {projects.map((project) => (

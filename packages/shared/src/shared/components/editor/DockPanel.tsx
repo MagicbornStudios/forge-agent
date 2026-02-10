@@ -49,7 +49,7 @@ export interface DockPanelProps {
 }
 
 /**
- * DockPanel — a single region within a `DockLayout`.
+ * EditorDockPanel — a single region within an `EditorDockLayout`.
  *
  * Features:
  * - Optional title bar with icon + actions (set `hideTitleBar` when the panel identity is shown elsewhere)
@@ -75,7 +75,8 @@ export interface DockPanelProps {
  * />
  * ```
  */
-export function DockPanel({
+/** Canonical editor dock panel. Use EditorDockPanel in new code. */
+export function EditorDockPanel({
   panelId,
   title,
   icon,
@@ -142,3 +143,6 @@ export function DockPanel({
     </div>
   );
 }
+
+/** @deprecated Use EditorDockPanel. Kept for backward compatibility. */
+export const DockPanel = EditorDockPanel;

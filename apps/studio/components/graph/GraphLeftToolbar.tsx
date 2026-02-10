@@ -28,11 +28,11 @@ export function GraphLeftToolbar({
           <Button
             variant="outline"
             size="icon"
-            className="size-8 border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="size-[var(--control-height)] border-border text-muted-foreground hover:bg-muted hover:text-foreground"
             title="Fit view"
             onClick={onFitView}
           >
-            <Focus className="size-3.5" />
+            <Focus className="size-[var(--icon-size)]" />
           </Button>
         )}
         {onToggleMiniMap && (
@@ -40,7 +40,7 @@ export function GraphLeftToolbar({
             variant="outline"
             size="icon"
             className={cn(
-              'size-8 transition-colors',
+              'size-[var(--control-height)] transition-colors',
               showMiniMap
                 ? 'border-primary bg-primary/10 text-foreground'
                 : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -48,7 +48,7 @@ export function GraphLeftToolbar({
             title={showMiniMap ? 'Hide minimap' : 'Show minimap'}
             onClick={onToggleMiniMap}
           >
-            <Map className="size-3.5" />
+            <Map className="size-[var(--icon-size)]" />
           </Button>
         )}
       </div>
