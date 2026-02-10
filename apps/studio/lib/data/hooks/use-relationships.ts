@@ -73,7 +73,7 @@ export function useDeleteRelationship() {
     mutationFn: async (id: number) =>
       payloadSdk.delete({ collection: RELATIONSHIPS_SLUG, id }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['studio', 'relationships'] });
+      queryClient.invalidateQueries({ queryKey: studioKeys.relationshipsAll() });
     },
   });
 }

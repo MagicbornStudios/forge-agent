@@ -11,7 +11,9 @@ import { immer } from 'zustand/middleware/immer';
  * - `character` - Character relationship graph editor
  * - `strategy` - CodebaseAgentStrategyEditor (assistant-ui chat)
  */
-export type EditorId = 'dialogue' | 'video' | 'character' | 'strategy';
+export const EDITOR_IDS = ['dialogue', 'video', 'character', 'strategy'] as const;
+export type EditorId = (typeof EDITOR_IDS)[number];
+export const DEFAULT_EDITOR_ID: EditorId = EDITOR_IDS[0];
 
 export interface AppShellRoute {
   activeWorkspaceId: EditorId;
@@ -56,7 +58,7 @@ interface AppShellState {
   clearDockLayout: (layoutId: string) => void;
 }
 
-const DEFAULT_OPEN: EditorId[] = ['dialogue'];
+const DEFAULT_OPEN: EditorId[] = [DEFAULT_EDITOR_ID];
 const APP_SESSION_KEY = 'forge:app-session:v2';
 const APP_SESSION_VERSION = 2;
 
@@ -79,17 +81,11 @@ type PersistedAppState = Partial<
 };
 
 const mapModeId = (value: unknown): EditorId | undefined => {
-  switch (value) {
-    case 'dialogue':
-    case 'video':
-    case 'character':
-    case 'strategy':
-      return value;
-    case 'forge':
-      return 'dialogue';
-    default:
-      return undefined;
+  if (value === 'forge') return DEFAULT_EDITOR_ID;
+  if (typeof value === 'string' && (EDITOR_IDS as readonly string[]).includes(value)) {
+    return value as EditorId;
   }
+  return undefined;
 };
 
 export const useAppShellStore = create<AppShellState>()(
@@ -97,7 +93,7 @@ export const useAppShellStore = create<AppShellState>()(
     persist(
       immer((set) => ({
         route: {
-          activeWorkspaceId: 'dialogue',
+          activeWorkspaceId: DEFAULT_EDITOR_ID,
           openWorkspaceIds: DEFAULT_OPEN,
           globalModals: [],
         },
@@ -169,7 +165,7 @@ export const useAppShellStore = create<AppShellState>()(
             if (next.length === 0) return;
             state.route.openWorkspaceIds = next;
             if (state.route.activeWorkspaceId === id) {
-              state.route.activeWorkspaceId = next[0] ?? 'dialogue';
+              state.route.activeWorkspaceId = next[0] ?? DEFAULT_EDITOR_ID;
             }
           });
         },
@@ -236,7 +232,7 @@ export const useAppShellStore = create<AppShellState>()(
         }),
         migrate: (persisted) => {
           const state = (persisted ?? {}) as PersistedAppState;
-          const active = mapModeId(state.route?.activeWorkspaceId) ?? 'dialogue';
+          const active = mapModeId(state.route?.activeWorkspaceId) ?? DEFAULT_EDITOR_ID;
           const open =
             (state.route?.openWorkspaceIds ?? [])
               .map(mapModeId)

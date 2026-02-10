@@ -1,4 +1,5 @@
 import type { WorkflowRunInput } from '@forge/shared/copilot/workflows';
+import { API_ROUTES } from './routes';
 
 /**
  * Streaming endpoints are handled here (SSE). The generated OpenAPI client
@@ -10,7 +11,7 @@ export async function streamWorkflowRun(
   input: WorkflowRunInput,
   options?: { signal?: AbortSignal }
 ): Promise<ReadableStream<Uint8Array>> {
-  const response = await fetch('/api/workflows/run', {
+  const response = await fetch(API_ROUTES.WORKFLOWS_RUN, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     signal: options?.signal,

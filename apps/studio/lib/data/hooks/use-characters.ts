@@ -85,7 +85,7 @@ export function useDeleteCharacter() {
     mutationFn: async (id: number) => payloadSdk.delete({ collection: CHARACTERS_SLUG, id }),
     onSuccess: () => {
       // Broad invalidation since we don't know the project ID at this point.
-      queryClient.invalidateQueries({ queryKey: ['studio', 'characters'] });
+      queryClient.invalidateQueries({ queryKey: studioKeys.charactersAll() });
     },
   });
 }

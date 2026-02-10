@@ -1,4 +1,5 @@
 import type { ModelIds, ModelProviderId, ModelSettingsResponse } from '@/lib/model-router/types';
+import { API_ROUTES } from './routes';
 
 async function readJsonOrThrow(res: Response): Promise<any> {
   if (!res.ok) {
@@ -13,7 +14,7 @@ async function readJsonOrThrow(res: Response): Promise<any> {
 }
 
 export async function getModelSettings(): Promise<ModelSettingsResponse> {
-  const res = await fetch('/api/model-settings', {
+  const res = await fetch(API_ROUTES.MODEL_SETTINGS, {
     method: 'GET',
     credentials: 'include',
   });
@@ -31,7 +32,7 @@ export async function setModelSettingsModelId(
   provider: ModelProviderId,
   modelId: string,
 ): Promise<ModelIds> {
-  const res = await fetch('/api/model-settings', {
+  const res = await fetch(API_ROUTES.MODEL_SETTINGS, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',

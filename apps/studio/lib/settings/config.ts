@@ -1,4 +1,4 @@
-import { getAppDefaults, getProjectDefaults } from "./schema";
+import { getAppDefaults, getProjectDefaults, getViewportDefaultsFromSchema } from "./schema";
 
 export type SettingsDefaults = Record<string, unknown>;
 
@@ -26,7 +26,11 @@ export const SETTINGS_CONFIG: SettingsConfig = {
       "ai.agentName": "Strategy Agent",
     },
   },
-  viewportDefaults: {},
+  viewportDefaults: {
+    "dialogue:narrative": getViewportDefaultsFromSchema(),
+    "dialogue:storylet": getViewportDefaultsFromSchema(),
+    "character:main": getViewportDefaultsFromSchema(),
+  },
 };
 
 export function getEditorDefaults(editorId?: string) {

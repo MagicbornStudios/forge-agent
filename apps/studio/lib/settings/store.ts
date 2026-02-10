@@ -8,6 +8,14 @@ import { SETTINGS_CONFIG, getEditorDefaults, getViewportDefaults } from "./confi
 
 export type SettingsScope = "app" | "project" | "editor" | "viewport";
 
+/** Scope literal constants for settings (use instead of string literals). */
+export const SETTINGS_SCOPE = {
+  APP: "app",
+  PROJECT: "project",
+  EDITOR: "editor",
+  VIEWPORT: "viewport",
+} as const satisfies Record<string, SettingsScope>;
+
 export interface SettingsState {
   appSettings: Record<string, unknown>;
   projectSettings: Record<string, Record<string, unknown>>;

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useImperativeHandle, useMemo, useRef, forwardRef, useState } from 'react';
+import React, { useCallback, useImperativeHandle, useMemo, useRef, forwardRef } from 'react';
 import ReactFlow, {
   useNodesState,
   useEdgesState,
@@ -19,6 +19,7 @@ import type { CharacterDoc, RelationshipDoc, CharacterCardNodeData, Relationship
 import { FlowBackground, FlowMiniMap } from '@/components/forge';
 import { GraphLeftToolbar } from '@/components/graph/GraphLeftToolbar';
 import { GraphLayoutControls } from '@/components/graph/GraphLayoutControls';
+import { useSettingsStore } from '@/lib/settings/store';
 
 // ---------------------------------------------------------------------------
 // Node / edge type registries (stable references)
@@ -224,7 +225,7 @@ export const RelationshipGraphEditor = forwardRef<CharacterViewportHandle, Props
           <FlowBackground />
           <GraphLeftToolbar
             showMiniMap={showMiniMap}
-            onToggleMiniMap={() => setShowMiniMap((prev) => !prev)}
+            onToggleMiniMap={handleToggleMiniMap}
             onFitView={handleFitView}
           />
           <GraphLayoutControls

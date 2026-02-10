@@ -22,6 +22,14 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 
 ---
 
+## Constants for editor IDs and API routes (DRY)
+
+**Decision:** Editor IDs are defined once in the app-shell store (`EDITOR_IDS`, `EditorId`, `DEFAULT_EDITOR_ID`). Custom API route paths used by the client are defined in [apps/studio/lib/api-client/routes.ts](../../../apps/studio/lib/api-client/routes.ts) (`API_ROUTES`). Query keys use [apps/studio/lib/data/keys.ts](../../../apps/studio/lib/data/keys.ts) only; no ad-hoc `['studio', ...]` in hooks. See [standard-practices](standard-practices.md) § Constants, enums, and DRY.
+
+**Rationale:** Single source of truth reduces typos and makes adding a new editor or route a one-place change. Update this doc if we change where constants live.
+
+---
+
 ## TanStack Query for server-state
 
 **Decision:** Server-state (graphs, video docs, lists, "me", pricing, etc.) is fetched and cached via TanStack Query. Query keys and hooks live in `apps/studio/lib/data/` (keys, hooks). Hooks use the Payload SDK for collection CRUD and the generated/manual client for custom endpoints. Mutations invalidate the relevant queries after save.
@@ -133,6 +141,14 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 **Decision:** Settings are presented in a **single left-side drawer** (shadcn Sheet, `side="left"`). One Settings control in the app bar opens this drawer (no dropdown). The drawer contains **scope tabs**: App, User (same content as App when logged in), Project (when `activeProjectId` is set), Editor (when an editor is active), Viewport (when in context). A **single schema** (`lib/settings/schema.ts`) lists every setting key with type, label, default, and which scopes show it; we **derive** `SETTINGS_CONFIG` defaults (app, project) and section definitions (APP_SETTINGS_SECTIONS, etc.) from this schema so adding or changing a key in one place adds/updates the control and the default.
 
 **Rationale:** One surface for all settings; project scope allows per-project overrides; single schema avoids duplicate definitions (defaults vs section fields) and keeps the form in sync as settings evolve. See plan "Settings drawer (left sidebar) and form strategy."
+
+---
+
+## Form and settings field patterns (design system)
+
+**Decision:** **Booleans** are rendered as **Switch** only; do not show "On"/"Off" text next to the Switch. **Toggle/Switch placement:** default is **right of the label** on the same row (label left, control right). Apply in settings and any form that has boolean toggles. **Single selection** from a small set: use **Select** (dropdown); from a large set use **Combobox** (searchable) when we add or use it. **Multiple selection:** use **checkboxes** (checkbox group); when the schema supports a multiselect type, use Checkbox from `@forge/ui/checkbox` for each option. **Settings and forms:** Each field row that has an icon mapping shows **icon + label**; for toggles, the Switch is on the same row to the right of the label (and badges/Reset if present). Other control types (text, number, select, textarea) keep label above and control below until we standardize further.
+
+**Rationale:** Consistent patterns reduce drift and rework; new forms (settings, modals, dialogs) should follow these rules. Update this doc when we add new field types (e.g. multiselect, combobox) or change default layout.
 
 ---
 

@@ -3,6 +3,7 @@
 import React, { useMemo, useState, createContext, useContext } from 'react';
 import { useAppShellStore } from '@/lib/app-shell/store';
 import { EDITOR_VIEWPORT_IDS, EDITOR_LABELS } from '@/lib/app-shell/editor-metadata';
+import { API_ROUTES } from '@/lib/api-client/routes';
 import { useSettingsStore } from '@/lib/settings/store';
 import { CopilotChatInput } from '@/components/copilot/CopilotChatInput';
 import { CAPABILITIES, useEntitlements } from '@forge/shared/entitlements';
@@ -98,7 +99,7 @@ export function CopilotKitProvider({
 
   return (
     <ForgeCopilotProvider
-      runtimeUrl="/api/copilotkit"
+      runtimeUrl={API_ROUTES.COPILOTKIT}
       headers={headers}
       forwardedParameters={forwardedParameters}
       publicApiKey={publicApiKey}

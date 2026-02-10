@@ -13,8 +13,12 @@ export const studioKeys = {
   settingsOverrides: () => ['studio', 'settings-overrides'] as const,
   projects: (domain?: string) => ['studio', 'projects', domain ?? 'all'] as const,
   characters: (projectId: number) => ['studio', 'characters', projectId] as const,
+  /** Key prefix for broad invalidation of all character queries (e.g. after delete when projectId unknown). */
+  charactersAll: () => ['studio', 'characters'] as const,
   character: (id: number) => ['studio', 'character', id] as const,
   relationships: (projectId: number) => ['studio', 'relationships', projectId] as const,
+  /** Key prefix for broad invalidation of all relationship queries (e.g. after delete when projectId unknown). */
+  relationshipsAll: () => ['studio', 'relationships'] as const,
   characterProjects: () => ['studio', 'character-projects'] as const,
   pages: (projectId: number) => ['studio', 'pages', projectId] as const,
   page: (id: number) => ['studio', 'page', id] as const,

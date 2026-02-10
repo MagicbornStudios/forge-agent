@@ -270,7 +270,18 @@ function ForgeGraphPanel({
   onFitView,
   onFitSelection,
 }: ForgeGraphPanelProps) {
-  const [showMiniMap, setShowMiniMap] = useState(true);
+  const getSettingValue = useSettingsStore((s) => s.getSettingValue);
+  const setSetting = useSettingsStore((s) => s.setSetting);
+  const showMiniMap = (getSettingValue('graph.showMiniMap', {
+    editorId: 'dialogue',
+    viewportId: scope,
+  }) as boolean | undefined) ?? true;
+  const handleToggleMiniMap = useCallback(() => {
+    setSetting('viewport', 'graph.showMiniMap', !showMiniMap, {
+      editorId: 'dialogue',
+      viewportId: scope,
+    });
+  }, [setSetting, showMiniMap, scope]);
 
   return (
     <div
@@ -306,7 +317,7 @@ function ForgeGraphPanel({
           >
             <GraphLeftToolbar
               showMiniMap={showMiniMap}
-              onToggleMiniMap={() => setShowMiniMap((prev) => !prev)}
+              onToggleMiniMap={handleToggleMiniMap}
               onFitView={onFitView}
             />
             <GraphLayoutControls onFitView={onFitView} onFitSelection={onFitSelection} />
@@ -1170,7 +1181,7 @@ export function DialogueEditor() {
           <AppSettingsPanelContent
             activeEditorId="dialogue"
             activeProjectId={activeProjectId != null ? String(activeProjectId) : null}
-            viewportId="main"
+            viewportId={activeScope}
             className="h-full"
           />
         ),

@@ -24,6 +24,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@forge/ui/select";
 import { Switch } from "@forge/ui/switch";
 import { Button } from "@forge/ui/button";
+import { Undo2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSettingsStore, type SettingsScope } from "@/lib/settings/store";
 import type { SettingsSection, SettingsField } from "./types";
@@ -34,6 +35,10 @@ export interface SettingsPanelProps {
   editorId?: string;
   viewportId?: string;
   projectId?: string;
+  /** Optional icon per section id (e.g. ai-core → Bot). Rendered in section header. */
+  sectionIcons?: Record<string, React.ReactNode>;
+  /** Optional icon per field key (e.g. ui.theme → Palette). Rendered before field label. */
+  fieldIcons?: Record<string, React.ReactNode>;
   className?: string;
 }
 
@@ -116,14 +121,11 @@ function FieldControl({
       );
     case "toggle":
       return (
-        <div className="flex items-center gap-[var(--control-gap)]">
-          <Switch
-            id={inputId}
-            checked={Boolean(value)}
-            onCheckedChange={(checked) => onChange(checked)}
-          />
-          <span className="text-xs text-muted-foreground">{Boolean(value) ? "On" : "Off"}</span>
-        </div>
+        <Switch
+          id={inputId}
+          checked={Boolean(value)}
+          onCheckedChange={(checked) => onChange(checked)}
+        />
       );
     case "text":
     default:
@@ -144,6 +146,8 @@ export function SettingsPanel({
   editorId,
   viewportId,
   projectId,
+  sectionIcons,
+  fieldIcons,
   className,
 }: SettingsPanelProps) {
   const {
@@ -160,7 +164,14 @@ export function SettingsPanel({
       {sections.map((section) => (
         <Card key={section.id} className="p-4 space-y-4">
           <FieldSet className="gap-4">
-            <FieldLegend>{section.title}</FieldLegend>
+            <FieldLegend className="flex items-center gap-[var(--control-gap)]">
+              {sectionIcons?.[section.id] != null && (
+                <span className="flex shrink-0 size-[var(--icon-size)] [&>svg]:size-[var(--icon-size)] text-muted-foreground">
+                  {sectionIcons[section.id]}
+                </span>
+              )}
+              {section.title}
+            </FieldLegend>
             {section.description && (
               <p className="text-xs text-muted-foreground -mt-2">{section.description}</p>
             )}
@@ -193,46 +204,98 @@ export function SettingsPanel({
                           : null;
                   const inputId = `${section.id}-${field.key}`;
 
+                  const isToggle = field.type === "toggle";
+
                   return (
                     <React.Fragment key={field.key}>
                       <Item variant="outline" size="sm" className="bg-background/60">
                         <ItemContent className="gap-3">
-                          <Field orientation="vertical">
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="space-y-1">
-                                <FieldLabel htmlFor={inputId}>
+                          {isToggle ? (
+                            <div className="flex items-center justify-between gap-3 w-full">
+                              <div className="space-y-1 min-w-0">
+                                <FieldLabel htmlFor={inputId} className="flex items-center gap-[var(--control-gap)]">
+                                  {fieldIcons?.[field.key] != null && (
+                                    <span className="flex shrink-0 size-[var(--icon-size)] [&>svg]:size-[var(--icon-size)] text-muted-foreground">
+                                      {fieldIcons[field.key]}
+                                    </span>
+                                  )}
                                   <FieldTitle>{field.label}</FieldTitle>
                                 </FieldLabel>
                                 {field.description && (
                                   <FieldDescription>{field.description}</FieldDescription>
                                 )}
                               </div>
-                              <ItemActions className="items-start pt-1">
-                                {inheritedLabel && <SourceBadge label={inheritedLabel} />}
-                                {isOverride && scope !== "app" && (
-                                  <SourceBadge label="Override" tone="accent" />
-                                )}
-                                {canReset && (
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => clearSetting(scope, field.key, ids)}
-                                  >
-                                    Reset
-                                  </Button>
-                                )}
-                              </ItemActions>
+                              <div className="flex items-center gap-[var(--control-gap)] shrink-0">
+                                <ItemActions className="items-center">
+                                  {inheritedLabel && <SourceBadge label={inheritedLabel} />}
+                                  {isOverride && scope !== "app" && (
+                                    <SourceBadge label="Override" tone="accent" />
+                                  )}
+                                  {canReset && (
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => clearSetting(scope, field.key, ids)}
+                                      className="flex items-center gap-[var(--control-gap)]"
+                                    >
+                                      <Undo2 className="size-[var(--icon-size)] shrink-0" />
+                                      Reset
+                                    </Button>
+                                  )}
+                                </ItemActions>
+                                <Switch
+                                  id={inputId}
+                                  checked={Boolean(value)}
+                                  onCheckedChange={(checked) => setSetting(scope, field.key, checked, ids)}
+                                />
+                              </div>
                             </div>
-                            <FieldContent>
-                              <FieldControl
-                                field={field}
-                                value={value}
-                                inputId={inputId}
-                                onChange={(next) => setSetting(scope, field.key, next, ids)}
-                              />
-                            </FieldContent>
-                          </Field>
+                          ) : (
+                            <Field orientation="vertical">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="space-y-1">
+                                  <FieldLabel htmlFor={inputId} className="flex items-center gap-[var(--control-gap)]">
+                                    {fieldIcons?.[field.key] != null && (
+                                      <span className="flex shrink-0 size-[var(--icon-size)] [&>svg]:size-[var(--icon-size)] text-muted-foreground">
+                                        {fieldIcons[field.key]}
+                                      </span>
+                                    )}
+                                    <FieldTitle>{field.label}</FieldTitle>
+                                  </FieldLabel>
+                                  {field.description && (
+                                    <FieldDescription>{field.description}</FieldDescription>
+                                  )}
+                                </div>
+                                <ItemActions className="items-start pt-1">
+                                  {inheritedLabel && <SourceBadge label={inheritedLabel} />}
+                                  {isOverride && scope !== "app" && (
+                                    <SourceBadge label="Override" tone="accent" />
+                                  )}
+                                  {canReset && (
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => clearSetting(scope, field.key, ids)}
+                                      className="flex items-center gap-[var(--control-gap)]"
+                                    >
+                                      <Undo2 className="size-[var(--icon-size)] shrink-0" />
+                                      Reset
+                                    </Button>
+                                  )}
+                                </ItemActions>
+                              </div>
+                              <FieldContent>
+                                <FieldControl
+                                  field={field}
+                                  value={value}
+                                  inputId={inputId}
+                                  onChange={(next) => setSetting(scope, field.key, next, ids)}
+                                />
+                              </FieldContent>
+                            </Field>
+                          )}
                         </ItemContent>
                       </Item>
                       {index < section.fields.length - 1 && <ItemSeparator />}

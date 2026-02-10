@@ -4,6 +4,7 @@
 
 @source "../**/*.{ts,tsx,jsx,mdx}";
 @source "../../../packages/ui/src/**/*.{ts,tsx,jsx,mdx}";
+@source "../../../packages/shared/src/**/*.{ts,tsx,jsx,mdx}";
 
 @tailwind base;
 @tailwind components;

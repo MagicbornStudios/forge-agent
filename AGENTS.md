@@ -83,3 +83,7 @@ When touching editors (Dialogue, Character, Video, Strategy): use the shared she
 - **Update** those docs when making or rejecting a significant choice (e.g. adding a new backend, changing the client boundary).
 - **Keep one API boundary:** client talks only to our Next API routes; no direct Payload REST/GraphQL from the browser.
 - **API client:** Collection CRUD uses the **Payload SDK** (`lib/api-client/payload-sdk.ts`) against Payload REST. Custom endpoints use the **generated** client where it exists (Auth, Settings, Model, Ai), **manual client modules** in `lib/api-client/` (elevenlabs, media, workflows), or **vendor SDKs** (e.g. ElevenLabs server SDK in route handlers). Do not add raw `fetch` for `/api/*` in components, hooks, or stores - **extend the client** (add a new module under `lib/api-client/` or use a vendor SDK) instead. The OpenAPI/Swagger spec is for **documentation only** (no streaming support); do not direct agents to add new endpoints to the spec to get a client. Use the TanStack Query hooks in `apps/studio/lib/data/hooks/` for server state. Swagger UI at `/api-doc`, spec at `/api/docs`.
+
+## Code quality (constants and DRY)
+
+- **Constants:** Editor ids, API paths, and query keys must use constants, not magic strings. See [docs/agent-artifacts/core/standard-practices.md](docs/agent-artifacts/core/standard-practices.md) § Constants, enums, and DRY.

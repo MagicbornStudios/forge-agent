@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import { useCopilotReadable, useCopilotAction } from '@copilotkit/react-core';
 import type { Parameter } from '@copilotkit/shared';
-import { useEditorStore, type EditorId } from '@/lib/app-shell/store';
+import { useEditorStore, EDITOR_IDS, DEFAULT_EDITOR_ID, type EditorId } from '@/lib/app-shell/store';
 import {
   EDITOR_LABELS,
   EDITOR_SUMMARY,
@@ -39,8 +39,6 @@ import { DialogueEditor } from '@/components/editors/DialogueEditor';
 import { VideoEditor } from '@/components/editors/VideoEditor';
 import { CharacterEditor } from '@/components/editors/CharacterEditor';
 import { StrategyEditor } from '@/components/editors/StrategyEditor';
-
-const VALID_EDITOR_IDS: EditorId[] = ['dialogue', 'video', 'character', 'strategy'];
 
 function UnifiedMenubar({
   onOpenCreateListing,
@@ -118,7 +116,7 @@ export function AppShell() {
   const strategyEnabled = useStrategyEditorEnabled();
   const editorIdsForActions = React.useMemo(
     () =>
-      VALID_EDITOR_IDS.filter(
+      EDITOR_IDS.filter(
         (id) => (id !== 'video' || videoEnabled) && (id !== 'strategy' || strategyEnabled),
       ),
     [videoEnabled, strategyEnabled],
@@ -147,7 +145,7 @@ export function AppShell() {
       closeWorkspace('video');
     }
     if (activeWorkspaceId === 'video') {
-      setActiveWorkspace(visibleWorkspaceIds[0] ?? 'dialogue');
+      setActiveWorkspace(visibleWorkspaceIds[0] ?? DEFAULT_EDITOR_ID);
     }
   }, [
     activeWorkspaceId,
@@ -164,7 +162,7 @@ export function AppShell() {
       closeWorkspace('strategy');
     }
     if (activeWorkspaceId === 'strategy') {
-      setActiveWorkspace(visibleWorkspaceIds[0] ?? 'dialogue');
+      setActiveWorkspace(visibleWorkspaceIds[0] ?? DEFAULT_EDITOR_ID);
     }
   }, [
     activeWorkspaceId,

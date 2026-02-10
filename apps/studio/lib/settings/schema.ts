@@ -28,6 +28,11 @@ const densityOptions: SettingsOption[] = [
   { value: "compact", label: "Compact" },
   { value: "comfortable", label: "Comfortable" },
 ];
+const layoutAlgorithmOptions: SettingsOption[] = [
+  { value: "none", label: "None" },
+  { value: "dagre", label: "Dagre" },
+  { value: "breadthfirst", label: "Breadth-first" },
+];
 
 /** Canonical list: add or change a key here to add/update the control and default everywhere. */
 export const SETTINGS_SCHEMA: SettingsSchemaEntry[] = [
@@ -177,6 +182,32 @@ export const SETTINGS_SCHEMA: SettingsSchemaEntry[] = [
     default: true,
     scopes: ["app"],
   },
+  // Graph viewport – viewport only (minimap, edges, layout)
+  {
+    key: "graph.showMiniMap",
+    type: "toggle",
+    label: "Show minimap",
+    description: "Show the graph minimap in the viewport.",
+    default: true,
+    scopes: ["viewport"],
+  },
+  {
+    key: "graph.animatedEdges",
+    type: "toggle",
+    label: "Animated edges",
+    description: "Animate edges in the graph.",
+    default: true,
+    scopes: ["viewport"],
+  },
+  {
+    key: "graph.layoutAlgorithm",
+    type: "select",
+    label: "Layout algorithm",
+    description: "Auto-layout algorithm for the graph. None keeps manual positions.",
+    options: layoutAlgorithmOptions,
+    default: "none",
+    scopes: ["viewport"],
+  },
 ];
 
 /** Section id from key prefix and scope (for grouping in the form). */
@@ -187,6 +218,8 @@ function sectionIdFromKey(key: string, scope: SettingsScopeId): string {
   if (key.startsWith("ui.")) {
     return scope === "app" ? "ui" : scope === "project" ? "project-ui" : scope === "editor" ? "editor-ui" : "viewport-ui";
   }
+  if (key.startsWith("panel.")) return "panels";
+  if (key.startsWith("graph.")) return "graph-viewport";
   return "other";
 }
 
@@ -230,6 +263,10 @@ const SECTION_META: Record<
     title: "Panel visibility",
     description: "Which panels are visible by default per editor.",
   },
+  "graph-viewport": {
+    title: "Graph viewport",
+    description: "Minimap, animated edges, and layout for graph viewports.",
+  },
   other: { title: "Other", description: "" },
 };
 
@@ -247,6 +284,16 @@ export function getProjectDefaults(): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const e of SETTINGS_SCHEMA) {
     if (e.scopes.includes("project")) {
+      out[e.key] = e.default;
+    }
+  }
+  return out;
+}
+
+export function getViewportDefaultsFromSchema(): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const e of SETTINGS_SCHEMA) {
+    if (e.scopes.includes("viewport")) {
       out[e.key] = e.default;
     }
   }

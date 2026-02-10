@@ -7,6 +7,7 @@ import { Thread } from '@forge/shared/components/assistant-ui/thread';
 import { AssistantDevToolsBridge } from '@forge/shared/components/assistant-ui';
 import { ToolUIRegistry } from '@forge/shared/components/tool-ui/assistant-tools';
 import { cn } from '@/lib/utils';
+import { API_ROUTES } from '@/lib/api-client/routes';
 
 export interface DialogueAssistantPanelProps {
   apiUrl?: string;
@@ -16,7 +17,7 @@ export interface DialogueAssistantPanelProps {
 }
 
 export function DialogueAssistantPanel({
-  apiUrl = '/api/assistant-chat',
+  apiUrl = API_ROUTES.ASSISTANT_CHAT,
   composerLeading,
   composerTrailing,
   className,

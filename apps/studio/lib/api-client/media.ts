@@ -2,6 +2,8 @@
  * Client for Payload media upload via our Next API.
  */
 
+import { API_ROUTES } from './routes';
+
 export interface MediaUploadResult {
   id: number;
   url: string;
@@ -11,7 +13,7 @@ export async function uploadFile(file: File): Promise<MediaUploadResult> {
   const formData = new FormData();
   formData.append('file', file);
 
-  const res = await fetch('/api/media', {
+  const res = await fetch(API_ROUTES.MEDIA, {
     method: 'POST',
     credentials: 'include',
     body: formData,
@@ -28,7 +30,7 @@ export async function uploadFile(file: File): Promise<MediaUploadResult> {
     doc.url ??
     doc.sizes?.medium?.url ??
     doc.sizes?.thumbnail?.url ??
-    `/api/media/file/${doc.id}`;
+    API_ROUTES.MEDIA_FILE(doc.id);
 
   return { id: doc.id, url };
 }

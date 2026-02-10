@@ -14,15 +14,16 @@ import {
 } from '@forge/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@forge/ui/avatar';
 import { useMe } from '@/lib/data/hooks';
+import { API_ROUTES } from '@/lib/api-client/routes';
 
 async function openConnectOnboarding(): Promise<void> {
-  const res1 = await fetch('/api/stripe/connect/create-account', {
+  const res1 = await fetch(API_ROUTES.STRIPE_CONNECT_CREATE_ACCOUNT, {
     method: 'POST',
     credentials: 'include',
   });
   const data1 = await res1.json();
   if (!res1.ok) throw new Error(data1?.error ?? 'Failed to set up account');
-  const res2 = await fetch('/api/stripe/connect/onboarding-link', {
+  const res2 = await fetch(API_ROUTES.STRIPE_CONNECT_ONBOARDING_LINK, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',

@@ -3,6 +3,8 @@
  * API key stays server-side; browser calls only /api/elevenlabs/*.
  */
 
+import { API_ROUTES } from './routes';
+
 export type ElevenLabsVoice = {
   voice_id: string;
   name: string;
@@ -29,7 +31,7 @@ export async function synthesizeSpeech(params: {
   text: string;
   modelId?: string;
 }): Promise<{ audioUrl: string }> {
-  const res = await fetch('/api/elevenlabs/speech', {
+  const res = await fetch(API_ROUTES.ELEVENLABS_SPEECH, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',

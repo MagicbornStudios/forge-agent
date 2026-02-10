@@ -29,6 +29,16 @@ Single checklist for agents and humans. Where things live and when to revisit.
 - **Now:** Every change requires a **doc scan**: check relevant docs for drift (design/architecture/how-to/agent artifacts) and update them alongside the code change. Record the doc scan in STATUS.
 - **Revisit:** When adding a new doc tree or changing how docs are loaded (e.g. source.config.mjs).
 
+## Constants, enums, and DRY
+
+- **Single source of truth:** Fixed sets (editor ids, API path segments, capability ids, query key namespaces) are defined once and imported elsewhere. No magic strings for these.
+- **Enums:** Prefer `as const` object + derived type (e.g. `FORGE_NODE_TYPE`, `CAPABILITIES` in packages/types and packages/shared). Use TypeScript `enum` only when reverse mapping or exhaustiveness is needed.
+- **Editor IDs:** Defined in app-shell ([apps/studio/lib/app-shell/store.ts](../../../apps/studio/lib/app-shell/store.ts)); new editors extend the canonical `EDITOR_IDS` and metadata (labels, viewport ids in editor-metadata.ts).
+- **API routes:** Studio custom routes are listed in [apps/studio/lib/api-client/routes.ts](../../../apps/studio/lib/api-client/routes.ts); client code (services, fetch) imports path constants from there.
+- **Query keys:** Use [apps/studio/lib/data/keys.ts](../../../apps/studio/lib/data/keys.ts) only; no ad-hoc `['studio', ...]` in hooks or components. For broad invalidation use the provided key helpers (e.g. `studioKeys.charactersAll()`, `studioKeys.relationshipsAll()`).
+- **When adding a new API route:** Add the path to the routes module and use it in the client.
+- **Storage keys:** App-session and draft persistence keys live as named constants in the respective store files (app-shell store, forge/video/character domain stores). Any new persisted key should be a named constant in one place; no magic strings for storage keys.
+
 ## Security and resilience (soon)
 
 - Rate limiting on public endpoints (e.g. waitlist, newsletter, checkout).

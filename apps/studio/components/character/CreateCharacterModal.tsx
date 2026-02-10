@@ -463,7 +463,7 @@ export function CreateCharacterModal({
               )}
             />
             <div className="space-y-[var(--control-gap)]">
-              <FormLabel>Voice preview</FormLabel>
+              <p className="text-sm font-medium leading-none">Voice preview</p>
               <div className="flex gap-[var(--control-gap)]">
                 <Input
                   value={previewText}

@@ -3,6 +3,8 @@
  * so they appear in the same LOG_FILE. Otherwise no-op or console fallback.
  */
 
+import { API_ROUTES } from '@/lib/api-client/routes';
+
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 const SEND_TO_SERVER = process.env.NEXT_PUBLIC_LOG_TO_SERVER === '1';
@@ -21,7 +23,7 @@ function flush() {
     payload.length === 1
       ? { level: payload[0].level, message: payload[0].message, namespace: payload[0].namespace, ...payload[0].meta }
       : { entries: payload };
-  fetch('/api/dev/log', {
+  fetch(API_ROUTES.DEV_LOG, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),

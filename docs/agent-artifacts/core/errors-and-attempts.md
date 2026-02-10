@@ -44,6 +44,63 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ---
 
+## Fumadocs template imports causing docs build failures
+
+**Problem**: Applying the `fumadocs-payloadcms` template pattern directly caused build/runtime failures in Studio docs:
+
+- PostCSS/Tailwind error: `Cannot apply unknown utility class top-0` when importing `fumadocs-ui/css/preset.css`.
+- Runtime/module error: `useEffectEvent is not exported from react` from `@fumadocs/ui` components.
+
+**Cause**: This repo's Tailwind + React/Next stack is not currently compatible with `fumadocs-ui` runtime layouts/preset CSS in the same way as the template.
+
+**Fix**: Keep headless Fumadocs source loading (`fumadocs-core` + generated `.source`) but use our stable custom docs renderer:
+
+- `DocsLayoutShell` from shared for layout chrome.
+- Existing MDX body rendering with custom component map (`createMdxComponents`).
+- Remove route/global imports of `fumadocs-ui/css/neutral.css` and `fumadocs-ui/css/preset.css`.
+- Do not use `fumadocs-ui/layouts/docs` or `fumadocs-ui/layouts/docs/page` until React/Tailwind compatibility is explicitly upgraded and verified.
+
+References:
+
+- `apps/studio/app/docs/layout.tsx`
+- `apps/studio/app/docs/[[...slug]]/page.tsx`
+- `apps/studio/app/docs/mdx-components.tsx`
+- `apps/marketing/app/(marketing)/docs/layout.tsx`
+- `apps/marketing/app/(marketing)/docs/[[...slug]]/page.tsx`
+
+---
+
+## Docs shell felt raw (missing top tabs, weak sidebar, weak TOC)
+
+**Problem**: Even with the stable custom renderer, docs still looked unfinished: no strong top navigation tabs, sparse sidebar hierarchy, and low-contrast TOC/typography.
+
+**Fix**: Upgrade the shared docs shell primitives instead of switching runtimes:
+
+- `DocsLayoutShell`: sticky top tabs, brand header, mobile sidebar trigger, GitHub link, better content width/padding, sidebar inset offset.
+- `DocsSidebar`: section icons (Lucide), collapsible folder groups, search input, stronger active/hover styling, and compact hierarchy spacing.
+- `RightToc`: stronger "On this page" rail, indentation by heading depth, active hash highlighting.
+- Docs article typography tuned in studio/marketing page renderers (headers, spacing, tables, links, blockquotes).
+
+References:
+
+- `packages/shared/src/shared/components/docs/DocsLayoutShell.tsx`
+- `packages/shared/src/shared/components/docs/DocsSidebar.tsx`
+- `packages/shared/src/shared/components/docs/RightToc.tsx`
+- `apps/studio/app/docs/[[...slug]]/page.tsx`
+- `apps/marketing/app/(marketing)/docs/[[...slug]]/page.tsx`
+
+---
+
+## Docs sidebar trigger not opening (no client boundary)
+
+**Problem**: Docs sidebar icon was visible, but clicking it did nothing; the left sidebar and right TOC never appeared to hydrate.
+
+**Cause**: `DocsLayoutShell` (client-only, uses hooks like `usePathname`) was imported directly into a **server** `page.tsx` from the bundled `@forge/shared` entrypoint. Because the bundle does not carry a module-level `"use client"` directive, Next treated the import as server code and skipped client hydration for the docs shell.
+
+**Fix**: Wrap `DocsLayoutShell` in a local client component and use that in the docs pages, so the docs shell is in a client boundary. Example: `apps/studio/app/docs/DocsShell.tsx` and `apps/marketing/app/(marketing)/docs/DocsShell.tsx`, then render `<DocsShell ...>` from the server page. Also ensure Tailwind `@source` includes `packages/shared` in marketing so docs shell classes compile.
+
+---
+
 ## Styling: theme variables overridden by globals
 
 **Problem**: Semantic tokens (`--background`, `--foreground`, etc.) were defined in both `packages/shared/src/shared/styles/themes.css` (via `--color-df-*`) and `apps/studio/app/globals.css` (`:root` / `.dark` with raw oklch). Import order caused globals to override the theme.
