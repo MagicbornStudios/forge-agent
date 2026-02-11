@@ -1,40 +1,45 @@
 ---
-title: 12 – Marketing Stripe (minimal)
-
+title: 12 - Platform Stripe (minimal)
 created: 2026-02-05
-updated: 2026-02-05
+updated: 2026-02-11
 ---
 
-# 12 – Marketing Stripe (minimal)
+# 12 - Platform Stripe (minimal)
 
-Minimal Stripe integration: hosted Checkout and a webhook that sets `user.plan` to `pro`.
+Minimal Stripe integration for platform billing and listing checkout.
 
 ## Env (Studio)
 
-- `STRIPE_SECRET_KEY` — Secret key (e.g. `sk_test_...`).
-- `STRIPE_PRICE_ID_PRO` — Price ID for the Pro plan (e.g. `price_...`).
-- `STRIPE_WEBHOOK_SECRET` — Webhook signing secret (e.g. `whsec_...`).
+- `STRIPE_SECRET_KEY`
+- `STRIPE_PRICE_ID_PRO`
+- `STRIPE_WEBHOOK_SECRET`
 
 See `apps/studio/.env.example`.
 
-## Create Checkout Session
+## Pro plan checkout
 
-- **Route:** `POST /api/stripe/create-checkout-session` (Studio). Requires auth (cookie).
-- **Body (optional):** `{ successUrl?, cancelUrl? }`. Defaults point to `/billing` and `/billing?success=1`.
-- **Response:** `{ url }` — redirect the user to this URL for Stripe Checkout.
-- **Session:** Created with `client_reference_id` and `metadata.userId` set to the current user id so the webhook can identify the user.
+- **Route:** `POST /api/stripe/create-checkout-session` (Studio). Requires auth cookie.
+- **Body:** `{ successUrl?, cancelUrl? }`.
+- **Response:** `{ url }` for hosted Stripe Checkout.
+- **Webhook:** `POST /api/stripe/webhook` updates `user.plan` to `pro` after `checkout.session.completed`.
 
-## Webhook
+## Listing checkout (creator marketplace)
 
-- **Route:** `POST /api/stripe/webhook` (Studio). Must receive raw body for signature verification.
-- **Event:** On `checkout.session.completed`, read `client_reference_id` or `metadata.userId`, then update that user’s `plan` to `pro` via Payload.
-- **Local testing:** Use Stripe CLI to forward webhooks: `stripe listen --forward-to localhost:3000/api/stripe/webhook` and set `STRIPE_WEBHOOK_SECRET` to the printed secret.
+- **Route:** `POST /api/stripe/connect/create-checkout-session`.
+- **Body:** `{ listingId, successUrl?, cancelUrl?, baseUrl? }`.
+- **Success result route:** `GET /api/checkout/session-result?session_id=...`.
+- **Free listing clone route (no Stripe):** `POST /api/catalog/:id/clone`.
+- Platform routes using this flow:
+  - `/catalog/[slug]` checkout action
+  - `/checkout/success`
+  - `/checkout/cancel`
+  - `/dashboard/licenses` (post-purchase clone-again UX)
 
-## Billing page (marketing)
+## Free vs paid clone flow
 
-- “Upgrade to Pro” calls `createCheckoutSession()` (marketing `lib/api.ts`), then redirects to `url`. After payment, Stripe redirects to `successUrl` (e.g. `/billing?success=1`).
-- No Stripe Elements or custom payment form; everything goes through Stripe’s hosted Checkout.
+- **Free listing (`price=0`)**: platform calls `POST /api/catalog/:id/clone`, then routes to `/checkout/success?mode=free...`.
+- **Paid listing (`price>0`)**: platform creates Stripe Checkout via `POST /api/stripe/connect/create-checkout-session`, then resolves details with `GET /api/checkout/session-result` on success.
 
-**One-time clone checkout and Stripe Connect** are documented in [Revenue and Stripe](../../business/revenue-and-stripe.mdx) and the [platform monetization task breakdown](../agent-artifacts/core/task-breakdown-platform-monetization.md). The existing Pro subscription flow above remains as-is.
+Use hosted Checkout only (no custom card UI in platform).
 
-**Next:** [13 – Marketing email / newsletter](13-marketing-email-newsletter.mdx)
+**Next:** [13 - Marketing email / newsletter](13-marketing-email-newsletter.mdx)

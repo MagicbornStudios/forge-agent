@@ -221,7 +221,7 @@ function DataTableLayout({
             className={cn(
               "bg-card relative w-full overflow-clip overflow-y-auto rounded-lg border",
               "touch-pan-x",
-              maxHeight && "max-h-[--max-height]",
+              maxHeight && "max-h-[var(--max-height)]",
             )}
             style={
               maxHeight

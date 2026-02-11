@@ -9,10 +9,11 @@ import {
   EditorToolbar,
   EditorStatusBar,
   EditorOverlaySurface,
-  EditorDockLayout,
   EditorDockPanel,
+  EditorRail,
+  EditorPanel,
 } from '@forge/shared/components/editor';
-import type { OverlaySpec, ActiveOverlay, Selection } from '@forge/shared';
+import type { OverlaySpec, ActiveOverlay, Selection, DockLayoutRef } from '@forge/shared';
 import { isEntity } from '@forge/shared';
 
 // Copilot
@@ -23,6 +24,9 @@ import { useCharacterContract } from '@forge/domain-character';
 // AppShell
 import { useEditorStore } from '@/lib/app-shell/store';
 import { EDITOR_VIEWPORT_IDS } from '@/lib/app-shell/editor-metadata';
+import { CHAT_PANEL_ID } from '@/lib/editor-registry/constants';
+import { DialogueAssistantPanel } from '@/components/editors/dialogue/DialogueAssistantPanel';
+import { ModelSwitcher } from '@/components/model-switcher';
 import { useEditorPanelVisibility } from '@/lib/app-shell/useEditorPanelVisibility';
 import { useSettingsStore } from '@/lib/settings/store';
 import { useEntitlements, CAPABILITIES } from '@forge/shared/entitlements';
@@ -45,17 +49,35 @@ import {
 import { useCharacterStore } from '@/lib/domains/character/store';
 
 // Components
-import { LayoutPanelTop, Maximize2, PanelLeft, PanelRight, Plus } from 'lucide-react';
+import { LayoutPanelTop, PanelLeft, PanelRight, Plus, Users } from 'lucide-react';
+import type { EditorDescriptor } from '@/lib/editor-registry/editor-registry';
 import { Button } from '@forge/ui/button';
 import { RelationshipGraphEditor, type CharacterViewportHandle } from '@/components/character/RelationshipGraphEditor';
 import { ActiveCharacterPanel } from '@/components/character/ActiveCharacterPanel';
 import { CharacterSidebar } from '@/components/character/CharacterSidebar';
 import { CreateCharacterModal } from '@/components/character/CreateCharacterModal';
 import { useAppMenubarContribution } from '@/lib/contexts/AppMenubarContext';
+import {
+  EditorLayoutProvider,
+  EditorLayout,
+  EditorMenubarContribution,
+  EditorMenubarMenuSlot,
+} from '@/components/editor-layout';
 import { Badge } from '@forge/ui/badge';
 import { Card } from '@forge/ui/card';
 import type { CharacterDoc, RelationshipDoc } from '@/lib/domains/character/types';
 import { NodeDragProvider } from '@/components/graph/useNodeDrag';
+
+// ---------------------------------------------------------------------------
+// Editor descriptor for registry; defaults live on the component.
+// ---------------------------------------------------------------------------
+export const editorDescriptor: Omit<EditorDescriptor, 'component'> = {
+  id: 'character',
+  label: 'Characters',
+  summary: 'Character relationship graph (React Flow)',
+  icon: Users,
+  order: 1,
+};
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -156,6 +178,12 @@ export function CharacterEditor() {
   useEffect(() => {
     setProject(activeProjectId);
   }, [activeProjectId, setProject]);
+
+  const setSettingsViewportId = useEditorStore((s) => s.setSettingsViewportId);
+  useEffect(() => {
+    setSettingsViewportId(viewportId);
+    return () => setSettingsViewportId(null);
+  }, [viewportId, setSettingsViewportId]);
 
   // Data fetching
   const { data: fetchedChars } = useCharacters(projectId);
@@ -384,25 +412,36 @@ export function CharacterEditor() {
         left: <PanelLeft size={16} />,
         right: <PanelRight size={16} />,
       };
-      return [
-        {
-          id: 'fit-view',
-          label: 'Fit view',
-          icon: <Maximize2 size={16} />,
-          onSelect: () => viewportRef.current?.fitView(),
-        },
-        { id: 'view-sep-panels', type: 'separator' as const },
+      const layoutSubmenu = [
         ...panelSpecs.map((spec) => ({
           id: `panel-${spec.id}`,
           label: panelVisibility[spec.key] === false ? `Show ${spec.label}` : `Hide ${spec.label}`,
           icon: panelIcons[spec.id] ?? <LayoutPanelTop size={16} />,
           onSelect: () => setPanelVisible(spec.key, !(panelVisibility[spec.key] !== false)),
         })),
+        { id: 'view-sep-layout', type: 'separator' as const },
         {
           id: 'restore-all-panels',
           label: 'Restore all panels',
           icon: <LayoutPanelTop size={16} />,
-          onSelect: restoreAllPanels,
+          onSelect: () => {
+            restoreAllPanels();
+            layoutRef.current?.resetLayout();
+          },
+        },
+        {
+          id: 'reset-layout',
+          label: 'Reset layout',
+          icon: <LayoutPanelTop size={16} />,
+          onSelect: () => layoutRef.current?.resetLayout(),
+        },
+      ];
+      return [
+        {
+          id: 'layout',
+          label: 'Layout',
+          icon: <LayoutPanelTop size={16} />,
+          submenu: layoutSubmenu,
         },
       ];
     },
@@ -415,7 +454,6 @@ export function CharacterEditor() {
     ],
     [fileMenuItems, viewMenuItems],
   );
-  useAppMenubarContribution(menubarMenus);
 
   // ---- Content ----
   const activeChar = characters.find((c) => c.id === activeCharacterId) ?? null;
@@ -527,28 +565,51 @@ export function CharacterEditor() {
             onClick={() => openOverlay(CREATE_CHARACTER_OVERLAY_ID)}
             variant="outline"
             size="sm"
-            tooltip="Add a new character"
-            >
+          >
               Add Character
             </EditorToolbar.Button>
           </EditorToolbar.Right>
         </EditorToolbar>
 
-        {/* EditorDockLayout (Dockview): resizable, drag, float, persist */}
-        <EditorDockLayout
-          ref={layoutRef}
-          left={leftPanel}
-          main={mainContent}
-          right={rightPanel}
-          slots={{ left: { title: 'Characters' }, right: { title: 'Properties' } }}
-          viewport={{ viewportId, viewportType: 'react-flow' }}
-          layoutId={CHARACTER_LAYOUT_ID}
-          leftDefaultSize={20}
-          rightDefaultSize={25}
-          layoutJson={dockLayouts[CHARACTER_LAYOUT_ID] ?? undefined}
-          onLayoutChange={(json) => setDockLayout(CHARACTER_LAYOUT_ID, json)}
-          clearLayout={() => clearDockLayout(CHARACTER_LAYOUT_ID)}
-        />
+        <EditorLayoutProvider editorId="character" viewportId={viewportId}>
+          <EditorMenubarContribution>
+            <EditorMenubarMenuSlot id="file" label="File" items={fileMenuItems} />
+            <EditorMenubarMenuSlot id="view" label="View" items={viewMenuItems} />
+          </EditorMenubarContribution>
+          <EditorRail side="left">
+            <EditorPanel id="left" title="Characters" iconKey="library">
+              {leftPanel}
+            </EditorPanel>
+          </EditorRail>
+          <EditorRail side="main">
+            <EditorPanel id="main" title="Graph" iconKey="main">
+              {mainContent}
+            </EditorPanel>
+          </EditorRail>
+          <EditorRail side="right">
+            <EditorPanel id="right" title="Properties" iconKey="inspector">
+              {rightPanel}
+            </EditorPanel>
+            <EditorPanel id={CHAT_PANEL_ID} title="Chat" iconKey="chat">
+              <div className="h-full min-h-0">
+                <DialogueAssistantPanel
+                  composerTrailing={<ModelSwitcher provider="assistantUi" variant="composer" />}
+                />
+              </div>
+            </EditorPanel>
+          </EditorRail>
+          <EditorLayout
+            ref={layoutRef}
+            layoutId={CHARACTER_LAYOUT_ID}
+            layoutJson={dockLayouts[CHARACTER_LAYOUT_ID] ?? undefined}
+            onLayoutChange={(json: string) => setDockLayout(CHARACTER_LAYOUT_ID, json)}
+            clearLayout={() => clearDockLayout(CHARACTER_LAYOUT_ID)}
+            viewport={{ viewportId, viewportType: 'react-flow' }}
+            slots={{ left: { title: 'Characters' } }}
+            leftDefaultSize={20}
+            rightDefaultSize={25}
+          />
+        </EditorLayoutProvider>
 
         <EditorStatusBar>
           {characters.length > 0

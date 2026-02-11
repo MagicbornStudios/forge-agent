@@ -21,19 +21,15 @@ import type { Root, Node, Item, Folder } from 'fumadocs-core/page-tree';
 import type { SerializedPageTree } from 'fumadocs-core/source/client';
 import {
   BookMarked,
-  Bot,
-  ChevronDown,
-  Compass,
+  ChevronRight,
+  File,
   FileCode2,
-  FileText,
+  Folder,
   FolderOpen,
-  LayoutPanelTop,
-  Palette,
-  Route,
   Search,
-  Sparkles,
-  Wrench,
 } from 'lucide-react';
+import { resolveFolderUrl, resolveNodeLabel } from './sidebar-label';
+import { toPlainText, toTitleFromHref } from './tree-label';
 
 function isItem(node: Node): node is Item {
   return node.type === 'page';
@@ -48,39 +44,19 @@ function getNodeKey(node: Node, fallback: string) {
   return fallback;
 }
 
-function labelText(value: React.ReactNode, fallback = ''): string {
-  if (typeof value === 'string') return value;
-  if (typeof value === 'number') return String(value);
-  return fallback;
-}
-
-function matchesLabel(label: React.ReactNode, query: string) {
-  return labelText(label).toLowerCase().includes(query);
+function matchesLabel(label: React.ReactNode, query: string, fallbackHref = '') {
+  return toPlainText(label, toTitleFromHref(fallbackHref, '')).toLowerCase().includes(query);
 }
 
 function shouldRenderNode(node: Node, query: string): boolean {
   if (!query) return true;
   if (node.type === 'separator') return false;
-  if (isItem(node)) return matchesLabel(node.name, query);
+  if (isItem(node)) return matchesLabel(node.name, query, node.url);
   if (isFolder(node)) {
-    if (matchesLabel(node.name, query)) return true;
+    if (matchesLabel(node.name, query, resolveFolderUrl(node) ?? '')) return true;
     return node.children.some((child) => shouldRenderNode(child, query));
   }
   return false;
-}
-
-function iconForLabel(label: string, folder = false) {
-  const normalized = label.toLowerCase();
-  if (normalized.includes('how-to') || normalized.includes('guide')) return Wrench;
-  if (normalized.includes('design')) return Palette;
-  if (normalized.includes('architecture')) return LayoutPanelTop;
-  if (normalized.includes('roadmap')) return Route;
-  if (normalized.includes('api')) return FileCode2;
-  if (normalized.includes('ai')) return Bot;
-  if (normalized.includes('agent')) return Sparkles;
-  if (normalized.includes('product') || normalized.includes('business')) return Compass;
-  if (normalized.includes('start') || normalized.includes('index')) return BookMarked;
-  return folder ? FolderOpen : FileText;
 }
 
 interface NavNodesProps {
@@ -89,6 +65,12 @@ interface NavNodesProps {
   depth?: number;
   openMap: Record<string, boolean>;
   onToggleFolder: (key: string, next: boolean) => void;
+}
+
+function getItemIcon(url: string) {
+  const normalized = url.toLowerCase();
+  if (normalized.includes('/api') || normalized.includes('reference')) return FileCode2;
+  return File;
 }
 
 function NavNodes({ nodes, query, depth = 0, openMap, onToggleFolder }: NavNodesProps) {
@@ -100,50 +82,71 @@ function NavNodes({ nodes, query, depth = 0, openMap, onToggleFolder }: NavNodes
         if (node.type === 'separator') return null;
         if (isItem(node)) {
           const active = pathname === node.url || (node.url !== '/docs' && pathname.startsWith(node.url + '/'));
-          const ItemIcon = iconForLabel(labelText(node.name, 'Doc'));
+          const label = resolveNodeLabel(node);
+          const ItemIcon = getItemIcon(node.url);
+          const nestedIndent = depth > 0 ? `${Math.min(42, depth * 12)}px` : '0px';
           return (
-            <SidebarMenuItem key={getNodeKey(node, node.url)}>
+            <SidebarMenuItem
+              key={getNodeKey(node, node.url)}
+              className={cn(depth > 0 && 'relative', depth > 0 && 'pl-1.5')}
+            >
               <SidebarMenuButton
                 asChild
                 isActive={active}
-                className={cn('h-8 gap-2 rounded-md text-sm', active && 'shadow-[inset_2px_0_0_var(--primary)]')}
-                style={{ paddingLeft: `${Math.max(8, 8 + depth * 12)}px` }}
+                className={cn(
+                  'h-8 gap-2 rounded-md px-2.5 text-[13px]',
+                  active && 'bg-sidebar-accent/70 text-sidebar-accent-foreground shadow-[inset_2px_0_0_var(--primary)]',
+                )}
+                style={{ marginLeft: nestedIndent }}
               >
-                <Link href={node.url}>
-                  <ItemIcon className="size-3.5 shrink-0 text-muted-foreground" />
-                  <span className="truncate">{node.name}</span>
+                <Link href={node.url} className="min-w-0">
+                  {depth > 0 ? (
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute left-2 top-1/2 h-px w-2 -translate-y-1/2 bg-sidebar-border/90"
+                    />
+                  ) : null}
+                  <span className="inline-flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
+                    <ItemIcon className="size-3.5 shrink-0 text-muted-foreground/90" />
+                    <span className="truncate" title={label}>
+                      {label}
+                    </span>
+                  </span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           );
         }
         if (isFolder(node)) {
-          const label = labelText(node.name, 'Section');
+          const label = resolveNodeLabel(node);
           const folderKey = getNodeKey(node, `folder-${label}-${index}`);
           const isOpen = query.length > 0 ? true : (openMap[folderKey] ?? true);
-          const FolderIcon = iconForLabel(label, true);
+          const FolderIcon = isOpen ? FolderOpen : Folder;
           return (
-            <SidebarGroup key={folderKey} className="py-0.5">
+            <SidebarGroup key={folderKey} className="px-0 py-0.5">
               <Collapsible open={isOpen} onOpenChange={(next) => onToggleFolder(folderKey, next)}>
                 <CollapsibleTrigger asChild>
                   <button
                     type="button"
-                    className="inline-flex h-8 w-full items-center justify-between rounded-md px-2 text-left text-[11px] font-semibold uppercase tracking-wide text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
+                    className="inline-flex h-8 w-full min-w-0 items-center rounded-md px-2.5 text-left text-[13px] font-medium text-sidebar-foreground/90 transition-colors hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
+                    style={{ marginLeft: depth > 0 ? `${Math.min(42, depth * 12)}px` : undefined }}
                   >
-                    <span className="inline-flex items-center gap-2">
-                      <FolderIcon className="size-3.5" />
-                      <span className="truncate">{label}</span>
+                    <span className="inline-flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
+                      <ChevronRight
+                        className={cn(
+                          'size-3.5 shrink-0 text-muted-foreground transition-transform',
+                          isOpen && 'rotate-90',
+                        )}
+                      />
+                      <FolderIcon className="size-3.5 shrink-0 text-muted-foreground" />
+                      <span className="truncate" title={label}>
+                        {label}
+                      </span>
                     </span>
-                    <ChevronDown
-                      className={cn(
-                        'size-3 transition-transform',
-                        !isOpen && '-rotate-90',
-                      )}
-                    />
                   </button>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <SidebarGroupContent className="ml-3 border-l border-sidebar-border/70 pl-1">
+                  <SidebarGroupContent className="ml-3 border-l border-sidebar-border/80 pl-2.5">
                     <SidebarMenu className="gap-0.5">
                       <NavNodes
                         nodes={node.children}
@@ -181,11 +184,15 @@ export function DocsSidebar({ serializedTree, baseUrl = '/docs' }: DocsSidebarPr
   }, []);
 
   return (
-    <Sidebar collapsible="none" className="border-r border-sidebar-border/70">
-      <SidebarHeader>
+    <Sidebar
+      id="nd-sidebar"
+      collapsible="none"
+      className="forge-docs-sidebar border-r border-sidebar-border/80 md:bottom-auto md:top-[var(--docs-header-height)] md:h-[calc(100svh-var(--docs-header-height))]"
+    >
+      <SidebarHeader className="border-b border-sidebar-border/80 pb-3">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild className="h-10">
+            <SidebarMenuButton asChild className="h-10 rounded-md">
               <Link href={baseUrl}>
                 <BookMarked className="size-4 text-primary" />
                 <span className="font-semibold tracking-wide">Docs</span>
@@ -196,20 +203,20 @@ export function DocsSidebar({ serializedTree, baseUrl = '/docs' }: DocsSidebarPr
         <p className="px-2 text-xs text-muted-foreground">
           Guides, architecture, design, and API references.
         </p>
-        <div className="relative px-2 pb-1">
+        <div className="relative px-2 pt-1">
           <Search className="pointer-events-none absolute left-4 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search documentation..."
-            className="h-8 border-sidebar-border bg-sidebar pl-8 text-xs"
+            className="h-9 border-sidebar-border bg-sidebar pl-9 pr-2 text-xs"
           />
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
+        <SidebarGroup className="px-0 py-1">
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-0.5 px-1.5">
               <NavNodes
                 nodes={tree.children}
                 query={normalizedQuery}

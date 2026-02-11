@@ -162,7 +162,7 @@ const Sidebar = React.forwardRef<
             data-slot="sidebar"
             data-mobile="true"
             side={side}
-            className="w-[--sidebar-width-mobile] p-0 gap-0 flex flex-col"
+            className="w-[var(--sidebar-width-mobile)] p-0 gap-0 flex flex-col"
             {...props}
           >
             <div className="flex h-full w-full flex-1 flex-col gap-2 overflow-hidden bg-sidebar">
@@ -181,11 +181,11 @@ const Sidebar = React.forwardRef<
         data-collapsible={state === "collapsed" ? collapsible : undefined}
         data-variant={variant}
         className={cn(
-          "group peer hidden h-svh w-[--sidebar-width] flex-shrink-0 flex-col transition-[width,left,right] duration-200 ease-linear md:flex",
+          "group peer hidden h-svh w-[var(--sidebar-width)] flex-shrink-0 flex-col transition-[width,left,right] duration-200 ease-linear md:flex",
           "fixed inset-y-0 z-10",
           side === "left" ? "left-0" : "right-0",
           state === "collapsed" && collapsible === "offcanvas" &&
-            (side === "left" ? "-left-[--sidebar-width]" : "-right-[--sidebar-width]"),
+            (side === "left" ? "-left-[var(--sidebar-width)]" : "-right-[var(--sidebar-width)]"),
           className
         )}
         {...props}

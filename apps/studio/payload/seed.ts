@@ -81,6 +81,7 @@ async function ensureGraph(
 }
 
 async function ensureProject(payload: Payload, ownerId: string | number) {
+  const existingOwner = Number(ownerId);
   const existing = await payload.find({
     collection: 'projects',
     where: { slug: { equals: DEMO_PROJECT_SLUG } },
@@ -95,9 +96,58 @@ async function ensureProject(payload: Payload, ownerId: string | number) {
       description: 'Seeded demo project for Forge.',
       domain: 'forge',
       status: 'active',
-      owner: ownerId as number,
+      owner: existingOwner,
     },
   });
+}
+
+async function ensurePersonalOrganization(payload: Payload, userId: number, name: string) {
+  const existingMembership = await payload.find({
+    collection: 'organization-memberships',
+    where: { user: { equals: userId } },
+    depth: 1,
+    limit: 1,
+  });
+
+  if (existingMembership.docs.length > 0) {
+    const organization = existingMembership.docs[0].organization;
+    if (typeof organization === 'object' && organization != null && 'id' in organization) {
+      return Number((organization as { id: number }).id);
+    }
+    if (organization != null) return Number(organization);
+  }
+
+  const normalizedName = name.trim().length > 0 ? name : `User ${userId}`;
+  const organization = await payload.create({
+    collection: 'organizations',
+    data: {
+      name: `${normalizedName} Workspace`,
+      slug: `${normalizedName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${userId}`,
+      owner: userId,
+    },
+    overrideAccess: true,
+  });
+
+  await payload.create({
+    collection: 'organization-memberships',
+    data: {
+      organization: organization.id,
+      user: userId,
+      role: 'owner',
+    },
+    overrideAccess: true,
+  });
+
+  await payload.update({
+    collection: 'users',
+    id: userId,
+    data: {
+      defaultOrganization: organization.id,
+    },
+    overrideAccess: true,
+  });
+
+  return organization.id as number;
 }
 
 const SEED_PROMOTION_TITLE = 'Welcome to Forge';
@@ -247,8 +297,17 @@ async function ensureFirstBlogPost(payload: Payload) {
 export async function seedStudio(payload: Payload) {
   try {
     const admin = await ensureUser(payload, DEFAULT_ADMIN);
-    await ensureUser(payload, DEFAULT_USER);
+    const basicUser = await ensureUser(payload, DEFAULT_USER);
+    const adminOrgId = await ensurePersonalOrganization(payload, Number(admin.id), admin.name ?? 'Admin');
+    await ensurePersonalOrganization(payload, Number(basicUser.id), basicUser.name ?? 'User');
     const project = await ensureProject(payload, admin.id);
+    if (!project.organization) {
+      await payload.update({
+        collection: 'projects',
+        id: project.id,
+        data: { organization: adminOrgId },
+      });
+    }
     const narrative = await ensureGraph(
       payload,
       project.id,

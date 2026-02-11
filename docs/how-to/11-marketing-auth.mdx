@@ -1,34 +1,36 @@
 ---
-title: 11 – Marketing auth
-
+title: 11 - Platform auth
 created: 2026-02-05
-updated: 2026-02-05
+updated: 2026-02-11
 ---
 
-# 11 – Marketing auth
+# 11 - Platform auth
 
-How authentication works between the marketing site and Studio (Payload).
+How authentication works between the customer platform (`apps/platform`) and Studio (Payload).
 
 ## Payload users
 
-- Users live in Studio’s Payload (`users` collection). Fields include `name`, `email`, `role`, `plan`.
-- Auth is cookie-based. Payload’s login sets an HTTP-only cookie; `GET /api/me` returns the current user when that cookie is sent.
+- Users live in Studio Payload (`users` collection).
+- Auth is cookie-based. Payload login sets an HTTP-only cookie, and `GET /api/me` returns the current user when that cookie is sent.
 
 ## Login flow
 
-1. User submits email + password on the marketing login page.
-2. Marketing calls `POST {STUDIO_API_URL}/api/users/login` with `credentials: 'include'` and body `{ email, password }`.
-3. Payload validates and sets the auth cookie on the response (domain depends on server config).
-4. Marketing redirects to `/account` or home. Subsequent requests to Studio (e.g. `GET /api/me`) send the cookie and get the user.
+1. User submits email/password on `/login` in platform.
+2. Platform calls `POST {STUDIO_API_URL}/api/users/login` with `credentials: 'include'`.
+3. Studio validates credentials and sets the auth cookie.
+4. Platform redirects to `/dashboard/overview` (or `returnUrl`), and subsequent requests to Studio APIs send the cookie.
 
-## Marketing: useAuth
+## Platform auth context
 
-- `AuthProvider` (client) fetches `GET {STUDIO_API_URL}/api/me` with `credentials: 'include'` on mount and stores the user (or null).
-- `useAuth()` exposes `{ user, isLoading }`. Header and MarketingShell use this to show Login vs Account/Billing/Open app and to show the sidebar when logged in.
+- `AuthProvider` is in `apps/platform/src/components/auth/AuthProvider.tsx`.
+- On mount, it fetches `GET {STUDIO_API_URL}/api/me` with `credentials: 'include'`.
+- `useAuth()` exposes `{ user, isLoading }` for header/account guards.
+- Login page (`apps/platform/src/app/(platform)/login/page.tsx`) redirects immediately after a successful login request and refreshes auth in the background to avoid redirect stalls when `/api/me` is slow.
 
-## Cross-origin
+## Cross-origin notes
 
-- For same origin (e.g. both on localhost with different ports), cookies may not be shared by default; use a reverse proxy or same port to avoid cross-origin.
-- For production with two domains (e.g. `example.com` and `app.example.com`), set the cookie domain to `.example.com` in Payload/auth config so both receive the cookie, and allow the marketing origin in CORS with credentials.
+- If platform and studio are different origins, CORS must allow credentials.
+- Studio accepts local defaults (`http://localhost:3001`) and can be extended with `CORS_ALLOWED_ORIGINS` (comma-separated) or `PLATFORM_APP_URL` in `apps/studio/.env.local`.
+- For production subdomains (for example `platform.example.com` and `app.example.com`), set cookie domain to `.example.com` where applicable.
 
-**Next:** [12 – Marketing Stripe](12-marketing-stripe.mdx)
+**Next:** [12 - Platform Stripe](12-marketing-stripe.mdx)

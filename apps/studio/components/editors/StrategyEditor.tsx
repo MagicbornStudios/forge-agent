@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
   EditorShell,
   EditorHeader,
@@ -11,9 +11,14 @@ import { FeatureGate } from '@forge/shared';
 import { CAPABILITIES } from '@forge/shared/entitlements';
 import { CodebaseAgentStrategyEditor } from '@forge/shared/components/assistant-ui';
 import { EDITOR_VIEWPORT_IDS } from '@/lib/app-shell/editor-metadata';
+import { useEditorStore } from '@/lib/app-shell/store';
 import { useEditorPanelVisibility } from '@/lib/app-shell/useEditorPanelVisibility';
 import { useSettingsStore } from '@/lib/settings/store';
-import { useAppMenubarContribution } from '@/lib/contexts/AppMenubarContext';
+import {
+  EditorLayoutProvider,
+  EditorMenubarContribution,
+  EditorMenubarMenuSlot,
+} from '@/components/editor-layout';
 import { ModelSwitcher } from '@/components/model-switcher';
 import { Badge } from '@forge/ui/badge';
 import { LayoutPanelTop, PanelLeft, PanelRight } from 'lucide-react';
@@ -27,18 +32,27 @@ export function StrategyEditor() {
         left: <PanelLeft size={16} />,
         right: <PanelRight size={16} />,
       };
-      return [
+      const layoutSubmenu = [
         ...panelSpecs.map((spec) => ({
           id: `panel-${spec.id}`,
           label: panelVisibility[spec.key] === false ? `Show ${spec.label}` : `Hide ${spec.label}`,
           icon: panelIcons[spec.id] ?? <LayoutPanelTop size={16} />,
           onSelect: () => setPanelVisible(spec.key, !(panelVisibility[spec.key] !== false)),
         })),
+        { id: 'view-sep-layout', type: 'separator' as const },
         {
           id: 'restore-all-panels',
           label: 'Restore all panels',
           icon: <LayoutPanelTop size={16} />,
           onSelect: restoreAllPanels,
+        },
+      ];
+      return [
+        {
+          id: 'layout',
+          label: 'Layout',
+          icon: <LayoutPanelTop size={16} />,
+          submenu: layoutSubmenu,
         },
       ];
     },
@@ -49,9 +63,14 @@ export function StrategyEditor() {
     () => [{ id: 'view', label: 'View', items: viewMenuItems }],
     [viewMenuItems],
   );
-  useAppMenubarContribution(menubarMenus);
   const editorId = 'strategy';
   const viewportId = EDITOR_VIEWPORT_IDS.strategy;
+  const setSettingsViewportId = useEditorStore((s) => s.setSettingsViewportId);
+  useEffect(() => {
+    setSettingsViewportId(viewportId);
+    return () => setSettingsViewportId(null);
+  }, [viewportId, setSettingsViewportId]);
+
   const editorTheme = useSettingsStore((s) =>
     s.getSettingValue('ui.theme', { editorId }),
   ) as string | undefined;
@@ -116,6 +135,7 @@ export function StrategyEditor() {
       </FeatureGate>
 
       <EditorStatusBar>Strategy assistant ready</EditorStatusBar>
+      </EditorLayoutProvider>
     </EditorShell>
   );
 }

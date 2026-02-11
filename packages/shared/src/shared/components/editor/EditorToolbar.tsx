@@ -65,7 +65,7 @@ function renderToolbarItem(item: ToolbarItem) {
           size={item.size ?? 'sm'}
           disabled={item.disabled}
           onClick={item.onClick}
-          tooltip={item.tooltip}
+          tooltip={typeof item.tooltip === 'string' ? item.tooltip : undefined}
           tooltipDisabled={item.tooltipDisabled}
         >
           {item.icon}
@@ -96,7 +96,7 @@ function renderToolbarItem(item: ToolbarItem) {
           size="sm"
           onClick={() => item.onToggle(!item.pressed)}
           data-state={item.pressed ? 'on' : 'off'}
-          tooltip={item.tooltip}
+          tooltip={typeof item.tooltip === 'string' ? item.tooltip : undefined}
           tooltipDisabled={item.tooltipDisabled}
           className="border-0"
         >

@@ -3,7 +3,7 @@
     "shadcn": {
       "command": "npx",
       "args": ["shadcn@latest", "mcp"],
-      "cwd": "apps/marketing"
+      "cwd": "apps/platform"
     }
   }
 }

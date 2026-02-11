@@ -175,21 +175,6 @@ export const RelationshipGraphEditor = forwardRef<CharacterViewportHandle, Props
       setTimeout(() => instance.fitView({ padding: 0.2 }), 100);
     }, []);
 
-    const handleFitView = useCallback(() => {
-      rfInstanceRef.current?.fitView({ padding: 0.2 });
-    }, []);
-
-    const handleFitSelection = useCallback(() => {
-      const instance = rfInstanceRef.current;
-      if (!instance) return;
-      const selectedNodes = instance.getNodes().filter((node) => node.selected);
-      if (selectedNodes.length === 0) {
-        instance.fitView({ padding: 0.2 });
-        return;
-      }
-      instance.fitView({ nodes: selectedNodes.map((node) => ({ id: node.id })), padding: 0.3 });
-    }, []);
-
     const handleDragOver = useCallback((event: React.DragEvent) => {
       if (!onDropCreateCharacter) return;
       event.preventDefault();
@@ -226,11 +211,6 @@ export const RelationshipGraphEditor = forwardRef<CharacterViewportHandle, Props
           <GraphLeftToolbar
             showMiniMap={showMiniMap}
             onToggleMiniMap={handleToggleMiniMap}
-            onFitView={handleFitView}
-          />
-          <GraphLayoutControls
-            onFitView={handleFitView}
-            onFitSelection={handleFitSelection}
           />
           {showMiniMap && (
             <FlowMiniMap className="!bg-background !border !shadow-[var(--shadow-lg)]" />

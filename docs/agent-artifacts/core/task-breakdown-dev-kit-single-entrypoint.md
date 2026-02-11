@@ -24,11 +24,11 @@ One package (`@forge/dev-kit`), one style import (bundled dockview + overrides),
 | dev-kit-css-2 | Document single style import in 04 and customer Quick start | dev-kit-single-entrypoint | 3 | Small | done | — |
 | dev-kit-ui-1 | Document one recommended path (e.g. dev-kit.ui for atoms) in customer docs | dev-kit-single-entrypoint | 3 | Small | done | — |
 
-### Lane: Customer-facing docs (marketing site)
+### Lane: Customer-facing docs (platform app)
 
 | id | title | parent | tier | impact | status | doc |
 |----|-------|--------|------|--------|--------|-----|
-| dev-kit-docs-quickstart | Quick start: install, one style import, one snippet (AppProviders → EditorApp → EditorShell → editor) | dev-kit-single-entrypoint | 2 | Medium | open | apps/marketing/content/docs |
+| dev-kit-docs-quickstart | Quick start: install, one style import, one snippet (AppProviders -> EditorApp -> EditorShell -> editor) | dev-kit-single-entrypoint | 2 | Medium | open | apps/platform/content/docs |
 | dev-kit-docs-install | Install & setup: one package, peer deps, env (OPENROUTER_API_KEY) | dev-kit-single-entrypoint | 3 | Small | open | — |
 | dev-kit-docs-first-editor | Your first editor: Strategy (or Dialogue), wire /api/assistant-chat, run | dev-kit-single-entrypoint | 2 | Medium | open | — |
 | dev-kit-docs-layout | Layout and shell: EditorShell, DockLayout, DockPanel, PanelTabs from @forge/dev-kit | dev-kit-single-entrypoint | 3 | Small | open | — |

@@ -6,6 +6,7 @@
 @import "../../../packages/shared/src/shared/styles/contexts.css";
 @import "../../../packages/shared/src/shared/styles/graph.css";
 @import "../../../packages/shared/src/shared/styles/scrollbar.css";
+@import "tailwindcss";
 
 @plugin "tailwindcss-animate";
 
@@ -15,10 +16,6 @@
 @source "../../../packages/shared/src/**/*.{ts,tsx,jsx,mdx}";
 @source "../../../packages/domain-forge/src/**/*.{ts,tsx,jsx,mdx}";
 @source "../../../packages/ui/src/**/*.{ts,tsx,jsx,mdx}";
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 * {
   box-sizing: border-box;

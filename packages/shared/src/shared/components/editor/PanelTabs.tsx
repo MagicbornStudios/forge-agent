@@ -71,6 +71,7 @@ export function PanelTabs({
 
   return (
     <Tabs
+      key={currentTab}
       value={currentTab}
       onValueChange={handleChange}
       className={cn('flex flex-col h-full', className)}

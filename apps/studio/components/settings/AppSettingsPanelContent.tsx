@@ -27,14 +27,12 @@ import { Button } from '@forge/ui/button';
 import { useSettingsStore, SETTINGS_SCOPE, type SettingsScope } from '@/lib/settings/store';
 import { SettingsTabs, type SettingsTabDef } from '@forge/shared';
 import { SettingsPanel } from './SettingsPanel';
+import { AppSettingsProvider } from './AppSettingsProvider';
+import { AppSettingsRegistrations } from './AppSettingsRegistrations';
+import { ViewportSettingsProvider } from './ViewportSettingsProvider';
+import { GraphViewportSettings } from './GraphViewportSettings';
 import { toast } from 'sonner';
 import { SettingsService } from '@/lib/api-client';
-import {
-  APP_SETTINGS_SECTIONS,
-  PROJECT_SETTINGS_SECTIONS,
-  EDITOR_SETTINGS_SECTIONS,
-  VIEWPORT_SETTINGS_SECTIONS,
-} from './ai-settings';
 import type { SettingsSection } from './types';
 
 export interface AppSettingsPanelContentProps {
@@ -42,10 +40,17 @@ export interface AppSettingsPanelContentProps {
   activeProjectId?: string | null;
   viewportId?: string;
   className?: string;
+  /** When provided (e.g. when rendered inside Dockview slot), inner tab updates trigger parent re-render so the slot shows the correct tab. */
+  controlledCategory?: AppSettingsPanelContentControlledCategory;
 }
 
 type TabId = 'app' | 'user' | 'project' | 'editor' | 'viewport';
-type AppUserCategoryId = 'ai' | 'appearance' | 'panels' | 'other';
+export type AppUserCategoryId = 'ai' | 'appearance' | 'panels' | 'other';
+
+export interface AppSettingsPanelContentControlledCategory {
+  appUserCategory: AppUserCategoryId;
+  onAppUserCategoryChange: (id: AppUserCategoryId) => void;
+}
 
 const SECTION_ICONS: Record<string, React.ReactNode> = {
   'ai-core': <Bot className={iconSize} />,
@@ -75,21 +80,19 @@ const FIELD_ICONS: Record<string, React.ReactNode> = {
   'editor.locked': <Lock className={iconSize} />,
   'panel.visible.dialogue-left': <LayoutPanelTop className={iconSize} />,
   'panel.visible.dialogue-right': <LayoutPanelTop className={iconSize} />,
+  'panel.visible.dialogue-chat': <LayoutPanelTop className={iconSize} />,
   'panel.visible.dialogue-bottom': <LayoutPanelTop className={iconSize} />,
   'panel.visible.character-left': <LayoutPanelTop className={iconSize} />,
   'panel.visible.character-right': <LayoutPanelTop className={iconSize} />,
-  'panel.visible.video-right': <LayoutPanelTop className={iconSize} />,
-  'panel.visible.video-bottom': <LayoutPanelTop className={iconSize} />,
-  'panel.visible.strategy-left': <LayoutPanelTop className={iconSize} />,
-  'panel.visible.strategy-right': <LayoutPanelTop className={iconSize} />,
+  'panel.visible.character-chat': <LayoutPanelTop className={iconSize} />,
   'graph.showMiniMap': <Map className={iconSize} />,
   'graph.animatedEdges': <Zap className={iconSize} />,
   'graph.layoutAlgorithm': <Network className={iconSize} />,
 };
 
-function filterSectionsByIds(sections: SettingsSection[], ids: string[]): SettingsSection[] {
-  return sections.filter((s) => ids.includes(s.id));
-}
+/** No project/editor registration in tree yet; empty until we add scope registration. */
+const PROJECT_SECTIONS_PLACEHOLDER: SettingsSection[] = [];
+const EDITOR_SECTIONS_PLACEHOLDER: SettingsSection[] = [];
 
 function getScopeAndId(
   tab: TabId,
@@ -111,10 +114,10 @@ export function AppSettingsPanelContent({
   activeProjectId,
   viewportId = 'main',
   className,
+  controlledCategory,
 }: AppSettingsPanelContentProps) {
   const getOverridesForScope = useSettingsStore((s) => s.getOverridesForScope);
   const [activeTab, setActiveTab] = React.useState<TabId>('app');
-  const [appUserCategory, setAppUserCategory] = React.useState<AppUserCategoryId>('ai');
   const [saving, setSaving] = React.useState(false);
 
   const handleSave = React.useCallback(async () => {
@@ -166,63 +169,6 @@ export function AppSettingsPanelContent({
   const showEditor = activeEditorId != null;
   const showViewport = activeEditorId != null;
 
-  const appUserInnerTabs = React.useMemo<SettingsTabDef[]>(
-    () => [
-      {
-        id: 'ai',
-        label: 'AI',
-        icon: <Bot className="size-[var(--icon-size)]" />,
-        content: (
-          <SettingsPanel
-            scope={SETTINGS_SCOPE.APP}
-            sections={filterSectionsByIds(APP_SETTINGS_SECTIONS, ['ai-core'])}
-            sectionIcons={SECTION_ICONS}
-            fieldIcons={FIELD_ICONS}
-          />
-        ),
-      },
-      {
-        id: 'appearance',
-        label: 'Appearance',
-        icon: <Palette className="size-[var(--icon-size)]" />,
-        content: (
-          <SettingsPanel
-            scope="app"
-            sections={filterSectionsByIds(APP_SETTINGS_SECTIONS, ['ui'])}
-            sectionIcons={SECTION_ICONS}
-          />
-        ),
-      },
-      {
-        id: 'panels',
-        label: 'Panels',
-        icon: <LayoutPanelTop className="size-[var(--icon-size)]" />,
-        content: (
-          <SettingsPanel
-            scope={SETTINGS_SCOPE.APP}
-            sections={filterSectionsByIds(APP_SETTINGS_SECTIONS, ['panels'])}
-            sectionIcons={SECTION_ICONS}
-            fieldIcons={FIELD_ICONS}
-          />
-        ),
-      },
-      {
-        id: 'other',
-        label: 'Other',
-        icon: <Settings className="size-[var(--icon-size)]" />,
-        content: (
-          <SettingsPanel
-            scope={SETTINGS_SCOPE.APP}
-            sections={filterSectionsByIds(APP_SETTINGS_SECTIONS, ['other'])}
-            sectionIcons={SECTION_ICONS}
-            fieldIcons={FIELD_ICONS}
-          />
-        ),
-      },
-    ],
-    []
-  );
-
   const topLevelTabs = React.useMemo<SettingsTabDef[]>(() => {
     const tabs: SettingsTabDef[] = [
       {
@@ -230,12 +176,9 @@ export function AppSettingsPanelContent({
         label: 'App',
         icon: <Sliders className="size-[var(--icon-size)]" />,
         content: (
-          <SettingsTabs
-            tabs={appUserInnerTabs}
-            value={appUserCategory}
-            onValueChange={(v) => setAppUserCategory(v as AppUserCategoryId)}
-            tabsListClassName="grid w-full grid-cols-4"
-          />
+          <AppSettingsProvider>
+            <AppSettingsRegistrations />
+          </AppSettingsProvider>
         ),
       },
       {
@@ -243,12 +186,9 @@ export function AppSettingsPanelContent({
         label: 'User',
         icon: <User className="size-[var(--icon-size)]" />,
         content: (
-          <SettingsTabs
-            tabs={appUserInnerTabs}
-            value={appUserCategory}
-            onValueChange={(v) => setAppUserCategory(v as AppUserCategoryId)}
-            tabsListClassName="grid w-full grid-cols-4"
-          />
+          <AppSettingsProvider>
+            <AppSettingsRegistrations />
+          </AppSettingsProvider>
         ),
       },
       {
@@ -260,7 +200,7 @@ export function AppSettingsPanelContent({
           activeProjectId != null ? (
             <SettingsPanel
               scope={SETTINGS_SCOPE.PROJECT}
-              sections={PROJECT_SETTINGS_SECTIONS}
+              sections={PROJECT_SECTIONS_PLACEHOLDER}
               projectId={activeProjectId}
               sectionIcons={SECTION_ICONS}
               fieldIcons={FIELD_ICONS}
@@ -276,7 +216,7 @@ export function AppSettingsPanelContent({
           activeEditorId != null ? (
             <SettingsPanel
               scope={SETTINGS_SCOPE.EDITOR}
-              sections={EDITOR_SETTINGS_SECTIONS}
+              sections={EDITOR_SECTIONS_PLACEHOLDER}
               editorId={activeEditorId}
               sectionIcons={SECTION_ICONS}
             />
@@ -288,15 +228,10 @@ export function AppSettingsPanelContent({
         icon: <Layout className="size-[var(--icon-size)]" />,
         disabled: !showViewport,
         content:
-          activeEditorId != null ? (
-            <SettingsPanel
-              scope={SETTINGS_SCOPE.VIEWPORT}
-              sections={VIEWPORT_SETTINGS_SECTIONS}
-              editorId={activeEditorId}
-              viewportId={viewportId}
-              sectionIcons={SECTION_ICONS}
-              fieldIcons={FIELD_ICONS}
-            />
+          activeEditorId != null && viewportId ? (
+            <ViewportSettingsProvider editorId={activeEditorId} viewportId={viewportId}>
+              <GraphViewportSettings />
+            </ViewportSettingsProvider>
           ) : null,
       },
     ];
@@ -308,7 +243,6 @@ export function AppSettingsPanelContent({
     activeProjectId,
     activeEditorId,
     viewportId,
-    appUserInnerTabs,
   ]);
 
   return (

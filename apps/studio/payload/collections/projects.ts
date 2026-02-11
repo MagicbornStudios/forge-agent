@@ -8,6 +8,27 @@ export const Projects: CollectionConfig = {
     update: () => true,
     delete: () => true,
   },
+  hooks: {
+    beforeChange: [
+      ({ data, req }) => {
+        if (!data || !req?.user) return data;
+        const requestUser = req.user as { id?: unknown; defaultOrganization?: unknown };
+        const nextData = { ...data } as Record<string, unknown>;
+        if (nextData.owner == null && typeof requestUser.id === 'number') {
+          nextData.owner = requestUser.id;
+        }
+        if (nextData.organization == null && requestUser.defaultOrganization != null) {
+          nextData.organization =
+            typeof requestUser.defaultOrganization === 'object' &&
+            requestUser.defaultOrganization != null &&
+            'id' in requestUser.defaultOrganization
+              ? (requestUser.defaultOrganization as { id: number }).id
+              : requestUser.defaultOrganization;
+        }
+        return nextData;
+      },
+    ],
+  },
   fields: [
     {
       name: 'title',
@@ -49,6 +70,14 @@ export const Projects: CollectionConfig = {
       name: 'owner',
       type: 'relationship',
       relationTo: 'users',
+    },
+    {
+      name: 'organization',
+      type: 'relationship',
+      relationTo: 'organizations',
+      admin: {
+        description: 'Owning organization for creator dashboards (optional during migration).',
+      },
     },
     {
       name: 'forgeGraph',

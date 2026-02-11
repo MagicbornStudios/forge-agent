@@ -5,7 +5,6 @@ import { Search } from 'lucide-react';
 import { Badge } from '@forge/ui/badge';
 import { Button } from '@forge/ui/button';
 import { Input } from '@forge/ui/input';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@forge/ui/tooltip';
 import { cn } from '@forge/shared/lib/utils';
 
 export interface SectionToolbarAction {
@@ -22,33 +21,19 @@ function SectionToolbar({ actions, className }: { actions: SectionToolbarAction[
   if (actions.length === 0) return null;
   return (
     <div className={cn('flex items-center gap-[var(--control-gap)]', className)}>
-      {actions.map((action) => {
-        const button = (
-          <Button
-            key={action.id}
-            variant={action.variant ?? 'ghost'}
-            size="icon"
-            className="h-[var(--control-height-sm)] w-[var(--control-height-sm)]"
-            onClick={action.onClick}
-            disabled={action.disabled}
-          >
-            {action.icon}
-          </Button>
-        );
-
-        if (action.tooltip) {
-          return (
-            <Tooltip key={action.id}>
-              <TooltipTrigger asChild>{button}</TooltipTrigger>
-              <TooltipContent>
-                <p>{action.tooltip}</p>
-              </TooltipContent>
-            </Tooltip>
-          );
-        }
-
-        return button;
-      })}
+      {actions.map((action) => (
+        <Button
+          key={action.id}
+          variant={action.variant ?? 'ghost'}
+          size="icon"
+          title={action.tooltip}
+          className="h-[var(--control-height-sm)] w-[var(--control-height-sm)]"
+          onClick={action.onClick}
+          disabled={action.disabled}
+        >
+          {action.icon}
+        </Button>
+      ))}
     </div>
   );
 }

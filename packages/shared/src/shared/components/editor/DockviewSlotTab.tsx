@@ -3,7 +3,7 @@
 import * as React from 'react';
 import type { IDockviewPanelHeaderProps } from 'dockview';
 import { cn } from '@forge/shared/lib/utils';
-import { BookOpen, LayoutDashboard, ScanSearch, Wrench, X, type LucideIcon } from 'lucide-react';
+import { BookOpen, LayoutDashboard, ScanSearch, Settings, Wrench, X, type LucideIcon } from 'lucide-react';
 import { Button } from '@forge/ui/button';
 import { Label } from '@forge/ui/label';
 
@@ -13,6 +13,7 @@ const SLOT_ICON_MAP: Record<string, LucideIcon> = {
   main: LayoutDashboard,
   inspector: ScanSearch,
   right: ScanSearch,
+  settings: Settings,
   workbench: Wrench,
   bottom: Wrench,
 };

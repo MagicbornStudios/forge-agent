@@ -211,7 +211,10 @@ export function SettingsPanel({
                       <Item variant="outline" size="sm" className="bg-background/60">
                         <ItemContent className="gap-3">
                           {isToggle ? (
-                            <div className="flex items-center justify-between gap-3 w-full">
+                            <div
+                              className="flex items-center justify-between gap-3 w-full cursor-pointer text-left rounded-md"
+                              onClick={() => setSetting(scope, field.key, !Boolean(value), ids)}
+                            >
                               <div className="space-y-1 min-w-0">
                                 <FieldLabel htmlFor={inputId} className="flex items-center gap-[var(--control-gap)]">
                                   {fieldIcons?.[field.key] != null && (
@@ -225,7 +228,10 @@ export function SettingsPanel({
                                   <FieldDescription>{field.description}</FieldDescription>
                                 )}
                               </div>
-                              <div className="flex items-center gap-[var(--control-gap)] shrink-0">
+                              <div
+                                className="flex items-center gap-[var(--control-gap)] shrink-0 min-w-[var(--control-height)]"
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 <ItemActions className="items-center">
                                   {inheritedLabel && <SourceBadge label={inheritedLabel} />}
                                   {isOverride && scope !== "app" && (
@@ -236,7 +242,10 @@ export function SettingsPanel({
                                       type="button"
                                       variant="ghost"
                                       size="sm"
-                                      onClick={() => clearSetting(scope, field.key, ids)}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        clearSetting(scope, field.key, ids);
+                                      }}
                                       className="flex items-center gap-[var(--control-gap)]"
                                     >
                                       <Undo2 className="size-[var(--icon-size)] shrink-0" />
@@ -244,11 +253,13 @@ export function SettingsPanel({
                                     </Button>
                                   )}
                                 </ItemActions>
-                                <Switch
-                                  id={inputId}
-                                  checked={Boolean(value)}
-                                  onCheckedChange={(checked) => setSetting(scope, field.key, checked, ids)}
-                                />
+                                <div className="shrink-0 min-w-9 flex items-center justify-end">
+                                  <Switch
+                                    id={inputId}
+                                    checked={Boolean(value)}
+                                    onCheckedChange={(checked) => setSetting(scope, field.key, checked, ids)}
+                                  />
+                                </div>
                               </div>
                             </div>
                           ) : (

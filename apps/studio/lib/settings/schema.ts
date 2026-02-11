@@ -1,7 +1,7 @@
 /**
- * Single schema source for settings: keys, types, labels, defaults, and which scopes show them.
- * Derive SETTINGS_CONFIG defaults and section definitions from this so adding a key in one place
- * adds the control and the default.
+ * Legacy schema: key list and types for reference only.
+ * Defaults and section definitions now come from the settings tree (SettingsSection/SettingsField)
+ * and generated/defaults.ts. See docs/architecture/settings-tree-as-source-and-codegen.mdx.
  */
 
 import type { SettingsOption, SettingsSection } from "@/components/settings/types";
@@ -134,6 +134,13 @@ export const SETTINGS_SCHEMA: SettingsSchemaEntry[] = [
     scopes: ["app"],
   },
   {
+    key: "panel.visible.dialogue-chat",
+    type: "toggle",
+    label: "Chat panel",
+    default: true,
+    scopes: ["app"],
+  },
+  {
     key: "panel.visible.dialogue-bottom",
     type: "toggle",
     label: "Dialogue bottom panel",
@@ -155,30 +162,9 @@ export const SETTINGS_SCHEMA: SettingsSchemaEntry[] = [
     scopes: ["app"],
   },
   {
-    key: "panel.visible.video-right",
+    key: "panel.visible.character-chat",
     type: "toggle",
-    label: "Video right panel",
-    default: true,
-    scopes: ["app"],
-  },
-  {
-    key: "panel.visible.video-bottom",
-    type: "toggle",
-    label: "Video bottom panel",
-    default: true,
-    scopes: ["app"],
-  },
-  {
-    key: "panel.visible.strategy-left",
-    type: "toggle",
-    label: "Strategy left panel",
-    default: true,
-    scopes: ["app"],
-  },
-  {
-    key: "panel.visible.strategy-right",
-    type: "toggle",
-    label: "Strategy right panel",
+    label: "Chat panel",
     default: true,
     scopes: ["app"],
   },
@@ -209,19 +195,6 @@ export const SETTINGS_SCHEMA: SettingsSchemaEntry[] = [
     scopes: ["viewport"],
   },
 ];
-
-/** Section id from key prefix and scope (for grouping in the form). */
-function sectionIdFromKey(key: string, scope: SettingsScopeId): string {
-  if (key.startsWith("ai.")) {
-    return scope === "app" ? "ai-core" : scope === "project" ? "project-ai" : scope === "editor" ? "editor-ai" : "viewport-ai";
-  }
-  if (key.startsWith("ui.")) {
-    return scope === "app" ? "ui" : scope === "project" ? "project-ui" : scope === "editor" ? "editor-ui" : "viewport-ui";
-  }
-  if (key.startsWith("panel.")) return "panels";
-  if (key.startsWith("graph.")) return "graph-viewport";
-  return "other";
-}
 
 const SECTION_META: Record<
   string,
@@ -270,68 +243,3 @@ const SECTION_META: Record<
   other: { title: "Other", description: "" },
 };
 
-export function getAppDefaults(): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  for (const e of SETTINGS_SCHEMA) {
-    if (e.scopes.includes("app")) {
-      out[e.key] = e.default;
-    }
-  }
-  return out;
-}
-
-export function getProjectDefaults(): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  for (const e of SETTINGS_SCHEMA) {
-    if (e.scopes.includes("project")) {
-      out[e.key] = e.default;
-    }
-  }
-  return out;
-}
-
-export function getViewportDefaultsFromSchema(): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  for (const e of SETTINGS_SCHEMA) {
-    if (e.scopes.includes("viewport")) {
-      out[e.key] = e.default;
-    }
-  }
-  return out;
-}
-
-export type SettingsSectionDerived = SettingsSection;
-
-export function buildSectionsForScope(scope: SettingsScopeId): SettingsSectionDerived[] {
-  const entries = SETTINGS_SCHEMA.filter((e) => e.scopes.includes(scope));
-  const bySection = new Map<string, SettingsSchemaEntry[]>();
-  for (const e of entries) {
-    const sid = sectionIdFromKey(e.key, scope);
-    if (!bySection.has(sid)) bySection.set(sid, []);
-    bySection.get(sid)!.push(e);
-  }
-  const sectionIds = Array.from(bySection.keys()).sort();
-  return sectionIds.map((sid) => {
-    const fields = bySection.get(sid)!;
-    const meta = SECTION_META[sid] ?? SECTION_META.other;
-    return {
-      id: sid,
-      title: meta.title,
-      description: meta.description,
-      fields: fields.map((f) => ({
-        key: f.key,
-        label: f.label,
-        type: f.type,
-        description: f.description,
-        placeholder: f.placeholder,
-        options: f.options,
-      })),
-    } as SettingsSectionDerived;
-  });
-}
-
-/** Pre-built sections for each scope (derived from schema). */
-export const APP_SETTINGS_SECTIONS = buildSectionsForScope("app");
-export const PROJECT_SETTINGS_SECTIONS = buildSectionsForScope("project");
-export const EDITOR_SETTINGS_SECTIONS = buildSectionsForScope("editor");
-export const VIEWPORT_SETTINGS_SECTIONS = buildSectionsForScope("viewport");

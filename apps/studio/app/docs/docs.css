@@ -1,0 +1,162 @@
+@import "fumadocs-ui/style.css";
+
+/* Bridge Fumadocs semantic tokens to existing Studio/shadcn tokens. */
+#nd-docs-layout {
+  --color-fd-background: var(--background);
+  --color-fd-foreground: var(--foreground);
+  --color-fd-muted: var(--muted);
+  --color-fd-muted-foreground: var(--muted-foreground);
+  --color-fd-popover: var(--popover);
+  --color-fd-popover-foreground: var(--popover-foreground);
+  --color-fd-card: var(--card);
+  --color-fd-card-foreground: var(--card-foreground);
+  --color-fd-border: var(--border);
+  --color-fd-primary: var(--primary);
+  --color-fd-primary-foreground: var(--primary-foreground);
+  --color-fd-secondary: var(--secondary);
+  --color-fd-secondary-foreground: var(--secondary-foreground);
+  --color-fd-accent: var(--accent);
+  --color-fd-accent-foreground: var(--accent-foreground);
+  --color-fd-ring: var(--ring);
+  font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  min-height: 100svh;
+  background:
+    radial-gradient(80rem 34rem at 12% -12%, color-mix(in oklab, var(--primary) 16%, transparent), transparent 72%),
+    radial-gradient(60rem 24rem at 88% -18%, color-mix(in oklab, var(--accent) 14%, transparent), transparent 76%),
+    var(--background);
+}
+
+#nd-docs-layout #nd-sidebar {
+  --color-fd-card: var(--sidebar);
+  --color-fd-card-foreground: var(--sidebar-foreground);
+  --color-fd-muted: var(--sidebar-accent);
+  --color-fd-muted-foreground: var(--sidebar-accent-foreground);
+  --color-fd-border: var(--sidebar-border);
+  background: color-mix(in oklab, var(--sidebar) 92%, var(--background));
+}
+
+#nd-docs-layout .forge-docs-header {
+  background:
+    linear-gradient(
+      to right,
+      color-mix(in oklab, var(--background) 94%, var(--primary) 6%),
+      color-mix(in oklab, var(--background) 96%, var(--accent) 4%)
+    );
+  box-shadow: 0 1px 0 color-mix(in oklab, var(--border) 85%, transparent);
+}
+
+#nd-docs-layout #nd-sidebar [data-slot='sidebar-header'] {
+  padding-inline: 0.65rem;
+  padding-top: 0.75rem;
+}
+
+#nd-docs-layout #nd-sidebar [data-slot='sidebar-content'] {
+  padding-inline: 0.35rem;
+  padding-bottom: 0.85rem;
+}
+
+#nd-docs-layout #nd-sidebar [data-sidebar='content'] > div:first-child {
+  scrollbar-width: none;
+}
+
+#nd-docs-layout #nd-sidebar [data-sidebar='content'] > div:first-child::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+#nd-docs-layout #nd-sidebar [data-sidebar='content'] > div:nth-child(2) {
+  width: 4px !important;
+  border: 0 !important;
+  padding: 0 !important;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+#nd-docs-layout #nd-sidebar [data-sidebar='content']:hover > div:nth-child(2) {
+  opacity: 0.72;
+}
+
+#nd-docs-layout #nd-sidebar [data-sidebar='content'] > div:nth-child(2) > div {
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--foreground) 42%, transparent);
+}
+
+#nd-docs-layout .doc-content {
+  text-wrap: pretty;
+}
+
+#nd-docs-layout .doc-content > :where(h1, h2, h3, h4) {
+  letter-spacing: -0.015em;
+}
+
+#nd-docs-layout .forge-docs-toc {
+  width: 17.5rem;
+}
+
+#nd-docs-layout .forge-docs-toc-inner {
+  padding: 1.5rem 1.125rem 1.75rem;
+}
+
+#nd-docs-layout .forge-docs-toc-nav {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.95rem 0.75rem 0.95rem 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in oklab, var(--border) 72%, transparent);
+  background: color-mix(in oklab, var(--background) 88%, var(--muted) 12%);
+}
+
+#nd-docs-layout .forge-docs-toc-nav::before {
+  content: '';
+  position: absolute;
+  left: 0.95rem;
+  top: 2.45rem;
+  bottom: 0.9rem;
+  width: 1px;
+  background: color-mix(in oklab, var(--border) 88%, transparent);
+}
+
+#nd-docs-layout .forge-docs-toc-title {
+  margin-bottom: 0.5rem;
+  padding-left: 0.2rem;
+}
+
+#nd-docs-layout .forge-docs-toc-thumb {
+  left: 0.9rem;
+  width: 2px;
+}
+
+#nd-docs-layout .forge-docs-toc-link {
+  border-radius: 0.4rem;
+  padding: 0.36rem 0.55rem 0.36rem 0.6rem;
+}
+
+#nd-docs-layout .forge-docs-toc-link:hover {
+  background: color-mix(in oklab, var(--muted) 62%, transparent);
+}
+
+/* Keep docs rails visible at desktop breakpoints even if utility variants regress. */
+@media (min-width: 48rem) {
+  #nd-docs-layout [data-sidebar='sidebar-provider'] {
+    padding-left: var(--sidebar-width) !important;
+  }
+
+  #nd-docs-layout #nd-sidebar[data-slot='sidebar-container'] {
+    top: var(--docs-header-height) !important;
+    bottom: auto !important;
+    height: calc(100svh - var(--docs-header-height)) !important;
+    display: flex !important;
+  }
+
+  #nd-docs-layout .forge-docs-tabs {
+    display: flex !important;
+  }
+}
+
+@media (min-width: 64rem) {
+  #nd-docs-layout .forge-docs-toc {
+    display: block !important;
+  }
+}

@@ -5,7 +5,6 @@ import { X } from 'lucide-react';
 import { Button } from '@forge/ui/button';
 import { Label } from '@forge/ui/label';
 import { cn } from '@forge/shared/lib/utils';
-import { EditorTooltip } from './EditorTooltip';
 
 export interface EditorTabProps {
   label: React.ReactNode;
@@ -18,11 +17,9 @@ export interface EditorTabProps {
   closeTooltip?: React.ReactNode;
   closeTooltipDisabled?: boolean;
   className?: string;
-  tooltip?: React.ReactNode;
+  /** Native title only */
+  tooltip?: string;
   tooltipDisabled?: boolean;
-  tooltipSide?: React.ComponentPropsWithoutRef<typeof EditorTooltip>['tooltipSide'];
-  tooltipAlign?: React.ComponentPropsWithoutRef<typeof EditorTooltip>['tooltipAlign'];
-  tooltipClassName?: string;
 }
 
 export function EditorTab({
@@ -38,9 +35,6 @@ export function EditorTab({
   className,
   tooltip,
   tooltipDisabled,
-  tooltipSide,
-  tooltipAlign,
-  tooltipClassName,
 }: EditorTabProps) {
   const handleSelect = React.useCallback(() => {
     if (!disabled) onSelect?.();
@@ -104,16 +98,5 @@ export function EditorTab({
     </div>
   );
 
-  const hasTooltip = tooltip && !tooltipDisabled;
-  if (!hasTooltip) return tab;
-  return (
-    <EditorTooltip
-      tooltip={tooltip}
-      tooltipSide={tooltipSide}
-      tooltipAlign={tooltipAlign}
-      tooltipClassName={tooltipClassName}
-    >
-      {tab}
-    </EditorTooltip>
-  );
+  return tab;
 }

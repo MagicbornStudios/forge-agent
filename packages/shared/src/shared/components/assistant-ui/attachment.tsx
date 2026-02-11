@@ -11,11 +11,6 @@ import {
 } from "@assistant-ui/react";
 import { useShallow } from "zustand/shallow";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@forge/ui/tooltip";
-import {
   Dialog,
   DialogTitle,
   DialogContent,
@@ -145,36 +140,30 @@ const AttachmentUI: FC = () => {
   });
 
   return (
-    <Tooltip>
-      <AttachmentPrimitive.Root
-        className={cn(
-          "aui-attachment-root relative",
-          isImage &&
-            "aui-attachment-root-composer only:[&>#attachment-tile]:size-24",
-        )}
-      >
-        <AttachmentPreviewDialog>
-          <TooltipTrigger asChild>
-            <div
-              className={cn(
-                "aui-attachment-tile size-14 cursor-pointer overflow-hidden rounded-[14px] border bg-muted transition-opacity hover:opacity-75",
-                isComposer &&
-                  "aui-attachment-tile-composer border-foreground/20",
-              )}
-              role="button"
-              id="attachment-tile"
-              aria-label={`${typeLabel} attachment`}
-            >
-              <AttachmentThumb />
-            </div>
-          </TooltipTrigger>
-        </AttachmentPreviewDialog>
-        {isComposer && <AttachmentRemove />}
-      </AttachmentPrimitive.Root>
-      <TooltipContent side="top">
-        <AttachmentPrimitive.Name />
-      </TooltipContent>
-    </Tooltip>
+    <AttachmentPrimitive.Root
+      className={cn(
+        "aui-attachment-root relative",
+        isImage &&
+          "aui-attachment-root-composer only:[&>#attachment-tile]:size-24",
+      )}
+    >
+      <AttachmentPreviewDialog>
+        <div
+          className={cn(
+            "aui-attachment-tile size-14 cursor-pointer overflow-hidden rounded-[14px] border bg-muted transition-opacity hover:opacity-75",
+            isComposer &&
+              "aui-attachment-tile-composer border-foreground/20",
+          )}
+          role="button"
+          id="attachment-tile"
+          aria-label={`${typeLabel} attachment`}
+          title={`${typeLabel} attachment`}
+        >
+          <AttachmentThumb />
+        </div>
+      </AttachmentPreviewDialog>
+      {isComposer && <AttachmentRemove />}
+    </AttachmentPrimitive.Root>
   );
 };
 

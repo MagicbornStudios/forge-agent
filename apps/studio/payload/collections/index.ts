@@ -15,6 +15,10 @@ import { Relationships } from './relationships.ts';
 import { Media } from './media.ts';
 import { Listings } from './listings.ts';
 import { Licenses } from './licenses.ts';
+import { Organizations } from './organizations.ts';
+import { OrganizationMemberships } from './organization-memberships.ts';
+import { AiUsageEvents } from './ai-usage-events.ts';
+import { ApiKeys } from './api-keys.ts';
 
 export const collections = [
   Users,
@@ -34,6 +38,10 @@ export const collections = [
   Posts,
   Listings,
   Licenses,
+  Organizations,
+  OrganizationMemberships,
+  AiUsageEvents,
+  ApiKeys,
 ];
 
 export {
@@ -54,4 +62,8 @@ export {
   Posts,
   Listings,
   Licenses,
+  Organizations,
+  OrganizationMemberships,
+  AiUsageEvents,
+  ApiKeys,
 };

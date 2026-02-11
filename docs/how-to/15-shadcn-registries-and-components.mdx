@@ -1,116 +1,55 @@
 ---
-title: 15 – Shadcn registries and UI components
-
+title: 15 - Shadcn registries and UI components
 created: 2026-02-05
-updated: 2026-02-05
+updated: 2026-02-10
 ---
 
-# 15 – Shadcn registries and UI components
+# 15 - Shadcn registries and UI components
 
-How we use shadcn’s `components.json`, where to add registries, and how to add or build components so they live in the right place (shared vs Studio vs Marketing).
+How we use shadcn `components.json`, where to add registries, and where generated components should live.
 
-## What is components.json?
+## components.json ownership
 
-`components.json` is the shadcn CLI config for a “project” that owns its own component tree. It defines:
-
-- **Style** (e.g. `new-york`), **RSC**, **Tailwind** paths, **aliases** (where components, utils, lib live).
-- **Registries** — named URLs like `@lucide-animated`, `@billingsdk` that the CLI uses to fetch and install components with `shadcn add @namespace/component-name`.
-
-The CLI looks for `components.json` in the **current working directory**. There is no `components.json` at the repo root; each app or package that owns components has its own file.
-
-## Where we have components.json
+`components.json` is per-project. The CLI installs components into the current project directory.
 
 | Location | Role | Registries |
 |----------|------|------------|
-| **packages/ui** | Shared atoms and shared registries; output goes into `@forge/ui`. Consumed by apps and by external consumers. | `@lucide-animated`, `@billingsdk` |
-| **apps/studio** | Studio-only. Uses `@forge/ui` for base UI. Add app-only registries here if a component is only for Studio. | (none currently) |
-| **apps/marketing** | Marketing-only (docs, landing, billing, etc.). Its own molecules/organisms and app-level registries. | magicui, aceternity, tailark, shadcnblocks |
+| `packages/ui` | Shared atoms and shared registry components published as `@forge/ui` | `@lucide-animated`, `@billingsdk` |
+| `apps/studio` | Studio-only components | (none currently) |
+| `apps/platform` | Platform-only customer UI (landing/docs/account/catalog) | platform app registries as needed |
 
-## When to add a registry where
+## Rule of thumb
 
-- **Shared** (used across apps or by consumers): Add the registry in **packages/ui**, run the shadcn CLI from `packages/ui`, install the component there, and export it from `packages/ui/src/index.ts`.
-- **App-only** (Studio or Marketing only): Add the registry in that app’s `components.json`, run the shadcn CLI from that app’s directory; installed components stay in that app (e.g. `apps/marketing/components/...`).
+- Shared across apps/consumers -> install in `packages/ui`.
+- Only used by Studio -> install in `apps/studio`.
+- Only used by platform -> install in `apps/platform`.
 
-## How to add a new registry
-
-From the directory that has the `components.json` you want to update:
+## Adding a registry
 
 ```bash
-cd packages/ui   # for shared
-# or: cd apps/studio | cd apps/marketing
+cd packages/ui
+# or: cd apps/studio
+# or: cd apps/platform
 pnpm dlx shadcn@latest registry add @namespace
 ```
 
-Example (shared):
-
-```bash
-cd packages/ui && pnpm dlx shadcn@latest registry add @lucide-animated
-```
-
-You can also add registries by editing the `registries` object in `components.json` (e.g. `"@namespace": "https://example.com/r/{name}.json"`).
-
-## How to add a component from a registry
-
-From the **same** directory that has the `components.json`:
+## Installing a component from a registry
 
 ```bash
 pnpm dlx shadcn@latest add @namespace/component-name
 ```
 
-Examples from `packages/ui`:
+Examples:
 
-- `pnpm dlx shadcn@latest add @lucide-animated/icon-name`
-- `pnpm dlx shadcn@latest add @billingsdk/pricing-table-one`
+- Shared atom/component: run in `packages/ui`, then export from `packages/ui/src/index.ts`.
+- Platform-only UI: run in `apps/platform`.
 
-After adding to `packages/ui`, export the new component from `packages/ui/src/index.ts`.
+## Summary matrix
 
-## Third-party component sources
+| Goal | Use this `components.json` | Installed component location |
+|------|-----------------------------|------------------------------|
+| Shared UI atom or shared registry component | `packages/ui` | `packages/ui/src/components/ui/*` |
+| Studio-only component | `apps/studio` | `apps/studio/components/*` |
+| Platform-only component | `apps/platform` | `apps/platform/src/components/*` |
 
-- **Shadcn registries:** Use the `components.json` registries (see table above). Install with `pnpm dlx shadcn@latest add @namespace/component-name` from the directory that has `components.json`. Shared = `packages/ui`; app-only = `apps/studio` or `apps/marketing`.
-- **Vendor CLIs (e.g. ElevenLabs):** Some libraries use their own CLI. Example: [ElevenLabs UI](https://ui.elevenlabs.io/docs/setup) — install with `pnpm dlx @elevenlabs/cli@latest components add <component-name>` (e.g. `audio-player`, `orb`, `voice-picker`). **Run from the directory that owns the component tree** (e.g. `packages/ui` for shared, so the CLI writes into our structure). Prefer **`pnpm dlx`** instead of `npx` to avoid the "npx is not available" error (see Troubleshooting below).
-
-## Troubleshooting
-
-- **"npx is not available" when using ElevenLabs (or similar) CLI:** The vendor CLI may spawn a process that doesn't see `npx`. Use **`pnpm dlx @elevenlabs/cli@latest components add <name>`** instead of `npx @elevenlabs/cli@latest ...`. If that still fails, install the CLI globally (`npm i -g @elevenlabs/cli`) and run from the project (e.g. `cd packages/ui && elevenlabs components add audio-player`).
-
-## Where components live / how agents find them
-
-Shared atoms and shared registry components live in `packages/ui` and are exported from `packages/ui/src/index.ts`. The list of registries is in `packages/ui/components.json`. For vendor CLIs, use the vendor's docs and install command (ElevenLabs: run from `packages/ui` for shared).
-
-## Component strategy overview
-
-```mermaid
-flowchart LR
-  subgraph shared [Shared - packages/ui]
-    UI[components.json]
-    UI --> Atoms[Atoms]
-    UI --> LucideAnim[@lucide-animated]
-    UI --> Billing[@billingsdk]
-    Atoms --> Export[Export from index.ts]
-    LucideAnim --> Export
-    Billing --> Export
-  end
-  subgraph internal [Internal apps]
-    Studio[apps/studio]
-    Marketing[apps/marketing]
-  end
-  Export --> Studio
-  Export --> Marketing
-  Export --> Consumers[Consumers]
-  Studio --> StudioReg[Studio-only registries]
-  Marketing --> MarketingReg[Marketing registries]
-```
-
-- **Atoms (and shared “enhanced” components):** Built in `packages/ui`, published as `@forge/ui`. Consumers and internal apps (Studio, Marketing) import from here.
-- **Molecules/organisms for product:** `packages/shared` (e.g. EditorShell) - published; **apps/studio** - internal-only (DialogueEditor, VideoEditor, AppShell, etc.), not shipped.
-- **Molecules/organisms for go-to-market:** **apps/marketing** — internal-only (HeroSection, MarketingSidebar, billing pages, docs, etc.); not shipped; can use app-level registries for one-off marketing/docs/billing UI.
-
-## Summary: which components.json to use
-
-| Goal | Use components.json in | Where installed components live |
-|------|------------------------|----------------------------------|
-| Shared UI (atoms, animated icons, billing components) | **packages/ui** | `packages/ui/src/components/ui/`; export from `index.ts` |
-| Studio-only component | **apps/studio** | `apps/studio/components/...` |
-| Marketing-only component (landing, docs, billing page UI) | **apps/marketing** | `apps/marketing/components/...` |
-
-**Back to index:** [00 – How-to index](00-index.mdx)
+**Back to index:** [00 - How-to index](00-index.mdx)

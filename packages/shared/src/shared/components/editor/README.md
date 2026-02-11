@@ -14,11 +14,14 @@ and clearer naming.
 - `EditorStatusBar` - bottom status line.
 - `EditorOverlaySurface` - declarative modal/drawer surface.
 
-## Docking + layout
+## Docking + layout (rails and composable panels)
 
-- `EditorDockLayout` - dockable panel layout (left / main / right / bottom). Built on **Dockview** for drag-to-reorder, floating panels, and tab grouping. Use **declarative slots** (`EditorDockLayout.Left`, `.Main`, `.Right`, `.Bottom`) or props; slot children override props. The default bottom slot title is **Assistant** (use for chat/assistant UI in Dialogue or similar editors). Layout is persisted to `localStorage['dockview-{layoutId}']` when `layoutId` is set. Use a ref and call `ref.current.resetLayout()` to restore default panels. (`DockLayout` is a deprecated alias.)
-- `EditorDockPanel` - single panel (header, tabs, lock overlay, scroll). (`DockPanel` is a deprecated alias.)
-- `PanelTabs` - tabs within an EditorDockPanel.
+- **Rails** — Left, main, right, and bottom are **rails**; each rail can have one or more **panel tabs** (Dockview-level tabs). Content of each tab is one **EditorDockPanel** (or equivalent), which can be leaf content, inner tabs via `PanelTabs`, or (future) nested panels.
+- **Declarative panel registration (Studio):** Use **EditorLayoutProvider**(editorId) and **EditorRail**(side) + **EditorPanel**(id, title, iconKey) from shared; **EditorLayout** from Studio subscribes to the panel registry and renders **EditorDockLayout**. Panel visibility and View menu derive from the registry; visibility key is `panel.visible.{editorId}-{panelId}`. EditorRail and EditorPanel must be used inside EditorLayoutProvider.
+- **Shared panel content:** Shared panels (e.g. Chat) are implemented once; editors that want the panel add an **EditorPanel** with a **stable id** (e.g. `CHAT_PANEL_ID`) and the same content component. Visibility and View menu derive from the panel registry; schema keys are `panel.visible.{editorId}-{panelId}`. See decisions.md "Shared panel content and editor-scoped contributions."
+- `EditorDockLayout` - dockable panel layout. Use **config-driven rails** via `leftPanels`, `mainPanels`, `rightPanels`, `bottomPanels` (arrays of `RailPanelDescriptor`: `{ id, title, iconKey?, content }`). First panel in each array is placed on that side; rest are sibling tabs (`direction: 'within'`). When a rail’s panels array is omitted, legacy props apply: `left`, `main`, `right`, `rightInspector`+`rightSettings`, `bottom`. Declarative slots (`EditorDockLayout.Left`, `.Main`, `.Right`, `.Bottom`) or props; slot children override props. Built on **Dockview** for drag-to-reorder, floating panels, and tab grouping. Layout is persisted to `localStorage['dockview-{layoutId}']` when `layoutId` is set. Use a ref and call `ref.current.resetLayout()` to restore default panels. (`DockLayout` is a deprecated alias.)
+- `EditorDockPanel` - single panel (header, tabs, lock overlay, scroll). Use as the content for each rail panel tab. (`DockPanel` is a deprecated alias.)
+- `PanelTabs` - tabs within an EditorDockPanel (e.g. Library: Graphs | Nodes).
 - `ViewportMeta` - metadata wrapper for editor surfaces.
 
 ## Utilities
@@ -40,13 +43,13 @@ Optional `data-context-node-type` (e.g. on graph or panel) refines the accent (e
 
 ## App menubar (Unreal-style)
 
-The app tab row expects a **menubar**; put it in **EditorApp.Tabs.Menubar**. Build menus with **createEditorMenubarMenus({ file, view, edit?, state? })** so order is consistent (File, View, Edit, State). If **state** items are provided, they are merged into the **File** menu (after a separator) and the top-level State menu is omitted. Contribute the result via your app’s **useAppMenubarContribution(menus)**; the app merges editor menus with shared menus (e.g. Settings) and renders **EditorMenubar** in the tab row. Implemented in Studio via `AppMenubarProvider`, `useAppMenubarContribution`, and `UnifiedMenubar` in AppShell.
+The app tab row expects a **menubar**; put it in **EditorApp.Tabs.Menubar**. Build menus with **createEditorMenubarMenus({ file, view, edit?, state? })** so order is consistent (File, View, Edit, State). If **state** items are provided, they are merged into the **File** menu (after a separator) and the top-level State menu is omitted. Contribute the result via your app’s **useAppMenubarContribution(menus)**; the app merges editor menus with shared menus (e.g. Settings) and renders **EditorMenubar** in the tab row. Studio is the single entrypoint; menus and editors use registries (EditorMenubarContribution → menu registry, editor descriptor → editor registry). See decisions.md "Studio as single entrypoint and unified registry pattern".
 
 **Extending the menubar:**
 
 - **Shared (app-level) menus:** Built in the shell component that renders the unified menubar. To add a new shared menu or item, extend the merged menu array (e.g. add a menu object before/after Settings) or extend the hook that supplies shared items (e.g. `useAppSettingsMenuItems`) to return more `EditorMenubarItem` entries.
-- **Editor-contributed menus:** Each editor calls `useAppMenubarContribution(menubarMenus)` with an array of `EditorMenubarMenu` (`id`, `label`, `items`). To add a new editor menu or item: in that editor, add an entry to the `menubarMenus` array (e.g. `{ id: 'tools', label: 'Tools', items: toolsMenuItems }`) or append to an existing menu’s `items` array. Types: `EditorMenubarMenu`, `EditorMenubarItem` from this package (see `toolbar/EditorMenubar.tsx`).
-- **New editor:** Mount the editor in AppShell and have it call `useAppMenubarContribution(menus)` with its File/View/State (or equivalent) menus; the app bar shows shared menus plus that editor’s menus when the editor is active. State items are folded into File by `createEditorMenubarMenus`.
+- **Editor-contributed menus (declarative):** Each editor calls `useAppMenubarContribution(menubarMenus)` with an array of `EditorMenubarMenu` (`id`, `label`, `items`). To add a new editor menu or item: in that editor, add an entry to the `menubarMenus` array (e.g. `{ id: 'tools', label: 'Tools', items: toolsMenuItems }`) or append to an existing menu’s `items` array. Types: `EditorMenubarMenu`, `EditorMenubarItem` from this package (see `toolbar/EditorMenubar.tsx`).
+- **New editor:** Use EditorLayoutProvider + EditorMenubarContribution + EditorMenubarMenuSlot (or useAppMenubarContribution(menus)) with its File/View/State (or equivalent) menus; the app bar shows shared menus plus that editor’s menus when the editor is active. State items are folded into File by `createEditorMenubarMenus`.
 
 ## Migration notes
 

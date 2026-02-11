@@ -60,7 +60,7 @@ export function EditorProjectSelect({
           <ChevronsUpDown className="ml-2 size-[var(--icon-size)] shrink-0 opacity-50" />
         </EditorButton>
       </PopoverTrigger>
-      <PopoverContent className="p-0 w-[--radix-popover-trigger-width]" align="start">
+      <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]" align="start">
         <Command>
           <CommandInput placeholder={searchPlaceholder} />
           <CommandEmpty>No results.</CommandEmpty>

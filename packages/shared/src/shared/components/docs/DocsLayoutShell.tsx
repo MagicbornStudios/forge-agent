@@ -12,6 +12,7 @@ import { cn } from '@forge/ui/lib/utils';
 import { BookOpenText, Github } from 'lucide-react';
 import { DocsSidebar } from './DocsSidebar';
 import { RightToc, type TableOfContents } from './RightToc';
+import { toPlainText, toTitleFromHref } from './tree-label';
 
 export type { TableOfContents } from './RightToc';
 
@@ -38,12 +39,6 @@ function isFolder(node: Node): node is Folder {
   return node.type === 'folder';
 }
 
-function labelText(value: React.ReactNode, fallback: string): string {
-  if (typeof value === 'string') return value;
-  if (typeof value === 'number') return String(value);
-  return fallback;
-}
-
 function resolveFolderUrl(folder: Folder): string | null {
   if (folder.index?.url) return folder.index.url;
   for (const child of folder.children) {
@@ -68,22 +63,39 @@ export function DocsLayoutShell({
   const pathname = usePathname();
   const tree = useMemo(() => deserializePageTree(serializedTree) as Root, [serializedTree]);
   const computedTabs = useMemo(() => {
-    if (topTabs && topTabs.length > 0) return topTabs;
+    if (topTabs && topTabs.length > 0) {
+      const seen = new Set<string>();
+      return topTabs.filter((tab) => {
+        if (seen.has(tab.href)) return false;
+        seen.add(tab.href);
+        return true;
+      });
+    }
+
+    const seen = new Set<string>([baseUrl]);
     const tabs: DocsTopTab[] = [{ label: 'Docs', href: baseUrl }];
     for (const node of tree.children) {
       if (node.type === 'separator') continue;
       if (isItem(node)) {
-        tabs.push({ label: labelText(node.name, 'Doc'), href: node.url });
+        if (seen.has(node.url)) continue;
+        tabs.push({
+          label: toPlainText(node.name, toTitleFromHref(node.url, 'Doc')),
+          href: node.url,
+        });
+        seen.add(node.url);
       } else if (isFolder(node)) {
         const href = resolveFolderUrl(node);
         if (href) {
+          if (seen.has(href)) continue;
+          const folderFallback = toTitleFromHref(href, 'Docs');
           tabs.push({
-            label: typeof node.name === 'string' ? node.name : 'Section',
+            label: toPlainText(node.name, toPlainText(node.index?.name, folderFallback)),
             href,
           });
+          seen.add(href);
         }
       }
-      if (tabs.length >= 6) break;
+      if (tabs.length >= 5) break;
     }
     return tabs;
   }, [topTabs, tree, baseUrl]);
@@ -96,51 +108,55 @@ export function DocsLayoutShell({
   };
 
   return (
-    <SidebarProvider defaultOpen>
-      <DocsSidebar serializedTree={serializedTree} baseUrl={baseUrl} />
-      <SidebarInset className="md:ml-[var(--sidebar-width)]">
-        <header className="sticky top-0 z-30 border-b border-border/70 bg-background/95 backdrop-blur">
-          <div className="flex h-14 items-center gap-2 px-4 lg:px-6">
-            <SidebarTrigger className="-ml-1 md:hidden" />
-            <Link
-              href={baseUrl}
-              className="inline-flex items-center gap-2 text-sm font-semibold tracking-wide text-foreground"
-            >
-              <BookOpenText className="size-4 text-primary" />
-              <span>{brandTitle}</span>
-            </Link>
-            <nav className="ml-6 hidden min-w-0 items-center md:flex">
-              {computedTabs.map((tab) => (
-                <Link
-                  key={tab.href}
-                  href={tab.href}
-                  className={cn(
-                    'inline-flex h-14 items-center border-b-2 px-3 text-sm transition-colors',
-                    isTabActive(tab.href)
-                      ? 'border-primary text-foreground'
-                      : 'border-transparent text-muted-foreground hover:text-foreground',
-                  )}
-                >
-                  {tab.label}
-                </Link>
-              ))}
-            </nav>
-            <div className="ml-auto flex items-center gap-1">
-              <Button asChild variant="ghost" size="icon" className="size-8">
-                <a href={githubUrl} target="_blank" rel="noreferrer" aria-label="GitHub">
-                  <Github className="size-4" />
-                </a>
-              </Button>
+    <div id="nd-docs-layout" className="forge-docs-shell">
+      <SidebarProvider defaultOpen className="[--docs-header-height:4rem] md:pl-[var(--sidebar-width)]">
+        <DocsSidebar serializedTree={serializedTree} baseUrl={baseUrl} />
+        <SidebarInset className="min-h-0 bg-transparent">
+          <header className="forge-docs-header sticky top-0 z-30 border-b border-border/60 bg-background/88 backdrop-blur-xl">
+            <div className="flex h-[var(--docs-header-height)] min-w-0 items-center gap-2 px-4 lg:px-7">
+              <SidebarTrigger className="-ml-1 md:hidden" />
+              <Link
+                href={baseUrl}
+                className="inline-flex items-center gap-2 text-sm font-semibold tracking-wide text-foreground"
+              >
+                <BookOpenText className="size-4 text-primary" />
+                <span>{brandTitle}</span>
+              </Link>
+              <nav className="forge-docs-tabs ml-4 hidden min-w-0 flex-1 items-stretch gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:flex">
+                {computedTabs.map((tab) => (
+                  <Link
+                    key={tab.href}
+                    href={tab.href}
+                    className={cn(
+                      'inline-flex h-[var(--docs-header-height)] max-w-[13rem] shrink-0 items-center border-b-2 px-3 text-sm transition-colors',
+                      isTabActive(tab.href)
+                        ? 'border-primary font-medium text-foreground'
+                        : 'border-transparent text-muted-foreground hover:text-foreground',
+                    )}
+                  >
+                    <span className="truncate">{tab.label}</span>
+                  </Link>
+                ))}
+              </nav>
+              <div className="ml-auto flex items-center gap-1">
+                <Button asChild variant="ghost" size="icon" className="size-8">
+                  <a href={githubUrl} target="_blank" rel="noreferrer" aria-label="GitHub">
+                    <Github className="size-4" />
+                  </a>
+                </Button>
+              </div>
             </div>
+          </header>
+          <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden">
+            <main className="min-h-0 min-w-0 flex-1 overflow-y-auto">
+              <div className="mx-auto w-full max-w-4xl px-5 pt-8 pb-12 sm:px-6 lg:max-w-5xl lg:px-10 lg:pt-10 lg:pb-14">
+                {children}
+              </div>
+            </main>
+            <RightToc toc={toc} />
           </div>
-        </header>
-        <div className="flex flex-1 overflow-hidden">
-          <main className="min-w-0 flex-1 overflow-y-auto">
-            <div className="mx-auto w-full max-w-4xl px-6 py-8 lg:px-10 lg:py-10">{children}</div>
-          </main>
-          <RightToc toc={toc} />
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+        </SidebarInset>
+      </SidebarProvider>
+    </div>
   );
 }

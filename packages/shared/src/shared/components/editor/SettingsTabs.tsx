@@ -41,7 +41,12 @@ export function SettingsTabs({
   triggerClassName,
 }: SettingsTabsProps) {
   return (
-    <Tabs value={value} onValueChange={onValueChange} className={cn('flex flex-col min-h-0', className)}>
+    <Tabs
+      key={value}
+      value={value}
+      onValueChange={onValueChange}
+      className={cn('flex flex-col min-h-0', className)}
+    >
       <TabsList className={cn('shrink-0 w-full', tabsListClassName)}>
         {tabs.map((tab) => (
           <TabsTrigger

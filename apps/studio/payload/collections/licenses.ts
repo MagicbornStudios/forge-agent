@@ -27,6 +27,12 @@ export const Licenses: CollectionConfig = {
       required: true,
     },
     {
+      name: 'sellerOrganization',
+      type: 'relationship',
+      relationTo: 'organizations',
+      admin: { description: 'Organization receiving creator-side revenue for this license.' },
+    },
+    {
       name: 'stripeSessionId',
       type: 'text',
       required: true,

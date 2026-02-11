@@ -1,7 +1,7 @@
 ---
 title: MVP and first revenue
 created: 2026-02-08
-updated: 2026-02-08
+updated: 2026-02-11
 ---
 
 # MVP and first revenue
@@ -27,6 +27,7 @@ We are **opinionated** about content authoring:
 - **Paid and free plan tiers** — required at MVP; capabilities gate who can list and who can clone/download paid items.
 - **Catalog at MVP** — users and orgs can browse and list (catalog for users and orgs).
 - **Creators list from day one** — catalog at MVP includes creator listings from day one; Stripe Connect (or similar) and payouts required so creators can list and get paid.
+- **Creator financial visibility at MVP baseline** — dashboard shows org-scoped revenue and AI usage cost visibility for customers.
 
 ---
 
@@ -105,7 +106,8 @@ Notion-like editor based on **Facebook Lexical**. Write normally; **branching na
 ## MVP infrastructure and platform
 
 - **MVP infra** = we run **Vercel + Payload** (Studio in the cloud). No self-host requirement for MVP.
-- **Platform** = our **marketing site** is the **landing page and platform** (account, catalog, billing, “Open Studio”). We can change this later if we split platform into a separate app.
+- **Platform** = `apps/platform` is the **landing page and customer platform** (account, catalog, billing, "Open Studio").
+- **Org-first customer context** = organizations + memberships + active-org switching for dashboard/account features.
 
 ---
 
@@ -177,7 +179,7 @@ The in-app **Strategy editor** (CodebaseAgentStrategyEditor) is **out of scope f
 | Phase | Focus |
 |-------|--------|
 | **Now** | Studio + Dialogue (primary), Character, Strategy; Video locked. No paid flows. |
-| **MVP** | **Editors:** Dialogue, Character, Writer, GamePlayer. Video and Strategy editor not in MVP. One end-to-end clone/download; **success** = first paid clone E2E; **creators list from day one**; **Yarn export**; **catalog** (users + orgs); **paid + free tiers**; **revenue share** (platform + creator); **clone semantics**; **publish and host playable builds** (so players can play builds); **Vercel + Payload**; **platform** = marketing site. TRACE for Strategy (downloadable core) only. |
+| **MVP** | **Editors:** Dialogue, Character, Writer, GamePlayer. Video and Strategy editor not in MVP. One end-to-end clone/download; **success** = first paid clone E2E; **creators list from day one**; **Yarn export**; **catalog** (users + orgs); **paid + free tiers**; **revenue share** (platform + creator); **clone semantics**; **publish and host playable builds** (so players can play builds); **Vercel + Payload**; **platform** = `apps/platform`. TRACE for Strategy (downloadable core) only. |
 | **After MVP** | Video unlock; Strategy editor in Studio; more editors/MCP; expand listings and payouts. |
 | **Dream** | Full content authoring platform + Strategy core everywhere; writers, indies, AAA; clone/download and optional host/distribute. |
 

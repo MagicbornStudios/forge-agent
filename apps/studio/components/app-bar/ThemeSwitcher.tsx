@@ -72,7 +72,7 @@ export function ThemeSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <EditorButton variant="ghost" size="sm" tooltip="Change theme and density">
+        <EditorButton variant="ghost" size="sm">
           <Palette className="size-3 shrink-0" />
           <span className="hidden sm:inline">Theme</span>
         </EditorButton>

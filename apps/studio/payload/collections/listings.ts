@@ -34,9 +34,25 @@ export const Listings: CollectionConfig = {
     beforeChange: [
       ({ data, req }) => {
         if (req?.user && data) {
-          ensurePlatformCapabilities({ data: data as Record<string, unknown>, req });
+          const requestUser = req.user as { id?: unknown; defaultOrganization?: unknown };
+          const nextData = { ...(data as Record<string, unknown>) };
+          ensurePlatformCapabilities({ data: nextData, req });
+
+          if (nextData.creator == null && typeof requestUser.id === 'number') {
+            nextData.creator = requestUser.id;
+          }
+          if (nextData.organization == null && requestUser.defaultOrganization != null) {
+            nextData.organization =
+              typeof requestUser.defaultOrganization === 'object' &&
+              requestUser.defaultOrganization != null &&
+              'id' in requestUser.defaultOrganization
+                ? (requestUser.defaultOrganization as { id: number }).id
+                : requestUser.defaultOrganization;
+          }
+
+          return nextData;
         }
-        return data;
+        return data as Record<string, unknown>;
       },
     ],
   },
@@ -55,6 +71,11 @@ export const Listings: CollectionConfig = {
     {
       name: 'description',
       type: 'textarea',
+    },
+    {
+      name: 'playUrl',
+      type: 'text',
+      admin: { description: 'Optional playable build URL for this listing' },
     },
     {
       name: 'listingType',
@@ -89,6 +110,14 @@ export const Listings: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
       required: true,
+    },
+    {
+      name: 'organization',
+      type: 'relationship',
+      relationTo: 'organizations',
+      admin: {
+        description: 'Owning organization for this listing (optional during migration).',
+      },
     },
     {
       name: 'thumbnail',

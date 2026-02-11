@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import { SettingsPanel } from "./SettingsPanel";
-import { APP_SETTINGS_SECTIONS } from "./ai-settings";
+import { useSettingsRegistrySections } from "@/lib/editor-registry/settings-registry";
 
 export function AppSettingsPanel() {
-  return <SettingsPanel scope="app" sections={APP_SETTINGS_SECTIONS} />;
+  const sections = useSettingsRegistrySections("app", null);
+  return <SettingsPanel scope="app" sections={sections} />;
 }

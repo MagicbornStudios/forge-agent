@@ -117,12 +117,12 @@ Items to figure out later (not product features; legal, ops, strategy). Not impl
 
 ### Marketing analytics
 - **Title** — Marketing analytics.
-- **Context** — Marketing site (landing, pricing, signup funnel).
+- **Context** — Platform app (landing, pricing, signup funnel).
 - **Suggestion** — Event tracking or integration (e.g. Plausible, Posthog) for landing, pricing, and signup funnel.
 - **Effort** — Small. Add script or SDK in root layout; optional custom events on waitlist, pricing, primary CTA. Env var for key/domain; no backend.
 - **Status** — implemented.
 - **Date** — 2026-02-07.
-- **Link** — PostHog in apps/marketing (instrumentation-client.ts init when NEXT_PUBLIC_POSTHOG_KEY set); lib/analytics.ts trackEvent; Waitlist Signup event on success; .env.example and README. Studio uses PostHog for feature flags (e.g. video-editor-enabled).
+- **Link** — PostHog in `apps/platform` (`src/lib/analytics.ts` trackEvent; waitlist signup event on success). Studio uses PostHog for feature flags (e.g. video-editor-enabled).
 
 ### CTA and copy A/B
 - **Title** — CTA and copy A/B.

@@ -8,6 +8,7 @@ import { collections } from './payload/collections/index.ts';
 import { seedStudio } from './payload/seed.ts';
 import { activatePromotion } from './payload/tasks/activatePromotion.ts';
 import { deactivatePromotion } from './payload/tasks/deactivatePromotion.ts';
+import { getAllowedCorsOrigins } from './lib/server/cors.ts';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -22,6 +23,8 @@ if (!process.env.DATABASE_URI) {
     // Ignore; adapter will fail with a clear error if dir is missing
   }
 }
+
+const allowedCorsOrigins = getAllowedCorsOrigins();
 
 export default buildConfig({
   admin: {
@@ -44,6 +47,8 @@ export default buildConfig({
     await seedStudio(payload);
   },
   editor: lexicalEditor({}),
+  cors: allowedCorsOrigins,
+  csrf: allowedCorsOrigins,
   secret: process.env.PAYLOAD_SECRET || 'dev-secret-change-me',
   typescript: {
     outputFile: path.resolve(dirname, '../../packages/types/src/payload-types.ts'),

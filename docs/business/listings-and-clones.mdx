@@ -1,58 +1,78 @@
 ---
 title: Listings and clones
 created: 2026-02-08
-updated: 2026-02-08
+updated: 2026-02-11
 ---
 
 # Listings and clones
 
-Business rules for catalog listings and clone-to-account. Technical implementation (Payload collections, clone API, media references) is in [agent-artifacts/core/decisions.md](../agent-artifacts/core/decisions.md) and the platform monetization [task breakdown](../agent-artifacts/core/task-breakdown-platform-monetization.md). Clone and listings also apply to community/official editor apps; see [Developer program and editor ecosystem](developer-program-and-editors.mdx).
+Business rules for catalog listings and clone-to-account. Technical implementation details (Payload collections, clone APIs, webhook behavior, media references) are in [agent-artifacts/core/decisions.md](../agent-artifacts/core/decisions.md) and the platform monetization task breakdown.
 
 ---
 
 ## Listing creation (free)
 
-- **Creators do not pay** to upload a listing. Listing creation is free.
-- Only **buyers** pay—the price the creator sets for others to clone the project (or template, or Strategy core) at that version.
+- **Creators do not pay** to create listings.
+- Buyers pay the creator-set price to clone a listing (project/template/core).
+- Listings are owned in org context where applicable (`listings.organization`) for creator operations and payouts.
 
 ---
 
-## Clone versioning (creator choice per listing)
+## Clone mode (creator choice per listing)
 
-The **listing creator** decides per listing how "clone again" works:
+Creator chooses how clone-again behaves via listing `cloneMode`:
 
-- **Indefinite clones:** The purchaser can always clone (e.g. when they hit "clone again," they get the **current** version of the project). Good for "always up to date" offerings.
-- **That version only:** The purchaser gets only the snapshot at purchase time. "Clone again" returns the **same** snapshot. Good for fixed releases.
+- `indefinite`: clone-again can pull current listing project state.
+- `version-only`: clone-again reuses the purchased snapshot/version boundary.
 
-This is a listing-level setting (e.g. `cloneMode: 'indefinite' | 'version-only'`) in the listing schema and Create/Edit listing UI.
-
----
-
-## Clone scope (what we copy)
-
-When we clone a project to the buyer's account, we copy **everything** linked to that project:
-
-- Project row (title, slug, settings, etc.) with a new slug/name to avoid collisions.
-- **Forge-graphs** (dialogue/storylet) for that project.
-- **Characters** and **relationships** for that project.
-- **Pages** and **blocks** (Writer) for that project.
-- **Project settings** and any other project-linked data.
-
-**Media (images, audio, etc.):** We do **not** duplicate media files. We copy **references** to the source project's media. The cloned project points at the same media files. When the **clone owner** later replaces or deletes (e.g. in Character: upload a new avatar, or remove an image), we upload the new media to our system and drop the reference to the old media. Until then, media is shared; after a change, the clone has its own media for that asset. This keeps storage and clone cost low while giving the new owner full control once they edit.
+This is a listing-level setting in listing create/edit flows.
 
 ---
 
-## License record and clone again
+## Catalog UX fields
 
-- When a user pays to clone, we create a **license** record (e.g. Payload collection `licenses`: user, listing, Stripe session/payment id, grantedAt, optional version/snapshot for version-only mode). "License" is the right term for future use (e.g. generated audio may also be licensed).
-- The license enables **clone again:** the purchaser can create another copy of the project (or the same snapshot, per listing's clone mode) without paying again. UI in Studio or account lists "your licenses" and offers a "Clone again" button.
+- Optional `playUrl` on listings allows "Play" CTA when present.
+- Catalog/detail UI shows clone mode and play availability.
+- Dashboard listing/game management uses org-scoped creator endpoints:
+  - `GET /api/me/listings`
+  - `GET /api/me/projects`
 
 ---
 
-## Flow summary
+## Clone scope (what is copied)
 
-1. Buyer sees a listing on the catalog (marketing site or Studio).
-2. Buyer clicks "Get" (must be signed in). We create a Stripe Checkout session (Connect: payment to creator, platform fee).
-3. Buyer pays on Stripe; Stripe redirects to our success URL and sends a webhook.
-4. Webhook: create license, run clone-to-account (first clone), then show success page with "Open in Studio" / "Clone again."
-5. Later: buyer can use "Clone again" from their licenses (respects listing's indefinite vs version-only).
+Cloning to buyer account copies project-linked authoring data:
+
+- project row (new slug/name as needed)
+- forge graphs
+- characters + relationships
+- pages + blocks
+- project settings and linked project domain data
+
+**Media files:** clone preserves references first. If clone owner replaces/removes an asset later, new owned media is uploaded and old reference can be dropped for that asset.
+
+---
+
+## License semantics
+
+- Paid clone checkout creates a **license** record at settlement.
+- License enables clone-again according to clone mode.
+- License records carry financial attribution fields used in creator/platform reporting.
+
+---
+
+## Free vs paid clone path
+
+1. Buyer opens catalog listing.
+2. If unauthenticated, "Get/Clone" redirects to login with return URL.
+3. If listing is free (`price=0`), platform calls `POST /api/catalog/:id/clone` (no Stripe).
+4. If listing is paid (`price>0`), platform creates Stripe Checkout session and redirects to Stripe.
+5. On paid success webhook: create/update license and complete clone flow.
+
+---
+
+## Platform route expectations
+
+- Buyer discovery: `/catalog`, `/catalog/[slug]`
+- Creator management: `/dashboard/listings`, `/dashboard/games`, `/dashboard/licenses`
+- Compatibility: `/account/*` redirects to `/dashboard/*`

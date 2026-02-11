@@ -172,29 +172,6 @@ export function GraphEditor({
   );
 
   const hasSelection = selectedNodeIds.length > 0 || selectedEdgeIds.length > 0;
-  const selectionNodeIds = useMemo(() => {
-    if (selectedNodeIds.length > 0) return selectedNodeIds;
-    if (!graph || selectedEdgeIds.length === 0) return [];
-    const ids = selectedEdgeIds.flatMap((edgeId) => {
-      const edge = graph.flow.edges.find((item) => item.id === edgeId);
-      return edge ? [edge.source, edge.target] : [];
-    });
-    return Array.from(new Set(ids));
-  }, [graph, selectedEdgeIds, selectedNodeIds]);
-
-  const handleFitView = useCallback(() => {
-    viewportRef.current?.fitView();
-  }, []);
-
-  const handleFitSelection = useCallback(() => {
-    const instance = viewportRef.current;
-    if (!instance) return;
-    if (selectionNodeIds.length === 0) {
-      instance.fitView();
-      return;
-    }
-    instance.fitView({ nodes: selectionNodeIds.map((id) => ({ id })), padding: 0.2 });
-  }, [selectionNodeIds]);
 
   const handleClearSelection = useCallback(() => {
     onSelectionChange?.([], []);
@@ -273,11 +250,6 @@ export function GraphEditor({
             onSelect={() => onRequestCreateNode?.()}
           >
             Add node
-          </ContextMenuItem>
-          <ContextMenuSeparator />
-          <ContextMenuItem onSelect={handleFitView}>Fit view</ContextMenuItem>
-          <ContextMenuItem disabled={!hasSelection} onSelect={handleFitSelection}>
-            Fit to selection
           </ContextMenuItem>
           <ContextMenuSeparator />
           <ContextMenuItem disabled={!hasSelection} onSelect={handleClearSelection}>

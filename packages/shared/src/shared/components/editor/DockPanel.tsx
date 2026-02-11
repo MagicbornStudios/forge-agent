@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 import { cn } from '@forge/shared/lib/utils';
-import { ScrollArea } from '@forge/ui/scroll-area';
 import { LockedOverlay, type LockedOverlayProps } from '@forge/ui/locked-overlay';
+import { ScrollArea } from '@forge/ui/scroll-area';
 import { PanelTabs, type PanelTabDef } from './PanelTabs';
 
 export interface DockPanelProps {

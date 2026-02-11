@@ -244,7 +244,6 @@ export function ModelSwitcher({ provider, variant = 'toolbar' }: ModelSwitcherPr
           size="sm"
           role="combobox"
           aria-expanded={open}
-          tooltip={PROVIDER_LABELS[provider]}
           className={cn(
             variant === 'composer'
               ? 'h-[var(--control-height-sm)] min-w-[11.5rem] rounded-md border border-border/70 bg-card/95 px-[var(--control-padding-x)] text-xs shadow-[var(--shadow-xs)]'

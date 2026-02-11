@@ -1,6 +1,7 @@
 'use client';
 
 import React, { Suspense } from 'react';
+import { AppProviders } from '@forge/shared';
 import { cn } from '@forge/ui/lib/utils';
 import { Index, type RegistryName } from '@/registry/__index__';
 import { Loader2 } from 'lucide-react';
@@ -31,7 +32,9 @@ export function ComponentPreview({
           </div>
         }
       >
-        <Component />
+        <AppProviders>
+          <Component />
+        </AppProviders>
       </Suspense>
     </div>
   );

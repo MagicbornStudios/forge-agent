@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getPayload } from 'payload';
+import payloadConfig from '@/payload.config';
 import { getOpenRouterConfig } from '@/lib/openrouter-config';
 import { DEFAULT_IMAGE_MODEL } from '@/lib/model-router/defaults';
+import { recordAiUsageEvent } from '@/lib/server/ai-usage';
+import { requireAiRequestAuth } from '@/lib/server/api-keys';
 
 /**
  * @swagger
@@ -26,12 +30,18 @@ import { DEFAULT_IMAGE_MODEL } from '@/lib/model-router/defaults';
  *         description: OpenRouter not configured
  */
 export async function POST(request: NextRequest) {
-  const config = getOpenRouterConfig();
-  if (!config.apiKey) {
+  const openRouterConfig = getOpenRouterConfig();
+  if (!openRouterConfig.apiKey) {
     return NextResponse.json(
       { error: 'OpenRouter API key not configured' },
       { status: 503 }
     );
+  }
+
+  const payloadClient = await getPayload({ config: payloadConfig });
+  const authContext = await requireAiRequestAuth(payloadClient, request, 'ai.image');
+  if (!authContext) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   let body: { prompt?: string; aspectRatio?: string; imageSize?: string };
@@ -67,21 +77,30 @@ export async function POST(request: NextRequest) {
   };
 
   try {
-    const res = await fetch(`${config.baseUrl}/chat/completions`, {
+    const res = await fetch(`${openRouterConfig.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${config.apiKey}`,
+        Authorization: `Bearer ${openRouterConfig.apiKey}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': 'https://forge-agent-poc.local',
         'X-Title': 'Forge Agent PoC',
       },
       body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(config.timeoutMs),
+      signal: AbortSignal.timeout(openRouterConfig.timeoutMs),
     });
 
     if (!res.ok) {
       const text = await res.text();
       console.error('[image-generate] OpenRouter error', res.status, text);
+      await recordAiUsageEvent({
+        request,
+        authContext,
+        provider: 'openrouter',
+        model,
+        routeKey: '/api/image-generate',
+        status: 'error',
+        errorMessage: `HTTP ${res.status}`,
+      });
       return NextResponse.json(
         { error: 'Image generation failed', details: text.slice(0, 200) },
         { status: 502 }
@@ -89,6 +108,12 @@ export async function POST(request: NextRequest) {
     }
 
     const data = (await res.json()) as {
+      id?: string;
+      usage?: {
+        prompt_tokens?: number;
+        completion_tokens?: number;
+        total_tokens?: number;
+      };
       choices?: Array<{
         message?: {
           images?: Array<{ image_url?: { url?: string }; imageUrl?: { url?: string } }>;
@@ -107,9 +132,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    await recordAiUsageEvent({
+      request,
+      authContext,
+      requestId: data.id,
+      provider: 'openrouter',
+      model,
+      routeKey: '/api/image-generate',
+      usage: data.usage,
+      status: 'success',
+    });
+
     return NextResponse.json({ imageUrl: url, prompt });
   } catch (err) {
     console.error('[image-generate]', err);
+    await recordAiUsageEvent({
+      request,
+      authContext,
+      provider: 'openrouter',
+      model: DEFAULT_IMAGE_MODEL,
+      routeKey: '/api/image-generate',
+      status: 'error',
+      errorMessage: err instanceof Error ? err.message : 'Image generation failed',
+    });
     return NextResponse.json(
       { error: err instanceof Error ? err.message : 'Image generation failed' },
       { status: 500 }

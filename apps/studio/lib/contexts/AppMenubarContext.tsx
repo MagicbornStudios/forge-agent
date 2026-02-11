@@ -50,6 +50,9 @@ export function AppMenubarProvider({ children }: { children: React.ReactNode }) 
   );
 }
 
+/** Alias for AppMenubarProvider; Studio owns the menubar and menu registry. */
+export const StudioMenubarProvider = AppMenubarProvider;
+
 export function useAppMenubar(): AppMenubarContextValue {
   const ctx = useContext(AppMenubarContext);
   if (ctx == null) {

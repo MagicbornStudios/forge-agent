@@ -12,8 +12,8 @@ const OpenSettingsSheetContext = createContext<OpenSettingsSheetContextValue | n
 
 function openAppSettingsSheetFromStore(): void {
   // Defer so Radix menubar can close first when opened from menu.
-  // Request active editor to open Settings dock tab (bypasses sheet).
-  setTimeout(() => useAppShellStore.getState().setRequestOpenSettings(true), 0);
+  // Open the universal Settings Sidebar (right rail).
+  setTimeout(() => useAppShellStore.getState().setSettingsSidebarOpen(true), 0);
 }
 
 export function OpenSettingsSheetProvider({ children }: { children: React.ReactNode }) {

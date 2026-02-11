@@ -39,6 +39,16 @@ Single checklist for agents and humans. Where things live and when to revisit.
 - **When adding a new API route:** Add the path to the routes module and use it in the client.
 - **Storage keys:** App-session and draft persistence keys live as named constants in the respective store files (app-shell store, forge/video/character domain stores). Any new persisted key should be a named constant in one place; no magic strings for storage keys.
 
+## Stores and subscriptions
+
+- **Now:** When adding Zustand (or other useSyncExternalStore-based) subscriptions, selectors that return **objects or arrays** must not return a new reference on every call when the logical data is unchanged. Use **useShallow** from `zustand/shallow` (e.g. `useStore(useShallow(s => ({ x: s.x })))`) or return **primitives** only. For selectors that use `?? fallback` when a key is missing, use a **module-level constant** (e.g. `EMPTY_RAIL`) as the fallback so the same reference is returned; otherwise the fallback allocates a new ref every call and can trigger a getSnapshot loop. See errors-and-attempts.
+
+## Tooltips (buttons)
+
+- **Now:** Studio does not use Radix tooltips. Shared editor components (EditorButton, EditorTab, TooltipIconButton) use native `title` only when a tooltip string is provided. Add Radix tooltips back when Radix ships the React 19 fix (PR #3804). Base Radix tooltip primitives remain in `@forge/ui` for Platform and future use.
+- **Editor chrome:** `EditorButton` with `tooltip?: string` renders native `title`; no Radix Tooltip.
+- **Rich tooltips:** Radix Tooltip is acceptable for non-Studio apps (e.g. Platform sidebar when collapsed). See errors-and-attempts.
+
 ## Security and resilience (soon)
 
 - Rate limiting on public endpoints (e.g. waitlist, newsletter, checkout).

@@ -29,6 +29,7 @@ export async function POST(req: Request) {
     const payload = await getPayload({ config });
     const listingId = session.metadata?.listingId;
     const buyerId = session.metadata?.buyerId;
+    const sellerOrganizationIdFromMetadata = session.metadata?.sellerOrganizationId;
     if (listingId != null && listingId !== '' && buyerId != null && buyerId !== '') {
       const sessionId = session.id ?? '';
       if (!sessionId) {
@@ -48,6 +49,14 @@ export async function POST(req: Request) {
       const cloneMode = listing && 'cloneMode' in listing ? (listing as { cloneMode?: string }).cloneMode : undefined;
       const versionSnapshotId =
         cloneMode === 'version-only' && projectId != null ? String(projectId) : undefined;
+      const sellerOrganizationId =
+        sellerOrganizationIdFromMetadata && sellerOrganizationIdFromMetadata.length > 0
+          ? Number(sellerOrganizationIdFromMetadata)
+          : listing?.organization != null
+            ? typeof listing.organization === 'object' && listing.organization != null
+              ? Number((listing.organization as { id: number }).id)
+              : Number(listing.organization)
+            : null;
       const license = await payload.create({
         collection: 'licenses',
         data: {
@@ -55,6 +64,9 @@ export async function POST(req: Request) {
           listing: Number(listingId),
           stripeSessionId: sessionId,
           grantedAt: new Date().toISOString(),
+          ...(sellerOrganizationId != null && Number.isFinite(sellerOrganizationId)
+            ? { sellerOrganization: sellerOrganizationId }
+            : {}),
           ...(versionSnapshotId != null ? { versionSnapshotId } : {}),
         },
         overrideAccess: true,

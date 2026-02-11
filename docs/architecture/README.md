@@ -1,7 +1,7 @@
 ---
 title: Architecture map
 created: 2026-02-09
-updated: 2026-02-09
+updated: 2026-02-11
 ---
 
 # Architecture map
@@ -15,7 +15,7 @@ updated: 2026-02-09
 | Layer | Path | Purpose |
 |-------|------|---------|
 | **Studio** | `apps/studio/` | Next.js app: App Shell, editors (Dialogue, Character, Video, Strategy), CopilotKit, Payload config, API routes. |
-| **Marketing** | `apps/marketing/` | Landing, docs, login, account, billing; shares Payload (Studio) for auth. |
+| **Platform** | `apps/platform/` | Customer-facing app: landing/docs/login plus app-shell routes (`/catalog`, `/dashboard/*`) for creator/account/commerce workflows. |
 | **Shared (editor kit)** | `packages/shared/src/shared/` | EditorShell, DockLayout, editor slots, headless contracts (Selection, OverlaySpec, capabilities). Consumed as `@forge/shared`. |
 | **UI atoms** | `packages/ui/` | shadcn primitives; `@forge/ui`. |
 | **Types** | `packages/types/` | Payload-generated `payload-types.ts`; domain aliases (`payload.ts`, `graph.ts`). |
@@ -60,6 +60,7 @@ See [decisions](../agent-artifacts/core/decisions.md) and [11-tech-stack](../11-
 ## API boundaries
 
 - **Client → server:** One boundary. Client talks only to **Next API routes** and Payload REST (via Payload SDK for collection CRUD). No direct Payload GraphQL from the browser.
+- **Platform → Studio auth/data:** Credentialed CORS boundary is centralized in Studio (`apps/studio/lib/server/cors.ts`, middleware, payload cors/csrf config).
 - **Collection CRUD:** Payload SDK in `lib/api-client/payload-sdk.ts`; hooks use it.
 - **App-specific:** Generated client (`lib/api-client/services/`) where it exists (Auth, Settings, Model, AI); **manual** client modules in `lib/api-client/` (elevenlabs, media, workflows). Vendor SDKs in **route handlers** (e.g. ElevenLabs server-side). Do not add raw `fetch` for `/api/*` in components—extend the client.
 - **OpenAPI/Swagger:** Documentation only (no streaming); do not add endpoints to the spec to get a client.
@@ -80,4 +81,5 @@ See [decisions](../agent-artifacts/core/decisions.md) and [11-tech-stack](../11-
 | **Model routing and OpenRouter** | [06-model-routing-and-openrouter.mdx](06-model-routing-and-openrouter.mdx) |
 | **Tech stack and "where things live"** | [11-tech-stack.mdx](../11-tech-stack.mdx) |
 | **Decisions (ADR)** | [agent-artifacts/core/decisions.md](../agent-artifacts/core/decisions.md) |
+| **Settings: tree-as-source and codegen** | [settings-tree-as-source-and-codegen.mdx](settings-tree-as-source-and-codegen.mdx) |
 | **Project overview** | [10-project-overview.mdx](../10-project-overview.mdx) |

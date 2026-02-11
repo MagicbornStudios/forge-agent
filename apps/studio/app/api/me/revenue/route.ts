@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getPayload } from 'payload';
 import config from '@/payload.config';
+import {
+  parseOrganizationIdFromRequestUrl,
+  requireAuthenticatedUser,
+  resolveOrganizationFromInput,
+} from '@/lib/server/organizations';
 
 /**
  * GET /api/me/revenue — Creator revenue summary (licenses where listing.creator = current user).
@@ -9,16 +14,32 @@ import config from '@/payload.config';
 export async function GET(req: Request) {
   try {
     const payload = await getPayload({ config });
-    const { user } = await payload.auth({
-      headers: req.headers,
-      canSetHeaders: false,
-    });
-    if (!user || typeof user.id !== 'number') {
+    const user = await requireAuthenticatedUser(payload, req.headers);
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const requestedOrgId = parseOrganizationIdFromRequestUrl(req);
+    const context = await resolveOrganizationFromInput(
+      payload,
+      user,
+      requestedOrgId ?? undefined,
+      { strictRequestedMembership: true },
+    );
+    const activeOrgId = context.activeOrganizationId;
+
     const creatorListings = await payload.find({
       collection: 'listings',
-      where: { creator: { equals: user.id } },
+      where: {
+        or: [
+          { organization: { equals: activeOrgId } },
+          {
+            and: [
+              { creator: { equals: user.id } },
+              { organization: { exists: false } },
+            ],
+          },
+        ],
+      },
       limit: 5000,
       depth: 0,
     });
@@ -56,12 +77,14 @@ export async function GET(req: Request) {
       };
     });
     return NextResponse.json({
+      activeOrganizationId: activeOrgId,
       totalEarningsCents,
       totalPlatformFeesCents,
       byLicense,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to load revenue.';
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = message.includes('Not a member') ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

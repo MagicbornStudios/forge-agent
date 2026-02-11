@@ -10,6 +10,7 @@ import {
   useAuiState,
 } from '@assistant-ui/react';
 import { AssistantChatTransport, useChatRuntime } from '@assistant-ui/react-ai-sdk';
+import { AppProviders } from '../app';
 import { EditorDockLayout, EditorDockPanel } from '../editor';
 import { Thread } from './thread';
 import { ThreadList } from './thread-list';
@@ -137,18 +138,20 @@ function CodebaseAgentStrategyEditorClient({
   );
 
   return (
-    <AssistantRuntimeProvider runtime={runtime}>
-      <AssistantDevToolsBridge />
-      <ToolUIRegistry />
-      <div className={cn('flex h-full min-h-0 flex-1 flex-col', className)}>
-        <EditorDockLayout
-          left={leftPanel}
-          main={mainPanel}
-          right={rightPanel}
-          layoutId="strategy-editor"
-          viewport={{ viewportId: 'strategy-chat', viewportType: 'assistant-ui' }}
-        />
-      </div>
-    </AssistantRuntimeProvider>
+    <AppProviders>
+      <AssistantRuntimeProvider runtime={runtime}>
+        <AssistantDevToolsBridge />
+        <ToolUIRegistry />
+        <div className={cn('flex h-full min-h-0 flex-1 flex-col', className)}>
+          <EditorDockLayout
+            left={leftPanel}
+            main={mainPanel}
+            right={rightPanel}
+            layoutId="strategy-editor"
+            viewport={{ viewportId: 'strategy-chat', viewportType: 'assistant-ui' }}
+          />
+        </div>
+      </AssistantRuntimeProvider>
+    </AppProviders>
   );
 }

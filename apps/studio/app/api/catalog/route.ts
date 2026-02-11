@@ -40,9 +40,12 @@ export async function GET(request: Request) {
         slug: doc.slug,
         description: doc.description ?? undefined,
         listingType: doc.listingType,
+        cloneMode: doc.cloneMode ?? 'indefinite',
         price: doc.price,
         currency: doc.currency ?? 'USD',
         category: doc.category ?? undefined,
+        playUrl: doc.playUrl ?? undefined,
+        updatedAt: doc.updatedAt ?? undefined,
         thumbnailUrl,
         creatorName,
       };

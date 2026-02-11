@@ -1,7 +1,7 @@
 ---
 title: Architecture decision records
 created: 2026-02-04
-updated: 2026-02-09
+updated: 2026-02-11
 ---
 
 Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx).
@@ -19,6 +19,40 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 **Decision:** For collection CRUD (forge-graphs, video-docs), the client uses the **Payload SDK** against Payload's auto-generated REST API (`/api/forge-graphs`, `/api/video-docs`). For app-specific operations (auth shape, settings upsert, AI, model config, SSE), the client uses our **custom Next API routes** and the generated or manual client (e.g. `/api/me`, `/api/settings`, `/api/forge/plan`, `workflows.ts` for SSE).
 
 **Rationale:** Payload's REST gives us full CRUD and querying without duplicating handlers; custom routes keep a single place for auth, settings, and non-CRUD logic.
+
+---
+
+## Studio API CORS boundary for platform auth and customer APIs
+
+**Decision:** Studio owns cross-origin CORS for customer-platform requests (`apps/platform` -> `apps/studio`) at one boundary: shared origin parsing in `apps/studio/lib/server/cors.ts`, applied to Payload auth endpoints via `payload.config.ts` (`cors` + `csrf`) and to all custom routes via `apps/studio/middleware.ts` (`/api/:path*`, including preflight handling). Default local origins include `localhost` / `127.0.0.1` on ports `3000` and `3001`; production/staging origins are extended through `CORS_ALLOWED_ORIGINS` (comma-separated) or `PLATFORM_APP_URL`.
+
+**Rationale:** Platform login and session checks use cookie credentials across origins (`POST /api/users/login`, `GET /api/me`). Without a centralized allowlist and preflight response headers, browser CORS blocks auth before route logic runs. Centralizing avoids route-by-route CORS drift and keeps Payload + custom Next routes consistent.
+
+---
+
+## Platform organizations as first-class customer context
+
+**Decision:** The customer-facing platform now uses organizations as first-class context. Studio stores organizations in `organizations` and `organization-memberships` collections; users carry `defaultOrganization`, and creator-owned docs (`projects`, `listings`, `licenses`) include org relationships where applicable. Platform APIs resolve organization context server-side (`/api/me/orgs`, `/api/me/orgs/active`, org-scoped `/api/me/*` endpoints). If a user has no org membership, Studio auto-bootstraps a personal workspace organization.
+
+**Rationale:** Dashboard, billing, payout setup, and marketplace ownership need stable org context beyond individual users. Auto-bootstrap preserves backward compatibility for existing user-owned data while enabling org-aware APIs immediately.
+
+---
+
+## AI usage ledger for billing-grade platform visibility
+
+**Decision:** AI usage/cost tracking is persisted server-side in `ai-usage-events` (request id, user, organization, model, token totals, and computed USD costs). Platform financial pages consume org-scoped usage APIs (`/api/me/ai-usage`, `/api/me/ai-usage/summary`). Studio AI routes record usage events at completion/error boundaries (`/api/assistant-chat`, `/api/forge/plan`, `/api/structured-output`, `/api/image-generate`).
+
+**Rationale:** PostHog analytics events are useful for behavior but not a billing ledger. Persisted usage events provide auditable, queryable spend/volume data for creator dashboards and future invoicing/reconciliation slices.
+
+---
+
+## Platform API keys for AI capabilities (hashed + scoped + revocable)
+
+**Decision:** Platform API keys are first-class credentials for programmatic AI access. Keys are generated per user + organization and stored as **hashed secrets only** (`api-keys` collection: `keyId`, `secretSalt`, `secretHash`, scopes, expiry/revocation, usage counters). Plaintext key is shown once on create (`POST /api/me/api-keys`), never retrievable later. Management endpoints are org-scoped (`GET /api/me/api-keys`, `DELETE /api/me/api-keys/:id` revoke).
+
+AI routes require either authenticated session or valid API key with required scope (`ai.chat`, `ai.plan`, `ai.structured`, `ai.image`). Usage events now record auth source (`authType`) and optional key relation (`apiKey`) and increment per-key usage counters.
+
+**Rationale:** This is the standard secure pattern for customer API keys: one-time reveal, hashed-at-rest secrets, least-privilege scopes, revocation/expiry, and auditable per-key usage attribution.
 
 ---
 
@@ -186,7 +220,7 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 
 ## Analytics and feature flags: PostHog
 
-**Decision:** We use **PostHog** for (1) marketing analytics (page views, custom events e.g. Waitlist Signup), and (2) Studio feature flags (e.g. Video editor via `video-editor-enabled`). Dev and production use separate PostHog project keys (or the same project with environments) so flags can differ. Plan-based entitlements (free/pro) remain for paywall; release/rollout toggles use PostHog.
+**Decision:** We use **PostHog** for (1) marketing analytics (page views, custom events e.g. Waitlist Signup), and (2) Studio feature flags. Video and Strategy editors have been removed from the shell; no editor-specific flags for them remain. Dev and production use separate PostHog project keys (or the same project with environments) so flags can differ. Plan-based entitlements (free/pro) remain for paywall; release/rollout toggles use PostHog.
 
 **Rationale:** Single provider for analytics and feature flags; no Plausible. Update this doc if we add another analytics or flag provider.
 
@@ -197,6 +231,64 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 **Decision:** `DockLayout` is implemented with **Dockview** to restore Unreal-style docking, drag-to-reorder, and floating panels. Layout is persisted via **Zustand** (app-shell store `dockLayouts` keyed by layoutId) when used in controlled mode (`layoutJson` / `onLayoutChange` / `clearLayout`); otherwise it falls back to `localStorage['dockview-{layoutId}']`. Exposes a `resetLayout()` ref to recover lost panels.
 
 **Rationale:** Dockview provides the desired editor UX (docked tabs, floating groups, drag-to-group). To avoid known provider/context pitfalls (Twick), the Video editor is locked behind `studio.video.editor` until we re-enable and validate context flow.
+
+---
+
+## Panel visibility and layout only in View > Layout; Settings Panels tab for editor-exposed controls
+
+**Decision:** **Panel visibility** toggles (Show/Hide Library, Inspector, etc.) and **layout actions** (Restore all panels, Reset layout) live **only** in the **View > Layout** submenu in each editor. They are **not** shown in Settings. The **Settings Panels tab** (App/User inner tab) is for **editor-exposed controls** (e.g. graph viewport: minimap, animated edges, layout algorithm). When the active editor has no such controls, the Panels tab shows a short empty state. **Fit view** and **Fit to selection** are not in the UI (removed from View menu, graph toolbar, and context menu); underlying `fitView` / `fitViewToNodes` may remain for programmatic use.
+
+**Rationale:** Single place for layout UX; Panels tab meaningfully groups editor panel options (e.g. graph minimap) instead of duplicating View menu toggles. See [styling-and-ui-consistency.md](styling-and-ui-consistency.md) rule 20.
+
+---
+
+## Video editor removed from workspace
+
+**Decision:** The **Video editor** is no longer a workspace tab. It has been removed from `EDITOR_IDS`, app-shell store, metadata, editor-panels, schema, and feature flags. The file `VideoEditor.tsx` remains in the repo but is not imported or rendered; it receives no updates. Chat and layout are provided by the right-rail Chat panel and other editors only.
+
+**Rationale:** Align with MVP scope; Video is not in MVP. Removing it from the shell simplifies routing and persistence.
+
+---
+
+## Strategy tab removed; chat in right rail only
+
+**Decision:** The **Strategy** editor tab has been removed. **Chat** is available only in the **right-rail Chat panel** (same `DialogueAssistantPanel` component) in Dialogue and Character editors. There is no separate Strategy tab or Cmd+K popup. `EDITOR_IDS` is `['dialogue', 'character']`; Strategy feature flag and metadata entries are removed.
+
+**Rationale:** One Chat surface (right rail) per editor; no duplicate global popup or Strategy-only tab.
+
+---
+
+## Cmd+K and AssistantChatPopup removed
+
+**Decision:** The **Mod+K** / **Ctrl+Shift+P** shortcut and **Help → Show Commands** have been removed. The **AssistantChatPopup** component has been deleted. Help menu shows **Welcome** and **About** only. Chat is available only in the right-rail Chat panel when an editor (Dialogue or Character) is active.
+
+**Rationale:** Single Chat entrypoint (right rail) reduces complexity and matches the shared-panel pattern.
+
+---
+
+## Shared panel content and editor-scoped contributions
+
+**Decision:** **Shared panel content** (e.g. Chat) is implemented **once** (e.g. `DialogueAssistantPanel`). Editors that want the panel add an **EditorPanel** with a **stable id** (e.g. `CHAT_PANEL_ID` from `apps/studio/lib/editor-registry/constants.ts`) and the same content component. Visibility and View menu derive from the panel registry; schema keys follow `panel.visible.{editorId}-{panelId}`. **Editor-scoped contributions** (panels, menus, settings sections) follow the same pattern: declare under a provider, **register on mount**, **unregister on unmount**, keyed by editorId or scope. No separate "app-level" panel registry is required; each editor that wants Chat explicitly adds the panel. A future **declarative editor registration** (editors registered like panels/settings) can follow this pattern and be documented when added.
+
+**Rationale:** One panel implementation, one id, predictable schema keys; tooling and layout can be scoped the same way (e.g. by editorId). Aligns with existing EditorLayoutProvider + EditorRail + EditorPanel + useEditorPanelVisibility flow.
+
+---
+
+## Studio as single entrypoint and unified registry pattern
+
+**Decision:** **Studio** is the single root component for the Studio app. The host (e.g. Next layout) renders `<Studio />` only; Studio owns all providers (SidebarProvider, StudioMenubarProvider, StudioSettingsProvider, OpenSettingsSheetProvider) and layout (main area + Settings sidebar, tabs + content). **Registries** (Zustand stores) are the single pattern for contributions: **editors** (editor registry, defaults on components, registered at module load), **menus** (menu registry by scope/context/target; EditorMenubarContribution and UnifiedMenubar use it), **panels** (panel registry by editorId/rail), **settings** (settings registry by scope/scopeId). Place components in the tree under a scope provider; they register on mount and unregister on unmount; consumers (menubar, settings sidebar, dock, tabs) read from registries and filter by scope/context/target. **StudioApp** (alias for EditorApp) is the tabs + content compound inside Studio; **EditorApp** remains the shared export name for backward compatibility.
+
+**Rationale:** One mental model for menus, settings, panels, and editors; host does not compose providers; canonical state stays in the app-shell store and Studio/editors consume it. See [Studio and unified registry refactor plan](.cursor/plans/studio_registry_refactor_2fb8702e.plan.md) and shared editor README.
+
+---
+
+## Settings: tree-as-source and generated contract
+
+**Decision:** Settings are defined in the **React tree** (SettingsSection + SettingsField with a `default` prop). **SettingsSection** and **SettingsField** render the form (sidebar-as-source): SettingsField wraps the input (Input, Switch, Select, Textarea) and binds value/onChange to the store; the sidebar renders the same tree (AppSettingsRegistrations for App tab, GraphViewportSettings for Viewport tab). Sections still **register on mount** so the registry holds section/field metadata; codegen mounts the same tree, reads the registry, and writes generated modules (defaults per scope). The store and config import these artifacts; Payload continues to store settings as a single JSON field.
+
+**Out of scope:** Menus and toolbars use the registry/tree pattern but do **not** persist a "contract" (no codegen). Rich collections (projects, forge-graphs) remain schema-first; types come from Payload config. **Only settings** use "tree as source → generate contract."
+
+**Rationale:** Single place to add a setting (the tree); no duplicate schema; generated contract keeps store and API in sync; aligns with "build the frontend quickly" and third-party studios. See [Settings: tree-as-source and codegen](../../architecture/settings-tree-as-source-and-codegen.mdx).
 
 ---
 
@@ -232,19 +324,27 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 
 ---
 
-## Platform and marketing
+## Platform app cutover
 
-**Decision:** The **marketing site** (`apps/marketing`) is the **landing page and platform** (account, catalog, billing, "Open Studio"). We can change this later (e.g. split platform into a separate app).
+**Decision:** Customer-facing routes now live in **`apps/platform`** (landing, docs, catalog, login, account, billing, checkout, blog/waitlist/newsletter compatibility pages). `apps/marketing` is removed after parity checks. Platform keeps a separate style system (`apps/platform/src/styles/*`) and consumes Studio APIs through `NEXT_PUBLIC_STUDIO_APP_URL`.
 
-**Rationale:** Single app for landing and platform at MVP; architecture allows splitting when needed.
+**Rationale:** The Kiranism starter baseline gives a faster customer-facing foundation while keeping Studio/editor styles isolated and preserving existing auth/catalog/checkout contracts.
+
+---
+
+## Platform canonical IA: dashboard routes + creator APIs
+
+**Decision:** Canonical creator/account routes are **`/dashboard/*`** (`overview`, `listings`, `games`, `revenue`, `billing`, `licenses`, `settings`, `api-keys`). Legacy `/account/*` and `/billing` are compatibility redirects only. Creator data is served from Studio APIs (`GET /api/me/listings`, `GET /api/me/projects`), and free listing clones use `POST /api/catalog/:id/clone` while paid clones continue through Stripe Checkout.
+
+**Rationale:** Keeps platform IA consistent with a Vercel-style dashboard shell, prevents split-account navigation, and avoids duplicating logic between free and paid clone paths.
 
 ---
 
 ## Catalog and listings API
 
-**Decision:** The **public catalog** is read-only for marketing: Studio exposes **GET /api/catalog** (published listings only; no auth). Payload REST handles **/api/listings** for create/update/delete (authenticated; Create listing UI is gated by PLATFORM_LIST). Payload collection `listings` holds title, slug, description, listingType, project, price, currency, creator, thumbnail, category, status. Marketing calls GET /api/catalog via `fetchListings()` from `lib/api.ts`; Studio uses Payload SDK for listing CRUD.
+**Decision:** The **public catalog** is read-only for platform browsing: Studio exposes **GET /api/catalog** (published listings only; no auth). Payload REST handles **/api/listings** for create/update/delete (authenticated; Create listing UI is gated by PLATFORM_LIST). Payload collection `listings` holds title, slug, description, listingType, project, price, currency, creator, thumbnail, category, status, plus clone/play metadata. Platform calls GET /api/catalog through its Studio client module; Studio uses Payload SDK for listing CRUD.
 
-**Rationale:** Marketing cannot use Payload SDK directly (different app); a single public route keeps the contract clear and allows filtering to published only.
+**Rationale:** Platform cannot use Payload SDK directly (separate app + server boundary); a single public route keeps the contract clear and allows filtering to published only.
 
 ---
 
@@ -266,7 +366,7 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 
 ## Stripe Connect (day one)
 
-**Decision:** Use **Stripe Connect from day one** for clone purchases. Payments go to the creator's connected account; platform takes an application fee. Creators must complete **Connect onboarding** (Express or Standard) before they can receive payouts; we store `stripeAccountId` (e.g. on users or a creator-accounts collection).
+**Decision:** Use **Stripe Connect from day one** for clone purchases. Payments go to the creator org's connected account; platform takes an application fee. Creators must complete **Connect onboarding** (Express or Standard) before they can receive payouts; we store Connect account identity on **organizations** (`stripeConnectAccountId`, onboarding status fields), with org-scoped create-account and onboarding-link APIs.
 
 **Rationale:** Ensures creators get paid directly from launch. Document onboarding flow in business docs and task breakdown. See [Revenue and Stripe](../../business/revenue-and-stripe.mdx).
 
@@ -317,3 +417,16 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 **Decision:** When picking work from STATUS § Next, **prefer MVP-critical items** (Yarn Spinner, GamePlayer, plans/capabilities for platform, monetization). **Video** work (Twick → VideoDoc persistence, Video workflow panel) is done **when the Video editor is unlocked** (Video is not in MVP). The default "next slice" is MVP-critical (e.g. Yarn export/import or GamePlayer first slice), not Video.
 
 **Rationale:** Aligns agent and contributor effort with MVP success criterion and avoids spending time on Video until we re-enable it.
+
+---
+
+## Declarative editor components and registries
+
+**Decision:** Editors use **declarative components** that **register** into shared registries; layout, View menu, Settings UI, and menubar **subscribe** to those registries. Authors do not hand-wire `rightPanels`, `EDITOR_PANEL_SPECS`, static settings sections, or `useAppMenubarContribution(menus)`.
+
+- **Panel registry:** Keyed by `editorId`. Editors wrap content in **EditorLayoutProvider**(editorId); **EditorRail**(side) + **EditorPanel**(id, title, iconKey) register on mount. **EditorLayout** (Studio) subscribes to the registry and renders **EditorDockLayout** with visibility from settings key `panel.visible.{editorId}-{panelId}`. View menu specs are derived from the registry when present; fallback to **EDITOR_PANEL_SPECS** for non-migrated editors.
+- **Settings registry:** Keyed by scope + scopeId (app, editor, viewport). **AppSettingsProvider** / **ViewportSettingsProvider** provide scope; **SettingsSection** + **SettingsField** (Studio) register on mount. **AppSettingsPanelContent** merges registry sections over static sections.
+- **Menubar:** **EditorMenubarContribution** (Studio) with **EditorMenubarMenuSlot** children builds the menu array and calls setEditorMenus on mount; clears on unmount. Must be used inside **EditorLayoutProvider** so switching editors resets the menubar.
+- **FormField-within-Form style:** EditorRail, EditorPanel, SettingsSection, EditorMenubarContribution only work inside the correct provider; document in README and AGENTS.
+
+**Rationale:** Single source of truth for panels, settings sections, and menubar; no duplicated panel/section lists; View menu and layout stay in sync; new editors add declarative components instead of editing global config.

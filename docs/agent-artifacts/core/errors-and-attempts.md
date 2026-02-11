@@ -1,7 +1,7 @@
 ---
 title: Errors and attempts
 created: 2026-02-04
-updated: 2026-02-10
+updated: 2026-02-12
 ---
 
 Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx).
@@ -11,6 +11,100 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 > **For coding agents.** See [Agent artifacts index](../../18-agent-artifacts-index.mdx) for the full list.
 
 Log of known failures and fixes so agents and developers avoid repeating the same mistakes.
+
+---
+
+## Agent behavior: user correction overrides agent assumptions
+
+**Rule**: When the user explicitly tells an agent that a hypothesis or fix is wrong, the agent must stop believing and acting on it. User correction overrides external documentation, web search results, or prior agent conclusions.
+
+**Do**:
+- Note the correction in errors-and-attempts and do not repeat the forbidden approach.
+- Push back once with evidence if the agent has strong contrary data; then defer to the user.
+- Update docs (AGENTS.md, errors-and-attempts, STATUS) so future agents find the correction.
+
+**Do not**:
+- Re-implement a fix the user forbade.
+- Assume stack-trace location equals root cause when the user says otherwise.
+- Be stubborn: correct once, then stop.
+
+**Example**: Radix composeRefs / ScrollArea replacement was identified as a fix; user forbade it and confirmed it was a false positive. Existing entry: "Radix composeRefs hypothesis (FALSE POSITIVE)".
+
+---
+
+## Dock slot content must be reactive (Inspector / slot-dependent UI)
+
+**Problem**: Selecting a node in one graph did not show the selection in the Inspector until the user focused another panel (e.g. the other graph). State (selection, activeScope) updated correctly, but the right-panel (slot) content did not re-render because Dockview controls when `SlotPanel` is rendered; when only React context changed (new `right={inspectorContent}` from the editor), Dockview did not re-render the panel.
+
+**Fix**: Use a **slot content store** (Zustand) so slot content drives re-renders independently of Dockview. In `DockLayout.tsx`: (1) Create a module-level store holding `slots: Record<string, React.ReactNode>` and a `version` that bumps on each write. (2) In `DockLayoutRoot`, sync the resolved context value (left, main, right, rightInspector, rightSettings, bottom) into the store in `useLayoutEffect` when it changes. (3) In `SlotPanel`, subscribe to the store by `slotId` (e.g. `useSlotContentStore(s => ({ content: s.slots[slotId], version: s.version }))`) and render the stored content, with context as fallback. Then when the editor passes new `right={inspectorContent}`, the store updates and `SlotPanel` re-renders without requiring focus elsewhere. Ensure editor slot content (e.g. Inspector) is not over-memoized—dependency arrays should include `activeSelection`, `inspectorSections`, etc. When using a selector that returns an object or array, wrap with **useShallow** to avoid getSnapshot infinite loop (see next entry).
+
+---
+
+## Zustand: getSnapshot infinite loop when selector returns new object/array
+
+**Problem**: Using a Zustand store with a selector that returns a new object or array every time (e.g. `(s) => [s.foo, s.bar] as const` or `(s) => ({ a: s.a })`) causes React to log "The result of getSnapshot should be cached to avoid an infinite loop" and can cause an infinite render loop. useSyncExternalStore treats any new reference as a change.
+
+**Fix**: Use `useShallow` from `zustand/shallow` to wrap the selector so the result is shallow-compared; only when the shallow comparison fails will the component re-render. Alternatively, select only primitives (e.g. `s.slots[id]` plus a separate selector for `s.version` if both are needed, or a single primitive that changes when either changes).
+
+---
+
+## Hydration mismatch: invalid interactive nesting (`button` descendants)
+
+**Problem**: React/Next hydration failed with errors like `In HTML, <button> cannot be a descendant of <button>`. In this repo, two concrete cases were found:
+
+- `apps/studio/components/settings/SettingsPanel.tsx`: toggle row rendered a native `<button>` wrapper containing `Switch` (Radix button).
+- `packages/ui/src/components/ui/dropzone.tsx`: dropzone root used `Button` (renders `<button>`) and nested `<input>`.
+
+**Fix**:
+
+- Replace outer native button wrappers with non-button containers when they must contain interactive controls.
+- Preserve row-click behavior with container `onClick` and `stopPropagation` on inner controls (Reset/Switch).
+- For non-form clickable surfaces (e.g. dropzone), use a styled `div` root (`buttonVariants`) + dropzone root props instead of a button root when an `<input>` child is required.
+
+**Guardrail**:
+
+- Added `scripts/hydration-nesting-doctor.mjs` and root script `pnpm hydration:doctor`.
+- Root `lint` now runs `pnpm hydration:doctor` before Studio lint.
+
+---
+
+## Assistant UI tooltip runtime crash in docs previews (`TooltipProvider` missing)
+
+**Problem**: Rendering assistant-ui surfaces in docs component previews (e.g. `CodebaseAgentStrategyEditor`) crashed with:
+
+- `` `Tooltip` must be used within `TooltipProvider` ``
+
+**Cause**: `TooltipIconButton` is used throughout assistant-ui thread controls, and docs previews can render outside the main app provider stack, so no tooltip context exists.
+
+**Fix**:
+
+- Wrap `CodebaseAgentStrategyEditor` with shared `AppProviders` (includes tooltip provider by default).
+- Wrap docs `ComponentPreview` body with `AppProviders` to harden all preview examples rendered outside app-shell providers.
+
+References:
+
+- `packages/shared/src/shared/components/assistant-ui/CodebaseAgentStrategyEditor.tsx`
+- `apps/studio/components/docs/ComponentPreview.tsx`
+
+---
+
+## Settings inner tabs (AI / Appearance / Panels / Other) not updating until focus on graph
+
+**Problem**: In the Settings panel (right dock panel → Settings tab), switching between the inner tabs (AI, Appearance, Panels, Other) did not update the tab highlight or content until the user focused the **graph panel** (not the library or other areas). The tab state lived inside `AppSettingsPanelContent`; when it updated, only that subtree re-rendered. The right slot content is provided to Dockview via context; `SlotPanel` only re-renders when the context value (the `right` element) changes. That value is created by the layout parent (e.g. DialogueEditor). So when only `AppSettingsPanelContent`'s state changed, the parent did not re-render, the context value did not change, and the slot did not re-render—so the tab visual did not update until something else (e.g. focusing the graph) caused the layout parent to re-render and refresh the slot.
+
+**Preferred fix**: **Universal Settings Sidebar (right rail).** Use a single Settings Sidebar at app shell level (shadcn `Sidebar` with `side="right"`), containing `AppSettingsPanelContent`. When Settings is the root of its own surface (sidebar or a dedicated dock panel), inner tab state updates re-render correctly. AppShell wraps content in `SidebarProvider` and renders the Settings Sidebar with `activeEditorId`, `activeProjectId`, and `settingsViewportId` from the store; editors set `setSettingsViewportId(viewportId)` when their viewport/scope changes so the Panels tab shows the right context (e.g. narrative vs storylet). "Open Settings" opens the sidebar. The right dock is Inspector-only (single `right` panel). If the right dock showed empty ("nothing is rendering"), the cause was often a saved layout with panel id `right` while the app only provided `right-inspector`/`right-settings` content; reverting to a single `right` panel and moving Settings to the sidebar fixes both.
+
+**Alternative (legacy) fix**: **Lift the inner tab state** to the parent that owns the slot content so that when the user changes the inner tab, that parent re-renders and the slot context value updates. (1) In the editor, add state for the Settings inner category (e.g. `settingsInnerCategory` / `setSettingsInnerCategory`). (2) Pass it to `AppSettingsPanelContent` as a controlled prop (e.g. `controlledCategory={{ appUserCategory, onAppUserCategoryChange }}`). (3) In `AppSettingsPanelContent`, support optional `controlledCategory`; when provided, use it instead of internal state. (4) Include the inner category in the **key** of the right-panel content so the slot content identity changes and Dockview/SlotPanel receive a fresh tree. (5) Keep `key={value}` on the Radix Tabs in SettingsTabs as a secondary aid. When the component is used outside the dock (e.g. in AppSettingsSheet), omit `controlledCategory` so it keeps using internal state.
+
+**Wrong fix (do not repeat):** (1) Fixing the **Inspector/Settings** two-tab strip instead of the **Settings inner tabs**. (2) Adding only `key={value}` to the Radix `Tabs` in SettingsTabs—that alone does not fix it when the slot content is rendered by Dockview and does not re-render on inner state change.
+
+---
+
+## Zustand: select derived value for reactivity, not the getter
+
+**Problem**: Toggling a setting in Settings (e.g. "Show minimap" in Panels) did not update the UI (e.g. graph minimap) until the user switched panels or refocused. The component was subscribing to the store with `useSettingsStore((s) => s.getSettingValue)` and then calling `getSettingValue(key, ids)` in render. The selector returns the same function reference when the store updates, so Zustand does not re-render when the underlying state (e.g. `viewportSettings`) changes.
+
+**Fix**: Select the **derived value** so the component subscribes to the slice that actually changes. For example: `useSettingsStore((s) => (s.getSettingValue('graph.showMiniMap', { editorId, viewportId }) as boolean | undefined) ?? true)`. Then when that key in the store changes, the selector result changes and the component re-renders. Use the same pattern for any setting that must stay in sync across Settings and consumers (e.g. graph viewport settings).
 
 ---
 
@@ -44,33 +138,39 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ---
 
-## Fumadocs template imports causing docs build failures
+## Fumadocs docs runtime on Next 15.5.9 (`useEffectEvent` + provider mismatch)
 
-**Problem**: Applying the `fumadocs-payloadcms` template pattern directly caused build/runtime failures in Studio docs:
+**Problem**: Studio docs hit runtime failures when using full Fumadocs runtime components:
 
-- PostCSS/Tailwind error: `Cannot apply unknown utility class top-0` when importing `fumadocs-ui/css/preset.css`.
-- Runtime/module error: `useEffectEvent is not exported from react` from `@fumadocs/ui` components.
+- `You need to wrap your application inside FrameworkProvider.`
+- `useEffectEvent is not a function` from Fumadocs page/client modules.
 
-**Cause**: This repo's Tailwind + React/Next stack is not currently compatible with `fumadocs-ui` runtime layouts/preset CSS in the same way as the template.
+**Cause**: On this stack (`next@15.5.9`), importing `fumadocs-ui/page` (and related runtime providers) can pull client paths that rely on `useEffectEvent`, which is not available in the Turbopack-resolved runtime path.
 
-**Fix**: Keep headless Fumadocs source loading (`fumadocs-core` + generated `.source`) but use our stable custom docs renderer:
+**Current working pattern (2026-02-10)**:
 
-- `DocsLayoutShell` from shared for layout chrome.
-- Existing MDX body rendering with custom component map (`createMdxComponents`).
-- Remove route/global imports of `fumadocs-ui/css/neutral.css` and `fumadocs-ui/css/preset.css`.
-- Do not use `fumadocs-ui/layouts/docs` or `fumadocs-ui/layouts/docs/page` until React/Tailwind compatibility is explicitly upgraded and verified.
+- Use **headless Fumadocs source** (`source.getPageTree()` + `source.serializePageTree`) with the shared docs shell (`DocsLayoutShell`) for Studio docs chrome.
+- Keep `fumadocs-ui/page` and `fumadocs-ui/layouts/docs` out of Studio docs route files.
+- Keep route-scoped stylesheet import (`@import "fumadocs-ui/style.css";`) in `apps/studio/app/docs/docs.css` for MDX component styling.
+- Keep token bridge (`--color-fd-*` -> Studio/shadcn semantic tokens) and custom MDX overrides (`fumadocs-ui/mdx` + Forge blocks).
+
+**Guardrail**:
+
+- Added `pnpm docs:runtime:doctor` (wired into `pnpm docs:doctor`) to fail if Studio docs reintroduces runtime Fumadocs layout/page imports.
+- If switching to `fumadocs-ui/css/preset.css`, re-run full CSS/build verification first; this repo previously hit Tailwind utility resolution issues on that path.
 
 References:
 
 - `apps/studio/app/docs/layout.tsx`
 - `apps/studio/app/docs/[[...slug]]/page.tsx`
+- `apps/studio/app/docs/DocsShell.tsx`
 - `apps/studio/app/docs/mdx-components.tsx`
-- `apps/marketing/app/(marketing)/docs/layout.tsx`
-- `apps/marketing/app/(marketing)/docs/[[...slug]]/page.tsx`
+- `apps/studio/app/docs/docs.css`
+- `scripts/docs-runtime-doctor.mjs`
 
 ---
 
-## Docs shell felt raw (missing top tabs, weak sidebar, weak TOC)
+## Legacy custom docs shell felt raw (missing top tabs, weak sidebar, weak TOC)
 
 **Problem**: Even with the stable custom renderer, docs still looked unfinished: no strong top navigation tabs, sparse sidebar hierarchy, and low-contrast TOC/typography.
 
@@ -91,13 +191,251 @@ References:
 
 ---
 
-## Docs sidebar trigger not opening (no client boundary)
+## Legacy custom docs shell parity regressions (generic labels, weak TOC tracking, sidebar/header overlap)
+
+**Problem**: Docs styling rendered, but quality still regressed vs common docs templates:
+
+- Sidebar/top tabs showed fallback labels like `Doc` / `Section`.
+- Right TOC only updated on `hashchange` (not while scrolling).
+- Sidebar content was clipped under the sticky header (desktop overlap).
+
+**Cause**:
+
+- Fumadocs page-tree names are `ReactNode`; our label extraction accepted only string/number.
+- TOC state depended only on `window.location.hash` events.
+- Sidebar is fixed-position (`inset-y-0`) and needed explicit top offset below header in this shell.
+
+**Fix**:
+
+- Added shared label helpers in `packages/shared/src/shared/components/docs/tree-label.ts`:
+  - `toPlainText(node, fallback)` handles ReactNode arrays/elements/`dangerouslySetInnerHTML`.
+  - `toTitleFromHref(href, fallback)` provides deterministic fallback labels.
+- Updated docs shell/sidebar to use the shared helpers and remove generic label fallback dependency:
+  - `packages/shared/src/shared/components/docs/DocsLayoutShell.tsx`
+  - `packages/shared/src/shared/components/docs/DocsSidebar.tsx`
+- Added shared header height var and desktop sidebar offset (`--docs-header-height`) so sidebar starts below header.
+- Upgraded TOC to scroll-aware active tracking via `IntersectionObserver`, with an active rail thumb:
+  - `packages/shared/src/shared/components/docs/RightToc.tsx`
+- Added docs-shell regression tests and a single command guardrail:
+  - `apps/studio/__tests__/docs/*`
+  - `pnpm docs:doctor` (runs css doctor + docs tests)
+
+---
+
+## Legacy custom docs shell still felt cramped (left overlap, search icon collision, weak tree depth)
+
+**Problem**: After parity fixes, docs still had UX issues in real usage:
+
+- Main docs content/header could still feel overlapped by the fixed left sidebar.
+- Sidebar search icon could collide with input text.
+- Folder nesting looked flat (section-like) instead of file-tree hierarchy.
+- Markdown tables/readability felt weak for long docs pages.
+
+**Cause**:
+
+- The shell relied on inset `margin-left` for sidebar offset; fixed sidebar + inset sizing still produced cramped behavior in some layouts.
+- Sidebar search input left padding was too tight for the leading icon.
+- Folder headers were styled as uppercase section labels with subtle nesting rails.
+- Article typography/table styles were duplicated per app and not strong enough.
+
+**Fix**:
+
+- Move docs-shell left offset to provider padding (`md:pl-[var(--sidebar-width)]`) and keep sidebar fixed under header (`md:top`, `md:bottom-auto`, computed height).
+- Improve top tab overflow handling/truncation to reduce header squeeze.
+- Increase search input icon spacing (`pl-9`) and keep icon placement stable.
+- Strengthen sidebar hierarchy styling:
+  - normal-case folder labels,
+  - stronger nested rails/indent,
+  - branch connectors for nested items.
+- Introduce shared docs article class preset:
+  - `packages/shared/src/shared/components/docs/doc-content.ts` (`DOCS_ARTICLE_CLASS`),
+  - used by both Studio and Marketing docs page renderers.
+- Render fallback body content when `page.data.body` is not a function component (prevents missing content on mixed markdown/MDX shapes).
+
+References:
+
+- `packages/shared/src/shared/components/docs/DocsLayoutShell.tsx`
+- `packages/shared/src/shared/components/docs/DocsSidebar.tsx`
+- `packages/shared/src/shared/components/docs/RightToc.tsx`
+- `packages/shared/src/shared/components/docs/doc-content.ts`
+- `apps/studio/app/docs/[[...slug]]/page.tsx`
+- `apps/marketing/app/(marketing)/docs/[[...slug]]/page.tsx`
+
+---
+
+## Docs article link hover scope + docs rails visibility fallback
+
+**Problem**:
+
+- Hovering the docs main article caused **all links** to underline at once.
+- In some desktop-width sessions, docs header tabs / left sidebar / right TOC could appear missing, making the shell feel broken.
+
+**Cause**:
+
+- `DOCS_ARTICLE_CLASS` used `hover:[&_a]:underline`, which scopes underline to the parent hover state, not each anchor.
+- Docs rail visibility relied only on utility breakpoint variants; when those conditions regressed in-session, rails stayed hidden.
+
+**Fix**:
+
+- Change link hover selector to per-anchor: `[_a:hover]:underline`.
+- Add explicit docs-shell fallback media rules in `apps/studio/app/docs/docs.css`:
+  - at `>=48rem`: force desktop sidebar container and top tabs visible,
+  - at `>=64rem`: force right TOC visible.
+- Add stable hook classes for fallback targeting:
+  - `forge-docs-tabs` in `DocsLayoutShell`.
+  - `forge-docs-toc` in `RightToc`.
+
+References:
+
+- `packages/shared/src/shared/components/docs/doc-content.ts`
+- `packages/shared/src/shared/components/docs/DocsLayoutShell.tsx`
+- `packages/shared/src/shared/components/docs/RightToc.tsx`
+- `apps/studio/app/docs/docs.css`
+
+---
+
+## Docs sidebar overlay/clipping and TOC hierarchy spacing polish
+
+**Problem**:
+
+- Desktop docs sidebar could overlap content instead of reliably displacing main content.
+- Sidebar top section could appear clipped behind the sticky header.
+- TOC looked cramped (no clear inner margin rhythm) and hierarchy connector lines sat too close to numbered headings.
+
+**Cause**:
+
+- Desktop displacement/top offset depended on utility variants only; when that path regressed, sidebar stayed fixed but content offset/top sizing did not fully apply.
+- TOC container/link rhythm and connector geometry were too tight for numbered headings.
+
+**Fix**:
+
+- Harden desktop docs layout in route CSS (`apps/studio/app/docs/docs.css`) with explicit media-query fallbacks:
+  - force provider left padding (`padding-left: var(--sidebar-width)`),
+  - force sidebar top/height (`top: var(--docs-header-height)`, `height: calc(100svh - var(--docs-header-height))`, `bottom: auto`),
+  - keep desktop rails visible as fallback.
+- Increase docs header height token to `4rem` in `DocsLayoutShell` to prevent top clipping.
+- Improve TOC spacing/legibility in `RightToc`:
+  - add padded rounded TOC container,
+  - add more link padding/vertical rhythm,
+  - shift and shorten hierarchy connector lines so they don’t crowd numbered text.
+
+References:
+
+- `apps/studio/app/docs/docs.css`
+- `packages/shared/src/shared/components/docs/DocsLayoutShell.tsx`
+- `packages/shared/src/shared/components/docs/RightToc.tsx`
+
+---
+
+## Better Auth-style TOC spacing parity (explicit gutters + rail geometry)
+
+**Problem**:
+
+- Even after initial TOC polish, links could still look visually flush against the TOC container edge.
+- TOC hierarchy rail/connector spacing still looked tighter than the target Better Auth pattern.
+
+**Cause**:
+
+- TOC spacing depended mostly on utility class composition; visual rhythm remained too tight for this docs aesthetic.
+- Rail and connector offsets were not tuned as a single geometry system (container padding, rail x-position, link padding, connector length).
+
+**Fix**:
+
+- Added explicit route-scoped TOC classes in `apps/studio/app/docs/docs.css` for deterministic spacing:
+  - `.forge-docs-toc-inner` (outer gutters),
+  - `.forge-docs-toc-nav` (padded inner card),
+  - `.forge-docs-toc-nav::before` (vertical rail geometry),
+  - `.forge-docs-toc-link` (consistent link padding),
+  - `.forge-docs-toc-thumb` (active indicator aligned to rail).
+- Updated `RightToc` markup to use these classes and tuned depth/connector geometry:
+  - width `w-72`,
+  - depth step `14px`,
+  - connectors shifted left and lengthened so numbers/text have breathing room.
+
+References:
+
+- `packages/shared/src/shared/components/docs/RightToc.tsx`
+- `apps/studio/app/docs/docs.css`
+
+---
+
+## Docs sidebar directory styling, truncation, and ultra-slim scroll behavior
+
+**Problem**:
+
+- Sidebar structure felt flat and not file-directory-like.
+- Long doc titles could visually overflow/crowd the sidebar.
+- Sidebar scrollbar looked heavy vs modern docs UIs.
+
+**Cause**:
+
+- Sidebar rows/icons were generic and depth spacing was shallow.
+- Truncation depended on partial `truncate` usage without consistent `min-w-0`/overflow constraints on all row variants.
+- Default scroll-area scrollbar treatment remained too visible for docs navigation.
+
+**Fix**:
+
+- Updated docs sidebar tree rendering to a directory pattern:
+  - folder rows use left chevron + folder open/closed icons,
+  - file rows use file-oriented icons (with API/reference pages getting a code-file icon),
+  - deeper indentation and clearer branch line rhythm (Cursor-like tree feel).
+- Hardened truncation in both folder and file rows:
+  - `min-w-0` + `overflow-hidden` containers,
+  - `truncate` on labels,
+  - `title` attributes for full-name hover reveal.
+- Added route-scoped scrollbar styling for docs sidebar:
+  - native viewport scrollbar hidden,
+  - Radix scroll thumb reduced to an ultra-slim 4px rail that fades in on hover.
+
+References:
+
+- `packages/shared/src/shared/components/docs/DocsSidebar.tsx`
+- `apps/studio/app/docs/docs.css`
+
+---
+
+## Legacy custom docs sidebar trigger not opening (no client boundary)
 
 **Problem**: Docs sidebar icon was visible, but clicking it did nothing; the left sidebar and right TOC never appeared to hydrate.
 
 **Cause**: `DocsLayoutShell` (client-only, uses hooks like `usePathname`) was imported directly into a **server** `page.tsx` from the bundled `@forge/shared` entrypoint. Because the bundle does not carry a module-level `"use client"` directive, Next treated the import as server code and skipped client hydration for the docs shell.
 
 **Fix**: Wrap `DocsLayoutShell` in a local client component and use that in the docs pages, so the docs shell is in a client boundary. Example: `apps/studio/app/docs/DocsShell.tsx` and `apps/marketing/app/(marketing)/docs/DocsShell.tsx`, then render `<DocsShell ...>` from the server page. Also ensure Tailwind `@source` includes `packages/shared` in marketing so docs shell classes compile.
+
+---
+
+## Tailwind v4 arbitrary CSS variable values output invalid CSS
+
+**Problem**: Layout and popover sizing broke (docs sidebar width, Radix popover/menu/select sizing, tooltip/menubar/hover-card origin). Utilities like `w-[--sidebar-width]` and `origin-[--radix-*-transform-origin]` generated invalid CSS (`width: --sidebar-width`), so styles were effectively ignored.
+
+**Cause**: Tailwind v4 no longer auto-wraps `--var` in `var(...)` for arbitrary values.
+
+**Fix**: Replace `[...]` values that reference CSS variables with explicit `var(--...)`, e.g. `w-[var(--sidebar-width)]`, `max-h-[var(--radix-select-content-available-height)]`, and `origin-[var(--radix-dropdown-menu-content-transform-origin)]`. Updated shared UI components (`@forge/ui`) plus marketing and shared components that used Radix CSS vars.
+
+---
+
+## Docs styles partially missing (Tailwind v4 partial utility generation)
+
+**Problem**: Docs rendered with only partial styling: some classes worked (e.g. typography/arbitrary values), but layout-critical utilities such as `px-4`, `h-14`, `md:hidden`, `lg:px-10`, `max-w-4xl`, and docs shell offset utilities were missing from compiled CSS.
+
+**Cause**: `apps/studio/app/globals.css` and `apps/marketing/app/globals.css` still used legacy `@tailwind base/components/utilities` directives in a Tailwind v4 setup. In this repo pipeline, that could compile a partial utility set and break docs shell layout. Marketing also had `@import` ordering drift (imports after Tailwind directives), making failures harder to diagnose.
+
+**Fix**:
+
+- Migrate app globals to Tailwind v4 canonical import: `@import "tailwindcss";`.
+- Keep all CSS `@import` rules grouped at the top of each globals file.
+- Add strict diagnostics script: `scripts/css-doctor.mjs` and root scripts `css:doctor`, `css:doctor:studio`, `css:doctor:marketing`.
+- `css:doctor` validates:
+  - no legacy `@tailwind` directives in globals;
+  - no `@import` ordering violations;
+  - generated utility probes for docs layout classes.
+
+References:
+
+- `apps/studio/app/globals.css`
+- `apps/marketing/app/globals.css`
+- `scripts/css-doctor.mjs`
+- `package.json`
 
 ---
 
@@ -151,11 +489,11 @@ References:
 
 ---
 
-## Settings: do not add keys in two places (defaults vs sections)
+## Settings: single source of truth (tree-as-source)
 
-**Problem:** Previously, adding a new setting required touching both (1) `SETTINGS_CONFIG.appDefaults` (or editor/viewport defaults) and (2) section definitions in `ai-settings.tsx` (APP_SETTINGS_SECTIONS, etc.). Duplicate definitions led to drift and missing controls.
+**Problem:** Previously, adding a new setting required touching both (1) defaults (config/schema) and (2) section definitions (APP_SETTINGS_SECTIONS, etc.). Duplicate definitions led to drift and missing controls.
 
-**Fix:** A **single schema** in `apps/studio/lib/settings/schema.ts` is the canonical source. Each entry has key, type, label, default, and which scopes show it. We derive `SETTINGS_CONFIG.appDefaults` and `projectDefaults` from the schema, and section definitions (APP_SETTINGS_SECTIONS, PROJECT_SETTINGS_SECTIONS, EDITOR_SETTINGS_SECTIONS, VIEWPORT_SETTINGS_SECTIONS) via `buildSectionsForScope()`. **Do not** reintroduce separate defaults objects or section field lists for keys that exist in the schema; add or change keys only in `schema.ts`.
+**Fix (current):** Settings use **tree-as-source**: the React tree (SettingsSection + SettingsField with `default`) is the single source. Codegen (`pnpm settings:generate`) mounts the tree, reads the registry, and writes `lib/settings/generated/defaults.ts`. Config and store use generated defaults; the panel uses only registry sections. **Do not** add keys in a hand-maintained schema or duplicate defaults; add or edit SettingsField in the tree and run codegen. See [settings-tree-as-source-and-codegen.mdx](../../architecture/settings-tree-as-source-and-codegen.mdx) and decisions.md ADR "Settings: tree-as-source and generated contract."
 
 ---
 
@@ -313,7 +651,7 @@ For the ongoing convention (new or moved docs), see [standard-practices](standar
 
 **Problem**: Console error "The result of getSnapshot should be cached to avoid an infinite loop", often followed by "Maximum update depth exceeded". Triggered when a Zustand selector returns a **new object or array reference** every time (e.g. `state.getMergedSettings(...)` which spreads and returns a new object). React's `useSyncExternalStore` requires the snapshot to be referentially stable when state has not changed; a new reference each time is treated as a change and causes re-render ? getSnapshot again ? infinite loop.
 
-**Fix**: Do not select merged or derived objects from the store in components. Use selectors that return **primitives or stable references** only (e.g. `(s) => s.getSettingValue('ai.agentName', ids)` with stable `ids`). Build any object needed in the component with `useMemo` from those primitive values. Optionally, the store can cache merged result per key and return the same reference when underlying data is unchanged.
+**Fix**: Do not select merged or derived objects from the store in components. Use selectors that return **primitives or stable references** only (e.g. `(s) => s.getSettingValue('ai.agentName', ids)` with stable `ids`). Build any object needed in the component with `useMemo` from those primitive values. Optionally, the store can cache merged result per key and return the same reference when underlying data is unchanged. **Fallbacks:** If the selector uses `?? defaultValue` and `defaultValue` is an object or array, use a **module-level constant** (e.g. `EMPTY_RAIL`, `EMPTY_SECTIONS`) so the same reference is returned when the key is missing; otherwise `defaultValue` creates a new ref every call and triggers the loop (see panel-registry.ts, settings-registry.ts).
 
 ---
 
@@ -325,11 +663,33 @@ For the ongoing convention (new or moved docs), see [standard-practices](standar
 
 ---
 
-## "Maximum update depth exceeded" with setRef in EditorTab/EditorTooltip
+## "Maximum update depth exceeded" — Radix composeRefs hypothesis (FALSE POSITIVE)
 
-**Problem**: "Maximum update depth exceeded" in React, with stack pointing to Radix UI `setRef` and `EditorApp.Tab` / `EditorTooltip` / `AppShell`. Nested Radix Tooltips (e.g. one around the tab, one around the close button) and ref merging (`TooltipTrigger asChild`) can trigger setState inside ref callbacks, causing a re-render loop.
+**Context**: Error surfaces at Radix UI `setRef` / `ScrollAreaPrimitive.Root` / `EditorTooltip` in the stack. External reports (Radix #3799) cite composeRefs + React 19 as cause.
 
-**Fix**: Avoid nested tooltips: use a native `title` attribute for the close button instead of wrapping it in a second `EditorTooltip`. When the tab has no tooltip, do not wrap the tab in `EditorTooltip` at all (render the tab element directly). If the loop persists, wrap the tab root in a `React.forwardRef` component so the ref target has a stable identity.
+**FALSE POSITIVE in this codebase**: The user explicitly confirmed that (a) Radix tooltip was **not** the cause — stripping tooltips did not fix the error; (b) Radix ScrollArea / replacing with native overflow is **forbidden** — "absolutely not"; (c) the composeRefs hypothesis was wrong for this repo. Many projects use Radix without issue.
+
+**Do not**: Replace Radix ScrollArea, Tooltip, or other primitives with native alternatives based solely on the composeRefs hypothesis. Do not assume stack-trace location equals root cause.
+
+**Actual cause**: Under investigation. See "Maximum update depth — panel/slot cascade" for attempted fixes. Tooltip strip and native-title migration remain for other reasons; Radix primitives stay in packages/ui.
+
+---
+
+## Maximum update depth — panel registration and slot store cascade
+
+**Problem**: "Maximum update depth exceeded" in EditorInspector / EditorDockPanel / ScrollArea path (Dialogue and Character editors). The panel registration cascade (EditorRail → setRailPanels → EditorLayout → setSlots → SlotPanel) may contribute.
+
+**Attempted fix (reverted)**: Deferring setRailPanels/setSlots via requestAnimationFrame caused graph panels to stop rendering (black/empty). rAF deferral reverted.
+
+**Fix (slotIdsKey + shallow compare)**: Guard the `setSlots` effect in DockLayout so we only call `useSlotContentStore.getState().setSlots(resolvedSlots)` when the slots actually changed. Use a `prevSlotsRef` and compare keys + slot content by reference; skip if identical. Add `slotIdsKey = Object.keys(resolvedSlots).sort().join('|')` for effect stability. Do **not** remove `resolvedSlots` from the effect deps entirely—that caused main/right/bottom panels to not render while left worked (effect ran before all rails had populated or ran too rarely).
+
+**Anti-pattern (left-only render)**: When the setSlots effect was changed to run only on `slotIdsKey` (and not `resolvedSlots`), the effect could run before all rails had populated, so only left was synced. Always ensure the effect runs with the complete resolvedSlots when structure or content changes.
+
+**Layout JSON migration**: When using rails (`rightPanels` etc.), saved layouts with legacy `right-inspector` / `right-settings` panel ids are incompatible. DockLayout skips loading such layouts and falls through to `buildDefaultLayout`.
+
+**Forbidden fix**: Do **not** replace Radix ScrollArea with native overflow. User explicitly forbade this; the Radix hypothesis is a false positive.
+
+**Current state**: Synchronous setRailPanels and setSlots; setSlots guarded by shallow compare. If error recurs, try: (1) memoize panel content so descriptors have stable refs; (2) batch store updates; (3) audit selectors for unstable refs. Do not blame Radix or replace ScrollArea.
 
 ---
 

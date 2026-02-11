@@ -61,7 +61,7 @@ export function AppBarUser() {
 
   if (isLoading) {
     return (
-      <EditorButton variant="ghost" size="sm" disabled tooltip="Loading…">
+      <EditorButton variant="ghost" size="sm" disabled>
         <User className="size-3 shrink-0" />
         <span className="hidden sm:inline">…</span>
       </EditorButton>
@@ -72,7 +72,7 @@ export function AppBarUser() {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <EditorButton variant="ghost" size="sm" tooltip="Not signed in">
+          <EditorButton variant="ghost" size="sm">
             <User className="size-3 shrink-0" />
             <span className="hidden sm:inline">Not signed in</span>
           </EditorButton>
@@ -90,7 +90,7 @@ export function AppBarUser() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <EditorButton variant="ghost" size="sm" tooltip={`Signed in as ${displayName}`}>
+        <EditorButton variant="ghost" size="sm">
           <Avatar className="h-6 w-6 shrink-0">
             <AvatarFallback className="text-xs">{initial}</AvatarFallback>
           </Avatar>

@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 import { getPayload } from 'payload';
 import config from '@/payload.config';
 import Stripe from 'stripe';
+import {
+  parseOrganizationIdFromRequestUrl,
+  requireAuthenticatedUser,
+  resolveOrganizationFromInput,
+} from '@/lib/server/organizations';
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
@@ -14,21 +19,43 @@ export async function POST(req: Request) {
   }
   try {
     const payload = await getPayload({ config });
-    const { user } = await payload.auth({
-      headers: req.headers,
-      canSetHeaders: false,
-    });
+    const user = await requireAuthenticatedUser(payload, req.headers);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const accountId = user.stripeConnectAccountId;
+    const body = await req.json().catch(() => ({}));
+    const parsedOrgIdFromBody =
+      typeof body?.orgId === 'number'
+        ? body.orgId
+        : typeof body?.orgId === 'string'
+          ? Number(body.orgId)
+          : null;
+    const parsedOrgIdFromUrl = parseOrganizationIdFromRequestUrl(req);
+    const requestedOrgId =
+      parsedOrgIdFromBody && Number.isFinite(parsedOrgIdFromBody)
+        ? parsedOrgIdFromBody
+        : parsedOrgIdFromUrl;
+    const context = await resolveOrganizationFromInput(
+      payload,
+      user,
+      requestedOrgId ?? undefined,
+      { strictRequestedMembership: true },
+    );
+    const activeOrgId = context.activeOrganizationId;
+    const organization = await payload.findByID({
+      collection: 'organizations',
+      id: activeOrgId,
+      depth: 0,
+    });
+
+    const accountId =
+      organization?.stripeConnectAccountId ?? user.stripeConnectAccountId;
     if (!accountId) {
       return NextResponse.json(
         { error: 'Complete Connect account setup first' },
         { status: 400 }
       );
     }
-    const body = await req.json().catch(() => ({}));
     const base =
       typeof body?.baseUrl === 'string' && body.baseUrl
         ? body.baseUrl
@@ -48,12 +75,13 @@ export async function POST(req: Request) {
       return_url: returnUrl,
       type: 'account_onboarding',
     });
-    return NextResponse.json({ url: link.url });
+    return NextResponse.json({ url: link.url, organizationId: activeOrgId });
   } catch (error) {
     const message =
       error instanceof Error
         ? error.message
         : 'Failed to create onboarding link';
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = message.includes('Not a member') ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

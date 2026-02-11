@@ -14,7 +14,6 @@ import { useAppMenubarContribution } from '@/lib/contexts/AppMenubarContext';
 import { dialogueInspectorSections, FlowMiniMap } from '@/components/forge';
 import { AgentWorkflowPanel } from '@/components/ai/AgentWorkflowPanel';
 import { DialogueDrawerContent } from '@/components/editors/dialogue/DialogueDrawerContent';
-import { AppSettingsPanelContent } from '@/components/settings/AppSettingsPanelContent';
 import { useForgeGraphsStore, FORGE_DRAFT_KEY, type ForgeGraphScope } from '@/lib/domains/forge/store';
 import {
   useForgeGraphs,
@@ -25,6 +24,9 @@ import {
 } from '@/lib/data/hooks';
 import { useEditorStore } from '@/lib/app-shell/store';
 import { EDITOR_VIEWPORT_IDS } from '@/lib/app-shell/editor-metadata';
+import { CHAT_PANEL_ID } from '@/lib/editor-registry/constants';
+import { DialogueAssistantPanel } from '@/components/editors/dialogue/DialogueAssistantPanel';
+import { ModelSwitcher } from '@/components/model-switcher';
 import { useEditorPanelVisibility } from '@/lib/app-shell/useEditorPanelVisibility';
 import { useSettingsStore } from '@/lib/settings/store';
 import { useAIHighlight } from '@forge/shared/copilot/use-ai-highlight';
@@ -37,14 +39,21 @@ import {
   EditorStatusBar,
   EditorOverlaySurface,
   EditorReviewBar,
-  EditorDockLayout,
   EditorDockPanel,
+  EditorRail,
+  EditorPanel,
   usePanelLock,
   type PanelTabDef,
   EditorInspector,
   createEditorMenubarMenus,
   type DockLayoutRef,
 } from '@forge/shared';
+import {
+  EditorLayoutProvider,
+  EditorLayout,
+  EditorMenubarContribution,
+  EditorMenubarMenuSlot,
+} from '@/components/editor-layout';
 import { Badge } from '@forge/ui/badge';
 import { Button } from '@forge/ui/button';
 import { Card } from '@forge/ui/card';
@@ -60,11 +69,10 @@ import {
   Boxes,
   Code,
   FilePlus2,
-  Focus,
   GitBranch,
   Layers,
   LayoutPanelTop,
-  Maximize2,
+  MessageCircle,
   PanelBottom,
   PanelLeft,
   PanelRight,
@@ -74,7 +82,17 @@ import {
   User,
   Users,
 } from 'lucide-react';
+import type { EditorDescriptor } from '@/lib/editor-registry/editor-registry';
 import { cn } from '@forge/shared/lib/utils';
+
+/** Editor descriptor for registry; defaults live on the component. */
+export const editorDescriptor: Omit<EditorDescriptor, 'component'> = {
+  id: 'dialogue',
+  label: 'Dialogue',
+  summary: 'YarnSpinner dialogue graph editor (React Flow)',
+  icon: MessageCircle,
+  order: 0,
+};
 
 const CREATE_NODE_OVERLAY_ID = 'create-node';
 
@@ -127,20 +145,6 @@ function useForgeSelection(
   }, [selectedNodeIds, selectedEdgeIds, graph]);
 }
 
-function getSelectionNodeIds(
-  selectedNodeIds: string[],
-  selectedEdgeIds: string[],
-  graph: ForgeGraphDoc | null
-) {
-  if (selectedNodeIds.length > 0) return selectedNodeIds;
-  if (!graph || selectedEdgeIds.length === 0) return [];
-  const ids = selectedEdgeIds.flatMap((edgeId) => {
-    const edge = graph.flow.edges.find((item) => item.id === edgeId);
-    return edge ? [edge.source, edge.target] : [];
-  });
-  return Array.from(new Set(ids));
-}
-
 interface ForgeGraphListProps {
   label: string;
   icon: React.ReactNode;
@@ -175,7 +179,6 @@ function ForgeGraphList({
           label: `Create ${label}`,
           icon: <Plus size={12} />,
           onClick: onCreate,
-          tooltip: `Create ${label}`,
         },
       ]
     : [];
@@ -246,8 +249,6 @@ interface ForgeGraphPanelProps {
   onCreateGraph: () => void;
   onViewportReady: (handle: ForgeViewportHandle) => void;
   onFocus: () => void;
-  onFitView: () => void;
-  onFitSelection: () => void;
 }
 
 function ForgeGraphPanel({
@@ -267,15 +268,11 @@ function ForgeGraphPanel({
   onCreateGraph,
   onViewportReady,
   onFocus,
-  onFitView,
-  onFitSelection,
 }: ForgeGraphPanelProps) {
-  const getSettingValue = useSettingsStore((s) => s.getSettingValue);
+  const showMiniMap = useSettingsStore(
+    (s) => (s.getSettingValue('graph.showMiniMap', { editorId: 'dialogue', viewportId: scope }) as boolean | undefined) ?? true
+  );
   const setSetting = useSettingsStore((s) => s.setSetting);
-  const showMiniMap = (getSettingValue('graph.showMiniMap', {
-    editorId: 'dialogue',
-    viewportId: scope,
-  }) as boolean | undefined) ?? true;
   const handleToggleMiniMap = useCallback(() => {
     setSetting('viewport', 'graph.showMiniMap', !showMiniMap, {
       editorId: 'dialogue',
@@ -318,9 +315,7 @@ function ForgeGraphPanel({
             <GraphLeftToolbar
               showMiniMap={showMiniMap}
               onToggleMiniMap={handleToggleMiniMap}
-              onFitView={onFitView}
             />
-            <GraphLayoutControls onFitView={onFitView} onFitSelection={onFitSelection} />
             {showMiniMap && <FlowMiniMap className="!bg-background !border !shadow-[var(--shadow-lg)]" />}
           </GraphEditor>
         ) : (
@@ -630,52 +625,6 @@ export function DialogueEditor() {
     storyletViewportRef.current = handle;
   }, []);
 
-  const fitViewNarrative = useCallback(() => {
-    narrativeViewportRef.current?.fitView();
-  }, []);
-
-  const fitViewStorylet = useCallback(() => {
-    storyletViewportRef.current?.fitView();
-  }, []);
-
-  const fitSelectionNarrative = useCallback(() => {
-    const handle = narrativeViewportRef.current;
-    const nodeIds = getSelectionNodeIds(selectedNarrativeNodeIds, selectedNarrativeEdgeIds, narrativeGraph);
-    if (!handle) return;
-    if (nodeIds.length === 0) {
-      handle.fitView();
-      return;
-    }
-    handle.fitViewToNodes(nodeIds);
-  }, [selectedNarrativeNodeIds, selectedNarrativeEdgeIds, narrativeGraph]);
-
-  const fitSelectionStorylet = useCallback(() => {
-    const handle = storyletViewportRef.current;
-    const nodeIds = getSelectionNodeIds(selectedStoryletNodeIds, selectedStoryletEdgeIds, storyletGraph);
-    if (!handle) return;
-    if (nodeIds.length === 0) {
-      handle.fitView();
-      return;
-    }
-    handle.fitViewToNodes(nodeIds);
-  }, [selectedStoryletNodeIds, selectedStoryletEdgeIds, storyletGraph]);
-
-  const fitViewActive = useCallback(() => {
-    if (activeScope === 'narrative') {
-      fitViewNarrative();
-      return;
-    }
-    fitViewStorylet();
-  }, [activeScope, fitViewNarrative, fitViewStorylet]);
-
-  const fitSelectionActive = useCallback(() => {
-    if (activeScope === 'narrative') {
-      fitSelectionNarrative();
-      return;
-    }
-    fitSelectionStorylet();
-  }, [activeScope, fitSelectionNarrative, fitSelectionStorylet]);
-
   const revealSelection = useCallback(() => {
     const handle = activeScope === 'narrative' ? narrativeViewportRef.current : storyletViewportRef.current;
     if (!handle) return;
@@ -974,18 +923,15 @@ export function DialogueEditor() {
   const dockLayouts = useEditorStore((s) => s.dockLayouts);
   const setDockLayout = useEditorStore((s) => s.setDockLayout);
   const clearDockLayout = useEditorStore((s) => s.clearDockLayout);
-  const requestOpenSettings = useEditorStore((s) => s.requestOpenSettings);
-  const setRequestOpenSettings = useEditorStore((s) => s.setRequestOpenSettings);
+  const setSettingsViewportId = useEditorStore((s) => s.setSettingsViewportId);
+  const setSettingsSidebarOpen = useEditorStore((s) => s.setSettingsSidebarOpen);
   const layoutRef = useRef<DockLayoutRef>(null);
   const DIALOGUE_LAYOUT_ID = 'dialogue-mode';
-  const [rightPanelTab, setRightPanelTab] = useState<'inspector' | 'settings'>('inspector');
 
   useEffect(() => {
-    if (!requestOpenSettings) return;
-    setRightPanelTab('settings');
-    setPanelVisible('panel.visible.dialogue-right', true);
-    setRequestOpenSettings(false);
-  }, [requestOpenSettings, setPanelVisible, setRequestOpenSettings]);
+    setSettingsViewportId(activeScope);
+    return () => setSettingsViewportId(null);
+  }, [activeScope, setSettingsViewportId]);
 
   const viewMenuItems = useMemo(
     () => {
@@ -994,35 +940,14 @@ export function DialogueEditor() {
         right: <PanelRight size={16} />,
         bottom: <PanelBottom size={16} />,
       };
-      return [
-        {
-          id: 'fit-view',
-          label: 'Fit view',
-          icon: <Maximize2 size={16} />,
-          onSelect: fitViewActive,
-        },
-        {
-          id: 'fit-selection',
-          label: 'Fit to selection',
-          icon: <Focus size={16} />,
-          onSelect: fitSelectionActive,
-        },
-        { id: 'view-sep-panels', type: 'separator' as const },
+      const layoutSubmenu = [
         ...panelSpecs.map((spec) => ({
           id: `panel-${spec.id}`,
           label: panelVisibility[spec.key] === false ? `Show ${spec.label}` : `Hide ${spec.label}`,
           icon: panelIcons[spec.id] ?? <LayoutPanelTop size={16} />,
           onSelect: () => setPanelVisible(spec.key, !(panelVisibility[spec.key] !== false)),
         })),
-        {
-          id: 'open-settings',
-          label: 'Open Settings',
-          icon: <Wrench size={16} />,
-          onSelect: () => {
-            setRightPanelTab('settings');
-            setPanelVisible('panel.visible.dialogue-right', true);
-          },
-        },
+        { id: 'view-sep-layout', type: 'separator' as const },
         {
           id: 'restore-all-panels',
           label: 'Restore all panels',
@@ -1039,8 +964,22 @@ export function DialogueEditor() {
           onSelect: () => layoutRef.current?.resetLayout(),
         },
       ];
+      return [
+        {
+          id: 'layout',
+          label: 'Layout',
+          icon: <LayoutPanelTop size={16} />,
+          submenu: layoutSubmenu,
+        },
+        {
+          id: 'open-settings',
+          label: 'Open Settings',
+          icon: <Wrench size={16} />,
+          onSelect: () => setSettingsSidebarOpen(true),
+        },
+      ];
     },
-    [fitViewActive, fitSelectionActive, panelSpecs, panelVisibility, restoreAllPanels, setPanelVisible]
+    [panelSpecs, panelVisibility, restoreAllPanels, setPanelVisible, setSettingsSidebarOpen]
   );
 
   const menubarMenus = useMemo(
@@ -1141,8 +1080,6 @@ export function DialogueEditor() {
         onCreateGraph={() => handleCreateGraph('narrative')}
         onViewportReady={handleNarrativeViewportReady}
         onFocus={() => setActiveScope('narrative')}
-        onFitView={fitViewNarrative}
-        onFitSelection={fitSelectionNarrative}
       />
       <ForgeGraphPanel
         scope="storylet"
@@ -1161,46 +1098,15 @@ export function DialogueEditor() {
         onCreateGraph={() => handleCreateGraph('storylet')}
         onViewportReady={handleStoryletViewportReady}
         onFocus={() => setActiveScope('storylet')}
-        onFitView={fitViewStorylet}
-        onFitSelection={fitSelectionStorylet}
       />
     </div>
   );
 
-  const rightPanelTabs: PanelTabDef[] = useMemo(
-    () => [
-      {
-        id: 'inspector',
-        label: 'Inspector',
-        content: <EditorInspector selection={activeSelection} sections={inspectorSections} />,
-      },
-      {
-        id: 'settings',
-        label: 'Settings',
-        content: (
-          <AppSettingsPanelContent
-            activeEditorId="dialogue"
-            activeProjectId={activeProjectId != null ? String(activeProjectId) : null}
-            viewportId={activeScope}
-            className="h-full"
-          />
-        ),
-      },
-    ],
-    [activeSelection, inspectorSections, activeProjectId]
-  );
-
   const inspectorContent =
     showRightPanel === false ? undefined : (
-      <EditorDockPanel
-        panelId="dialogue-right"
-        title="Inspector"
-        hideTitleBar
-        className="h-full"
-        tabs={rightPanelTabs}
-        activeTabId={rightPanelTab}
-        onTabChange={(id) => setRightPanelTab(id as 'inspector' | 'settings')}
-      />
+      <EditorDockPanel panelId="dialogue-right" hideTitleBar className="h-full">
+        <EditorInspector selection={activeSelection} sections={inspectorSections} />
+      </EditorDockPanel>
     );
 
   const isEditorLocked = editorLock.locked || globalLocked === true;
@@ -1247,7 +1153,6 @@ export function DialogueEditor() {
                 variant="outline"
                 size="sm"
                 onClick={() => window.open(link.href, '_blank')}
-                tooltip={link.label}
                 className="border-border text-foreground"
               >
                 {link.icon}
@@ -1281,22 +1186,46 @@ export function DialogueEditor() {
           label="Pending changes from plan"
         />
 
-        <EditorDockLayout
-          ref={layoutRef}
-          left={leftPanel}
-          main={mainPanel}
-          right={inspectorContent}
-          slots={{
-            left: { title: 'Library' },
-            main: { title: 'Dialogue Graphs' },
-            right: { title: 'Inspector / Settings' },
-          }}
-          viewport={{ viewportId, viewportType: 'react-flow' }}
-          layoutId={DIALOGUE_LAYOUT_ID}
-          layoutJson={dockLayouts[DIALOGUE_LAYOUT_ID] ?? undefined}
-          onLayoutChange={(json) => setDockLayout(DIALOGUE_LAYOUT_ID, json)}
-          clearLayout={() => clearDockLayout(DIALOGUE_LAYOUT_ID)}
-        />
+        <EditorLayoutProvider editorId="dialogue" viewportId={activeScope ?? 'narrative'}>
+          <EditorMenubarContribution>
+            <EditorMenubarMenuSlot id="file" label="File" items={fileMenuItems} />
+            <EditorMenubarMenuSlot id="view" label="View" items={viewMenuItems} />
+          </EditorMenubarContribution>
+          <EditorRail side="left">
+            <EditorPanel id="left" title="Library" iconKey="library">
+              {leftPanel}
+            </EditorPanel>
+          </EditorRail>
+          <EditorRail side="main">
+            <EditorPanel id="main" title="Dialogue Graphs" iconKey="main">
+              {mainPanel}
+            </EditorPanel>
+          </EditorRail>
+          <EditorRail side="right">
+            <EditorPanel id="right" title="Inspector" iconKey="inspector">
+              {inspectorContent}
+            </EditorPanel>
+            <EditorPanel id={CHAT_PANEL_ID} title="Chat" iconKey="chat">
+              <div className="h-full min-h-0">
+                <DialogueAssistantPanel
+                  composerTrailing={<ModelSwitcher provider="assistantUi" variant="composer" />}
+                />
+              </div>
+            </EditorPanel>
+          </EditorRail>
+          <EditorLayout
+            ref={layoutRef}
+            layoutId={DIALOGUE_LAYOUT_ID}
+            layoutJson={dockLayouts[DIALOGUE_LAYOUT_ID] ?? undefined}
+            onLayoutChange={(json: string) => setDockLayout(DIALOGUE_LAYOUT_ID, json)}
+            clearLayout={() => clearDockLayout(DIALOGUE_LAYOUT_ID)}
+            viewport={{ viewportId, viewportType: 'react-flow' }}
+            slots={{
+              left: { title: 'Library' },
+              main: { title: 'Dialogue Graphs' },
+            }}
+          />
+        </EditorLayoutProvider>
 
         <Drawer open={drawerOpen} onOpenChange={(open: boolean) => setBottomDrawerOpen('dialogue', open)}>
           <DrawerContent className="max-h-[70vh] min-h-[240px] flex flex-col">

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getPayload } from 'payload';
 import config from '@/payload.config';
 import Stripe from 'stripe';
+import { requireAuthenticatedUser } from '@/lib/server/organizations';
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
@@ -17,10 +18,7 @@ export async function POST(req: Request) {
   }
   try {
     const payload = await getPayload({ config });
-    const { user } = await payload.auth({
-      headers: req.headers,
-      canSetHeaders: false,
-    });
+    const user = await requireAuthenticatedUser(payload, req.headers);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -64,10 +62,27 @@ export async function POST(req: Request) {
             collection: 'users',
             id: listing.creator as number,
           });
-    const creatorAccountId =
-      typeof creator === 'object' && creator != null && 'stripeConnectAccountId' in creator
-        ? (creator as { stripeConnectAccountId?: string | null }).stripeConnectAccountId
+    const listingOrganizationId =
+      listing.organization != null
+        ? typeof listing.organization === 'object' &&
+          listing.organization != null &&
+          'id' in listing.organization
+          ? Number((listing.organization as { id: number }).id)
+          : Number(listing.organization)
         : null;
+    const listingOrganization =
+      listingOrganizationId && Number.isFinite(listingOrganizationId)
+        ? await payload.findByID({
+            collection: 'organizations',
+            id: listingOrganizationId,
+            depth: 0,
+          })
+        : null;
+    const creatorAccountId =
+      listingOrganization?.stripeConnectAccountId ??
+      (typeof creator === 'object' && creator != null && 'stripeConnectAccountId' in creator
+        ? (creator as { stripeConnectAccountId?: string | null }).stripeConnectAccountId
+        : null);
     if (!creatorAccountId) {
       return NextResponse.json(
         { error: 'Creator has not set up payouts' },
@@ -112,6 +127,7 @@ export async function POST(req: Request) {
         metadata: {
           listingId: String(listing.id),
           buyerId: String(user.id),
+          sellerOrganizationId: listingOrganizationId ? String(listingOrganizationId) : '',
         },
       },
       success_url: successUrl,
@@ -120,6 +136,7 @@ export async function POST(req: Request) {
       metadata: {
         listingId: String(listing.id),
         buyerId: String(user.id),
+        sellerOrganizationId: listingOrganizationId ? String(listingOrganizationId) : '',
       },
     });
     return NextResponse.json({ url: session.url ?? undefined });

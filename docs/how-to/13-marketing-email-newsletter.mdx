@@ -1,27 +1,27 @@
 ---
-title: 13 – Marketing email / newsletter
-
+title: 13 - Platform email / newsletter
 created: 2026-02-05
-updated: 2026-02-05
+updated: 2026-02-10
 ---
 
-# 13 – Marketing email / newsletter
+# 13 - Platform email / newsletter
 
-Minimal email for the marketing site: Resend and an optional welcome email on subscribe.
+Minimal newsletter pipeline for platform pages.
 
 ## Storage
 
-- Subscribers are stored in Payload: `newsletter-subscribers` (email, optedIn, source). No change.
-- Marketing form POSTs to Studio `POST /api/newsletter`; Studio creates the doc.
+- Subscribers are stored in Payload `newsletter-subscribers`.
+- Platform form posts to Studio `POST /api/newsletter`.
 
-## Resend (optional welcome)
+## Optional Resend welcome email
 
-- **Env (Studio):** `RESEND_API_KEY`. Optional: `FROM_EMAIL` (e.g. `Forge <onboarding@resend.dev>`). See `apps/studio/.env.example`.
-- **Behavior:** After creating a newsletter subscriber, if `RESEND_API_KEY` is set, Studio sends one welcome email via Resend’s API (`POST https://api.resend.com/emails`). If the send fails, the API still returns success (subscriber was saved).
-- **No campaign UI:** We do not build a dashboard or campaign builder; this is a single transactional “thanks for subscribing” email. For broadcasts, export from Payload or use Resend’s UI separately.
+- **Env (Studio):** `RESEND_API_KEY` and optional `FROM_EMAIL`.
+- After subscriber creation, Studio can send a welcome email through Resend.
+- If email send fails, API still returns success because subscriber data is already stored.
 
-## Adding more transactional emails
+## Waitlist
 
-- Reuse the same pattern: call Resend (or another provider) from a Studio API route or Payload hook. Prefer the smallest setup (one API key, one endpoint) until you need more.
+- Platform waitlist page posts to `POST /api/waitlist`.
+- Data is stored in Payload `waitlist` collection.
 
-**Next:** [14 – Marketing announcements and scheduling](14-marketing-announcements-scheduling.mdx)
+**Next:** [14 - Marketing announcements and scheduling](14-marketing-announcements-scheduling.mdx)

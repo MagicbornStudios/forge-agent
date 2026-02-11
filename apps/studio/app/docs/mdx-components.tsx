@@ -1,5 +1,6 @@
 import * as React from 'react';
 import Link from 'next/link';
+import defaultMdxComponents from 'fumadocs-ui/mdx';
 import { cn } from '@forge/ui/lib/utils';
 import { Badge } from '@forge/ui/badge';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@forge/ui/card';
@@ -89,7 +90,7 @@ export function createMdxComponents(validSlugs: Set<string>) {
     if (resolved) {
       const docHref = resolved === '00-docs-index' ? '/docs' : `/docs/${resolved}`;
       return (
-        <Link href={docHref} className="text-primary hover:underline">
+        <Link href={docHref} {...props}>
           {children}
         </Link>
       );
@@ -99,27 +100,8 @@ export function createMdxComponents(validSlugs: Set<string>) {
   };
 
   return {
+    ...defaultMdxComponents,
     a: DocLink,
-    pre: ({ children }: { children?: React.ReactNode }) => (
-      <pre className="rounded-lg border border-border bg-muted/50 p-4 overflow-x-auto">
-        {children}
-      </pre>
-    ),
-    code: ({ className, children, ...props }: React.HTMLAttributes<HTMLElement>) => {
-      const isBlock = className != null;
-      if (isBlock) {
-        return (
-          <code className={className} {...props}>
-            {children}
-          </code>
-        );
-      }
-      return (
-        <code className="rounded bg-muted px-1.5 py-0.5 text-sm" {...props}>
-          {children}
-        </code>
-      );
-    },
     Callout,
     Step,
     ComponentPreview,

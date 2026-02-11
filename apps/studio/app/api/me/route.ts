@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getPayload } from 'payload';
 import config from '@/payload.config';
+import { ensureOrganizationContext } from '@/lib/server/organizations';
 
 /**
  * @swagger
@@ -34,8 +35,27 @@ export async function GET(req: Request) {
       name?: string | null;
       role?: string | null;
       plan?: string | null;
+      defaultOrganization?: number | { id: number } | null;
       stripeConnectAccountId?: string | null;
     };
+    const typedUser =
+      typeof user.id === 'number'
+        ? (user as {
+            id: number;
+            email?: string | null;
+            name?: string | null;
+            role?: string | null;
+            plan?: string | null;
+            defaultOrganization?: number | { id: number } | null;
+            stripeConnectAccountId?: string | null;
+          })
+        : null;
+    const orgContext =
+      typedUser != null ? await ensureOrganizationContext(payload, typedUser) : null;
+    const activeMembership =
+      orgContext?.memberships.find(
+        (membership) => membership.organizationId === orgContext.activeOrganizationId,
+      ) ?? null;
 
     return NextResponse.json({
       user: {
@@ -44,7 +64,9 @@ export async function GET(req: Request) {
         name: user.name ?? null,
         role: user.role ?? null,
         plan: user.plan ?? null,
-        stripeConnectAccountId: user.stripeConnectAccountId ?? null,
+        defaultOrganizationId: orgContext?.activeOrganizationId ?? null,
+        stripeConnectAccountId:
+          activeMembership?.stripeConnectAccountId ?? user.stripeConnectAccountId ?? null,
       },
     });
   } catch (error) {

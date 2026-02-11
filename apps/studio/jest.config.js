@@ -6,7 +6,7 @@ const createJestConfig = nextJest({
 
 const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/../../jest.setup.js'],
-  testEnvironment: 'jest-environment-jsdom',
+  testEnvironment: process.env.SETTINGS_CODEGEN ? 'node' : 'jest-environment-jsdom',
   moduleNameMapper: {
     '^canvas$': '<rootDir>/__mocks__/canvas.js',
     '^@/(.*)$': '<rootDir>/$1',

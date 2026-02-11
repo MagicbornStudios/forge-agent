@@ -43,5 +43,13 @@ export const Users: CollectionConfig = {
       type: 'text',
       admin: { description: 'Stripe Connect Express account id (acct_xxx)' },
     },
+    {
+      name: 'defaultOrganization',
+      type: 'relationship',
+      relationTo: 'organizations',
+      admin: {
+        description: 'Active organization for platform dashboards and billing context.',
+      },
+    },
   ],
 };

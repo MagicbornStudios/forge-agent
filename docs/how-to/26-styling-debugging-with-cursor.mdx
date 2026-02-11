@@ -1,7 +1,7 @@
 ---
 title: 26 – Styling debugging with Cursor
 created: 2026-02-07
-updated: 2026-02-08
+updated: 2026-02-10
 ---
 
 # 26 – Styling debugging with Cursor
@@ -18,6 +18,12 @@ Our editor UI is complex: DockLayout panels, toolbars (File/View/State, Admin, A
 Before changing styles, read the design docs and [agent-artifacts/core/styling-and-ui-consistency.md](../agent-artifacts/core/styling-and-ui-consistency.md).
 
 ## Workflow (human and agent)
+
+### Preflight: verify CSS pipeline
+
+1. Run `pnpm css:doctor` from repo root before opening the browser.
+2. If it fails, fix the reported `globals.css` or generated utility probes first.
+3. Re-run `pnpm css:doctor` until it passes; then start visual debugging.
 
 ### Before: capture the problem
 

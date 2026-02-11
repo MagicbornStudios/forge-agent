@@ -120,3 +120,6 @@ export const EditorApp = Object.assign(EditorAppRoot, {
   Tab: AppTab,
   Content: AppContent,
 });
+
+/** Alias for EditorApp; Studio is the semantic root, StudioApp is the tabs + content compound inside it. */
+export const StudioApp = EditorApp;

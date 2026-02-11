@@ -1,14 +1,14 @@
 ---
 title: Product roadmap
 created: 2026-02-06
-updated: 2026-02-09
+updated: 2026-02-11
 ---
 
 # Product roadmap
 
 Forge Agent is an **AI-first interactive narrative storytelling engine** — a **game/narrative content authoring engine**, thin on engine, strong on content and AI. This roadmap tracks editors, platform initiatives, and integrations. Each item follows the **Ralph Wiggum loop**: read STATUS -> implement a slice -> update STATUS and artifacts.
 
-**MVP and first revenue:** **MVP editors** = Dialogue, Character, Writer, GamePlayer. Video and Strategy codebase editor **not in MVP**. **Creators list from day one.** **MVP** = Vercel + Payload; **platform** = marketing site; **success** = first paid clone end-to-end. See **[MVP and first revenue](../product/mvp-and-revenue.mdx)** for audience, positioning, and evolution.
+**MVP and first revenue:** **MVP editors** = Dialogue, Character, Writer, GamePlayer. Video and Strategy codebase editor **not in MVP**. **Creators list from day one.** **MVP** = Vercel + Payload; **platform** = `apps/platform`; **success** = first paid clone end-to-end. See **[MVP and first revenue](../product/mvp-and-revenue.mdx)** for audience, positioning, and evolution.
 
 **Production target:** 2/14. We are in development until then; migration and rollback strategy apply after production.
 
@@ -100,7 +100,7 @@ structures is in scope.
 
 **Status:** After MVP (not part of MVP).
 
-**Goal:** Let developers submit editors/apps built with the dev kit (web tech); approved editors in the official Studio suite receive usage-based recurring payouts (Stripe Connect); community apps are listable and installable but do not receive payouts. Submission via GitHub repo (private; we fork for paid users). Approved editors, data contracts, first-class narrative (Forge graph, Yarn), preferred integrations (Babylon.js, Kaplay, Phaser, video). See [Business: Developer program and editor ecosystem](../business/developer-program-and-editors.mdx).
+**Goal:** Let developers submit editors/apps built with the dev kit (web tech); approved editors in the official Studio suite receive a defined revenue split from platform flows while official (not Studio usage-metered pay); community apps are listable and installable but do not receive official payouts. Submission via GitHub repo (private; we fork for paid users). Approved editors, data contracts, first-class narrative (Forge graph, Yarn), preferred integrations (Babylon.js, Kaplay, Phaser, video). See [Business: Developer program and editor ecosystem](../business/developer-program-and-editors.mdx).
 
 **Impact: Epic.**
 
@@ -158,8 +158,8 @@ dialogue scripting language.
 
 These items are tracked in STATUS § Next with impact sizes. **First revenue = paid clone/download** (see [MVP and first revenue](../product/mvp-and-revenue.mdx)).
 
-- **Platform** = marketing site (landing + platform); we can change later (e.g. split into a separate app).
-- **Catalog at MVP** — Users and orgs can browse and list. **Creators list from day one** (catalog + Connect + payouts at MVP). The **public catalog page** is at `/catalog` on the marketing site (Unity Asset Store / Bandlab style card grid).
+- **Platform** = `apps/platform` (landing + customer platform).
+- **Catalog at MVP** — Users and orgs can browse and list. **Creators list from day one** (catalog + Connect + payouts at MVP). The **public catalog page** is at `/catalog` in the platform app (Unity Asset Store / Bandlab style card grid).
 - **Paid and free tier** — Plan tiers required at MVP.
 - **Revenue share** — Platform and creator both get paid (Unity Asset Store / Bandlab style); Stripe Connect or similar for payouts.
 - **Monetization (clone to account / download)** — **MVP-critical.** Users can let others clone a project (or template, or Strategy core) to their account for a price, or download the build. Listings, checkout, Stripe Connect or similar. **Impact: Epic.**
@@ -168,11 +168,25 @@ These items are tracked in STATUS § Next with impact sizes. **First revenue = p
 
 ### Creator dashboard
 
-**Status:** Open. Track in [task registry](../agent-artifacts/core/task-registry.md) initiative `creator-dashboard` and [task breakdown](../agent-artifacts/core/task-breakdown-creator-dashboard.md).
+**Status:** In progress. Track in [task registry](../agent-artifacts/core/task-registry.md) initiative `creator-dashboard` and [task breakdown](../agent-artifacts/core/task-breakdown-creator-dashboard.md).
 
-**Goal:** Full account management on the **marketing site** (customer-facing). Dashboard: my listings, my games, licenses, revenue; Settings and billing (existing). **Studio** remains minimal: only **publish** (create listing from current project) and **update listing** (if project already linked) in the app bar—no listings management, catalog, or revenue UI in Studio. Implement using a shadcn-based dashboard template.
+**Goal:** Full account management in the **platform app** (customer-facing). Canonical routes are `/dashboard/*` (overview, listings, games, revenue, billing, licenses, settings, api-keys). `/account/*` remains compatibility redirects. **Studio** remains minimal: only **publish** (create listing from current project) and **update listing** (if project already linked) in the app bar; no listings management, catalog, or revenue UI in Studio.
+
+**Implemented baseline:** Vercel-style dashboard shell standardization, creator APIs (`GET /api/me/listings`, `GET /api/me/projects`), free clone route (`POST /api/catalog/:id/clone`), Unity-style catalog filtering, and dashboard pages for creator/account flows.
+
+**Implemented expansion:** Organization-first customer context (`organizations`, memberships, active org switching), org-scoped creator/revenue APIs (`/api/me/orgs`, `/api/me/orgs/active`, `/api/me/revenue?orgId=...`), AI usage ledger + org-scoped usage APIs (`/api/me/ai-usage`, `/api/me/ai-usage/summary`), and Stripe Connect org-context onboarding/account actions.
+
+**Follow-up:** full build publish/host pipeline for playable builds remains tracked under `publish-host`.
 
 **Impact: Large.**
+
+### Platform business vertical alignment
+
+**Status:** Mixed (some implemented, some in progress).
+
+- **Implemented (MVP baseline):** marketplace catalog + clone flows, creator dashboard routes, Stripe Connect onboarding/actions, org-scoped ownership context, AI usage financial visibility.
+- **In progress:** publish/host pipeline for playable builds, take-rate policy finalization, deeper payout operations/reporting.
+- **After MVP:** official developer ecosystem payout lifecycle and broader multi-seller split logic.
 
 ### Import and play
 

@@ -19,13 +19,19 @@
 // ---------------------------------------------------------------------------
 
 // Layout primitives (Editor* canonical; DockLayout/DockPanel deprecated aliases)
-export { EditorDockLayout, DockLayout } from './DockLayout';
+export {
+  EditorDockLayout,
+  DockLayout,
+  RIGHT_INSPECTOR_PANEL_ID,
+  RIGHT_SETTINGS_PANEL_ID,
+} from './DockLayout';
 export type {
   DockLayoutProps,
   DockLayoutViewport,
   DockLayoutSlotConfig,
   DockLayoutSlotIconKey,
   DockLayoutRef,
+  RailPanelDescriptor,
 } from './DockLayout';
 
 export { EditorDockPanel, DockPanel } from './DockPanel';
@@ -140,6 +146,20 @@ export {
   useSettingsTrigger,
 } from './SettingsTriggerContext';
 export type { SettingsTriggerContextValue, SettingsTriggerProviderProps } from './SettingsTriggerContext';
+
+// Declarative panel registration (use inside EditorLayoutProvider from Studio)
+export { EditorRail } from './EditorRail';
+export type { EditorRailProps } from './EditorRail';
+export { EditorPanel } from './EditorPanel';
+export type { EditorPanelProps } from './EditorPanel';
+export {
+  usePanelRegistration,
+  PanelRegistrationContextProvider,
+} from './PanelRegistrationContext';
+export type {
+  RailSide,
+  PanelRegistrationContextValue,
+} from './PanelRegistrationContext';
 
 // Panel utilities
 export { PanelSettings } from './PanelSettings';

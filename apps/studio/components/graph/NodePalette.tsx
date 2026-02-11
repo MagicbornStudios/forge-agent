@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@forge/ui/tooltip';
 import { Button } from '@forge/ui/button';
 import { Boxes } from 'lucide-react';
 import { cn } from '@forge/shared/lib/utils';
@@ -100,32 +99,25 @@ export function NodePalette({
             </div>
             <div className="space-y-0.5">
               {nodes.map((item) => (
-                <Tooltip key={item.id}>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, item)}
-                      onDragEnd={handleDragEnd}
-                      onClick={() => onItemClick?.(item)}
-                      className={cn(
-                        'flex w-full items-center justify-start gap-[var(--control-gap)] text-xs',
-                        'cursor-grab active:cursor-grabbing',
-                        'text-muted-foreground hover:bg-muted hover:text-foreground'
-                      )}
-                    >
-                      <span className="shrink-0 [&_svg]:size-[var(--icon-size)]">{item.icon}</span>
-                      <span className="font-medium truncate">{item.label}</span>
-                    </Button>
-                  </TooltipTrigger>
-                  {item.description && (
-                    <TooltipContent>
-                      <p>{item.description}</p>
-                    </TooltipContent>
+                <Button
+                  key={item.id}
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  draggable
+                  title={item.description ?? item.label}
+                  onDragStart={(e) => handleDragStart(e, item)}
+                  onDragEnd={handleDragEnd}
+                  onClick={() => onItemClick?.(item)}
+                  className={cn(
+                    'flex w-full items-center justify-start gap-[var(--control-gap)] text-xs',
+                    'cursor-grab active:cursor-grabbing',
+                    'text-muted-foreground hover:bg-muted hover:text-foreground'
                   )}
-                </Tooltip>
+                >
+                  <span className="shrink-0 [&_svg]:size-[var(--icon-size)]">{item.icon}</span>
+                  <span className="font-medium truncate">{item.label}</span>
+                </Button>
               ))}
             </div>
           </div>

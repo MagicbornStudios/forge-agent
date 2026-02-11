@@ -9,6 +9,9 @@ import {
   MenubarMenu,
   MenubarSeparator,
   MenubarShortcut,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
   MenubarTrigger,
 } from '@forge/ui/menubar';
 
@@ -20,6 +23,8 @@ export type EditorMenubarItem = {
   disabled?: boolean;
   shortcut?: string;
   type?: 'separator';
+  /** When set, renders a submenu; label shows with chevron. */
+  submenu?: EditorMenubarItem[];
 };
 
 export type EditorMenubarMenu = {
@@ -115,31 +120,49 @@ function hasMenubarSlots(children: React.ReactNode): boolean {
 }
 
 function renderMenuItems(items: EditorMenubarItem[]) {
-  return items.map((item) =>
-    item.type === 'separator' ? (
-      <MenubarSeparator key={item.id} />
-    ) : (
+  return items.map((item) => {
+    if (item.type === 'separator') {
+      return <MenubarSeparator key={item.id} />;
+    }
+    const itemClassName = cn(
+      'flex min-w-0 items-center gap-[var(--control-gap)] px-[var(--control-padding-x)] py-[var(--control-padding-y)] text-xs'
+    );
+    const iconSlot =
+      item.icon != null ? (
+        <span
+          className="flex shrink-0 size-[var(--icon-size)] [&>svg]:size-[var(--icon-size)]"
+          aria-hidden
+        >
+          {item.icon}
+        </span>
+      ) : null;
+    if (item.submenu != null && item.submenu.length > 0) {
+      return (
+        <MenubarSub key={item.id}>
+          <MenubarSubTrigger className={itemClassName} disabled={item.disabled}>
+            {iconSlot}
+            <span className="truncate">{item.label}</span>
+            {item.shortcut && <MenubarShortcut>{item.shortcut}</MenubarShortcut>}
+          </MenubarSubTrigger>
+          <MenubarSubContent className="py-[var(--control-padding-y)]">
+            {renderMenuItems(item.submenu)}
+          </MenubarSubContent>
+        </MenubarSub>
+      );
+    }
+    return (
       <MenubarItem
         key={item.id}
         disabled={item.disabled}
         onSelect={item.onSelect}
-                  className={cn(
-                    'flex min-w-0 items-center gap-[var(--control-gap)] px-[var(--control-padding-x)] py-[var(--control-padding-y)] text-xs'
-                  )}
-                >
-                  {item.icon != null && (
-                    <span
-                      className="flex shrink-0 size-[var(--icon-size)] [&>svg]:size-[var(--icon-size)]"
-                      aria-hidden
-                    >
-                      {item.icon}
-                    </span>
-                  )}
+        className={itemClassName}
+      >
+        {iconSlot}
         <span className="truncate">{item.label}</span>
         {item.shortcut && <MenubarShortcut>{item.shortcut}</MenubarShortcut>}
       </MenubarItem>
-    )
-  );
+    );
+  });
 }
 
 export interface EditorMenubarProps {

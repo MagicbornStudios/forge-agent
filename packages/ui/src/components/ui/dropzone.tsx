@@ -5,7 +5,7 @@ import type { ReactNode } from "react"
 import { createContext, useContext } from "react"
 import type { DropEvent, DropzoneOptions, FileRejection } from "react-dropzone"
 import { useDropzone } from "react-dropzone"
-import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 interface DropzoneContextType {
@@ -75,20 +75,21 @@ export const Dropzone = ({
       key={JSON.stringify(src)}
       value={{ src, accept, maxSize, minSize, maxFiles }}
     >
-      <Button
-        className={cn(
-          "relative h-auto w-full flex-col overflow-hidden p-8",
-          isDragActive && "outline-none ring-1 ring-ring",
-          className,
-        )}
-        disabled={disabled}
-        type="button"
-        variant="outline"
-        {...getRootProps()}
+      <div
+        {...getRootProps({
+          className: cn(
+            buttonVariants({ variant: "outline" }),
+            "relative h-auto w-full flex-col overflow-hidden p-8",
+            isDragActive && "outline-none ring-1 ring-ring",
+            disabled && "pointer-events-none opacity-50",
+            className,
+          ),
+          "aria-disabled": disabled ? "true" : undefined,
+        })}
       >
         <input {...getInputProps()} disabled={disabled} />
         {children}
-      </Button>
+      </div>
     </DropzoneContext.Provider>
   )
 }

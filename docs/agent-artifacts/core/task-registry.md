@@ -1,7 +1,7 @@
 ---
 title: Task registry
 created: 2026-02-08
-updated: 2026-02-10
+updated: 2026-02-11
 ---
 
 Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx).
@@ -30,8 +30,12 @@ Single entry point for "all work in tiers." For **granular, pickable tasks** (es
 | video-twick | Twick → VideoDoc persistence + plan/commit UI | Medium | open | — | [Next #14](./STATUS.md) |
 | video-workflow | Video workflow panel | Medium | open | — | [Next #15](./STATUS.md) |
 | dev-kit-single-entrypoint | Dev-kit single entrypoint and docs (package + styles + customer/internal docs; optional create-forge-app) | Medium–Large | open | [breakdown](task-breakdown-dev-kit-single-entrypoint.md) | [Next § Dev-kit #18](./STATUS.md) |
-| creator-dashboard | Marketing site creator dashboard (my listings, my games, licenses, revenue) using shadcn-based template; Studio minimal (publish/update in app bar only) | Large | open | [breakdown](task-breakdown-creator-dashboard.md) | [Platform dashboard](../../roadmap/product.mdx) |
+| creator-dashboard | Platform creator dashboard (my listings, my games, licenses, revenue) using Vercel-style shell; Studio minimal (publish/update in app bar only) | Large | in_progress | [breakdown](task-breakdown-creator-dashboard.md) | [Platform dashboard](../../roadmap/product.mdx) |
+| platform-org-financial-visibility | Platform org model and financial visibility (org switcher, org-scoped APIs, AI usage ledger, Stripe Connect org context) | Medium-Large | done | [breakdown](task-breakdown-creator-dashboard.md) org + finance lanes | [STATUS](./STATUS.md) |
 | import-adapters | Adapters: Yarn (MVP), then Ink, Twine, Ren'Py; optional AI-assisted import (see [potential-ideas](../../roadmap/potential-ideas.md)) | Medium–Large | open | — | [Ecosystem and import](../../business/ecosystem-and-import-strategy.mdx) |
+| dock-rails | Dock rails and composable panels: config-driven left/main/right/bottom as panel lists; RailPanelDescriptor; main/right as tab lists; naming and docs | Medium | open | [breakdown](task-breakdown-dock-rails.md) | — |
+| editor-declarative-registries | Declarative editor components and registries: EditorRail/EditorPanel/EditorLayout, panel registry; SettingsSection/SettingsField, settings registry; EditorMenubarContribution; all editors migrated | Large | done | [breakdown](task-breakdown-editor-declarative-registries.md) | — |
+| editor-registration-declarative | Register editors declaratively (like panels/settings): editor registry + Studio + menu registry + naming (StudioApp, StudioMenubarProvider, StudioSettingsProvider) | Small–Medium | done | Studio refactor plan | decisions.md § Studio as single entrypoint |
 
 ## Quick picks (Tier 3 or Tier 2, open, Small / Medium)
 
@@ -48,12 +52,15 @@ For easy small tasks: pick from the table below, or see breakdown docs and filte
 | platform-mono-cap-6 | Server-side listings beforeChange for publish/price | platform-mono | done |
 | dev-kit-css-2 | Document single style import in 04 and customer Quick start | dev-kit-single-entrypoint | done |
 | dev-kit-ui-1 | Document one recommended path (e.g. dev-kit.ui for atoms) in customer docs | dev-kit-single-entrypoint | done |
-| creator-dash-template-1 | Evaluate shadcn dashboard templates for marketing creator dashboard; document choice and migration steps | creator-dashboard | open |
+| creator-dash-template-1 | Evaluate shadcn dashboard templates for customer platform and migrate to selected baseline (`apps/platform`) | creator-dashboard | done |
 | ui-polish-primitives-3 | Audit remaining @forge/ui components for `size-4`/`size-5` and replace with `--icon-size` | ui-polish | open |
 | ui-polish-editor-3 | Audit editor lists/toolbars/panels for ad-hoc spacing + oversized icons | ui-polish | open |
 | ui-polish-dialog-2 | Audit all Studio upsert dialogs for shadcn form section structure + tokenized spacing | ui-polish | open |
 | ui-polish-dialog-3 | Audit modal/icon button sizing and close affordances (12px icon baseline) | ui-polish | open |
 | ui-polish-dialog-4 | Normalize entity media sections (images/audio/video lists + inline actions) across character/location flows | ui-polish | open |
 | ui-polish-docs-3 | Capture before/after screenshots (human) and save to docs/images | ui-polish | open |
+| dock-rails-api-shape | Define RailPanelDescriptor and leftPanels/mainPanels/rightPanels/bottomPanels in DockLayout; build default layout by iterating | dock-rails | open |
+| dock-rails-wire-editors | Wire Dialogue/Character/Video to new rail API (mainPanels, rightPanels); map or deprecate old right/rightInspector/rightSettings | dock-rails | open |
+| dock-rails-naming | Align DockLayout, EditorDockPanel, README/AGENTS with rails and composable panels; document in errors-and-attempts/decisions | dock-rails | open |
 
 *(More quick picks and open tasks are in [task-breakdown-platform-monetization.md](./task-breakdown-platform-monetization.md) and [task-breakdown-dev-kit-single-entrypoint.md](./task-breakdown-dev-kit-single-entrypoint.md).)*

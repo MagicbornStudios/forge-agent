@@ -1,7 +1,7 @@
 ---
 title: Revenue and Stripe
 created: 2026-02-08
-updated: 2026-02-08
+updated: 2026-02-11
 ---
 
 # Revenue and Stripe
@@ -14,58 +14,82 @@ Revenue model and payment implementation for the platform. Technical decisions l
 
 **Both platform and creator get paid** (Unity Asset Store / Bandlab style).
 
-- Creators list projects, templates, or Strategy cores in the catalog. **Listing creation is free**—creators do not pay to upload a listing.
-- **Buyers** pay the price the creator sets to clone. Payment goes to the creator (via Stripe Connect); the platform takes an application fee (take rate TBD).
-- Catalog supports users and orgs. Pro plan gates who can list (PLATFORM_LIST) and who can clone paid items (PLATFORM_MONETIZE) as needed.
+- Creators list projects, templates, or Strategy cores in the catalog. **Listing creation is free**.
+- **Buyers** pay the creator-set clone price. Funds are routed through Stripe Connect and the platform takes an application fee.
+- Catalog and creator operations are org-aware. Revenue and payout setup are shown in org context.
+- Plan/capability gates still apply to listing and paid-clone access (`PLATFORM_LIST`, `PLATFORM_MONETIZE`).
 
 ---
 
-## Stripe Connect (day one)
+## Stripe Connect (day one, org-scoped)
 
 We use **Stripe Connect from day one** for clone purchases so creators receive payment directly.
 
-- Creators must complete **Connect onboarding** (Express or Standard) before they can receive payouts. We store the connected account id on the **users** collection (`stripeConnectAccountId`). Create-account API: `POST /api/stripe/connect/create-account` (idempotent; returns existing or creates Express account and saves id).
-- When a buyer pays to clone a listing, the payment is created with the **listing creator's connected account**; we pass an **application_fee_amount** so the platform keeps a cut.
-- Payouts to creators are handled by Stripe (Connect); we do not manually transfer. See task breakdown for Connect onboarding API and UI.
+- Connect account identity is tracked on the **organization** (`organizations.stripeConnectAccountId`) with onboarding status on organization records.
+- Create-account API: `POST /api/stripe/connect/create-account` (accepts org context, idempotent create-or-return behavior).
+- Onboarding-link API: `POST /api/stripe/connect/onboarding-link` (org context).
+- Buyer checkout for paid clones routes payment to the seller org's connected account and applies platform fee.
+- Payout transfers are handled by Stripe Connect. We do not run manual payout jobs.
 
-**Platform Stripe account:** The platform's own Stripe account id is in env as `STRIPE_ACCOUNT_ID` (e.g. `acct_1Lp1yRHb5azKYmYy`) for reference and Stripe Dashboard parity. Code uses the secret key for API calls; the account id is for docs and support.
+**Platform Stripe account:** platform account id may be tracked as `STRIPE_ACCOUNT_ID` for dashboard/support parity. Runtime API calls continue using secret keys.
 
-**Platform requirements (Connect and product):** Stripe Connect and app stores typically require customer support (email + URL), privacy policy URL, terms of service URL, and business address (update in Stripe when final). These can live in env (e.g. `STRIPE_SUPPORT_EMAIL`, `STRIPE_SUPPORT_URL`, `PRIVACY_POLICY_URL`, `TERMS_OF_SERVICE_URL`) or app settings. See [apps/studio/.env.example](../../apps/studio/.env.example) for placeholders; fill when legal and support are in place.
-
----
-
-## Checkout and invoicing (Stripe defaults)
-
-We use **Stripe for everything we need**—no custom payment forms.
-
-- **One-time clone purchase:** Stripe **hosted Checkout** (mode `payment`). Same pattern as Cursor and similar products: create a Checkout session, redirect the user to Stripe, handle success/cancel URLs. Session metadata includes `listingId` and `buyerId` for the webhook.
-- **Pro subscription:** Already implemented. [How-to 12 – Marketing Stripe](../how-to/12-marketing-stripe.mdx) documents the existing flow (Create Checkout Session for subscription, webhook sets user.plan to pro).
-- **Invoicing:** Use Stripe for invoicing where needed (e.g. future B2B or custom billing). No custom invoicing UI; rely on Stripe.
+**Platform requirements (Connect and product):** support email/url, privacy policy URL, terms URL, and business profile details should stay current in env/app settings and Stripe account settings.
 
 ---
 
-## Application fee (take rate)
+## Checkout and invoicing boundaries
 
-The platform take rate (application fee as a percentage or fixed amount) is TBD. Document the chosen percentage or formula in this doc and in [decisions.md](../agent-artifacts/core/decisions.md) when set.
+We use **Stripe hosted Checkout** and Stripe primitives by default.
+
+- **Paid clone purchase:** hosted Checkout session (`mode=payment`) + webhook settlement.
+- **Pro subscription:** hosted Checkout (`mode=subscription`) for plan upgrades.
+- **Free listing clone:** no Stripe checkout; uses `POST /api/catalog/:id/clone`.
+- **Invoicing:** Stripe invoicing for future B2B/custom billing; no custom invoicing UI in this slice.
 
 ---
 
 ## Revenue and payout tracking
 
-We store per-license **amount and platform fee** (optional fields `amountCents` and `platformFeeCents` on the `licenses` collection). The webhook sets these from the Stripe Checkout session (and expanded PaymentIntent) when a clone purchase completes. **Creators** can see totals via `GET /api/me/revenue` (total earnings, platform fees, and per-license breakdown); a future account or Studio UI can consume this for an "Earnings" page. **Platform** can aggregate from licenses (e.g. Payload admin or an internal report). This is tracking only—Stripe Connect still performs the actual payouts; we do not change who gets paid.
+Per-license financial fields are persisted on `licenses`:
+
+- `amountCents`
+- `platformFeeCents`
+- seller org attribution (`sellerOrganization`)
+
+Webhook settlement writes these values when checkout completes, allowing creator and platform aggregates.
+
+Current platform surfaces:
+
+- `/dashboard/revenue` consumes `GET /api/me/revenue` (org-scoped summary + transactions)
+- `/dashboard/billing` exposes plan and Connect onboarding state/actions
 
 ---
 
-## Payouts: single seller now; splits later
+## AI usage financial visibility
 
-**Single seller per listing for now.** Payment goes to the listing creator's Connect account; platform takes an application fee. No split payouts.
+AI usage costs are persisted in `ai-usage-events` for billing-grade reporting:
 
-Splits between multiple sellers (music-industry style) and IP/licensing (e.g. Beatstars-style) are to be figured out later when we have more features and creatable content that could justify splits. See [decisions.md](../agent-artifacts/core/decisions.md) for backlog.
+- request id (idempotent key), user, organization, provider/model
+- token counts and computed USD costs at event time
+- route context and timestamp
+
+Platform financial views use:
+
+- `GET /api/me/ai-usage`
+- `GET /api/me/ai-usage/summary`
+
+**Boundary:** PostHog is useful for analytics and funnels, not an auditable billing ledger.
 
 ---
 
-## Developer program payouts (split while official)
+## Application fee and payout policy
 
-**Approved editors** in the **official Studio suite** (curated third-party editors) receive a **revenue split** (e.g. share of clone revenue or platform revenue where their editor is used—formula TBD). The split is paid **until the editor is removed** from the official suite; there is **no usage-based pay in Studio**. Developers must be able to **publish updates** to their editor (process TBD). See [Developer program and editor ecosystem](developer-program-and-editors.mdx) for approved vs community apps, submission, and publish-updates.
+- Application fee formula (take rate) remains configurable/TBD and should be documented here and in decisions when finalized.
+- **Single seller per listing** for now. No split payouts in MVP.
+- Multi-seller payout splits and IP split logic are deferred until broader creator workflows are in place.
 
-**Rationale:** Split aligns developer reward with platform/clone revenue; continuing while the editor is official keeps incentives clear. Formula and process TBD; document in this doc and in [decisions.md](../agent-artifacts/core/decisions.md) when defined.
+---
+
+## Developer program payouts (after MVP)
+
+Approved editors in the official Studio suite can receive a defined revenue split while they remain official. Community listings do not receive the official split. See [Developer program and editor ecosystem](developer-program-and-editors.mdx).

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { SettingsPanel } from "./SettingsPanel";
-import { VIEWPORT_SETTINGS_SECTIONS } from "./ai-settings";
+import { useSettingsRegistrySections } from "@/lib/editor-registry/settings-registry";
 
 export function ViewportSettingsPanel({
   editorId,
@@ -11,10 +11,12 @@ export function ViewportSettingsPanel({
   editorId: string;
   viewportId: string;
 }) {
+  const scopeId = `${editorId}:${viewportId}`;
+  const sections = useSettingsRegistrySections("viewport", scopeId);
   return (
     <SettingsPanel
       scope="viewport"
-      sections={VIEWPORT_SETTINGS_SECTIONS}
+      sections={sections}
       editorId={editorId}
       viewportId={viewportId}
     />

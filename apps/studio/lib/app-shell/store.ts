@@ -7,11 +7,10 @@ import { immer } from 'zustand/middleware/immer';
 /**
  * Editor identifier for the unified editor app.
  * - `dialogue` - YarnSpinner dialogue building (formerly "forge")
- * - `video` - Twick video timeline editor
  * - `character` - Character relationship graph editor
- * - `strategy` - CodebaseAgentStrategyEditor (assistant-ui chat)
+ * Chat is available in the right-rail Chat panel per editor; no separate Strategy tab.
  */
-export const EDITOR_IDS = ['dialogue', 'video', 'character', 'strategy'] as const;
+export const EDITOR_IDS = ['dialogue', 'character'] as const;
 export type EditorId = (typeof EDITOR_IDS)[number];
 export const DEFAULT_EDITOR_ID: EditorId = EDITOR_IDS[0];
 
@@ -27,8 +26,6 @@ interface AppShellState {
   activeProjectId: number | null;
   /** Last opened Dialogue (Forge) project id (legacy/migration). */
   lastDialogueProjectId: number | null;
-  /** Last opened video doc id (for refetch on load). */
-  lastVideoDocId: number | null;
   /** Last opened character project id (legacy/migration). */
   lastCharacterProjectId: number | null;
   workspaceThemes: Partial<Record<EditorId, string>>;
@@ -38,12 +35,15 @@ interface AppShellState {
   appSettingsSheetOpen: boolean;
   /** Request active editor to open settings in dock panel. Consumed by editor then cleared. Not persisted. */
   requestOpenSettings: boolean;
+  /** Viewport id for Settings sidebar context (e.g. narrative/storylet for Dialogue). Set by active editor when viewport/scope changes. Not persisted. */
+  settingsViewportId: string | null;
+  /** Settings Sidebar (right rail) open. Not persisted. */
+  settingsSidebarOpen: boolean;
   /** Dock layout JSON by layoutId (Dockview). Persisted. */
   dockLayouts: Record<string, string>;
   setRoute: (route: Partial<Pick<AppShellRoute, 'activeWorkspaceId' | 'openWorkspaceIds'>>) => void;
   setActiveProjectId: (id: number | null) => void;
   setLastDialogueProjectId: (id: number | null) => void;
-  setLastVideoDocId: (id: number | null) => void;
   setLastCharacterProjectId: (id: number | null) => void;
   setActiveWorkspace: (id: EditorId) => void;
   openWorkspace: (id: EditorId) => void;
@@ -54,6 +54,8 @@ interface AppShellState {
   toggleBottomDrawer: (id: EditorId) => void;
   setAppSettingsSheetOpen: (open: boolean) => void;
   setRequestOpenSettings: (value: boolean) => void;
+  setSettingsViewportId: (id: string | null) => void;
+  setSettingsSidebarOpen: (open: boolean) => void;
   setDockLayout: (layoutId: string, json: string) => void;
   clearDockLayout: (layoutId: string) => void;
 }
@@ -68,7 +70,6 @@ type PersistedAppState = Partial<
     | 'route'
     | 'activeProjectId'
     | 'lastDialogueProjectId'
-    | 'lastVideoDocId'
     | 'lastCharacterProjectId'
     | 'dockLayouts'
   >
@@ -99,12 +100,13 @@ export const useAppShellStore = create<AppShellState>()(
         },
         activeProjectId: null,
         lastDialogueProjectId: null,
-        lastVideoDocId: null,
         lastCharacterProjectId: null,
-        workspaceThemes: { video: 'darcula' },
+        workspaceThemes: {},
         bottomDrawerOpen: {},
         appSettingsSheetOpen: false,
         requestOpenSettings: false,
+        settingsViewportId: null,
+        settingsSidebarOpen: false,
         dockLayouts: {},
 
         setRoute: (route) => {
@@ -125,12 +127,6 @@ export const useAppShellStore = create<AppShellState>()(
         setLastDialogueProjectId: (id) => {
           set((state) => {
             state.lastDialogueProjectId = id;
-          });
-        },
-
-        setLastVideoDocId: (id) => {
-          set((state) => {
-            state.lastVideoDocId = id;
           });
         },
 
@@ -207,6 +203,18 @@ export const useAppShellStore = create<AppShellState>()(
           });
         },
 
+        setSettingsViewportId: (id) => {
+          set((state) => {
+            state.settingsViewportId = id;
+          });
+        },
+
+        setSettingsSidebarOpen: (open) => {
+          set((state) => {
+            state.settingsSidebarOpen = open;
+          });
+        },
+
         setDockLayout: (layoutId: string, json: string) => {
           set((state) => {
             state.dockLayouts[layoutId] = json;
@@ -226,7 +234,6 @@ export const useAppShellStore = create<AppShellState>()(
           route: s.route,
           activeProjectId: s.activeProjectId,
           lastDialogueProjectId: s.lastDialogueProjectId,
-          lastVideoDocId: s.lastVideoDocId,
           lastCharacterProjectId: s.lastCharacterProjectId,
           dockLayouts: s.dockLayouts,
         }),
@@ -254,7 +261,6 @@ export const useAppShellStore = create<AppShellState>()(
             },
             activeProjectId,
             lastDialogueProjectId: lastDialogue,
-            lastVideoDocId: state.lastVideoDocId ?? null,
             lastCharacterProjectId: state.lastCharacterProjectId ?? null,
             appSettingsSheetOpen: false,
             requestOpenSettings: false,

@@ -3,7 +3,6 @@
 import React from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@forge/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@forge/ui/tooltip';
 import { cn } from '@forge/shared/lib/utils';
 
 interface GraphEditorToolbarProps {
@@ -16,24 +15,17 @@ export function GraphEditorToolbar({ label, onCreateNew, className }: GraphEdito
   return (
     <div className={cn('flex items-center gap-[var(--control-gap)]', className)}>
       {onCreateNew && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onCreateNew}
-              className="h-[var(--control-height-sm)] px-[var(--control-padding-x)] text-xs border-border text-foreground"
-              title={`Create a new ${label.toLowerCase()}`}
-            >
-              <Plus className="mr-1.5 size-[var(--icon-size)] shrink-0" />
-              New {label}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Create a new {label.toLowerCase()}</p>
-          </TooltipContent>
-        </Tooltip>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          title={`Create a new ${label.toLowerCase()}`}
+          onClick={onCreateNew}
+          className="h-[var(--control-height-sm)] px-[var(--control-padding-x)] text-xs border-border text-foreground"
+        >
+          <Plus className="mr-1.5 size-[var(--icon-size)] shrink-0" />
+          New {label}
+        </Button>
       )}
     </div>
   );

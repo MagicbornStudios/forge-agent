@@ -1,10 +1,14 @@
 import { streamText, convertToModelMessages, jsonSchema, tool, type ToolSet } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
+import { getPayload } from 'payload';
+import payloadConfig from '@/payload.config';
 import { getLogger } from '@/lib/logger';
 import { getOpenRouterConfig } from '@/lib/openrouter-config';
 import { getOpenRouterModels } from '@/lib/openrouter-models';
 import { getPersistedModelIdForProvider } from '@/lib/model-router/persistence';
 import { resolveModelIdFromRegistry } from '@/lib/model-router/selection';
+import { recordAiUsageEvent } from '@/lib/server/ai-usage';
+import { requireAiRequestAuth } from '@/lib/server/api-keys';
 
 const log = getLogger('assistant-chat');
 
@@ -49,6 +53,15 @@ export async function POST(req: Request) {
   if (!config.apiKey) {
     return new Response(JSON.stringify({ error: 'OpenRouter API key not configured' }), {
       status: 503,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const payload = await getPayload({ config: payloadConfig });
+  const authContext = await requireAiRequestAuth(payload, req, 'ai.chat');
+  if (!authContext) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
       headers: { 'Content-Type': 'application/json' },
     });
   }
@@ -122,6 +135,22 @@ export async function POST(req: Request) {
       ...(callSettings.headers && typeof callSettings.headers === 'object'
         ? (callSettings.headers as Record<string, string | undefined>)
         : {}),
+    },
+    onFinish: async ({ usage, response }) => {
+      await recordAiUsageEvent({
+        request: req,
+        authContext,
+        requestId: typeof response?.id === 'string' ? response.id : undefined,
+        provider: 'openrouter',
+        model: resolvedModel,
+        routeKey: '/api/assistant-chat',
+        usage: usage as {
+          promptTokens?: number;
+          completionTokens?: number;
+          totalTokens?: number;
+        },
+        status: 'success',
+      });
     },
   });
 

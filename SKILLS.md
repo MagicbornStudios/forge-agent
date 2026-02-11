@@ -13,7 +13,7 @@ If guidance conflicts: follow **SKILLS.md** unless [AGENTS.md](AGENTS.md) explic
 ### Stack and architecture
 - TypeScript, React, Next.js (App Router)
 - Payload CMS backend
-- pnpm monorepo: `apps/studio`, `apps/marketing`, `packages/*`
+- pnpm monorepo: `apps/studio`, `apps/platform`, `packages/*`
 - Zustand state, TanStack Query data fetching
 - Tailwind CSS + shadcn-style UI via `@forge/ui`
 
