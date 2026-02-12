@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
     "@forge/shared",
     "@forge/domain-forge",
     "@forge/domain-character",
+    "@forge/assistant-runtime",
     "@forge/types",
     "@forge/ui",
     "@forge/agent-engine",

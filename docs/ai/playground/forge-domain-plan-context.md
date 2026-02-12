@@ -1,5 +1,7 @@
 ---
 title: Forge Domain Plan Context — Narrative, Storylet, Pages, Detours
+created: 2026-02-11
+updated: 2026-02-11
 ---
 
 # Forge Domain Plan Context — Narrative, Storylet, Pages, Detours

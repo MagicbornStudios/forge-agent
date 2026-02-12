@@ -7,6 +7,15 @@ export interface ForgeAssistantToolsDeps {
   applyOperations: (ops: ForgeGraphPatchOp[]) => void;
   onAIHighlight: (entities: Record<string, string[]>) => void;
   createPlanApi?: (goal: string, graphSummary: unknown) => Promise<{ steps: unknown[] }>;
+  createStoryBuilderApi?: (
+    premise: string,
+    options?: { characterCount?: number; sceneCount?: number }
+  ) => Promise<{
+    steps: unknown[];
+    characters: Array<{ name: string; description?: string; personality?: string }>;
+    scenes: Array<{ title: string; speaker: string; dialogue: string }>;
+    summary: string;
+  }>;
   setPendingFromPlan?: (value: boolean) => void;
   openOverlay?: (id: string, payload?: Record<string, unknown>) => void;
   revealSelection?: () => void;
@@ -30,7 +39,16 @@ function copilotParamsToJsonSchema(
  * Used by useForgeAssistantContract.
  */
 export function createForgeAssistantTools(deps: ForgeAssistantToolsDeps): DomainTool[] {
-  const { getGraph, applyOperations, onAIHighlight, createPlanApi, openOverlay, revealSelection, createNodeOverlayId } = deps;
+  const {
+    getGraph,
+    applyOperations,
+    onAIHighlight,
+    createPlanApi,
+    createStoryBuilderApi,
+    openOverlay,
+    revealSelection,
+    createNodeOverlayId,
+  } = deps;
 
   const tools: DomainTool[] = [
     {
@@ -150,6 +168,62 @@ export function createForgeAssistantTools(deps: ForgeAssistantToolsDeps): Domain
             success: false,
             message: err instanceof Error ? err.message : 'Plan failed.',
             data: { steps: [], goal },
+          };
+        }
+      },
+    },
+    {
+      domain: 'forge',
+      name: 'forge_createStoryFromPremise',
+      description:
+        'Create a story scaffold from a premise. Returns structured createNode/createEdge steps, character ideas, and scene summaries.',
+      parameters: copilotParamsToJsonSchema([
+        { name: 'premise', type: 'string', description: 'Story premise or concept', required: true },
+        {
+          name: 'characterCount',
+          type: 'number',
+          description: 'Optional number of characters to generate (default 3).',
+          required: false,
+        },
+        {
+          name: 'sceneCount',
+          type: 'number',
+          description: 'Optional number of scenes to generate (default 5).',
+          required: false,
+        },
+      ]),
+      execute: async (args: unknown) => {
+        if (!createStoryBuilderApi) {
+          return { success: false, message: 'Story builder API not configured.' };
+        }
+
+        const a = args as Record<string, unknown>;
+        const premise = String(a.premise ?? '').trim();
+        if (!premise) {
+          return { success: false, message: 'premise is required.' };
+        }
+
+        try {
+          const result = await createStoryBuilderApi(premise, {
+            characterCount: typeof a.characterCount === 'number' ? a.characterCount : undefined,
+            sceneCount: typeof a.sceneCount === 'number' ? a.sceneCount : undefined,
+          });
+
+          return {
+            success: true,
+            message: result.summary,
+            data: {
+              steps: result.steps ?? [],
+              characters: result.characters ?? [],
+              scenes: result.scenes ?? [],
+              summary: result.summary,
+            },
+          };
+        } catch (err) {
+          return {
+            success: false,
+            message: err instanceof Error ? err.message : 'Story builder failed.',
+            data: { steps: [], characters: [], scenes: [], summary: '' },
           };
         }
       },

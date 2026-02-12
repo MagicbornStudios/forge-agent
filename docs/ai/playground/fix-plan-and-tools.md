@@ -1,5 +1,7 @@
 ---
 title: Fix — Plan Component and Forge Tools in Dialogue Editor
+created: 2026-02-11
+updated: 2026-02-11
 ---
 
 # Fix: Plan Component and Forge Tools in Dialogue Editor

@@ -52,7 +52,7 @@ The gate checks `GET /api/me`; if unauthenticated it performs `POST /api/users/l
 - Generated outputs: `apps/studio/.env.example`, `apps/platform/.env.example` via `pnpm env:sync:examples`
 - Local setup wizard: `pnpm env:setup -- --app studio|platform|all`
 - Drift/required checks: `pnpm env:doctor -- --app ... --mode local|preview|production [--vercel]`
-- Dev bootstrap guard: `pnpm env:ensure:local -- --app ...` (wired into `dev:studio` and `dev:platform`)
+- Dev bootstrap guard: `pnpm env:bootstrap -- --app ...` (wired into `dev:studio` and `dev:platform`; launches portal when keys missing; falls back to `env:ensure:local` when CI or FORGE_SKIP_ENV_BOOTSTRAP=1)
 
 Runtime env boundaries are centralized in app env helpers:
 

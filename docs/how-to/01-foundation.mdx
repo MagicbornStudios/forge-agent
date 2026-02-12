@@ -37,7 +37,8 @@ Env setup is manifest-driven:
 - `pnpm env:sync:examples` regenerates `apps/studio/.env.example` and `apps/platform/.env.example`.
 - `pnpm env:setup -- --app studio|platform|all` creates/updates `.env.local` files interactively.
 - `pnpm env:doctor -- --app studio|platform|all --mode local|preview|production [--vercel]` checks drift and required keys (masked output).
-- `pnpm env:ensure:local -- --app studio|platform` runs automatically before `dev:studio` / `dev:platform`.
+- `pnpm env:portal` opens the web UI for Studio + Platform + Vercel config.
+- `pnpm env:bootstrap` runs before `dev:studio` / `dev:platform`; when keys are missing, the portal opens.
 
 After changing Payload collections, run `pnpm payload:types`.
 

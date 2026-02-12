@@ -28,6 +28,8 @@
       "@forge/domain-forge/*": ["../../packages/domain-forge/src/*"],
       "@forge/agent-engine": ["../../packages/agent-engine/src/index.ts"],
       "@forge/agent-engine/*": ["../../packages/agent-engine/src/*"],
+      "@forge/assistant-runtime": ["../../packages/assistant-runtime/src/index.ts"],
+      "@forge/assistant-runtime/*": ["../../packages/assistant-runtime/src/*"],
       "@forge/ui": ["../../packages/ui/src/index.ts"],
       "@forge/ui/*": ["../../packages/ui/src/components/ui/*", "../../packages/ui/src/*"],
       "@forge/types": ["../../packages/types/src/index.ts"],

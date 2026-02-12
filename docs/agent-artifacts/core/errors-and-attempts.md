@@ -1,7 +1,7 @@
 ---
 title: Errors and attempts
 created: 2026-02-04
-updated: 2026-02-11
+updated: 2026-02-12
 ---
 
 Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx).
@@ -43,6 +43,14 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 - Before changing base/globals CSS, read this entry and [styling-and-ui-consistency.md](styling-and-ui-consistency.md) § No universal padding/margin reset.
 
 **Documentation**: See `apps/studio/app/globals.css` comment above `@layer base` and styling-and-ui-consistency rule 26.
+
+---
+
+## Shiki: `yarn` language not in bundle (fumadocs-mdx code blocks)
+
+**Problem**: Code blocks with ` ```yarn ` in MDX docs cause build failure: `ShikiError: Language 'yarn' is not included in this bundle`. Shiki (via fumadocs-mdx) does not ship the Yarn Spinner grammar.
+
+**Fix**: Use ` ```text ` for Yarn Spinner format examples, or another supported language (e.g. `yaml` if the snippet is YAML-like). Do not use `yarn` as a code block language.
 
 ---
 
@@ -93,13 +101,11 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 - Added generated examples:
   - `pnpm env:sync:examples`
   - `pnpm env:sync:examples:check`
-- Added local setup wizard:
-  - `pnpm env:setup -- --app studio|platform|all`
+- Added local setup: **env portal** (`pnpm env:portal`) and **env bootstrap** (wired into `dev:studio`/`dev:platform`); when keys are missing, portal opens automatically.
+- Added CLI fallback: `pnpm env:setup -- --app studio|platform|all`
 - Added env doctor (masked matrix compare, optional Vercel pull):
   - `pnpm env:doctor -- --app ... --mode ... [--vercel]`
-- Added startup guard:
-  - `pnpm env:ensure:local -- --app ...`
-  - wired into `dev:studio` and `dev:platform`
+- Added Vercel sync: `pnpm env:sync:vercel`; portal has "Sync to Vercel" (config in `.env.vercel.local`).
 - Centralized runtime env readers:
   - `apps/studio/lib/env.ts`
   - `apps/platform/src/lib/env.ts`
@@ -107,8 +113,27 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 **Do not**:
 
 - Hand-edit generated `.env.example` files.
+- Add new env keys without updating `scripts/env/manifest.mjs` and running `pnpm env:sync:examples`.
 - Print plaintext secret values in diagnostics.
 - Bypass env checks by adding permissive runtime fallbacks outside local dev contexts.
+
+---
+
+## LangGraph chat rollout: missing transport headers should fall back to legacy path
+
+**Problem**: LangGraph orchestration in `/api/assistant-chat` depends on editor metadata headers (`x-forge-ai-domain`, `x-forge-ai-editor-id`, `x-forge-ai-project-id`, `x-forge-ai-viewport-id`). When project/domain headers are absent or invalid, session lookup/checkpoint persistence can fail or produce poor context.
+
+**Fix**:
+
+- Keep `/api/assistant-chat` as a single endpoint with explicit `legacyStreamPath` and `langGraphPath`.
+- Gate LangGraph with `AI_LANGGRAPH_ENABLED`.
+- In LangGraph path, require valid domain + project header before orchestrating; otherwise return `null` addendum and continue legacy stream behavior.
+- Always keep the legacy stream fallback in a catch block to avoid user-facing chat outages during rollout.
+
+**Do not**:
+
+- Hard-fail chat requests when LangGraph metadata is missing.
+- Remove the legacy fallback until metadata wiring is guaranteed in all editor surfaces.
 
 ---
 

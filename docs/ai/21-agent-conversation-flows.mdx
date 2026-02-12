@@ -785,9 +785,11 @@ User: Actually, add a fourth option for players who want to walk away, and make 
 Assistant: I'll modify the plan to include a walk-away option and add a combat branch for the aggressive path.
 
 [Tool: forge_modifyPlan]
+
+```json
 {
   "planId": "plan_789",
-  "checkpointId": "checkpoint_001",  // Resume from last checkpoint
+  "checkpointId": "checkpoint_001",
   "modifications": [
     {
       "type": "add_step",
@@ -807,7 +809,7 @@ Assistant: I'll modify the plan to include a walk-away option and add a combat b
         "nodeType": "NARRATIVE",
         "label": "Combat Begins",
         "content": "The merchant reaches for their weapon. This negotiation has failed.",
-        "parentNodeId": "node_aggressive"  // Links to aggressive choice
+        "parentNodeId": "node_aggressive"
       }
     },
     {
@@ -822,6 +824,7 @@ Assistant: I'll modify the plan to include a walk-away option and add a combat b
     }
   ]
 }
+```
 
 [Tool Result: forge_modifyPlan]
 ┌──────────────────────────────────────────┐

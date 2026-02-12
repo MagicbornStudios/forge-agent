@@ -515,13 +515,28 @@ export interface SettingsOverride {
   createdAt: string;
 }
 /**
+ * Durable LangGraph checkpoints keyed by user/editor/project.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "agent-sessions".
  */
 export interface AgentSession {
   id: number;
-  domain: 'forge' | 'video';
-  docId?: string | null;
+  user: number | User;
+  project: number | Project;
+  editor: 'dialogue' | 'character' | 'writer' | 'app';
+  domain: 'forge' | 'character' | 'writer' | 'video' | 'app';
+  sessionKey: string;
+  threadId: string;
+  checkpoint?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   summary?: string | null;
   events?:
     | {
@@ -532,6 +547,8 @@ export interface AgentSession {
     | number
     | boolean
     | null;
+  messageCount: number;
+  lastModelId?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1179,10 +1196,17 @@ export interface SettingsOverridesSelect<T extends boolean = true> {
  * via the `definition` "agent-sessions_select".
  */
 export interface AgentSessionsSelect<T extends boolean = true> {
+  user?: T;
+  project?: T;
+  editor?: T;
   domain?: T;
-  docId?: T;
+  sessionKey?: T;
+  threadId?: T;
+  checkpoint?: T;
   summary?: T;
   events?: T;
+  messageCount?: T;
+  lastModelId?: T;
   updatedAt?: T;
   createdAt?: T;
 }

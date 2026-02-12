@@ -1,838 +1,169 @@
 ---
 title: Complete AI System Architecture (2026)
 created: 2026-02-11
-updated: 2026-02-11
+updated: 2026-02-12
 status: current
 ---
 
 # Complete AI System Architecture
 
-**Current Status:** Assistant UI + Domain Contracts (CopilotKit fully migrated)
-
-This document describes the **actual implemented system** as of February 2026.
+This document reflects the implemented Studio AI stack as of 2026-02-12.
 
 ---
 
-## Table of Contents
+## Overview
 
-1. [System Overview](#system-overview)
-2. [Core Architecture](#core-architecture)
-3. [Domain Implementations](#domain-implementations)
-4. [Editor Integrations](#editor-integrations)
-5. [Agent Definitions](#agent-definitions)
-6. [Cross-Editor Data Flow](#cross-editor-data-flow)
-7. [Workflow System](#workflow-system)
-8. [Implementation Status](#implementation-status)
+Studio AI now uses a layered architecture:
 
----
-
-## System Overview
-
-### Migration Complete: CopilotKit → Assistant UI
-
-**Active System:**
-- ✅ Assistant UI with AI SDK streaming
-- ✅ OpenRouter model routing
-- ✅ Domain-specific tool contracts
-- ✅ Persistent entities (Characters, Pages) + Graph references
-- ✅ Plan-review-execute-review workflow
-
-**Removed:**
-- ❌ CopilotKit runtime endpoints
-- ❌ CopilotKit React hooks (`useCopilotAction`, etc.)
-- ❌ Responses V2 API compatibility checking
-
-**Legacy Code (Retained for Reference):**
-- `packages/*/copilot/` directories contain old action definitions
-- Some helper functions reused (context builders, suggestions)
-- Generative UI components (`PlanCard`, `DiffPreview`) still used
+1. `assistant-ui` + AI SDK transport in editors
+2. Single chat endpoint: `POST /api/assistant-chat`
+3. Feature-flagged LangGraph orchestration path (`AI_LANGGRAPH_ENABLED`)
+4. Domain tool contracts (Forge, Character) executed client-side
+5. Payload-backed durable assistant sessions (`agent-sessions`)
 
 ---
 
-## Core Architecture
+## Runtime packages
 
-### Runtime Endpoint
+### `@forge/assistant-runtime`
 
-**Location:** `apps/studio/app/api/assistant-chat/route.ts`
+New package for orchestration, context assembly, workflow helpers, and MCP descriptor adapters.
 
-```typescript
-export async function POST(req: Request) {
-  const payload = await getPayload({ config });
+Key modules:
 
-  // Auth + usage tracking
-  const authContext = await requireAiRequestAuth(payload, req, 'ai.chat');
-  const requestId = randomUUID();
-
-  // Get request body with tools
-  const body = await req.json();
-
-  // Model routing (OpenRouter)
-  const selectedModel = await getPersistedModelIdForProvider(req, 'assistantUi');
-  const resolvedModel = resolveModelIdFromRegistry(selectedModel, registry);
-
-  // Stream response with AI SDK
-  const result = await streamText({
-    model: createOpenAI({
-      apiKey: config.OPENROUTER_API_KEY,
-      baseURL: 'https://openrouter.ai/api/v1',
-    })(resolvedModel),
-    messages: body.messages,
-    tools: body.tools,  // Dynamic tools from domain contracts
-    maxSteps: 5,
-  });
-
-  // Record usage
-  void recordAiUsageEvent({ requestId, authContext, model: resolvedModel, ... });
-
-  return result.toDataStreamResponse();
-}
-```
-
-**Key Features:**
-- No CopilotKit dependencies
-- Streams via Server-Sent Events (SSE)
-- Tools provided dynamically from client
-- Model persistence per user (`getPersistedModelIdForProvider`)
+- `src/langgraph/chat-orchestrator.ts`
+- `src/context/assemblers/{forge,character,pages}.ts`
+- `src/workflows/{forge-plan,forge-story-builder,character-core}.ts`
+- `src/sessions/payload-session-store.ts`
+- `src/mcp/{types,domain-tool-to-mcp,forge-descriptors,character-descriptors}.ts`
 
 ---
 
-### Domain Contract Pattern
+## Chat endpoint architecture
 
-**Interface:** `packages/shared/src/shared/assistant/domain-contract.ts`
+File: `apps/studio/app/api/assistant-chat/route.ts`
 
-```typescript
-export interface DomainAssistantContract {
-  domain: string;  // 'forge', 'character', 'writer'
+`/api/assistant-chat` has two internal paths:
 
-  // Context for AI (what it sees)
-  getContextSnapshot(): DomainContextSnapshot;
+- `legacyStreamPath`: existing streaming behavior
+- `langGraphPath`: LangGraph addendum path, enabled by flag
 
-  // Instructions (system prompt)
-  getInstructions(): string;
+Rollout flags:
 
-  // Available tools
-  createTools(): DomainTool[];
+- Server: `AI_LANGGRAPH_ENABLED`
+- Client mirror: `NEXT_PUBLIC_AI_LANGGRAPH_ENABLED`
 
-  // Suggested prompts
-  getSuggestions(): Array<{ title: string; message: string }>;
+Request metadata headers:
 
-  // Highlighting (visual feedback)
-  onHighlight(entities: Record<string, string[]>): void;
-  clearHighlights(): void;
-}
-```
-
-**Context Snapshot:**
-```typescript
-export interface DomainContextSnapshot {
-  domain: string;
-  domainState: Record<string, unknown>;
-  selectionSummary: string | null;
-}
-```
-
-**Tool Definition:**
-```typescript
-export interface DomainTool {
-  domain: string;
-  name: string;
-  description: string;
-  parameters: {
-    type: 'object';
-    properties: Record<string, any>;
-    required?: string[];
-  };
-  execute: (args: unknown, context: DomainToolContext) => Promise<unknown>;
-  render?: (result: unknown) => ReactNode;  // Optional custom UI
-}
-```
+- `x-forge-ai-domain`
+- `x-forge-ai-editor-id`
+- `x-forge-ai-project-id`
+- `x-forge-ai-viewport-id`
 
 ---
 
-### Integration Hook
+## LangGraph orchestration
 
-**Location:** `packages/shared/src/shared/assistant/use-domain-assistant.ts`
+Current orchestrator sequence:
 
-```typescript
-export function useDomainAssistant(
-  contract: DomainAssistantContract,
-  options?: { enabled?: boolean }
-) {
-  const assistant = useAssistantContext();  // From @assistant-ui/react
+`load_session -> assemble_context -> classify_intent -> route_workflow -> persist_session`
 
-  // Register tools with Assistant UI runtime
-  useEffect(() => {
-    if (!options?.enabled) return;
+Practical outputs:
 
-    const tools = contract.createTools().map(tool => ({
-      name: tool.name,
-      description: tool.description,
-      parameters: tool.parameters,
-      execute: async (args: any) => {
-        const snapshot = contract.getContextSnapshot();
-        return await tool.execute(args, { snapshot });
-      },
-    }));
+- session/thread metadata
+- intent class (`forge_plan`, `forge_story_builder`, `character_core`, `general`)
+- workflow hints
+- condensed retrieval context addendum merged into system prompt
 
-    assistant.registerTools(tools);
+Session scope default:
 
-    return () => {
-      assistant.unregisterTools(tools.map(t => t.name));
-    };
-  }, [contract, options?.enabled, assistant]);
-
-  // Update context and instructions
-  useEffect(() => {
-    if (!options?.enabled) return;
-
-    assistant.setSystemMessage(contract.getInstructions());
-    assistant.setContext(contract.getContextSnapshot());
-  }, [contract, options?.enabled, assistant]);
-
-  return {
-    onHighlight: contract.onHighlight,
-    clearHighlights: contract.clearHighlights,
-  };
-}
-```
+- One durable thread per `(user, editor, project)`
+- Session key format: `session:{userId}:{editorId}:{projectId|none}`
 
 ---
 
-## Domain Implementations
+## Session persistence
 
-### Forge Domain (Dialogue/Narrative)
+Collection: `apps/studio/payload/collections/agent-sessions.ts`
 
-**Status:** ✅ COMPLETE
+Schema now includes:
 
-**Contract Factory:** `packages/domain-forge/src/assistant/index.ts`
+- `user` (required)
+- `project` (required)
+- `editor` (required)
+- `domain` (required, expanded options)
+- `sessionKey` (required, unique)
+- `threadId` (required)
+- `checkpoint` (json)
+- `summary`, `events`
+- `messageCount` (default `0`)
+- `lastModelId`
 
-```typescript
-export function useForgeAssistantContract(deps: ForgeAssistantDeps): DomainAssistantContract {
-  return useMemo(() => ({
-    domain: 'forge',
+Access model:
 
-    getContextSnapshot: () => {
-      const ctx = buildForgeContext({
-        graph: deps.graph,
-        selection: deps.selection,
-        isDirty: deps.isDirty
-      });
-      return {
-        domain: 'forge',
-        domainState: ctx.domainState,
-        selectionSummary: ctx.selectionSummary,
-      };
-    },
-
-    getInstructions: () =>
-      'You are helping edit a graph (nodes and edges). This graph represents dialogue/narrative.\n' +
-      'Available node types: CHARACTER, PLAYER, CONDITIONAL.\n' +
-      'Use forge_* tools to modify the graph. Call forge_getGraph before creating edges to get node IDs.\n' +
-      'For planning, use forge_createPlan to propose changes; the user can Apply or Request Changes.\n' +
-      'When the user asks to create dialogue, use forge_createNode and forge_createEdge together.',
-
-    createTools: () => createForgeAssistantTools(deps),
-
-    getSuggestions: () => getForgeSuggestions({ graph: deps.graph, selection: deps.selection }),
-
-    onHighlight: (entities) => deps.onAIHighlight({ entities }),
-    clearHighlights: deps.clearAIHighlights,
-  }), [deps]);
-}
-```
-
-**Tools:** `packages/domain-forge/src/assistant/tools.ts`
-
-| Tool Name | Purpose | Parameters |
-|-----------|---------|------------|
-| `forge_getGraph` | Retrieve current graph state | None |
-| `forge_createNode` | Create dialogue node | nodeType, label, content, speaker, x, y |
-| `forge_createEdge` | Connect two nodes | sourceNodeId, targetNodeId |
-| `forge_updateNode` | Modify node properties | nodeId, label?, content?, speaker? |
-| `forge_deleteNode` | Remove node | nodeId |
-| `forge_createPlan` | Generate operation plan | goal |
-| `forge_revealSelection` | Fit viewport to selection | None |
-| `forge_openCreateNodeModal` | Open node creation overlay | nodeType?, label?, content?, speaker? |
-
-**Context Snapshot:**
-```typescript
-{
-  domain: 'forge',
-  domainState: {
-    editorType: 'reactflow',
-    graphTitle: 'My Story',
-    graphKind: 'narrative',  // or 'storylet'
-    nodeCount: 12,
-    edgeCount: 9,
-    nodeIds: ['node_123', 'node_456', ...],
-    isDirty: true,
-  },
-  selectionSummary: 'Node: Opening Scene (Label: The Discovery)',
-}
-```
+- Authenticated self access + admin override
+- Non-admin writes force `user` to request user in `beforeChange`
 
 ---
 
-### Character Domain
+## Domain flows
 
-**Status:** ⏳ PARTIAL (Contract exists, tools NOT implemented)
+### Forge
 
-**Contract Factory:** `packages/domain-character/src/copilot/index.ts` (Legacy naming)
+- `POST /api/forge/plan` now uses `runForgePlanWorkflow`
+- `POST /api/forge/story-builder` added (`premise -> steps/characters/scenes/summary`)
+- New assistant tool: `forge_createStoryFromPremise`
+- Writes remain client-applied via existing plan/apply path
 
-**Gap:** No `packages/domain-character/src/assistant/` directory yet.
+### Character
 
-**Expected Tools (To Be Implemented):**
+New assistant contract in `packages/domain-character/src/assistant` with tools:
 
-| Tool Name | Purpose | Parameters |
-|-----------|---------|------------|
-| `character_getCharacters` | List all characters | None |
-| `character_create` | Create character + save to DB | name, personality, background?, generatePortrait? |
-| `character_update` | Update character properties | characterId, name?, personality?, background? |
-| `character_delete` | Delete character | characterId |
-| `character_generatePortrait` | Generate AI portrait | characterId, style? |
-| `character_generateVoice` | Generate voice sample | characterId |
-| `character_createRelationship` | Link two characters | sourceCharacterId, targetCharacterId, relationshipType |
+- `character_getContext`
+- `character_create`
+- `character_update`
+- `character_createRelationship`
+- `character_generatePortrait`
 
-**Expected Context:**
-```typescript
-{
-  domain: 'character',
-  domainState: {
-    editorType: 'reactflow-character-graph',
-    projectId: 42,
-    characterCount: 5,
-    relationshipCount: 3,
-    activeCharacterId: 123,
-    activeCharacterName: 'Captain Red',
-    characterNames: [
-      { id: 123, name: 'Captain Red' },
-      { id: 124, name: 'Dr. Voss' },
-    ],
-    isDirty: false,
-  },
-  selectionSummary: 'Active character: Captain Red',
-}
-```
-
-**Expected Instructions:**
-```typescript
-getInstructions: () =>
-  'You are helping manage characters and their relationships.\n' +
-  'Characters are persistent entities saved to the database.\n' +
-  'Use character_getCharacters to see current state.\n' +
-  'Use character_create to add new characters. Set generatePortrait: true to create AI portraits.\n' +
-  'Characters can be used in dialogue graphs by referencing their ID in forge_createNode.',
-```
+Character editor now passes domain contract + transport headers into `DialogueAssistantPanel`.
 
 ---
 
-### Writer Domain (Future)
+## Retrieval context (read-only)
 
-**Status:** ❌ NOT STARTED
+LangGraph context assembly includes:
 
-**Expected Tools:**
-- `writer_createPage` - Create page (act, chapter, page)
-- `writer_updatePage` - Update page content (Notion blocks)
-- `writer_linkPageToNode` - Link page to dialogue graph node
-- `writer_exportBook` - Export full book as document
+- Forge project graph snapshots
+- Character/relationship snapshots
+- Writer pages + block snippets (read-only)
 
----
+Retrieval budgets:
 
-## Editor Integrations
+- max 5 pages
+- max 3 blocks per page
+- max 500 chars per page snippet
 
-### Dialogue Editor
-
-**File:** `apps/studio/components/editors/DialogueEditor.tsx`
-
-**AI Integration:**
-```typescript
-// Lines 32-34
-const { onAIHighlight, clearHighlights, isHighlighted } = useAIHighlight();
-
-// Lines 593, 741-753
-const forgeAssistantContract = useForgeAssistantContract({
-  graph: activeGraph,
-  selection: activeSelection,
-  isDirty: activeDirty,
-  applyOperations: applyActiveOperations,
-  onAIHighlight,
-  clearAIHighlights: clearHighlights,
-  openOverlay,
-  revealSelection,
-  createNodeOverlayId: CREATE_NODE_OVERLAY_ID,
-  createPlanApi,
-  setPendingFromPlan: setPendingFromPlanActive,
-  commitGraph,
-});
-
-// Wire domain contract (no explicit useDomainAssistant call - done inside DialogueAssistantPanel)
-```
-
-**Assistant Panel:**
-```typescript
-// Lines 1241-1247
-<DialogueAssistantPanel
-  contract={toolsEnabled ? forgeAssistantContract : undefined}
-  toolsEnabled={toolsEnabled}
-  executePlan={toolsEnabled ? executePlan : undefined}
-  composerTrailing={<ModelSwitcher provider="assistantUi" variant="composer" />}
-/>
-```
-
-**Panel Component:** `apps/studio/components/editors/dialogue/DialogueAssistantPanel.tsx`
-
-Wraps Assistant UI Thread with domain-specific setup.
+No writer mutation tools are included in this phase.
 
 ---
 
-### Character Editor
+## MCP state (adapter now, server next)
 
-**File:** `apps/studio/components/editors/CharacterEditor.tsx`
+Implemented:
 
-**Current Status:** ❌ NO AI INTEGRATION
+- `McpToolDescriptor`, `McpAppDescriptor` contracts
+- domain-tool -> MCP mapping
+- Forge/Character MCP descriptor factories
 
-```typescript
-// Lines 571-576 - Only basic panel, no domain contract
-<DialogueAssistantPanel
-  composerTrailing={<ModelSwitcher provider="assistantUi" variant="composer" />}
-/>
-```
+Deferred:
 
-**TODO:**
-1. Create `packages/domain-character/src/assistant/tools.ts`
-2. Create `useCharacterAssistantContract()` factory
-3. Wire contract in CharacterEditor
-4. Add character-specific suggestions
+- executable MCP server runtime/package
+- host transport and auth wiring
 
 ---
 
-## Agent Definitions
-
-### What is an "Agent"?
-
-In our system, an **agent** is the combination of:
-1. **Instructions** (system prompt)
-2. **Tools** (available actions)
-3. **Context** (what the agent sees)
-4. **Domain scope** (which editor)
-
-### Forge Agent
-
-**Name:** Forge Dialogue Agent
-**Scope:** `'forge'` domain (Dialogue Editor)
-**Active When:** Dialogue editor is open
-
-**Identity:**
-```
-You are helping edit a graph (nodes and edges).
-This graph represents dialogue/narrative.
-```
-
-**Capabilities:**
-- Read graph state (nodes, edges, selection)
-- Create/update/delete nodes and edges
-- Generate plans for complex operations
-- Open overlays for detailed editing
-- Navigate/reveal selections
-
-**Tool Prefix:** `forge_*`
-
-**Context Awareness:**
-- Knows graph title, kind (narrative vs storylet)
-- Knows node/edge counts
-- Knows current selection
-- Knows dirty state (unsaved changes)
-
----
-
-### Character Agent (Planned)
-
-**Name:** Character Management Agent
-**Scope:** `'character'` domain (Character Editor)
-**Active When:** Character editor is open
-
-**Identity:**
-```
-You are helping manage characters and their relationships.
-Characters are persistent entities saved to the database.
-```
-
-**Capabilities:**
-- Create/update/delete characters (database entities)
-- Generate AI portraits via image models
-- Generate voice samples
-- Create character relationships
-- Suggest relationship types based on personalities
-
-**Tool Prefix:** `character_*`
-
-**Context Awareness:**
-- Knows all character names/IDs in project
-- Knows active character
-- Knows relationship graph structure
-- Knows dirty state
-
----
-
-### App-Level Agent (Future)
-
-**Name:** Forge Studio Agent
-**Scope:** `'app'` (Global)
-**Active When:** Always available
-
-**Identity:**
-```
-You are the Forge Studio assistant.
-You help users navigate editors, create projects, and coordinate between domains.
-```
-
-**Capabilities:**
-- Switch between editors
-- Create new projects
-- Delegate to domain agents
-- Cross-domain operations (create character, use in dialogue)
-
-**Tool Prefix:** `app_*`
-
-**Delegation Pattern:**
-```
-User: "Create a character and use them in a dialogue"
-
-AppAgent:
-  1. Calls character_create → Character saved (ID: 123)
-  2. Switches to dialogue editor
-  3. Calls forge_createNode(characterId: 123)
-```
-
----
-
-## Cross-Editor Data Flow
-
-### Character → Dialogue Flow
-
-**Current Status:** NOT YET IMPLEMENTED
-
-**Design Pattern:**
-
-#### 1. User Creates Character (Character Editor)
-
-```typescript
-// User: "Create a gruff space captain named Red"
-character_create({
-  name: 'Captain Red',
-  personality: 'Gruff, battle-hardened space captain',
-  generatePortrait: true,
-})
-
-// Result: Character saved to Payload CMS
-{
-  id: 123,
-  name: 'Captain Red',
-  personality: '...',
-  portrait: 'https://cdn.../portrait-123.png',
-  project: 42,
-}
-```
-
-#### 2. User Switches to Dialogue Editor
-
-Character agent context is cleared, Forge agent context loads.
-
-#### 3. User Creates Dialogue Node
-
-```typescript
-// User: "Create a dialogue node where Red says 'What the hell is that ship?'"
-
-// Forge agent has access to project characters via context:
-getContextSnapshot: () => ({
-  domain: 'forge',
-  domainState: {
-    ...graphState,
-    availableCharacters: [  // ← Added via getProjectCharacters()
-      { id: 123, name: 'Captain Red' },
-      { id: 124, name: 'Dr. Voss' },
-    ],
-  },
-})
-
-// Forge tool validates character reference:
-forge_createNode({
-  nodeType: 'CHARACTER',
-  characterId: 123,  // ← Reference to database entity
-  content: 'What the hell is that ship?',
-})
-
-// Node data stored:
-{
-  id: 'node_xyz',
-  type: 'CHARACTER',
-  data: {
-    label: 'Red speaks',
-    content: 'What the hell is that ship?',
-    characterId: 123,  // ← Foreign key to characters table
-  },
-}
-```
-
-#### 4. Node Rendering (Graph Editor)
-
-```typescript
-// In GraphEditor component
-function CharacterNode({ data }) {
-  // Look up character by ID
-  const character = useCharacter(data.characterId);
-
-  return (
-    <div className="character-node">
-      {character?.portrait && (
-        <img src={character.portrait} className="character-avatar" />
-      )}
-      <div className="speaker">{character?.name || 'Unknown'}</div>
-      <div className="content">{data.content}</div>
-    </div>
-  );
-}
-```
-
-**Key Insight:** Characters are **persistent entities**, nodes are **references**.
-
----
-
-### Page → Node Flow (Future)
-
-**Use Case:** Link Writer pages (acts/chapters) to narrative graph nodes
-
-#### 1. Create Page (Writer Editor)
-
-```typescript
-writer_createPage({
-  type: 'chapter',
-  title: 'Chapter 1: The Discovery',
-  content: [/* Notion blocks */],
-})
-
-// Saved to Payload CMS pages collection
-{ id: 201, type: 'chapter', title: 'Chapter 1: The Discovery' }
-```
-
-#### 2. Link Page to Dialogue Node
-
-```typescript
-forge_createNode({
-  nodeType: 'PAGE',  // New node type
-  pageId: 201,
-  label: 'Chapter 1',
-})
-
-// Or link to existing node:
-forge_updateNode({
-  nodeId: 'node_xyz',
-  pageId: 201,
-})
-```
-
-#### 3. Bidirectional Navigation
-
-```typescript
-// From Writer: "Show dialogue for Chapter 1"
-→ Query dialogue graph for nodes with pageId: 201
-→ Switch to Dialogue editor, reveal those nodes
-
-// From Dialogue: "Edit the chapter for this node"
-→ Read node.pageId
-→ Switch to Writer editor, open page 201
-```
-
----
-
-## Workflow System
-
-### Workflow Runtime
-
-**Hook:** `useWorkflowRun()` in `apps/studio/lib/ai/use-workflow-run.ts`
-
-**Purpose:** Orchestrate multi-step AI operations with streaming feedback.
-
-**State Machine:**
-```typescript
-type WorkflowUIState = {
-  runId: string | null;
-  workflowId: string | null;
-  isRunning: boolean;
-  planMarkdown: string;         // Streamed plan text
-  patch: PatchEnvelope | null;  // Graph operations
-  review: ReviewResult | null;  // AI review
-  step: WorkflowStepState;      // Current step
-  events: WorkflowEvent[];      // SSE stream
-  error: string | null;
-  result: WorkflowRunResult | null;
-};
-```
-
-**Event Types (SSE Stream):**
-- `artifact.plan.delta` - Incremental plan text
-- `artifact.plan.final` - Complete plan markdown
-- `artifact.patch.final` - Graph patch operations
-- `artifact.review.final` - Review result
-- `step.start` / `step.end` - Step tracking
-- `run.result` - Final result
-- `error` - Error events
-
-**Usage Example:**
-```typescript
-const { state, run, cancel, reset } = useWorkflowRun();
-
-// Trigger workflow
-await run({
-  workflowId: 'forge.planExecuteReviewCommit',
-  domain: 'forge',
-  intent: 'Add 3 connected dialogue nodes',
-  input: { graphId: activeGraph.id },
-  snapshot: activeGraph,
-  selection: activeSelection,
-});
-
-// UI shows streaming plan, then patch, then review
-```
-
-**Workflow Types:**
-- `forge.planExecuteReviewCommit` - Plan → Execute → Review workflow for forge
-- (Future: `character.suggestRelationships`, `writer.generateChapter`)
-
----
-
-### Plan-Review-Execute-Review Pattern
-
-**Current Implementation:** Forge domain
-
-```
-1. User: "Add 3 character nodes and connect them"
-
-2. AI generates PLAN:
-   forge_createPlan({ goal: "Add 3 character nodes..." })
-
-   Returns:
-   {
-     steps: [
-       { type: 'createNode', nodeType: 'CHARACTER', ... },
-       { type: 'createNode', nodeType: 'CHARACTER', ... },
-       { type: 'createNode', nodeType: 'CHARACTER', ... },
-       { type: 'createEdge', source: 'node1', target: 'node2' },
-       { type: 'createEdge', source: 'node2', target: 'node3' },
-     ]
-   }
-
-3. UI shows PLAN REVIEW (PlanCard component):
-   "Plan: 3 operations
-    - Create node 'Opening Scene'
-    - Create node 'First Contact'
-    - Create node 'The Warning'
-    - Connect: Opening → First Contact
-    - Connect: First Contact → Warning
-
-    [Apply] [Request Changes]"
-
-4. User clicks [Apply] → EXECUTE:
-   applyOperations(plan.steps)
-
-   Graph updated, nodes highlighted
-
-5. UI shows EXECUTION REVIEW (EditorReviewBar):
-   "⚠️ Pending changes from plan
-    [Revert] [Accept]"
-
-6. User clicks [Accept] → COMMIT:
-   commitGraph()
-
-   Changes saved to server
-```
-
-**Key Components:**
-- `PlanCard` - Shows plan with Apply/Dismiss actions
-- `EditorReviewBar` - Shows pending changes with Revert/Accept
-- `useAIHighlight` - Highlights affected entities (amber ring)
-
----
-
-## Implementation Status
-
-### ✅ Complete
-
-| Feature | Status | Files |
-|---------|--------|-------|
-| **Assistant UI Endpoint** | ✅ | `apps/studio/app/api/assistant-chat/route.ts` |
-| **Domain Contract Pattern** | ✅ | `packages/shared/src/shared/assistant/` |
-| **Forge Domain Tools** | ✅ | `packages/domain-forge/src/assistant/` |
-| **Dialogue Editor Integration** | ✅ | `apps/studio/components/editors/DialogueEditor.tsx` |
-| **AI Highlights** | ✅ | `packages/shared/src/shared/assistant/highlight.ts` |
-| **Plan-Review-Execute** | ✅ | `useWorkflowRun`, `PlanCard`, `EditorReviewBar` |
-| **Model Routing** | ✅ | `apps/studio/lib/model-router/` |
-| **Tool UI Rendering** | ✅ | `packages/shared/src/shared/copilot/generative-ui/` |
-
-### ⏳ Partial
-
-| Feature | Status | Next Steps |
-|---------|--------|------------|
-| **Character Domain** | ⏳ | Create `assistant/tools.ts`, implement character_* tools |
-| **Character Editor** | ⏳ | Wire `useCharacterAssistantContract()` |
-| **Cross-Domain References** | ⏳ | Add `characterId` to forge nodes, validate in tools |
-| **Documentation** | ⏳ | Update AI docs to reflect current implementation |
-
-### ❌ Not Started
-
-| Feature | Status | Next Steps |
-|---------|--------|------------|
-| **Writer Domain** | ❌ | Define tools, create contract |
-| **App-Level Agent** | ❌ | Define delegation patterns |
-| **Agent Registry** | ❌ | Build `BaseAgent`, `AgentRegistry` classes |
-| **MCP Integration** | ❌ | Build MCP server, map tools |
-| **LangGraph Workflows** | ❌ | Complex multi-agent orchestration |
-
----
-
-## Migration from CopilotKit
-
-### What Changed
-
-**Removed:**
-```typescript
-// ❌ Old CopilotKit
-import { useCopilotAction } from '@copilotkit/react-core';
-import { useCopilotReadable } from '@copilotkit/react-core';
-import { useDomainCopilot } from '@forge/shared/copilot';
-
-useCopilotAction({
-  name: 'forge_createNode',
-  parameters: [...],
-  handler: async (args) => { ... },
-});
-```
-
-**Replaced With:**
-```typescript
-// ✅ New Assistant UI
-import { useDomainAssistant } from '@forge/shared/assistant';
-import { useForgeAssistantContract } from '@forge/domain-forge/assistant';
-
-const contract = useForgeAssistantContract({ graph, selection, ... });
-useDomainAssistant(contract);
-
-// Tools defined in contract.createTools()
-```
-
-**Key Differences:**
-1. Tools defined in contract factory, not scattered across components
-2. No Responses V2 compatibility checking
-3. Simpler streaming (AI SDK vs CopilotKit runtime)
-4. Domain contracts are reusable and testable
-5. Tools can have custom UI rendering via `render()` function
-
----
-
-## References
-
-- [AI Roadmap](./11-ai-roadmap.mdx) - Quarterly development plan
-- [Model Strategy](./10-model-strategy.mdx) - Multi-model routing
-- [Technical Considerations](./12-technical-considerations.mdx) - Performance, security
-- [Instruction Templating](./15-instruction-templating-and-workflow-orchestration.mdx) - Type-safe instructions, LangGraph
-- [AI Context Index](./14-ai-context-index.mdx) - Complete documentation map
+## Validation status
+
+- `@forge/assistant-runtime` build: passing (`pnpm --filter @forge/assistant-runtime build`)
+- Assistant-runtime targeted tests: passing (`apps/studio/__tests__/assistant-runtime.test.ts`)
+- Full Studio typecheck currently blocked by existing unrelated `StrategyEditor.tsx` JSX mismatch in repo state

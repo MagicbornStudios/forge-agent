@@ -23,6 +23,15 @@ export interface ForgeAssistantDeps {
   revealSelection?: () => void;
   createNodeOverlayId?: string;
   createPlanApi?: (goal: string, graphSummary: unknown) => Promise<{ steps: unknown[] }>;
+  createStoryBuilderApi?: (
+    premise: string,
+    options?: { characterCount?: number; sceneCount?: number }
+  ) => Promise<{
+    steps: unknown[];
+    characters: Array<{ name: string; description?: string; personality?: string }>;
+    scenes: Array<{ title: string; speaker: string; dialogue: string }>;
+    summary: string;
+  }>;
   setPendingFromPlan?: (value: boolean) => void;
   commitGraph?: () => Promise<void>;
 }
@@ -40,6 +49,7 @@ export function useForgeAssistantContract(deps: ForgeAssistantDeps): DomainAssis
     onAIHighlight,
     clearAIHighlights,
     createPlanApi,
+    createStoryBuilderApi,
     setPendingFromPlan,
     openOverlay,
     revealSelection,
@@ -63,6 +73,7 @@ export function useForgeAssistantContract(deps: ForgeAssistantDeps): DomainAssis
         'You are helping edit a graph (nodes and edges). This graph represents dialogue/narrative. ' +
         'Available node types: CHARACTER, PLAYER, CONDITIONAL. ' +
         'Use forge_* tools to modify the graph. Call forge_getGraph before creating edges to get node IDs. ' +
+        'When the user asks for a premise-driven scaffold, use forge_createStoryFromPremise. ' +
         'For planning, use forge_createPlan to propose changes; the user can Apply or Request Changes. ' +
         'When the user asks to create dialogue, use forge_createNode and forge_createEdge together.',
 
@@ -72,6 +83,7 @@ export function useForgeAssistantContract(deps: ForgeAssistantDeps): DomainAssis
           applyOperations,
           onAIHighlight,
           createPlanApi,
+          createStoryBuilderApi,
           setPendingFromPlan,
           openOverlay,
           revealSelection,
@@ -91,6 +103,7 @@ export function useForgeAssistantContract(deps: ForgeAssistantDeps): DomainAssis
       onAIHighlight,
       clearAIHighlights,
       createPlanApi,
+      createStoryBuilderApi,
       setPendingFromPlan,
       openOverlay,
       revealSelection,

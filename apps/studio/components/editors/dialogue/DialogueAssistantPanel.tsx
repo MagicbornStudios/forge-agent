@@ -13,10 +13,11 @@ import { API_ROUTES } from '@/lib/api-client/routes';
 
 export interface DialogueAssistantPanelProps {
   apiUrl?: string;
+  transportHeaders?: Record<string, string>;
   composerLeading?: React.ReactNode;
   composerTrailing?: React.ReactNode;
   className?: string;
-  /** Optional domain contract for Assistant UI tools. When provided and toolsEnabled, registers forge_* tools. */
+  /** Optional domain contract for Assistant UI tools. When provided and toolsEnabled, registers domain tools. */
   contract?: DomainAssistantContract;
   toolsEnabled?: boolean;
   /** Optional executePlan for forge_createPlan Apply button. Required for Plan UI to apply steps. */
@@ -25,6 +26,7 @@ export interface DialogueAssistantPanelProps {
 
 export function DialogueAssistantPanel({
   apiUrl = API_ROUTES.ASSISTANT_CHAT,
+  transportHeaders,
   composerLeading,
   composerTrailing,
   className,
@@ -32,7 +34,14 @@ export function DialogueAssistantPanel({
   toolsEnabled = false,
   executePlan,
 }: DialogueAssistantPanelProps) {
-  const transport = React.useMemo(() => new AssistantChatTransport({ api: apiUrl }), [apiUrl]);
+  const transport = React.useMemo(
+    () =>
+      new AssistantChatTransport({
+        api: apiUrl,
+        ...(transportHeaders ? { headers: transportHeaders } : {}),
+      }),
+    [apiUrl, transportHeaders]
+  );
   const runtime = useChatRuntime({ transport });
 
   const content = (

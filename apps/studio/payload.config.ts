@@ -1,4 +1,5 @@
 import { buildConfig } from 'payload';
+import { postgresAdapter } from '@payloadcms/db-postgres';
 import { sqliteAdapter } from '@payloadcms/db-sqlite';
 import { lexicalEditor } from '@payloadcms/richtext-lexical';
 import path from 'path';
@@ -12,11 +13,16 @@ import { getAllowedCorsOrigins } from './lib/server/cors.ts';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
+const migrationsDir = path.join(dirname, 'migrations');
 
 // Resolve DB path relative to this config so it works regardless of cwd (e.g. pnpm dev from repo root).
 const dataDir = path.join(dirname, 'data');
 const defaultDbPath = path.join(dataDir, 'payload.db');
-if (!process.env.DATABASE_URI) {
+
+const configuredDatabaseUri = process.env.DATABASE_URI?.trim() ?? '';
+const usesPostgres = /^postgres(ql)?:\/\//i.test(configuredDatabaseUri);
+
+if (!usesPostgres) {
   try {
     fs.mkdirSync(dataDir, { recursive: true });
   } catch {
@@ -25,6 +31,21 @@ if (!process.env.DATABASE_URI) {
 }
 
 const allowedCorsOrigins = getAllowedCorsOrigins();
+const shouldRunSeedOnInit =
+  process.env.NODE_ENV === 'development' && process.env.VERCEL !== '1' && process.env.CI !== 'true';
+
+const dbAdapter = usesPostgres
+  ? postgresAdapter({
+      migrationDir: migrationsDir,
+      pool: {
+        connectionString: configuredDatabaseUri,
+      },
+    })
+  : sqliteAdapter({
+      client: {
+        url: configuredDatabaseUri || pathToFileURL(defaultDbPath).href,
+      },
+    });
 
 export default buildConfig({
   admin: {
@@ -44,7 +65,12 @@ export default buildConfig({
     ],
   },
   onInit: async (payload) => {
-    await seedStudio(payload);
+    if (shouldRunSeedOnInit) {
+      await seedStudio(payload);
+      return;
+    }
+
+    payload.logger.info('[Seed] Skipped seed bootstrap outside local development runtime.');
   },
   editor: lexicalEditor({}),
   cors: allowedCorsOrigins,
@@ -53,10 +79,6 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, '../../packages/types/src/payload-types.ts'),
   },
-  // DATABASE_URI: set in .env (not just .env.example). If unset, we use apps/studio/data/payload.db.
-  db: sqliteAdapter({
-    client: {
-      url: process.env.DATABASE_URI || pathToFileURL(defaultDbPath).href,
-    },
-  }),
+  // DATABASE_URI: postgres:// or postgresql:// -> Postgres adapter, otherwise sqlite local fallback.
+  db: dbAdapter,
 });

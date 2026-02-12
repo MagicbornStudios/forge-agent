@@ -139,15 +139,9 @@
 
 /* Keep docs rails visible at desktop breakpoints even if utility variants regress. */
 @media (min-width: 48rem) {
-  #nd-docs-layout [data-sidebar='sidebar-provider'] {
-    padding-left: var(--sidebar-width) !important;
-  }
-
-  #nd-docs-layout #nd-sidebar[data-slot='sidebar-container'] {
-    top: var(--docs-header-height) !important;
-    bottom: auto !important;
-    height: calc(100svh - var(--docs-header-height)) !important;
-    display: flex !important;
+  /* In-flow sidebar (collapsible="none"): no padding; sidebar and content sit side-by-side. */
+  #nd-docs-layout [data-sidebar='sidebar-provider']:has(#nd-sidebar[data-slot='sidebar']) {
+    padding-left: 0 !important;
   }
 
   #nd-docs-layout .forge-docs-tabs {

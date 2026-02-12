@@ -26,6 +26,7 @@ import { DialogueAssistantPanel } from '@/components/editors/dialogue/DialogueAs
 import { ModelSwitcher } from '@/components/model-switcher';
 import { useEditorPanelVisibility } from '@/lib/app-shell/useEditorPanelVisibility';
 import { useSettingsStore } from '@/lib/settings/store';
+import { isLangGraphEnabledClient } from '@/lib/feature-flags';
 
 // Data hooks
 import {
@@ -35,9 +36,6 @@ import {
   useRelationships,
   useCreateRelationship,
   useDeleteRelationship,
-  useProjects,
-  useCreateProject,
-  useGenerateSpeech,
   useGenerateImage,
 } from '@/lib/data/hooks';
 
@@ -52,7 +50,6 @@ import { RelationshipGraphEditor, type CharacterViewportHandle } from '@/compone
 import { ActiveCharacterPanel } from '@/components/character/ActiveCharacterPanel';
 import { CharacterSidebar } from '@/components/character/CharacterSidebar';
 import { CreateCharacterModal } from '@/components/character/CreateCharacterModal';
-import { useAppMenubarContribution } from '@/lib/contexts/AppMenubarContext';
 import {
   EditorLayoutProvider,
   EditorMenubarContribution,
@@ -62,6 +59,8 @@ import { Badge } from '@forge/ui/badge';
 import { Card } from '@forge/ui/card';
 import type { CharacterDoc, RelationshipDoc } from '@/lib/domains/character/types';
 import { NodeDragProvider } from '@/components/graph/useNodeDrag';
+import { useCharacterAssistantContract } from '@forge/domain-character';
+import { CAPABILITIES, useEntitlements } from '@forge/shared/entitlements';
 
 // ---------------------------------------------------------------------------
 // Editor descriptor for registry; defaults live on the component.
@@ -79,7 +78,6 @@ export const editorDescriptor: Omit<EditorDescriptor, 'component'> = {
 // ---------------------------------------------------------------------------
 const CREATE_CHARACTER_OVERLAY_ID = 'create-character';
 const EDIT_CHARACTER_OVERLAY_ID = 'edit-character';
-const DEFAULT_VOICE_MODEL_ID = 'eleven_multilingual_v2';
 
 type CharacterUpsertPayload = {
   name: string;
@@ -126,6 +124,7 @@ export function CharacterEditor() {
   const editorId = 'character';
   const viewportId = EDITOR_VIEWPORT_IDS.character;
   const activeProjectId = useEditorStore((s) => s.activeProjectId);
+  const langGraphEnabled = isLangGraphEnabledClient();
 
   // Settings
   const editorTheme = useSettingsStore((s) =>
@@ -149,6 +148,11 @@ export function CharacterEditor() {
   const showRightPanel = useSettingsStore((s) =>
     s.getSettingValue('panel.visible.character-right', { editorId, viewportId }),
   ) as boolean | undefined;
+  const entitlements = useEntitlements();
+  const toolsEnabled =
+    toolsEnabledSetting !== false &&
+    entitlements.has(CAPABILITIES.STUDIO_AI_TOOLS) &&
+    entitlements.has(CAPABILITIES.STUDIO_AI_CHAT);
   // Character store
   const store = useCharacterStore();
   const {
@@ -156,6 +160,7 @@ export function CharacterEditor() {
     characters,
     relationships,
     activeCharacterId,
+    isDirty,
     setProject,
     setCharacters,
     setRelationships,
@@ -194,7 +199,6 @@ export function CharacterEditor() {
   const updateCharMutation = useUpdateCharacter();
   const createRelMutation = useCreateRelationship();
   const deleteRelMutation = useDeleteRelationship();
-  const generateSpeechMutation = useGenerateSpeech();
   const generateImageMutation = useGenerateImage();
 
   // Selection state
@@ -263,18 +267,6 @@ export function CharacterEditor() {
   const handleGenerateImage = useCallback(async (prompt: string) => {
     return generateImageMutation.mutateAsync({ prompt });
   }, [generateImageMutation]);
-
-  const handleGenerateSpeech = useCallback(
-    async (voiceId: string, text: string) => {
-      const result = await generateSpeechMutation.mutateAsync({
-        voiceId,
-        text,
-        modelId: DEFAULT_VOICE_MODEL_ID,
-      });
-      return { audioUrl: result.audioUrl };
-    },
-    [generateSpeechMutation],
-  );
 
   const handleDeleteRelationship = useCallback(
     async (id: number) => {
@@ -424,14 +416,6 @@ export function CharacterEditor() {
     },
     [panelSpecs, panelVisibility, setPanelVisible, restoreAllPanels],
   );
-  const menubarMenus = useMemo(
-    () => [
-      { id: 'file', label: 'File', items: fileMenuItems },
-      { id: 'view', label: 'View', items: viewMenuItems },
-    ],
-    [fileMenuItems, viewMenuItems],
-  );
-
   // ---- Content ----
   const activeChar = characters.find((c) => c.id === activeCharacterId) ?? null;
 
@@ -511,6 +495,36 @@ export function CharacterEditor() {
       </EditorDockPanel>
     );
 
+  const characterAssistantContract = useCharacterAssistantContract({
+    characters,
+    relationships,
+    activeCharacterId,
+    projectId,
+    selection: charSelection,
+    isDirty,
+    createCharacter: handleCreateCharacter,
+    updateCharacter: handleUpdateCharacter,
+    createRelationship: handleCreateRelationship,
+    generateImage: handleGenerateImage,
+    setActiveCharacter,
+    onAIHighlight: (entities) => onAIHighlight({ entities }),
+    clearAIHighlights: clearHighlights,
+  });
+
+  const assistantTransportHeaders = useMemo<Record<string, string> | undefined>(() => {
+    if (!langGraphEnabled) return undefined;
+
+    const headers: Record<string, string> = {
+      'x-forge-ai-domain': 'character',
+      'x-forge-ai-editor-id': editorId,
+      'x-forge-ai-viewport-id': viewportId,
+    };
+    if (projectId != null) {
+      headers['x-forge-ai-project-id'] = String(projectId);
+    }
+    return headers;
+  }, [editorId, langGraphEnabled, projectId, viewportId]);
+
   return (
     <NodeDragProvider>
       <EditorShell
@@ -579,6 +593,9 @@ export function CharacterEditor() {
               <EditorDockLayout.Panel id={CHAT_PANEL_ID} title="Chat" icon={<MessageCircle size={14} />}>
                 <div className="h-full min-h-0">
                   <DialogueAssistantPanel
+                    contract={toolsEnabled ? characterAssistantContract : undefined}
+                    toolsEnabled={toolsEnabled}
+                    transportHeaders={assistantTransportHeaders}
                     composerTrailing={<ModelSwitcher provider="assistantUi" variant="composer" />}
                   />
                 </div>

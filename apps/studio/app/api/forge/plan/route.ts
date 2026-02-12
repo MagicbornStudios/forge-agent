@@ -5,6 +5,7 @@ import { getOpenRouterConfig } from '@/lib/openrouter-config';
 import { DEFAULT_TASK_MODEL } from '@/lib/model-router/defaults';
 import { recordAiUsageEvent } from '@/lib/server/ai-usage';
 import { requireAiRequestAuth } from '@/lib/server/api-keys';
+import { runForgePlanWorkflow } from '@forge/assistant-runtime';
 
 /**
  * @swagger
@@ -31,10 +32,7 @@ import { requireAiRequestAuth } from '@/lib/server/api-keys';
 export async function POST(request: NextRequest) {
   const openRouterConfig = getOpenRouterConfig();
   if (!openRouterConfig.apiKey) {
-    return NextResponse.json(
-      { error: 'OpenRouter API key not configured' },
-      { status: 503 }
-    );
+    return NextResponse.json({ error: 'OpenRouter API key not configured' }, { status: 503 });
   }
 
   const payloadClient = await getPayload({ config: payloadConfig });
@@ -55,138 +53,33 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'goal is required' }, { status: 400 });
   }
 
-  const graphSummary = body.graphSummary ?? {};
-  const modelId = DEFAULT_TASK_MODEL;
-
-  const systemPrompt =
-    'You are a planning assistant for a dialogue graph editor. Given a goal and optional graph summary, output a JSON array of operations to perform. ' +
-    'Each operation must be one of: createNode (nodeType, label, content?, speaker?, x?, y?), updateNode (nodeId, updates: {label?, content?, speaker?}), deleteNode (nodeId), createEdge (sourceNodeId, targetNodeId). ' +
-    'Use existing node ids from the graph summary when connecting edges. For createNode use position x,y if provided else 0,0. Return only valid operations in order.';
-
-  const userContent =
-    `Goal: ${goal}\n\n` +
-    `Current graph summary: ${JSON.stringify(graphSummary)}\n\n` +
-    'Output a JSON object with a single key "steps" whose value is an array of operation objects. Each object must have "type" and the required args for that type.';
-
-  const jsonSchema = {
-    name: 'forge_plan',
-    strict: true,
-    schema: {
-      type: 'object',
-      properties: {
-        steps: {
-          type: 'array',
-          description: 'Ordered list of graph operations',
-          items: {
-            type: 'object',
-            properties: {
-              type: { type: 'string', enum: ['createNode', 'updateNode', 'deleteNode', 'createEdge'] },
-              nodeType: { type: 'string' },
-              label: { type: 'string' },
-              content: { type: 'string' },
-              speaker: { type: 'string' },
-              x: { type: 'number' },
-              y: { type: 'number' },
-              nodeId: { type: 'string' },
-              updates: { type: 'object' },
-              sourceNodeId: { type: 'string' },
-              targetNodeId: { type: 'string' },
-              source: { type: 'string' },
-              target: { type: 'string' },
-            },
-            required: ['type'],
-            additionalProperties: true,
-          },
-        },
-      },
-      required: ['steps'],
-      additionalProperties: false,
-    },
-  };
-
-  const payload = {
-    model: modelId,
-    messages: [
-      { role: 'system' as const, content: systemPrompt },
-      { role: 'user' as const, content: userContent },
-    ],
-    stream: false,
-    response_format: {
-      type: 'json_schema' as const,
-      json_schema: jsonSchema,
-    },
-  };
-
   try {
-    const res = await fetch(`${openRouterConfig.baseUrl}/chat/completions`, {
-      method: 'POST',
+    const result = await runForgePlanWorkflow({
+      goal,
+      graphSummary: body.graphSummary ?? {},
+      openRouterApiKey: openRouterConfig.apiKey,
+      openRouterBaseUrl: openRouterConfig.baseUrl,
+      modelId: DEFAULT_TASK_MODEL,
       headers: {
-        Authorization: `Bearer ${openRouterConfig.apiKey}`,
-        'Content-Type': 'application/json',
         'HTTP-Referer': 'https://forge-agent-poc.local',
         'X-Title': 'Forge Agent PoC',
       },
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(openRouterConfig.timeoutMs),
     });
 
-    if (!res.ok) {
-      const text = await res.text();
-      console.error('[forge/plan] OpenRouter error', res.status, text);
-      await recordAiUsageEvent({
-        request,
-        authContext,
-        provider: 'openrouter',
-        model: modelId,
-        routeKey: '/api/forge/plan',
-        status: 'error',
-        errorMessage: `HTTP ${res.status}`,
-      });
-      return NextResponse.json(
-        { error: 'Plan generation failed', details: text.slice(0, 200) },
-        { status: 502 }
-      );
-    }
-
-    const data = (await res.json()) as {
-      id?: string;
-      usage?: {
-        prompt_tokens?: number;
-        completion_tokens?: number;
-        total_tokens?: number;
-      };
-      choices?: Array<{ message?: { content?: string } }>;
-    };
-    const content = data.choices?.[0]?.message?.content;
-    if (content == null) {
-      return NextResponse.json({ error: 'Empty response' }, { status: 502 });
-    }
-
-    let parsed: { steps?: unknown[] };
-    try {
-      parsed = JSON.parse(content);
-    } catch {
-      return NextResponse.json(
-        { error: 'Invalid JSON in plan response', raw: content.slice(0, 500) },
-        { status: 502 }
-      );
-    }
-
-    const steps = Array.isArray(parsed.steps) ? parsed.steps : [];
-    const normalized = steps.map((s) => normalizeStep(s));
     await recordAiUsageEvent({
       request,
       authContext,
-      requestId: data.id,
       provider: 'openrouter',
-      model: modelId,
+      model: DEFAULT_TASK_MODEL,
       routeKey: '/api/forge/plan',
-      usage: data.usage,
       status: 'success',
     });
-    return NextResponse.json({ steps: normalized });
-  } catch (err) {
-    console.error('[forge/plan]', err);
+
+    return NextResponse.json({
+      steps: result.steps,
+      summary: result.summary,
+    });
+  } catch (error) {
     await recordAiUsageEvent({
       request,
       authContext,
@@ -194,39 +87,12 @@ export async function POST(request: NextRequest) {
       model: DEFAULT_TASK_MODEL,
       routeKey: '/api/forge/plan',
       status: 'error',
-      errorMessage: err instanceof Error ? err.message : 'Plan generation failed',
+      errorMessage: error instanceof Error ? error.message : 'Plan generation failed',
     });
+
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Plan generation failed' },
-      { status: 500 }
+      { error: error instanceof Error ? error.message : 'Plan generation failed' },
+      { status: 500 },
     );
   }
-}
-
-function normalizeStep(raw: unknown): Record<string, unknown> {
-  if (!raw || typeof raw !== 'object') return { type: 'createNode', label: 'Node', nodeType: 'CHARACTER', x: 0, y: 0 };
-  const s = raw as Record<string, unknown>;
-  const type = String(s.type ?? 'createNode');
-  if (type === 'createEdge') {
-    return {
-      type: 'createEdge',
-      source: s.source ?? s.sourceNodeId,
-      target: s.target ?? s.targetNodeId,
-    };
-  }
-  if (type === 'updateNode') {
-    return { type: 'updateNode', nodeId: s.nodeId, updates: s.updates ?? {} };
-  }
-  if (type === 'deleteNode') {
-    return { type: 'deleteNode', nodeId: s.nodeId };
-  }
-  return {
-    type: 'createNode',
-    nodeType: s.nodeType ?? 'CHARACTER',
-    label: s.label ?? 'Node',
-    content: s.content,
-    speaker: s.speaker,
-    x: typeof s.x === 'number' ? s.x : 0,
-    y: typeof s.y === 'number' ? s.y : 0,
-  };
 }

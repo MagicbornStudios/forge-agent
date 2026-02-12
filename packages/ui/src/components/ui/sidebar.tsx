@@ -153,6 +153,24 @@ const Sidebar = React.forwardRef<
     ref
   ) => {
     const { isMobile, openMobile, setOpenMobile, state } = useSidebar();
+
+    if (collapsible === "none") {
+      return (
+        <div
+          ref={ref}
+          data-slot="sidebar"
+          data-side={side}
+          className={cn(
+            "bg-sidebar text-sidebar-foreground flex h-full w-[var(--sidebar-width)] flex-col flex-shrink-0",
+            className
+          )}
+          {...props}
+        >
+          {children}
+        </div>
+      );
+    }
+
     if (isMobile) {
       return (
         <Sheet open={openMobile} onOpenChange={setOpenMobile}>

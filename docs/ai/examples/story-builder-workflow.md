@@ -1,3 +1,9 @@
+---
+title: Complete Story Builder Workflow
+created: 2026-02-11
+updated: 2026-02-11
+---
+
 # Complete Story Builder Workflow
 
 **Goal:** User says "Create a story about a space pirate" → Get characters + dialogue graph with connected nodes.
@@ -450,7 +456,7 @@ export function addPlayerChoices(
 
 Once story is created, export to `.yarn` format:
 
-```yarn
+```text
 title: The Discovery
 tags: scene1
 ---

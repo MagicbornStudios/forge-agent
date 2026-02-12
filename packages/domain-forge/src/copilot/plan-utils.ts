@@ -23,7 +23,13 @@ export function planStepToOp(step: ForgePlanStep): ForgeGraphPatchOp | null {
     return { type: 'deleteNode', nodeId: String(step.nodeId) };
   }
   if (type === 'createNode') {
-    const nodeId = `node_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+    const providedId =
+      typeof step.id === 'string' && step.id.trim().length > 0
+        ? step.id.trim()
+        : null;
+    const nodeId =
+      providedId ??
+      `node_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
     return {
       type: 'createNode',
       nodeType: (step.nodeType as ForgeNodeType) ?? 'CHARACTER',

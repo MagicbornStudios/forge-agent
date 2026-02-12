@@ -90,10 +90,23 @@ export function isLocalDevAutoAdminEnabled(hostname?: string): boolean {
   return LOCAL_HOSTS.has(host);
 }
 
+export function isLangGraphEnabledServer(): boolean {
+  const value = process.env.AI_LANGGRAPH_ENABLED?.trim();
+  if (value != null && value !== '') {
+    return value === '1' || value.toLowerCase() === 'true';
+  }
+
+  const publicValue = process.env.NEXT_PUBLIC_AI_LANGGRAPH_ENABLED?.trim();
+  if (publicValue != null && publicValue !== '') {
+    return publicValue === '1' || publicValue.toLowerCase() === 'true';
+  }
+
+  return false;
+}
+
 export function getLocalDevAutoAdminCredentials() {
   return {
     email: process.env.NEXT_PUBLIC_LOCAL_DEV_AUTO_ADMIN_EMAIL ?? 'admin@forge.local',
     password: process.env.NEXT_PUBLIC_LOCAL_DEV_AUTO_ADMIN_PASSWORD ?? 'admin12345',
   };
 }
-

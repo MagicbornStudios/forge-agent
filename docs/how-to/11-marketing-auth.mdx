@@ -34,7 +34,7 @@ How authentication works between the customer platform (`apps/platform`) and Stu
 - Use:
   - `pnpm env:setup -- --app platform`
   - `pnpm env:doctor -- --app platform --mode local`
-- `pnpm dev:platform` automatically runs `pnpm env:ensure:local -- --app platform` before boot.
+- `pnpm dev:platform` automatically runs `pnpm env:bootstrap -- --app platform` before boot (portal opens when keys missing).
 
 ## Cross-origin notes
 

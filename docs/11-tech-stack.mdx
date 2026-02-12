@@ -16,7 +16,7 @@ Reference for agents and humans. Update when adding or removing major choices.
 |------|--------|----------------|
 | Framework | Next.js (App Router) | SSR + API routes in one runtime for both apps. |
 | Runtime target | Next `15.5.9` + React 19 | Shared monorepo runtime and dependency parity. |
-| Server CMS/DB | Payload + SQLite | Type-safe schema, local-first, REST/GraphQL available server-side only. |
+| Server CMS/DB | Payload + SQLite (local) / Postgres (cloud) | Type-safe schema; SQLite default for local; Postgres (e.g. Supabase) when `DATABASE_URI` is set for preview/production. |
 | API boundary | Studio API as source of truth | Platform/browser calls Studio endpoints only; no direct Payload browser access. |
 | Client server-state | TanStack Query | Caching, deduping, loading/error, invalidation; one server-state model. |
 | Client UI/draft state | Zustand | Draft/editor state and local UI state (app shell, org selector, filters). |

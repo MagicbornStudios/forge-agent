@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { buildConfig } from 'payload';
+import { postgresAdapter } from '@payloadcms/db-postgres';
 import { sqliteAdapter } from '@payloadcms/db-sqlite';
 import { lexicalEditor } from '@payloadcms/richtext-lexical';
 
@@ -22,6 +23,23 @@ if (!Array.isArray(collections)) {
   throw new Error('Unable to load Payload collections for type generation.');
 }
 
+const configuredDatabaseUri = process.env.DATABASE_URI?.trim() ?? '';
+const usesPostgres = /^postgres(ql)?:\/\//i.test(configuredDatabaseUri);
+const migrationsDir = path.resolve(repoRoot, 'apps/studio/migrations');
+
+const dbAdapter = usesPostgres
+  ? postgresAdapter({
+      migrationDir: migrationsDir,
+      pool: {
+        connectionString: configuredDatabaseUri,
+      },
+    })
+  : sqliteAdapter({
+      client: {
+        url: configuredDatabaseUri || 'file:./data/payload.db',
+      },
+    });
+
 const config = await buildConfig({
   admin: {
     user: 'users',
@@ -33,11 +51,7 @@ const config = await buildConfig({
   typescript: {
     outputFile: path.resolve(repoRoot, 'packages/types/src/payload-types.ts'),
   },
-  db: sqliteAdapter({
-    client: {
-      url: process.env.DATABASE_URI || 'file:./data/payload.db',
-    },
-  }),
+  db: dbAdapter,
 });
 
 if (!config.typescript) {

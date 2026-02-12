@@ -89,3 +89,4 @@ When touching editors (Dialogue, Character, Video, Strategy): use the shared she
 ## Code quality (constants and DRY)
 
 - **Constants:** Editor ids, API paths, and query keys must use constants, not magic strings. See [docs/agent-artifacts/core/standard-practices.md](docs/agent-artifacts/core/standard-practices.md) § Constants, enums, and DRY.
+- **Env keys:** When adding a new env variable, (1) add the entry to `scripts/env/manifest.mjs`, (2) run `pnpm env:sync:examples`. The portal and `.env.example` are derived from the manifest; do not hand-edit them.

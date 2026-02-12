@@ -1,5 +1,7 @@
 ---
 title: Plan — Assistant UI / CopilotKit Replacement (archived)
+created: 2026-02-11
+updated: 2026-02-11
 ---
 
 You want to replace CopilotKit with a custom agent system built on Assistant UI and OpenRouter because:

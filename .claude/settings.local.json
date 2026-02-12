@@ -38,7 +38,9 @@
       "Bash(tree:*)",
       "Bash(find:*)",
       "Bash(exit:*)",
-      "Bash(printf:*)"
+      "Bash(printf:*)",
+      "Bash(python3:*)",
+      "Bash(xargs -0 -I {} sh -c 'head -25 \"\"$1\"\" | head -1 | grep -q \"\"^---\"\" || echo \"\"NO_FM: $1\"\"' _ {})"
     ]
   }
 }

@@ -19,6 +19,11 @@ export { useStructuredOutput } from './use-structured-output';
 export type { StructuredOutputParams } from './use-structured-output';
 export { useCreateForgePlan } from './use-create-forge-plan';
 export type { CreateForgePlanParams, CreateForgePlanResult, ForgePlanStep } from './use-create-forge-plan';
+export { useForgeStoryBuilder } from './use-forge-story-builder';
+export type {
+  ForgeStoryBuilderRequest,
+  ForgeStoryBuilderResponse,
+} from './use-forge-story-builder';
 export { useGenerateVideo } from './use-generate-video';
 export type { GenerateVideoParams, GenerateVideoResult } from './use-generate-video';
 export { usePages } from './use-pages';

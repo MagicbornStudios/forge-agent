@@ -14,6 +14,8 @@ const customJestConfig = {
     '^@forge/shared$': '<rootDir>/../../packages/shared/src/index.ts',
     '^@forge/domain-forge/(.*)$': '<rootDir>/../../packages/domain-forge/src/$1',
     '^@forge/domain-forge$': '<rootDir>/../../packages/domain-forge/src/index.ts',
+    '^@forge/assistant-runtime/(.*)$': '<rootDir>/../../packages/assistant-runtime/src/$1',
+    '^@forge/assistant-runtime$': '<rootDir>/../../packages/assistant-runtime/src/index.ts',
     '^@forge/ui/(.*)$': '<rootDir>/../../packages/ui/src/$1',
     '^@forge/ui$': '<rootDir>/../../packages/ui/src/index.ts',
     '^@forge/types/(.*)$': '<rootDir>/../../packages/types/src/$1',

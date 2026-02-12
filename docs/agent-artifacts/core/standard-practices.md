@@ -18,9 +18,10 @@ Single checklist for agents and humans. Where things live and when to revisit.
 - **Now:** Env source of truth is `scripts/env/manifest.mjs`. `.env.example` files are generated, not hand-maintained:
   - `pnpm env:sync:examples`
   - `pnpm env:sync:examples:check`
-- **Now:** Use `pnpm env:setup -- --app studio|platform|all` to create/update `.env.local`.
+- **Now:** Local setup uses the **env portal**: `pnpm dev` runs `env:bootstrap`; when keys are missing, the portal opens automatically. Run `pnpm env:portal` for ad-hoc edits, or `pnpm env:setup -- --app studio|platform|all` for CLI setup.
+- **Now:** **When adding a new env key** (agents): (1) add the entry to `scripts/env/manifest.mjs`, (2) run `pnpm env:sync:examples`. The portal reads the manifest; do not hand-edit `.env` or `.env.example`.
 - **Now:** Run `pnpm env:doctor -- --app ... --mode local|preview|production [--vercel]` for required-key and drift checks.
-- **Now:** `dev:studio` and `dev:platform` run `env:ensure:local` before app startup; use `FORGE_SKIP_ENV_BOOTSTRAP=1` only for explicit CI/advanced workflows.
+- **Now:** `dev:studio` and `dev:platform` run `env:bootstrap` before app startup (launches portal when keys missing); use `FORGE_SKIP_ENV_BOOTSTRAP=1` or `CI=1` for check-only (no portal).
 - **Now:** Keep runtime env validation in centralized env readers (`apps/studio/lib/env.ts`, `apps/platform/src/lib/env.ts`) rather than scattered route-level `process.env` checks.
 - **Revisit:** Add stricter CI gates for preview/production key presence once deployment automation is finalized.
 

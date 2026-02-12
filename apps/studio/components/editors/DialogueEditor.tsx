@@ -29,10 +29,11 @@ import { DialogueAssistantPanel } from '@/components/editors/dialogue/DialogueAs
 import { ModelSwitcher } from '@/components/model-switcher';
 import { useEditorPanelVisibility } from '@/lib/app-shell/useEditorPanelVisibility';
 import { useSettingsStore } from '@/lib/settings/store';
+import { isLangGraphEnabledClient } from '@/lib/feature-flags';
 import { useAIHighlight } from '@forge/shared/assistant';
 import { useForgeAssistantContract } from '@forge/domain-forge/assistant';
 import { planStepToOp } from '@forge/domain-forge/copilot/plan-utils';
-import { useCreateForgePlan } from '@/lib/data/hooks';
+import { useCreateForgePlan, useForgeStoryBuilder } from '@/lib/data/hooks';
 import {
   EditorShell,
   EditorToolbar,
@@ -370,6 +371,8 @@ export function DialogueEditor() {
   const createForgeGraphMutation = useCreateForgeGraph();
   const updateForgeGraphMutation = useUpdateForgeGraph();
   const createForgePlanMutation = useCreateForgePlan();
+  const createForgeStoryBuilderMutation = useForgeStoryBuilder();
+  const langGraphEnabled = isLangGraphEnabledClient();
 
   const narrativeGraphs = narrativeGraphsQuery.data ?? [];
   const storyletGraphs = storyletGraphsQuery.data ?? [];
@@ -719,6 +722,18 @@ export function DialogueEditor() {
     return createForgePlanMutation.mutateAsync({ goal, graphSummary });
   }, [createForgePlanMutation]);
 
+  const createStoryBuilderApi = useCallback(
+    async (premise: string, options?: { characterCount?: number; sceneCount?: number }) =>
+      createForgeStoryBuilderMutation.mutateAsync({
+        premise,
+        ...(typeof options?.characterCount === 'number'
+          ? { characterCount: options.characterCount }
+          : {}),
+        ...(typeof options?.sceneCount === 'number' ? { sceneCount: options.sceneCount } : {}),
+      }),
+    [createForgeStoryBuilderMutation]
+  );
+
   const executePlan = useCallback(
     (steps: unknown[]) => {
       const ops = (Array.isArray(steps) ? steps : [])
@@ -758,6 +773,7 @@ export function DialogueEditor() {
     onAIHighlight,
     clearAIHighlights: clearHighlights,
     createPlanApi,
+    createStoryBuilderApi,
     setPendingFromPlan: setPendingFromPlanActive,
     openOverlay,
     revealSelection,
@@ -1200,6 +1216,20 @@ export function DialogueEditor() {
       </EditorDockPanel>
     );
 
+  const assistantTransportHeaders = useMemo<Record<string, string> | undefined>(() => {
+    if (!langGraphEnabled) return undefined;
+
+    const headers: Record<string, string> = {
+      'x-forge-ai-domain': 'forge',
+      'x-forge-ai-editor-id': editorId,
+      'x-forge-ai-viewport-id': activeScope,
+    };
+    if (projectId != null) {
+      headers['x-forge-ai-project-id'] = String(projectId);
+    }
+    return headers;
+  }, [activeScope, editorId, langGraphEnabled, projectId]);
+
   const chatContent =
     showChatPanel === false ? undefined : (
       <div className="h-full min-h-0">
@@ -1207,6 +1237,7 @@ export function DialogueEditor() {
           contract={toolsEnabled ? forgeAssistantContract : undefined}
           toolsEnabled={toolsEnabled}
           executePlan={toolsEnabled ? executePlan : undefined}
+          transportHeaders={assistantTransportHeaders}
           composerTrailing={<ModelSwitcher provider="assistantUi" variant="composer" />}
         />
       </div>

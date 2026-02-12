@@ -1,85 +1,170 @@
 ---
 created: 2026-02-04
-updated: 2026-02-04
+updated: 2026-02-11
 ---
 
 # Forge Agent
 
-An AI-first studio for editing dialogue graphs: CopilotKit, React Flow, and a unified workspace shell. Build your own workspace, ship it, and contribute it back—we’re set up for that.
+An AI-first studio for interactive narrative: Dialogue and Character editors, clean editor primitives, and Assistant UI + LangGraph. Build your own workspace, ship it, and contribute it back—we're set up for that.
 
-## I just cloned this repo
+---
+
+## Quick start
 
 **Prerequisites:** Node 20+, pnpm 9+
 
-1. **Install**
-   ```bash
-   pnpm install
-   ```
-2. **Environment** — Create `.env.local` at repo root with API keys and secrets. See [SETUP.md](SETUP.md) for the list (e.g. `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, `PAYLOAD_SECRET`).
-3. **Payload types** (run after any collection change):
-   ```bash
-   pnpm payload:types
-   ```
-4. **Run the app**
-   ```bash
-   pnpm dev
-   ```
-5. Open **http://localhost:3000**. You’ll see the Studio app (Forge / Video tabs) and can open **[/docs](http://localhost:3000/docs)** in the app for the full how-to series.
+```bash
+pnpm install
+pnpm dev
+```
+
+If env keys are missing, the **env portal** opens in your browser. Fill required values (e.g. `PAYLOAD_SECRET`, `OPENROUTER_API_KEY`), click Save, then rerun `pnpm dev`. Open **http://localhost:3000** for Studio with Dialogue and Character tabs. Local auto-login uses seeded admin (`admin@forge.local` / `admin12345`) when `NEXT_PUBLIC_LOCAL_DEV_AUTO_ADMIN=1`.
+
+**Manual setup:** `pnpm env:portal` or `pnpm env:setup`. See [SETUP.md](SETUP.md).
+
+---
+
+## What to expect
+
+- **Studio UI:** Project switcher, Dialogue/Character editors, right-rail Inspector + Chat
+- **In-app docs:** [http://localhost:3000/docs](http://localhost:3000/docs) — how-tos, architecture, AI
+- **Payload types:** Run `pnpm payload:types` after collection changes
+
+---
+
+## AI and LangGraph (in progress)
+
+We are migrating from a single-stream chat path to **LangGraph** orchestration. Both paths coexist; feature flags control rollout.
+
+| Flag | Purpose |
+|------|---------|
+| `AI_LANGGRAPH_ENABLED` | Server: enable LangGraph path in `/api/assistant-chat` |
+| `NEXT_PUBLIC_AI_LANGGRAPH_ENABLED` | Client: transport metadata for LangGraph |
+
+See [AI migration index](docs/ai/migration/00-index.mdx).
+
+---
+
+## Studio and editor platform
+
+**Studio** (`apps/studio`) is the single app root: registries (editor, menu, panel, settings), declarative layout. **Editor primitives** (`packages/shared`) provide `EditorShell`, `EditorDockLayout`, `EditorDockPanel`, and design tokens.
+
+**Opinionated design:**
+- UI-first slots: `EditorDockLayout.Left` / `.Main` / `.Right` — no imperative APIs
+- Domain-scoped context: `data-domain` for theming
+- Compact density tokens: `--control-*`, `--panel-padding`, `--tab-height`
+
+**Key components:**
+- [EditorShell, EditorDockLayout](packages/shared/src/shared/components/editor/README.md)
+- [Editor platform architecture](docs/architecture/05-editor-platform.mdx)
+- [Design language](docs/design/03-design-language.mdx)
+
+---
+
+## Open source roadmap
+
+Foundational editor components (`@forge/shared`, `@forge/ui`) will be open sourced. Repo structure and API contracts are designed for consumption.
+
+- [Component library and registry](docs/architecture/04-component-library-and-registry.mdx)
+- [Verdaccio and local registry](docs/how-to/25-verdaccio-local-registry.mdx)
+
+---
+
+## Ralph Wiggum loop
+
+We use **agent artifacts** so "what is true now" and "what not to repeat" are explicit. Agents (and contributors) follow: **STATUS + AGENTS → pick one slice → implement → update STATUS (Done list) and affected docs.**
+
+**Loop in one sentence:** Read [STATUS](docs/agent-artifacts/core/STATUS.md) and [AGENTS.md](AGENTS.md) → implement one slice → update STATUS Ralph Wiggum Done and docs.
+
+### Snippet: STATUS Done entry
+
+```markdown
+- Done (2026-02-12): LangGraph chat infrastructure Phase 1 slice: added @forge/assistant-runtime...
+- Done (2026-02-12): Panel hide reclaims space (Option B): when panel content becomes null (View > Layout > Hide Library), DockLayout effect uses Dockview API (panel.api.close()) to remove the panel from the layout...
+```
+
+### Snippet: errors-and-attempts (do not repeat)
+
+```markdown
+## Universal padding/margin reset — CRITICAL: never add to `*`
+
+**Problem**: `* { padding: 0 }` strips default padding from buttons, labels, inputs. Caused days of debugging.
+
+**Fix**: Do NOT add box-model resets to `*`. Use explicit tokens.
+```
+
+### Snippet: decisions ADR
+
+```markdown
+## Client boundary: Payload REST for CRUD, custom routes for app ops
+
+**Decision:** For collection CRUD, client uses Payload SDK. For app ops (auth, settings, AI), client uses our custom Next API routes.
+
+**Rationale:** Payload REST for full CRUD; custom routes for auth, settings, non-CRUD logic.
+```
+
+**Full artifacts:** [Agent artifacts index](docs/18-agent-artifacts-index.mdx) | [Coding agent strategy](docs/19-coding-agent-strategy.mdx)
+
+---
+
+## Documentation
+
+| Section | Links |
+|---------|-------|
+| **Start here** | [docs/00-docs-index.mdx](docs/00-docs-index.mdx) |
+| **How-to guides** | [how-to/00-index.mdx](docs/how-to/00-index.mdx) |
+| **Architecture** | [architecture/README.md](docs/architecture/README.md) |
+| **AI architecture** | [ai/00-index.mdx](docs/ai/00-index.mdx) |
+| **Agent artifacts** | [18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx) |
+| **In-app** | [Docs](/docs) in Studio sidebar or http://localhost:3000/docs |
+
+---
 
 ## Key commands
 
 | Command | When to run |
 |--------|-------------|
-| `pnpm dev` | Start Studio (default from repo root). |
+| `pnpm dev` | Start Studio (default from repo root). Portal opens if keys missing. |
 | `pnpm build` | Build Studio (e.g. before deploy or to verify). |
 | `pnpm test` | Run tests (Studio). |
-| `pnpm payload:types` | After changing Payload collections; regenerates `packages/types/src/payload-types.ts`. |
+| `pnpm payload:types` | After changing Payload collections. |
+| `pnpm env:portal` | Web UI for env setup and Vercel sync. |
+| `pnpm env:setup` | CLI env setup (manifest-driven). |
+| `pnpm env:doctor` | Check env drift. |
+
+---
+
+## Repo structure
+
+| Path | Purpose |
+|------|---------|
+| `apps/studio/` | Next.js app: App Shell, editors, Payload, Assistant UI. |
+| `packages/shared/` | Editor primitives: EditorShell, DockLayout, design tokens. |
+| `packages/domain-forge/` | Forge domain logic, assistant contract, tools. |
+| `packages/assistant-runtime/` | LangGraph orchestrator, context assemblers, workflows, MCP adapters. |
+| `packages/ui/` | Shared shadcn UI atoms. |
+| `packages/types/` | Payload-generated types. |
+| `packages/agent-engine/` | Workflow engine (steps + events). |
+| `packages/dev-kit/` | Meta-package re-exports for consumers. |
+
+---
+
+## Contributing
+
+We expect every new contributor to **build their own workspace** and **submit a PR** to add it under `packages/shared/contributor_workspaces/`.
+
+1. Follow [05 - Building an editor](docs/how-to/05-building-a-workspace.mdx)
+2. Implement your workspace (shell, slots, domain contract, optional AI actions)
+3. Open a PR with a subfolder under `contributor_workspaces/`
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [contributor_workspaces/README.md](packages/shared/contributor_workspaces/README.md).
+
+---
 
 ## Consumer example
-
-Use the minimal consumer app in `examples/consumer` to verify `@forge/dev-kit` integration in a fresh Next.js app.
 
 ```bash
 pnpm --filter @forge/consumer-example dev
 ```
 
 See `examples/consumer/README.md` for environment setup.
-
-## Documentation
-
-- **Start here:** [docs/00-docs-index.mdx](docs/00-docs-index.mdx) — pick **human/contributor** or **coding agent** and follow the links.
-- **Setup details:** [SETUP.md](SETUP.md).
-- **How-tos (in order):** In-app [/docs](http://localhost:3000/docs) or [docs/how-to/00-index.mdx](docs/how-to/00-index.mdx) — 01 Foundation → 02 Workspace shell → 03 Styling → 04 Data and state → 05 Building a workspace → 06 ForgeWorkspace walkthrough → 07 Copilot → 08 Adding AI → 09 Twick workspace.
-- **Architecture:** [docs/architecture/](docs/architecture/) — [01-unified-workspace](docs/architecture/01-unified-workspace.mdx), [02-workspace-editor-architecture](docs/architecture/02-workspace-editor-architecture.mdx), [03-copilotkit-and-agents](docs/architecture/03-copilotkit-and-agents.mdx).
-- **Publishing the component library:** See [How-to 25 - Verdaccio and local registry](docs/how-to/25-verdaccio-local-registry.mdx) to run Verdaccio and publish/consume; see [Architecture: Component library and registry](docs/architecture/04-component-library-and-registry.mdx) for full detail.
-- **For coding agents:**
-  - **Index and rules:** [docs/18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx) and root [AGENTS.md](AGENTS.md).
-  - **Strategy (required):** [docs/19-coding-agent-strategy.mdx](docs/19-coding-agent-strategy.mdx) — loop, before/after slice, what to update, doc placement.
-  - **Capabilities and DoD:** [SKILLS.md](SKILLS.md); [CONTRIBUTING.md](CONTRIBUTING.md) and [.github/pull_request_template.md](.github/pull_request_template.md) for same Definition of Done.
-- **Contributing workflow:** [CONTRIBUTING.md](CONTRIBUTING.md) (branch/PR, tests, doc updates). [SKILLS.md](SKILLS.md) — capabilities and expectations (stack, do not assume, doc gates).
-
-## Contributing: build a workspace, then PR it
-
-We expect every new contributor to **build their own workspace** and **submit a PR** to add it under **`packages/shared/contributor_workspaces/`** so we can showcase community workspaces.
-
-1. Follow **[05 - Building a workspace](docs/how-to/05-building-a-workspace.mdx)** (and optionally [06 - ForgeWorkspace walkthrough](docs/how-to/06-forge-workspace-walkthrough.mdx) or [09 - Twick video workspace](docs/how-to/09-twick-workspace.mdx)).
-2. Implement your workspace (shell, slots, domain contract, optional AI actions).
-3. Open a PR that adds a subfolder under `packages/shared/contributor_workspaces/` (e.g. `my-awesome-workspace/`) with your code and a short README describing what it does and how to run it.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for workflow and [packages/shared/contributor_workspaces/README.md](packages/shared/contributor_workspaces/README.md) for contributor workspace rules.
-
-## Repo structure
-
-- **`apps/studio/`** — Next.js app: App Shell, workspaces, CopilotKit, Payload config.
-- **`packages/shared/`** — Shared workspace UI kit and headless contracts.
-- **`packages/dev-kit/`** — Meta-package that re-exports `@forge/ui`, `@forge/shared`, and `@forge/agent-engine` for consumers.
-- **`packages/domain-forge/`** — Forge domain logic (types, store, operations, copilot wiring).
-- **`packages/ui/`** — Shared shadcn UI atoms.
-- **`packages/types/`** — Payload-generated types and domain aliases.
-- **`packages/agent-engine/`** — Workflow engine (steps + events) for plan → patch → review over SSE.
-
-## Notes
-
-- Forge is the primary workspace. **Video editor** is locked until after MVP ([ISSUES.md](ISSUES.md)).
-- Payload types are the source of truth for persisted shapes; domains import from `@forge/types`.
-- Patch operations are the common currency for AI proposals and draft updates.

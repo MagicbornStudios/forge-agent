@@ -1,5 +1,7 @@
 ---
 title: Session 001 — Magicborn Story (Virtual)
+created: 2026-02-11
+updated: 2026-02-11
 ---
 
 # Session 001 — Magicborn Story (Virtual)

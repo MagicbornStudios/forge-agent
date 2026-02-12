@@ -88,7 +88,10 @@ export const SECTION_META = {
  * requiredIn?: Array<'local'|'preview'|'production'>,
  * secret?: boolean,
  * localOnly?: boolean,
- * dependsOn?: { key: string, equals?: string, notEquals?: string, truthy?: boolean }
+ * dependsOn?: { key: string, equals?: string, notEquals?: string, truthy?: boolean },
+ * launchGroup?: string,
+ * vercelTargets?: Array<'production'|'preview'>,
+ * sharedValueHint?: string
  * }} EnvEntry
  */
 
@@ -205,6 +208,20 @@ export const ENV_MANIFEST = [
     section: 'ai',
     description: 'Optional OpenRouter timeout in milliseconds.',
     exampleDefault: '60000',
+  },
+  {
+    app: 'studio',
+    key: 'AI_LANGGRAPH_ENABLED',
+    section: 'ai',
+    description: 'Enable LangGraph orchestration path in /api/assistant-chat (1 enabled).',
+    exampleDefault: '0',
+  },
+  {
+    app: 'studio',
+    key: 'NEXT_PUBLIC_AI_LANGGRAPH_ENABLED',
+    section: 'ai',
+    description: 'Client mirror flag for LangGraph transport metadata wiring (1 enabled).',
+    exampleDefault: '0',
   },
   {
     app: 'studio',
@@ -444,4 +461,3 @@ export const ENV_MANIFEST = [
     exampleDefault: 'https://github.com',
   },
 ];
-
