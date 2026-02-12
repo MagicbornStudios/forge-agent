@@ -1,4 +1,9 @@
 import type { CollectionConfig } from 'payload';
+import {
+  isAdminUser,
+  organizationScopedAccess,
+  requireAuthenticated,
+} from '../access/authorization.ts';
 
 type UserWithPlan = { id: number; plan?: string | null };
 
@@ -25,10 +30,48 @@ function ensurePlatformCapabilities({
 export const Listings: CollectionConfig = {
   slug: 'listings',
   access: {
-    read: () => true,
-    create: ({ req }) => !!req.user,
-    update: ({ req }) => !!req.user,
-    delete: ({ req }) => !!req.user,
+    read: async ({ req }) => {
+      if (!req.user) {
+        return {
+          status: {
+            equals: 'published',
+          },
+        };
+      }
+      if (isAdminUser(req)) return true;
+      const scoped = await organizationScopedAccess(
+        { req },
+        { ownerField: 'creator', organizationField: 'organization' },
+      );
+      if (scoped === false) {
+        return {
+          status: {
+            equals: 'published',
+          },
+        };
+      }
+      return {
+        or: [
+          {
+            status: {
+              equals: 'published',
+            },
+          },
+          scoped,
+        ],
+      };
+    },
+    create: requireAuthenticated,
+    update: ({ req }) =>
+      organizationScopedAccess(
+        { req },
+        { ownerField: 'creator', organizationField: 'organization' },
+      ),
+    delete: ({ req }) =>
+      organizationScopedAccess(
+        { req },
+        { ownerField: 'creator', organizationField: 'organization' },
+      ),
   },
   hooks: {
     beforeChange: [
@@ -158,3 +201,4 @@ export const Listings: CollectionConfig = {
     },
   ],
 };
+

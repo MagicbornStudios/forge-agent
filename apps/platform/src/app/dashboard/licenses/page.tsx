@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,17 +11,10 @@ import {
 import { useLicenses } from '@/lib/data/hooks/use-dashboard-data';
 
 export default function DashboardLicensesPage() {
-  const { user, isLoading, activeOrganizationId } = useAuth();
-  const router = useRouter();
+  const { user, activeOrganizationId } = useAuth();
   const [cloningId, setCloningId] = useState<number | null>(null);
   const [cloneError, setCloneError] = useState<string | null>(null);
   const licensesQuery = useLicenses(activeOrganizationId, !!user);
-
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.replace('/login?returnUrl=/dashboard/licenses');
-    }
-  }, [isLoading, user, router]);
 
   async function handleCloneAgain(licenseId: number) {
     setCloningId(licenseId);
@@ -37,7 +29,7 @@ export default function DashboardLicensesPage() {
     }
   }
 
-  if (isLoading || licensesQuery.isLoading) {
+  if (licensesQuery.isLoading) {
     return (
       <main className="p-6">
         <p className="text-sm text-muted-foreground">Loading licenses...</p>

@@ -1,7 +1,7 @@
 ---
 title: 11 - Platform auth
 created: 2026-02-05
-updated: 2026-02-11
+updated: 2026-02-12
 ---
 
 # 11 - Platform auth
@@ -26,6 +26,15 @@ How authentication works between the customer platform (`apps/platform`) and Stu
 - On mount, it fetches `GET {STUDIO_API_URL}/api/me` with `credentials: 'include'`.
 - `useAuth()` exposes `{ user, isLoading }` for header/account guards.
 - Login page (`apps/platform/src/app/(platform)/login/page.tsx`) redirects immediately after a successful login request and refreshes auth in the background to avoid redirect stalls when `/api/me` is slow.
+
+## Env and startup checks
+
+- Platform resolves Studio API base via `apps/platform/src/lib/env.ts`.
+- `NEXT_PUBLIC_STUDIO_APP_URL` is required outside local development fallback contexts.
+- Use:
+  - `pnpm env:setup -- --app platform`
+  - `pnpm env:doctor -- --app platform --mode local`
+- `pnpm dev:platform` automatically runs `pnpm env:ensure:local -- --app platform` before boot.
 
 ## Cross-origin notes
 

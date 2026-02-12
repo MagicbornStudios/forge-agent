@@ -1,16 +1,1 @@
-{
-  "name": "@forge/domain-forge",
-  "private": true,
-  "version": "0.0.0",
-  "types": "src/index.ts",
-  "main": "src/index.ts",
-  "dependencies": {
-    "@forge/agent-engine": "workspace:*",
-    "@forge/shared": "workspace:*",
-    "@forge/types": "workspace:*"
-  },
-  "peerDependencies": {
-    "react": "^19",
-    "react-dom": "^19"
-  }
-}
+{"name":"@forge/domain-forge","private":true,"version":"0.0.0","types":"src/index.ts","main":"src/index.ts","dependencies":{"@assistant-ui/react":"^0.12.9","@forge/agent-engine":"workspace:*","@forge/shared":"workspace:*","@forge/types":"workspace:*"},"peerDependencies":{"react":"^19","react-dom":"^19"}}

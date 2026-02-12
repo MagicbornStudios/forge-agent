@@ -1,7 +1,7 @@
 ---
 title: Errors and attempts
 created: 2026-02-04
-updated: 2026-02-12
+updated: 2026-02-11
 ---
 
 Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx).
@@ -29,6 +29,180 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 - Be stubborn: correct once, then stop.
 
 **Example**: Radix composeRefs / ScrollArea replacement was identified as a fix; user forbade it and confirmed it was a false positive. Existing entry: "Radix composeRefs hypothesis (FALSE POSITIVE)".
+
+---
+
+## Universal padding/margin reset — CRITICAL: never add to `*`
+
+**Problem**: A universal selector `* { padding: 0; margin: 0 }` (or equivalent in `@layer base` or CSS reset) strips default padding and margin from **all** elements — buttons, labels, inputs, badges. This caused days of debugging: buttons and labels looked cramped everywhere, even with explicit utility classes. Tailwind preflight already normalizes; adding our own `*` reset stacks and breaks UI.
+
+**Fix**:
+- **Do NOT add** `padding: 0` or `margin: 0` to the universal selector `*` in `globals.css` or any base layer.
+- Keep only intended `*` rules (e.g. `border-border`, `outline-ring/50`). Do not add box-model resets to `*`.
+- If components still look cramped, add explicit padding via utilities or design tokens (`--control-padding-x`, `--panel-padding`, etc.), or adjust component styles — never strip globally.
+- Before changing base/globals CSS, read this entry and [styling-and-ui-consistency.md](styling-and-ui-consistency.md) § No universal padding/margin reset.
+
+**Documentation**: See `apps/studio/app/globals.css` comment above `@layer base` and styling-and-ui-consistency rule 26.
+
+---
+
+## Payload type generation: collection imports must be Node-resolvable
+
+**Problem**: `pnpm payload:types` failed when collection files imported helpers through non-resolvable runtime paths (for example extension-less relative imports or `@/` aliases from files loaded directly by Payload's Node process).
+
+**Fix**:
+
+- In collection files loaded by `payload.config`, use runtime-resolvable imports (relative path + `.ts` extension where needed).
+- Avoid `server-only` guards in helper modules that are imported by collections during type generation.
+- Keep app-router-only guards in route handlers/components, not in payload-schema dependency paths.
+
+---
+
+## Local development 403s on protected Payload REST routes (unauthenticated session)
+
+**Problem**: Local Studio development hit repeated 403s from protected collection routes (for example `/api/forge-graphs`, `/api/relationships`) because the browser had no authenticated Payload session while access control correctly required authenticated ownership/membership.
+
+**Fix**:
+
+- Added `LocalDevAuthGate` (`apps/studio/components/providers/LocalDevAuthGate.tsx`) and wrapped it early in `AppProviders` before auth-dependent providers.
+- Gate flow:
+  - `GET /api/me` with credentials.
+  - If unauthenticated, `POST /api/users/login` with local admin credentials.
+  - Invalidate `authKeys.me()` and render app after session bootstrap.
+- Added feature-flag guard `isLocalDevAutoAdminEnabled()` (`apps/studio/lib/feature-flags.ts`) so this only runs in `NODE_ENV=development` on `localhost` / `127.0.0.1` and when `NEXT_PUBLIC_LOCAL_DEV_AUTO_ADMIN !== '0'`.
+- Added local env docs in `apps/studio/.env.example` for:
+  - `NEXT_PUBLIC_LOCAL_DEV_AUTO_ADMIN`
+  - `NEXT_PUBLIC_LOCAL_DEV_AUTO_ADMIN_EMAIL`
+  - `NEXT_PUBLIC_LOCAL_DEV_AUTO_ADMIN_PASSWORD`
+
+**Do not**: Relax collection ACLs globally for local development. Keep production access policy unchanged and use a real auth session bootstrap for local-only convenience.
+
+---
+
+## Env drift across Studio/Platform (`.env.example` vs `.env.local` vs runtime)
+
+**Problem**: Manual env maintenance caused onboarding failures and confusing runtime errors:
+
+- `.env.example` drifted from actual required keys.
+- Local `.env.local` files were missing or incomplete.
+- Runtime routes failed without clear remediation when critical keys were absent.
+
+**Fix**:
+
+- Added manifest-driven env source of truth in `scripts/env/manifest.mjs`.
+- Added generated examples:
+  - `pnpm env:sync:examples`
+  - `pnpm env:sync:examples:check`
+- Added local setup wizard:
+  - `pnpm env:setup -- --app studio|platform|all`
+- Added env doctor (masked matrix compare, optional Vercel pull):
+  - `pnpm env:doctor -- --app ... --mode ... [--vercel]`
+- Added startup guard:
+  - `pnpm env:ensure:local -- --app ...`
+  - wired into `dev:studio` and `dev:platform`
+- Centralized runtime env readers:
+  - `apps/studio/lib/env.ts`
+  - `apps/platform/src/lib/env.ts`
+
+**Do not**:
+
+- Hand-edit generated `.env.example` files.
+- Print plaintext secret values in diagnostics.
+- Bypass env checks by adding permissive runtime fallbacks outside local dev contexts.
+
+---
+
+## Studio CSS import failure: `Can't resolve '@forge/shared/styles/editor'`
+
+**Problem**: Studio build/dev failed while evaluating `apps/studio/app/globals.css` because `@forge/shared/styles/editor` resolved to `packages/shared/dist/styles/editor.css`, but that file is generated only when `@forge/shared` build runs.
+
+**Fix**: In Studio globals, import Dockview CSS and shared Dockview overrides directly:
+
+- `@import "dockview/dist/styles/dockview.css";`
+- `@import "../../../packages/shared/src/shared/styles/dockview-overrides.css";`
+
+This removes the local prebuild dependency on `packages/shared/dist/styles/editor.css` for Studio app startup.
+
+**Do not**: Reintroduce package CSS imports in Studio that require prebuilt `dist` artifacts unless dev scripts guarantee those artifacts are generated first.
+
+---
+
+## Dialogue assistant runtime `ReferenceError`: `ForgePlanExecuteProvider is not defined`
+
+**Problem**: `apps/studio/components/editors/dialogue/DialogueAssistantPanel.tsx` referenced `ForgePlanExecuteProvider` and `ForgePlanToolUI` in JSX without importing them, causing runtime crash when the panel rendered with `executePlan`.
+
+**Fix**: Import both symbols from `@forge/domain-forge/assistant` in `DialogueAssistantPanel.tsx`:
+
+- `import { ForgePlanExecuteProvider, ForgePlanToolUI } from '@forge/domain-forge/assistant';`
+
+**Do not**: Assume re-export availability implies runtime scope. JSX symbols must be explicitly imported in each file where they are referenced.
+
+---
+
+## Model switcher popover appears detached at far-left in composer
+
+**Problem**: In Studio chat composer, `ModelSwitcher` popover could render detached at the far-left of the page instead of near the trigger.
+
+**Fix**: In `apps/studio/components/model-switcher/ModelSwitcher.tsx`, render popover content through portal for composer variant and set explicit placement:
+
+- `portalled` enabled
+- `side="top"` for composer
+- `align="end"`
+- `collisionPadding={12}`
+
+**Do not**: Rely on non-portal popover placement inside sticky/complex container stacks for composer overlays.
+
+---
+
+## Studio bar alignment regressions should be fixed in `Studio.tsx` composition first
+
+**Problem**: Studio top-bar alignment drift (menubar/project switcher/tabs/actions) can look like a shared tab-group issue, but the regression is often caused by how `StudioApp.Tabs` slots are composed in `apps/studio/components/Studio.tsx`.
+
+**Fix**:
+
+- Treat this as a Studio-only composition fix first: adjust `StudioApp.Tabs.Left/Main/Right` placement in `Studio.tsx`.
+- Ensure `EditorTabGroup` enforces real regions: root `w-full`, tablist `flex-1 min-w-0`, actions `shrink-0 ml-auto`; otherwise all controls can visually collapse to the left despite slot naming.
+- Keep shared tab-group spacing tweaks intact unless there is a proven shared component defect.
+- Prefer menu-level editor-open actions (File -> Editors submenu) over adding more top-bar quick-open buttons when space is tight.
+
+**Do not**: Overcorrect `packages/shared/src/shared/components/editor/EditorTabGroup.tsx` for a Studio-only layout regression.
+
+---
+
+## Studio settings opened from menubar lacked a symmetric close action
+
+**Problem**: Opening settings from the top menubar could leave users with no obvious "close from menu" path, creating the impression that Settings was stuck open.
+
+**Fix**:
+
+- In `apps/studio/lib/settings/useAppSettingsMenuItems.tsx`, menu behavior now toggles:
+  - `Open Settings` when neither settings surface is open.
+  - `Close Settings` when the sidebar/sheet is open.
+- Close action explicitly sets both `settingsSidebarOpen` and `appSettingsSheetOpen` false to avoid stale UI state.
+- In `apps/studio/components/AppProviders.tsx`, desktop settings rail now includes:
+  - Header close button (`X`) to close immediately.
+  - Click-away backdrop behind the sidebar to close on outside click.
+  - Escape key handler while sidebar is open.
+
+**Do not**: Provide one-way "Open Settings" menu actions without a matching close/toggle path in Studio chrome.
+
+---
+
+## Platform `@forge/ui` adapter pitfall: root import can break Next server build
+
+**Problem**: Replacing platform local atom files with direct re-exports from `@forge/ui` root (for example `export { Button } from '@forge/ui'`) caused `next build` failures in platform with errors like:
+
+- `You're importing a component that needs createContext/useEffect/useState...`
+
+The failure originates from `packages/ui/dist/index.mjs` being treated as a server import path that bundles mixed client-hook exports.
+
+**Fix**:
+
+- Keep platform atom wrappers local (`apps/platform/src/components/ui/*`) unless `@forge/ui` exposes stable subpath exports that preserve client boundaries.
+- Do not switch wrappers to `@forge/ui` root re-exports until package export strategy is updated.
+- For now, converge by policy + phased cleanup, not by root re-export shortcuts.
+
+**Guardrail**: If platform build errors originate from `packages/ui/dist/index.mjs` after adapter changes, revert wrapper re-export approach and keep local atoms.
 
 ---
 
@@ -465,9 +639,9 @@ References:
 
 ---
 
-## Model routing: two providers, server-state only
+## Model routing: server-state only (single chat provider)
 
-**Design**: Two slots — `copilotModelId` and `assistantUiModelId` — in in-memory server-state. **No model ID in request**: CopilotKit and assistant-chat handlers use only `getCopilotModelId()` and `getAssistantUiModelId()`; do not send `x-forge-model` or body `modelName`. Client updates model only via POST to `/api/model-settings` with `{ provider: 'copilot' | 'assistantUi', modelId }`. One **ModelSwitcher** component with `provider` prop; same UX for both. Default from code via `getDefaultChatModelId()` (no model IDs in .env). Use naming `copilot` / `assistantUi` everywhere (type `ModelProviderId`); no "sidebar" or "strategy" in the model layer. See [06-model-routing-and-openrouter.mdx](../../architecture/06-model-routing-and-openrouter.mdx).
+**Design**: One slot — `assistantUiModelId` — in in-memory server-state for chat. **No model ID in request**: assistant-chat handler uses only `getAssistantUiModelId()`; do not send `x-forge-model` or body `modelName`. Client updates model only via POST to `/api/model-settings` with `{ provider: 'assistantUi', modelId }`. **ModelSwitcher** with `provider="assistantUi"`. Default from code via `getDefaultChatModelId()`. Use naming `assistantUi` (type `ModelProviderId`). See [06-model-routing-and-openrouter.mdx](../../architecture/06-model-routing-and-openrouter.mdx).
 
 ---
 
@@ -475,7 +649,7 @@ References:
 
 **Problem**: Repeated requests to a rate-limited or failing model can exhaust the provider.
 
-**Current fix**: CopilotKit and assistant-chat use a **single model** from server-state (no fallbacks). Task routes (forge/plan, structured-output) use `DEFAULT_TASK_MODEL`. No app-level health or cooldown. If we reintroduce fallbacks later, use OpenRouter's `models: [primary, ...fallbacks]` in the request body.
+**Current fix**: Assistant-chat uses a **single model** from server-state (no fallbacks). Task routes (forge/plan, structured-output) use `DEFAULT_TASK_MODEL`. No app-level health or cooldown. If we reintroduce fallbacks later, use OpenRouter's `models: [primary, ...fallbacks]` in the request body.
 
 ---
 
@@ -693,6 +867,16 @@ For the ongoing convention (new or moved docs), see [standard-practices](standar
 
 ---
 
+## Panel registry recursion fix (UI-first layout)
+
+**Problem**: The imperative panel flow (EditorRail effect → setRailPanels → panel registry store → EditorLayout subscribes → DockLayout) caused store update cascades and "Maximum update depth exceeded".
+
+**Fix**: Replaced with **UI-first declarative API**. Editors compose `EditorDockLayout.Left` / `.Main` / `.Right` / `.Bottom` slot children with `EditorDockLayout.Panel` children. DockLayout collects panels from JSX in render; no store-driven registration, no effects for panel registration. `EditorLayoutProvider` now provides only `{ editorId }`; `EditorRail`, `EditorPanel`, and `EditorLayout` are deprecated. `useEditorPanelVisibility` uses `EDITOR_PANEL_SPECS` fallback when `useEditorPanels` returns empty.
+
+**Do not**: Reintroduce imperative setRailPanels or store-driven panel registration for layout.
+
+---
+
 ## Wide form dialogs + left-side close button regression
 
 **Problem**: Character/create upsert dialogs rendered too wide (near edge-to-edge) for simple forms, with low visual hierarchy and inconsistent close placement (left-side close icon). This reduced readability and made the UI feel unpolished.
@@ -841,6 +1025,14 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 
 ---
 
+## CopilotKit removed (Phase 7 migration, complete 2026-02-12)
+
+**Status**: CopilotKit fully removed: `@copilotkit/*` deps removed from studio/shared/consumer; shared copilot types stripped of @copilotkit imports; CopilotKitProvider, copilot/next (runtime, provider), DomainCopilotRegistration, use-domain-copilot* deleted; COPILOTKIT_FLAG_KEY removed. Assistant UI is the chat surface. `CopilotKitBypassProvider` supplies only `CopilotSidebarContext` for legacy sidebar state. See [AI migration 00-index](../../ai/migration/00-index.mdx).
+
+**Archived entries below** (BuiltInAgent, createForgeCopilotRuntime, etc.) document historical issues; the code paths no longer exist.
+
+---
+
 ## CopilotKit handler: ReferenceError log is not defined
 
 **Problem**: `ReferenceError: log is not defined` at `handler.ts:35` (resolveModel). POST /api/copilotkit returns 500.
@@ -851,17 +1043,17 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 
 ---
 
-## Model switcher errors and excess CopilotKit/Studio calls on load (planned work)
+## Model switcher errors and excess Studio calls on load (planned work)
 
-**Problem**: Model switcher is producing many errors; Studio and CopilotKit make too many calls on app load. Related: registry hydration, settings ⇄ router sync (see "Model switcher registry empty" and "Model switcher manual mode oscillation" in this file).
+**Problem**: Model switcher is producing many errors; Studio makes too many calls on app load. Related: registry hydration, settings ⇄ router sync (see "Model switcher registry empty" and "Model switcher manual mode oscillation" in this file).
 
-**Planned work**: (0) **AI agent and model provider plan** — discuss/document single source of truth, who provides models, avoid duplicate fetches and sync loops. (1) **Model switcher stability** — single source of truth, registry hydrated once, no oscillation. (2) **Reduce CopilotKit/Studio calls on load** — fewer calls, defer/batch, single init path. See [STATUS § Next](./STATUS.md) and initiative `model-routing-copilotkit-stability` in [task-registry](./task-registry.md). Architecture: [06-model-routing-and-openrouter.mdx](../../architecture/06-model-routing-and-openrouter.mdx).
+**Planned work**: (0) **AI agent and model provider plan** — discuss/document single source of truth, who provides models, avoid duplicate fetches and sync loops. (1) **Model switcher stability** — single source of truth, registry hydrated once, no oscillation. (2) **Reduce Studio calls on load** — fewer calls, defer/batch, single init path. See [STATUS § Next](./STATUS.md) and initiative `model-routing-stability` in [task-registry](./task-registry.md). Architecture: [06-model-routing-and-openrouter.mdx](../../architecture/06-model-routing-and-openrouter.mdx).
 
 ---
 
-## Single CopilotKit runtime and model router (no root duplicate)
+## Single model router at Studio (no root duplicate)
 
-**Do not** add a second CopilotKit runtime or model router at repo root. The **single** runtime and model router (server-state, registry, openrouter-config, responses-compat) live **only** in `apps/studio`. Root `app/api/copilotkit` and root `lib/openrouter-config` + `lib/model-router` were removed; all API routes in use are under `apps/studio/app/api/`. See [06-model-routing-and-openrouter.mdx](../../architecture/06-model-routing-and-openrouter.mdx).
+**Do not** add a second model router at repo root. The **single** model router (server-state, registry, openrouter-config) lives **only** in `apps/studio`. All AI/model API routes are under `apps/studio/app/api/`. See [06-model-routing-and-openrouter.mdx](../../architecture/06-model-routing-and-openrouter.mdx).
 
 ---
 
@@ -886,4 +1078,3 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 ---
 
 *(Add new entries when new errors are found and fixed.)*
-

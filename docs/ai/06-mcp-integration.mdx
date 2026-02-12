@@ -1,0 +1,146 @@
+---
+title: MCP integration
+created: 2026-02-11
+updated: 2026-02-11
+---
+
+# MCP integration
+
+Studio MCP Server exposes tools for external hosts (Cursor, Claude Desktop). See [11 - MCP vs CopilotKit and assistant-ui](../architecture/11-mcp-copilotkit-assistant-ui.mdx) for two control planes and auth caveats.
+
+---
+
+## MCP server
+
+```typescript
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { globalAgentRegistry } from '@forge/assistant-runtime';
+
+export class ForgeStudioMCPServer {
+  private server: Server;
+
+  constructor() {
+    this.server = new Server(
+      { name: 'forge-studio', version: '1.0.0' },
+      { capabilities: { tools: {} } }
+    );
+
+    this.registerHandlers();
+  }
+
+  private registerHandlers() {
+    this.server.setRequestHandler('tools/list', async () => {
+      const tools = globalAgentRegistry.getAllTools();
+      return {
+        tools: tools.map(tool => ({
+          name: tool.name,
+          description: tool.description,
+          inputSchema: {
+            type: 'object',
+            properties: tool.parameters.properties,
+            required: tool.parameters.required,
+          },
+        })),
+      };
+    });
+
+    this.server.setRequestHandler('tools/call', async (request) => {
+      const { name, arguments: args } = request.params;
+      const tools = globalAgentRegistry.getAllTools();
+      const tool = tools.find(t => t.name === name);
+
+      if (!tool) {
+        throw new Error(`Tool not found: ${name}`);
+      }
+
+      const result = await tool.execute(args, {
+        snapshot: {},
+        emit: (event) => {},
+      });
+
+      return {
+        content: [{ type: 'text', text: JSON.stringify(result) }],
+      };
+    });
+  }
+
+  async start() {
+    const transport = new StdioServerTransport();
+    await this.server.connect(transport);
+    console.error('Forge Studio MCP server running');
+  }
+}
+```
+
+File: [packages/mcp-studio/src/server.ts](../../packages/mcp-studio/src/server.ts) (to create).
+
+---
+
+## Editor MCP apps
+
+### ForgeMCPApp
+
+```typescript
+export class ForgeMCPApp {
+  constructor(private agentRegistry: AgentRegistry) {}
+
+  async listTools() {
+    const forgeAgent = this.agentRegistry.findForScope('forge')[0];
+    return forgeAgent?.tools ?? [];
+  }
+
+  async executeTool(name: string, args: any) {
+    const tools = await this.listTools();
+    const tool = tools.find(t => t.name === name);
+
+    if (!tool) {
+      throw new Error(`Tool not found: ${name}`);
+    }
+
+    return await tool.execute(args, {
+      snapshot: {},
+      emit: () => {},
+    });
+  }
+
+  getCapabilities() {
+    return {
+      editor: 'forge',
+      supports: ['dialogue', 'nodes', 'edges', 'plans'],
+    };
+  }
+}
+```
+
+---
+
+## Auth options (open)
+
+From [11-mcp-copilotkit-assistant-ui.mdx](../architecture/11-mcp-copilotkit-assistant-ui.mdx):
+
+| Option | Pros | Cons |
+|--------|------|------|
+| API key / token | Simple; token per request or config | User manages key; key could leak |
+| Session token | Reuse existing auth | Token lifecycle; how does Cursor get it? |
+| MCP only when Studio running | Studio as source of auth | User must have Studio open |
+| Hosted MCP server with login | One-time login | More infra to host and secure |
+
+Document as open; pick one or hybrid when implementing. See [task-breakdown-mcp-studio-editors](../agent-artifacts/core/task-breakdown-mcp-studio-editors.md) for lanes.
+
+---
+
+## Dependencies
+
+```json
+// packages/mcp-studio/package.json
+{
+  "@modelcontextprotocol/sdk": "^1.0.0"
+}
+```
+
+---
+
+## Next
+
+- [Migration overview](migration/00-index.mdx) — Phases 1–7, coexistence, rollback

@@ -41,8 +41,20 @@ These files are maintained for AI/coding agents to read and use when modifying t
 - **[agent-artifacts/core/styling-and-ui-consistency.md](agent-artifacts/core/styling-and-ui-consistency.md)** — Styling and UI consistency rules; process for styling passes (implement, update docs/STATUS; optional screenshots—humans capture, automation errors). See [how-to 26](../../how-to/26-styling-debugging-with-cursor.mdx).
 - **[agent-artifacts/core/standard-practices.md](agent-artifacts/core/standard-practices.md)** — Logging, env, health, security, and "as we grow" checklist. One place for what we do now vs soon.
 - **agent-artifacts/archive/** — Compacted chunks (e.g. STATUS-done-YYYY-MM.md) and **legacy plan docs** (e.g. plan-dockview-restore-*, plan-editor-layout-*). Plans are **not** living docs in core; do not add new plan docs to core. Track work via STATUS Next, task-registry, ISSUES, roadmap. Main docs point here; read main artifact first.
+- **docs/ai/** — AI architecture (Assistant UI, domain contract, tools, agents, MCP). Living docs with code refs and diagrams. Migration phases in [ai/migration/](ai/migration/00-index.mdx). Source plan: [archive/plan-assistant-ui-copilotkit-replacement.md](agent-artifacts/archive/plan-assistant-ui-copilotkit-replacement.md).
 - **[ISSUES.md](../ISSUES.md)** (root) — Known product/editor issues (e.g. Video editor non-functional and locked). Check before suggesting work that assumes a feature is available.
 - **[AGENTS.md](../AGENTS.md)** (root) — Global agent rules, loop, conventions.
+
+## Playground (simulation)
+
+For **AI architecture virtual simulations** (pretend the Assistant UI system works, roleplay as chat assistant, surface gaps):
+
+- **[docs/ai/playground/AGENTS.md](ai/playground/AGENTS.md)** — Simulation rules, Ralph Wiggum loop, in-character/out-of-character behavior.
+- **[docs/ai/playground/agent-artifacts/README.md](ai/playground/agent-artifacts/README.md)** — Simulation-only loop; isolation from main core artifacts.
+- **[docs/ai/playground/agent-artifacts/STATUS.md](ai/playground/agent-artifacts/STATUS.md)** — Simulation state and Ralph Wiggum Done.
+- **[docs/ai/playground/agent-artifacts/task-registry.md](ai/playground/agent-artifacts/task-registry.md)** — Pickable simulation tasks.
+
+Use playground artifacts when doing AI chat simulations. Use main core artifacts for real implementation.
 
 ## Per-package / per-area AGENTS.md
 

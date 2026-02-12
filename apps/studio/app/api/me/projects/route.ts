@@ -6,6 +6,7 @@ import {
   requireAuthenticatedUser,
   resolveOrganizationFromInput,
 } from '@/lib/server/organizations';
+import { findAllDocs } from '@/lib/server/payload-pagination';
 
 type ProjectDoc = {
   id: number;
@@ -44,8 +45,8 @@ export async function GET(req: Request) {
     );
     const activeOrgId = context.activeOrganizationId;
 
-    const [projectsResult, listingsResult] = await Promise.all([
-      payload.find({
+    const [projectDocs, listingDocs] = await Promise.all([
+      findAllDocs<ProjectDoc>(payload, {
         collection: 'projects',
         where: {
           or: [
@@ -59,10 +60,11 @@ export async function GET(req: Request) {
           ],
         },
         depth: 0,
-        limit: 1000,
+        overrideAccess: true,
+        limit: 250,
         sort: '-updatedAt',
       }),
-      payload.find({
+      findAllDocs<Record<string, unknown>>(payload, {
         collection: 'listings',
         where: {
           or: [
@@ -76,13 +78,14 @@ export async function GET(req: Request) {
           ],
         },
         depth: 1,
-        limit: 1000,
+        overrideAccess: true,
+        limit: 250,
         sort: '-updatedAt',
       }),
     ]);
 
     const projectById = new Map<number, ProjectDoc>();
-    for (const project of projectsResult.docs) {
+    for (const project of projectDocs) {
       projectById.set(project.id, {
         id: project.id,
         title: project.title,
@@ -95,7 +98,7 @@ export async function GET(req: Request) {
     }
 
     const listingByProjectId = new Map<number, ListingSummary>();
-    for (const listing of listingsResult.docs) {
+    for (const listing of listingDocs) {
       if (!listing.project) continue;
 
       let projectId: number | null = null;

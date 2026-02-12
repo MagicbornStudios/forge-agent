@@ -7,13 +7,15 @@ import {
   requireAuthenticatedUser,
   resolveOrganizationFromInput,
 } from '@/lib/server/organizations';
-
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+import { requireStripeSecretKey } from '@/lib/env';
 
 export async function POST(req: Request) {
-  if (!stripeSecretKey) {
+  let stripeSecretKey: string;
+  try {
+    stripeSecretKey = requireStripeSecretKey();
+  } catch (error) {
     return NextResponse.json(
-      { error: 'Stripe is not configured' },
+      { error: error instanceof Error ? error.message : 'Stripe is not configured' },
       { status: 503 }
     );
   }
@@ -48,7 +50,7 @@ export async function POST(req: Request) {
       depth: 0,
     });
 
-    const existing = organization?.stripeConnectAccountId ?? user.stripeConnectAccountId;
+    const existing = organization?.stripeConnectAccountId ?? null;
     if (existing) {
       return NextResponse.json({ accountId: existing, organizationId: activeOrgId });
     }
@@ -76,14 +78,6 @@ export async function POST(req: Request) {
       },
       overrideAccess: true,
     });
-    if (!user.stripeConnectAccountId) {
-      await payload.update({
-        collection: 'users',
-        id: user.id,
-        data: { stripeConnectAccountId: account.id },
-        overrideAccess: true,
-      });
-    }
     return NextResponse.json({ accountId: account.id, organizationId: activeOrgId });
   } catch (error) {
     const message =

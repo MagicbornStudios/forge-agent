@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { APP_THEMES } from '@/components/providers/AppThemeProvider';
 import { useMe } from '@/lib/data/hooks';
 import { useOpenSettingsSheet } from '@/lib/contexts/OpenSettingsSheetContext';
+import { useEditorStore } from '@/lib/app-shell/store';
 import { useEntitlements, CAPABILITIES } from '@forge/shared/entitlements';
 
 const THEME_LABELS: Record<(typeof APP_THEMES)[number], string> = {
@@ -51,6 +52,8 @@ function getDisplayName(name: string | null | undefined, email: string | null | 
 
 export function useAppSettingsMenuItems(options: { onOpenCreateListing: () => void }): EditorMenubarItem[] {
   const openAppSettingsSheet = useOpenSettingsSheet();
+  const settingsSidebarOpen = useEditorStore((s) => s.settingsSidebarOpen);
+  const appSettingsSheetOpen = useEditorStore((s) => s.appSettingsSheetOpen);
   const theme = useSettingsStore((s) => s.getSettingValue('ui.theme')) as string | undefined;
   const density = useSettingsStore((s) => s.getSettingValue('ui.density')) as string | undefined;
   const setSetting = useSettingsStore((s) => s.setSetting);
@@ -109,35 +112,42 @@ export function useAppSettingsMenuItems(options: { onOpenCreateListing: () => vo
     }
   }, []);
 
+  const handleSettingsMenuToggle = useCallback(() => {
+    const state = useEditorStore.getState();
+    if (state.settingsSidebarOpen || state.appSettingsSheetOpen) {
+      state.setSettingsSidebarOpen(false);
+      state.setAppSettingsSheetOpen(false);
+      return;
+    }
+    openAppSettingsSheet();
+  }, [openAppSettingsSheet]);
+
   return useMemo(() => {
     const items: EditorMenubarItem[] = [];
 
-    // Theme
     APP_THEMES.forEach((t) => {
       items.push({
         id: `theme-${t}`,
-        label: THEME_LABELS[t],
+        label: t === currentTheme ? `${THEME_LABELS[t]} (Current)` : THEME_LABELS[t],
         icon: <Palette className="size-3" />,
         onSelect: () => handleThemeSelect(t),
       });
     });
     items.push({ id: 'sep-theme-density', type: 'separator' });
 
-    // Density
     DENSITY_OPTIONS.forEach((d) => {
       items.push({
         id: `density-${d}`,
-        label: DENSITY_LABELS[d],
+        label: d === currentDensity ? `${DENSITY_LABELS[d]} (Current)` : DENSITY_LABELS[d],
         onSelect: () => handleDensitySelect(d),
       });
     });
     items.push({ id: 'sep-density-user', type: 'separator' });
 
-    // User
     if (isLoading) {
       items.push({
         id: 'user-loading',
-        label: 'Loading…',
+        label: 'Loading...',
         icon: <User className="size-3" />,
         disabled: true,
       });
@@ -159,7 +169,7 @@ export function useAppSettingsMenuItems(options: { onOpenCreateListing: () => vo
         if (!user.stripeConnectAccountId) {
           items.push({
             id: 'payouts',
-            label: connectLoading ? 'Opening…' : 'Set up payouts',
+            label: connectLoading ? 'Opening...' : 'Set up payouts',
             onSelect: handleConnectOnboarding,
             disabled: connectLoading,
           });
@@ -173,10 +183,10 @@ export function useAppSettingsMenuItems(options: { onOpenCreateListing: () => vo
     }
     items.push({ id: 'sep-user-open', type: 'separator' });
     items.push({
-      id: 'open-settings',
-      label: 'Open Settings',
+      id: settingsSidebarOpen || appSettingsSheetOpen ? 'close-settings' : 'open-settings',
+      label: settingsSidebarOpen || appSettingsSheetOpen ? 'Close Settings' : 'Open Settings',
       icon: <Settings className="size-3" />,
-      onSelect: openAppSettingsSheet,
+      onSelect: handleSettingsMenuToggle,
     });
 
     return items;
@@ -192,6 +202,8 @@ export function useAppSettingsMenuItems(options: { onOpenCreateListing: () => vo
     handleDensitySelect,
     handleConnectOnboarding,
     options.onOpenCreateListing,
-    openAppSettingsSheet,
+    settingsSidebarOpen,
+    appSettingsSheetOpen,
+    handleSettingsMenuToggle,
   ]);
 }

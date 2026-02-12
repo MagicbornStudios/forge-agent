@@ -1,7 +1,68 @@
 import type { Payload } from 'payload';
+import { findAllDocs } from '@/lib/server/payload-pagination';
+import {
+  assertOrganizationStorageGrowthAllowed,
+  estimateCloneStorageDeltaBytes,
+  recomputeProjectStorageUsage,
+} from '@/lib/server/storage-metering';
+import {
+  ensureOrganizationContext,
+  type AuthenticatedUser,
+} from '@/lib/server/organizations';
 
 export type CloneProjectToUserOptions = {
   slug?: string;
+  organizationId?: number;
+};
+
+type ForgeGraphDoc = {
+  id: number;
+  kind: string;
+  title: string;
+  flow: unknown;
+};
+
+type CharacterDoc = {
+  id: number;
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  voiceId?: string;
+  avatar?: unknown;
+  meta?: unknown;
+  archivedAt?: string;
+};
+
+type RelationshipDoc = {
+  id: number;
+  sourceCharacter: number;
+  targetCharacter: number;
+  label: string;
+  description?: string;
+};
+
+type PageDoc = {
+  id: number;
+  parent?: number | null;
+  properties?: Record<string, unknown>;
+  cover?: unknown;
+  icon?: unknown;
+  archived?: boolean;
+  in_trash?: boolean;
+  url?: string;
+  public_url?: string;
+};
+
+type BlockDoc = {
+  id: number;
+  page: number;
+  parent_block: number | null;
+  type: string;
+  position: number;
+  payload: unknown;
+  archived?: boolean;
+  in_trash?: boolean;
+  has_children?: boolean;
 };
 
 /**
@@ -26,61 +87,84 @@ export async function cloneProjectToUser(
   const slug =
     options?.slug?.trim() ?? `${sourceProject.slug}-copy-${Date.now()}`;
 
+  const targetUser = (await payload.findByID({
+    collection: 'users',
+    id: targetUserId,
+    depth: 0,
+    overrideAccess: true,
+  })) as AuthenticatedUser | null;
+  if (!targetUser) {
+    throw new Error('Target user not found');
+  }
+
+  const organizationContext = await ensureOrganizationContext(payload, targetUser);
+  const organizationId = options?.organizationId ?? organizationContext.activeOrganizationId;
+  if (!organizationId || !Number.isFinite(organizationId)) {
+    throw new Error('Target user has no active organization');
+  }
+
+  const estimatedCloneBytes = await estimateCloneStorageDeltaBytes(payload, projectId);
+  if (estimatedCloneBytes > 0) {
+    const storageCheck = await assertOrganizationStorageGrowthAllowed(
+      payload,
+      organizationId,
+      estimatedCloneBytes,
+    );
+    if (!storageCheck.allowed) {
+      throw new Error('Organization storage limit exceeded for clone operation');
+    }
+  }
+
   const [sourceGraphs, sourceCharacters, sourceRelationships, sourcePages] =
     await Promise.all([
-      payload.find({
+      findAllDocs<ForgeGraphDoc>(payload, {
         collection: 'forge-graphs',
         where: { project: { equals: projectId } },
         depth: 0,
-        limit: 100,
+        overrideAccess: true,
+        limit: 500,
       }),
-      payload.find({
+      findAllDocs<CharacterDoc>(payload, {
         collection: 'characters',
         where: { project: { equals: projectId } },
         depth: 0,
-        limit: 500,
+        overrideAccess: true,
+        limit: 1000,
       }),
-      payload.find({
+      findAllDocs<RelationshipDoc>(payload, {
         collection: 'relationships',
         where: { project: { equals: projectId } },
         depth: 0,
-        limit: 500,
+        overrideAccess: true,
+        limit: 1000,
       }),
-      payload.find({
+      findAllDocs<PageDoc>(payload, {
         collection: 'pages',
         where: { project: { equals: projectId } },
         depth: 0,
-        limit: 500,
+        overrideAccess: true,
+        limit: 1000,
       }),
     ]);
 
-  const graphList = sourceGraphs.docs;
-  const charList = sourceCharacters.docs;
-  const relList = sourceRelationships.docs;
-  const pageList = sourcePages.docs;
+  const graphList = sourceGraphs;
+  const charList = sourceCharacters;
+  const relList = sourceRelationships;
+  const pageList = sourcePages;
   const pageIds = pageList.map((p) => p.id);
 
   const sourceBlocks =
     pageIds.length > 0
-      ? await payload.find({
+      ? await findAllDocs<BlockDoc>(payload, {
           collection: 'blocks',
           where: { page: { in: pageIds } },
           depth: 0,
+          overrideAccess: true,
           limit: 2000,
         })
-      : { docs: [] as { id: number; page: number; parent_block: number | null }[] };
+      : [];
 
-  const blockList = sourceBlocks.docs as {
-    id: number;
-    page: number;
-    parent_block: number | null;
-    type: string;
-    position: number;
-    payload: unknown;
-    archived?: boolean;
-    in_trash?: boolean;
-    has_children?: boolean;
-  }[];
+  const blockList = sourceBlocks;
 
   const newProject = await payload.create({
     collection: 'projects',
@@ -91,6 +175,7 @@ export async function cloneProjectToUser(
       domain: sourceProject.domain ?? 'forge',
       status: sourceProject.status ?? 'active',
       owner: targetUserId,
+      organization: organizationId,
       forgeGraph: undefined,
     },
     overrideAccess: true,
@@ -219,6 +304,11 @@ export async function cloneProjectToUser(
       });
     }
   }
+
+  await recomputeProjectStorageUsage(payload, newProjectId, {
+    source: 'clone',
+    userId: targetUserId,
+  });
 
   return newProjectId;
 }

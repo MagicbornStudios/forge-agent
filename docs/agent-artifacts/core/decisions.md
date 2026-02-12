@@ -1,7 +1,7 @@
 ---
 title: Architecture decision records
 created: 2026-02-04
-updated: 2026-02-11
+updated: 2026-02-12
 ---
 
 Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx).
@@ -30,11 +30,78 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 
 ---
 
+## Local dev auto-admin bootstrap (Studio only)
+
+**Decision:** In local Studio development, we bootstrap a real Payload auth session for the seeded admin before auth-dependent app providers mount. This is implemented with `LocalDevAuthGate` in `apps/studio/components/providers/LocalDevAuthGate.tsx`, wrapped early in `AppProviders`. It runs only when all are true:
+
+- `NODE_ENV === 'development'`
+- browser hostname is `localhost` or `127.0.0.1`
+- `NEXT_PUBLIC_LOCAL_DEV_AUTO_ADMIN !== '0'`
+
+The gate checks `GET /api/me`; if unauthenticated it performs `POST /api/users/login` with local env/default seed credentials, then invalidates `authKeys.me()`.
+
+**Rationale:** Local developers should not be blocked by 403s from protected Payload REST queries while iterating. Using real auth bootstrap preserves production access rules and avoids unsafe global ACL bypasses.
+
+---
+
+## Env DX source of truth: manifest + generated examples + setup/doctor tooling
+
+**Decision:** Environment-variable onboarding and drift checks are now manifest-driven for Studio and Platform:
+
+- Source of truth: `scripts/env/manifest.mjs`
+- Generated outputs: `apps/studio/.env.example`, `apps/platform/.env.example` via `pnpm env:sync:examples`
+- Local setup wizard: `pnpm env:setup -- --app studio|platform|all`
+- Drift/required checks: `pnpm env:doctor -- --app ... --mode local|preview|production [--vercel]`
+- Dev bootstrap guard: `pnpm env:ensure:local -- --app ...` (wired into `dev:studio` and `dev:platform`)
+
+Runtime env boundaries are centralized in app env helpers:
+
+- `apps/studio/lib/env.ts` (OpenRouter, Stripe, local auto-admin)
+- `apps/platform/src/lib/env.ts` (Studio URL resolution)
+
+**Rationale:** Manual `.env.example` editing drifted and made onboarding brittle. A single manifest keeps required keys, docs, and startup checks aligned while preserving secret masking and local convenience.
+
+---
+
 ## Platform organizations as first-class customer context
 
 **Decision:** The customer-facing platform now uses organizations as first-class context. Studio stores organizations in `organizations` and `organization-memberships` collections; users carry `defaultOrganization`, and creator-owned docs (`projects`, `listings`, `licenses`) include org relationships where applicable. Platform APIs resolve organization context server-side (`/api/me/orgs`, `/api/me/orgs/active`, org-scoped `/api/me/*` endpoints). If a user has no org membership, Studio auto-bootstraps a personal workspace organization.
 
 **Rationale:** Dashboard, billing, payout setup, and marketplace ownership need stable org context beyond individual users. Auto-bootstrap preserves backward compatibility for existing user-owned data while enabling org-aware APIs immediately.
+
+---
+
+## Org-scoped storage metering and enterprise request intake
+
+**Decision:** Organization billing context now includes storage and enterprise entitlements. We added:
+
+- `storage-usage-events` (immutable storage delta ledger)
+- `enterprise-requests` (manual-gated enterprise request workflow)
+- organization billing fields (`planTier`, `storageQuotaBytes`, `storageUsedBytes`, warning threshold, enterprise flags, `stripeCustomerId`)
+- org-scoped storage APIs:
+  - `GET /api/me/storage/summary`
+  - `GET /api/me/storage/breakdown`
+  - `POST /api/me/storage/upgrade-checkout-session`
+- org-scoped enterprise API:
+  - `GET|POST /api/me/enterprise/requests`
+
+Storage growth enforcement is hard-blocked for upload/clone growth paths (warn threshold + over-limit check). Clone flows now assign organization explicitly and meter resulting storage.
+
+**Rationale:** Financial visibility and quota enforcement must be org-accurate for billing and marketplace operations. Keeping this in Studio APIs preserves the single client boundary and avoids direct browser-Payload access.
+
+---
+
+## Stripe webhook settlement idempotency and org attribution
+
+**Decision:** Stripe checkout settlement is idempotent by `stripeSessionId`:
+
+- `licenses.stripeSessionId` is unique.
+- Webhook lookup/create logic upserts by session id and safely handles retries.
+- First clone runs only when `clonedProjectId` is missing.
+- Revenue attribution prefers `licenses.sellerOrganization` for org-ledger correctness.
+- Storage-upgrade sessions are processed once per org via `lastStorageUpgradeSessionId`.
+
+**Rationale:** Stripe retries are expected. Without session-id idempotency, duplicate deliveries can create duplicate licenses and clones and distort financial/storage ledgers.
 
 ---
 
@@ -220,7 +287,7 @@ AI routes require either authenticated session or valid API key with required sc
 
 ## Analytics and feature flags: PostHog
 
-**Decision:** We use **PostHog** for (1) marketing analytics (page views, custom events e.g. Waitlist Signup), and (2) Studio feature flags. Video and Strategy editors have been removed from the shell; no editor-specific flags for them remain. Dev and production use separate PostHog project keys (or the same project with environments) so flags can differ. Plan-based entitlements (free/pro) remain for paywall; release/rollout toggles use PostHog.
+**Decision:** We use **PostHog** for (1) marketing analytics (page views, custom events e.g. Waitlist Signup), and (2) Studio feature flags. CopilotKit is behind `copilotkit-enabled` (default off) during migration to Assistant UI. Video and Strategy editors have been removed from the shell; no editor-specific flags for them remain. Dev and production use separate PostHog project keys (or the same project with environments) so flags can differ. Plan-based entitlements (free/pro) remain for paywall; release/rollout toggles use PostHog.
 
 **Rationale:** Single provider for analytics and feature flags; no Plausible. Update this doc if we add another analytics or flag provider.
 
@@ -276,7 +343,7 @@ AI routes require either authenticated session or valid API key with required sc
 
 ## Studio as single entrypoint and unified registry pattern
 
-**Decision:** **Studio** is the single root component for the Studio app. The host (e.g. Next layout) renders `<Studio />` only; Studio owns all providers (SidebarProvider, StudioMenubarProvider, StudioSettingsProvider, OpenSettingsSheetProvider) and layout (main area + Settings sidebar, tabs + content). **Registries** (Zustand stores) are the single pattern for contributions: **editors** (editor registry, defaults on components, registered at module load), **menus** (menu registry by scope/context/target; EditorMenubarContribution and UnifiedMenubar use it), **panels** (panel registry by editorId/rail), **settings** (settings registry by scope/scopeId). Place components in the tree under a scope provider; they register on mount and unregister on unmount; consumers (menubar, settings sidebar, dock, tabs) read from registries and filter by scope/context/target. **StudioApp** (alias for EditorApp) is the tabs + content compound inside Studio; **EditorApp** remains the shared export name for backward compatibility.
+**Decision:** **AppProviders** owns the full Studio shell (SidebarProvider, Settings sidebar, OpenSettingsSheetProvider, StudioMenubarProvider). **Studio** is content-only (tabs, editor content, sheets, toaster). The host renders `AppProviders` > `AppShell` > `Studio`. **Registries** (Zustand stores) are the single pattern for contributions: **editors** (editor registry, defaults on components, registered at module load), **menus** (menu registry by scope/context/target; EditorMenubarContribution and UnifiedMenubar use it), **panels** (panel registry by editorId/rail), **settings** (settings registry by scope/scopeId). Place components in the tree under a scope provider; they register on mount and unregister on unmount; consumers (menubar, settings sidebar, dock, tabs) read from registries and filter by scope/context/target. **StudioApp** (alias for EditorApp) is the tabs + content compound inside Studio; **EditorApp** remains the shared export name for backward compatibility.
 
 **Rationale:** One mental model for menus, settings, panels, and editors; host does not compose providers; canonical state stays in the app-shell store and Studio/editors consume it. See [Studio and unified registry refactor plan](.cursor/plans/studio_registry_refactor_2fb8702e.plan.md) and shared editor README.
 
@@ -337,6 +404,20 @@ AI routes require either authenticated session or valid API key with required sc
 **Decision:** Canonical creator/account routes are **`/dashboard/*`** (`overview`, `listings`, `games`, `revenue`, `billing`, `licenses`, `settings`, `api-keys`). Legacy `/account/*` and `/billing` are compatibility redirects only. Creator data is served from Studio APIs (`GET /api/me/listings`, `GET /api/me/projects`), and free listing clones use `POST /api/catalog/:id/clone` while paid clones continue through Stripe Checkout.
 
 **Rationale:** Keeps platform IA consistent with a Vercel-style dashboard shell, prevents split-account navigation, and avoids duplicating logic between free and paid clone paths.
+
+---
+
+## Platform SaaS housekeeping conventions (client architecture)
+
+**Decision:** Platform maintenance is standardized around a small set of client-side conventions:
+
+- API calls are decomposed by domain under `apps/platform/src/lib/api/*` and use a shared request client (`client.ts`); components do not use raw `fetch`.
+- Dashboard auth redirect logic is centralized in one layout gate (`RequireDashboardAuth`) instead of repeated per-page `useEffect` redirects.
+- Platform route/query/auth strings come from constants modules (`lib/constants/routes.ts`, `lib/constants/query-keys.ts`, `lib/constants/auth.ts`) instead of magic literals.
+- Platform quality scripts are part of root lint flow (`css:doctor`, `hydration:doctor`, `docs:runtime:doctor`, platform lint, studio lint).
+- Template cleanup is done in reviewable slices (remove dead starter files/deps, keep compatibility redirects until explicit removal).
+
+**Rationale:** This keeps the SaaS app understandable and reusable without forcing Studio/editor architecture onto platform pages, and prevents drift from repeated ad-hoc patterns.
 
 ---
 
@@ -424,9 +505,9 @@ AI routes require either authenticated session or valid API key with required sc
 
 **Decision:** Editors use **declarative components** that **register** into shared registries; layout, View menu, Settings UI, and menubar **subscribe** to those registries. Authors do not hand-wire `rightPanels`, `EDITOR_PANEL_SPECS`, static settings sections, or `useAppMenubarContribution(menus)`.
 
-- **Panel registry:** Keyed by `editorId`. Editors wrap content in **EditorLayoutProvider**(editorId); **EditorRail**(side) + **EditorPanel**(id, title, iconKey) register on mount. **EditorLayout** (Studio) subscribes to the registry and renders **EditorDockLayout** with visibility from settings key `panel.visible.{editorId}-{panelId}`. View menu specs are derived from the registry when present; fallback to **EDITOR_PANEL_SPECS** for non-migrated editors.
+- **Panel layout:** **UI-first** (EditorDockLayout.Left/Main/Right/Bottom with EditorDockLayout.Panel children). Editors compose panels directly in JSX; no store-driven registration. **EditorLayoutProvider** provides `{ editorId }` only; **EditorLayout**, **EditorRail**, **EditorPanel** deprecated. View menu and `useEditorPanelVisibility` use **EDITOR_PANEL_SPECS** for panel toggles and "Restore all panels". Layout reset calls `ref.current?.resetLayout()` on EditorDockLayout.
 - **Settings registry:** Keyed by scope + scopeId (app, editor, viewport). **AppSettingsProvider** / **ViewportSettingsProvider** provide scope; **SettingsSection** + **SettingsField** (Studio) register on mount. **AppSettingsPanelContent** merges registry sections over static sections.
 - **Menubar:** **EditorMenubarContribution** (Studio) with **EditorMenubarMenuSlot** children builds the menu array and calls setEditorMenus on mount; clears on unmount. Must be used inside **EditorLayoutProvider** so switching editors resets the menubar.
-- **FormField-within-Form style:** EditorRail, EditorPanel, SettingsSection, EditorMenubarContribution only work inside the correct provider; document in README and AGENTS.
+- **FormField-within-Form style:** SettingsSection, EditorMenubarContribution only work inside the correct provider; document in README and AGENTS.
 
 **Rationale:** Single source of truth for panels, settings sections, and menubar; no duplicated panel/section lists; View menu and layout stay in sync; new editors add declarative components instead of editing global config.

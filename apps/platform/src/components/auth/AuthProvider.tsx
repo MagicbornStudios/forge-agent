@@ -10,6 +10,8 @@ import {
 } from '@/lib/api/studio';
 import { useOrgStore } from '@/stores/org-store';
 import { useQueryClient } from '@tanstack/react-query';
+import { PLATFORM_QUERY_KEYS } from '@/lib/constants/query-keys';
+import { AUTH_MESSAGES } from '@/lib/constants/auth';
 
 type User = MeResponse['user'];
 
@@ -81,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await setApiActiveOrganization(organizationId, 'include');
       setMemberships(data.memberships);
       setActiveOrgId(data.activeOrganizationId);
-      await queryClient.invalidateQueries({ queryKey: ['platform'] });
+      await queryClient.invalidateQueries({ queryKey: PLATFORM_QUERY_KEYS.root() });
       return data.activeOrganizationId;
     },
     [queryClient, setActiveOrgId],
@@ -110,6 +112,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const ctx = React.useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  if (!ctx) throw new Error(AUTH_MESSAGES.contextMissing);
   return ctx;
 }

@@ -1,7 +1,7 @@
 ---
 title: Standard practices (now / soon / as we grow)
 created: 2026-02-09
-updated: 2026-02-10
+updated: 2026-02-12
 ---
 
 # Standard practices (now / soon / as we grow)
@@ -15,8 +15,14 @@ Single checklist for agents and humans. Where things live and when to revisit.
 
 ## Env and config
 
-- **Now:** Keep `.env.example` in sync with required/optional vars. Validate critical env at app init where it helps (e.g. `OPENROUTER_API_KEY` for Studio AI routes). See errors-and-attempts for env gotchas.
-- **Revisit:** When adding a new required env var, document in .env.example and consider startup check.
+- **Now:** Env source of truth is `scripts/env/manifest.mjs`. `.env.example` files are generated, not hand-maintained:
+  - `pnpm env:sync:examples`
+  - `pnpm env:sync:examples:check`
+- **Now:** Use `pnpm env:setup -- --app studio|platform|all` to create/update `.env.local`.
+- **Now:** Run `pnpm env:doctor -- --app ... --mode local|preview|production [--vercel]` for required-key and drift checks.
+- **Now:** `dev:studio` and `dev:platform` run `env:ensure:local` before app startup; use `FORGE_SKIP_ENV_BOOTSTRAP=1` only for explicit CI/advanced workflows.
+- **Now:** Keep runtime env validation in centralized env readers (`apps/studio/lib/env.ts`, `apps/platform/src/lib/env.ts`) rather than scattered route-level `process.env` checks.
+- **Revisit:** Add stricter CI gates for preview/production key presence once deployment automation is finalized.
 
 ## Health and ops
 

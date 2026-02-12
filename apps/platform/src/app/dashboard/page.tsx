@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
+import { PLATFORM_ROUTES } from '@/lib/constants/routes';
 
 export default async function Dashboard() {
-  redirect('/dashboard/overview');
+  redirect(PLATFORM_ROUTES.dashboardOverview);
 }

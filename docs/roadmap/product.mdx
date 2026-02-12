@@ -176,6 +176,8 @@ These items are tracked in STATUS § Next with impact sizes. **First revenue = p
 
 **Implemented expansion:** Organization-first customer context (`organizations`, memberships, active org switching), org-scoped creator/revenue APIs (`/api/me/orgs`, `/api/me/orgs/active`, `/api/me/revenue?orgId=...`), AI usage ledger + org-scoped usage APIs (`/api/me/ai-usage`, `/api/me/ai-usage/summary`), and Stripe Connect org-context onboarding/account actions.
 
+**Implemented hardening and billing extension:** org-scoped storage metering and quota visibility (`/api/me/storage/summary`, `/api/me/storage/breakdown`), storage upgrade checkout (`/api/me/storage/upgrade-checkout-session`), enterprise request intake (`/api/me/enterprise/requests`), idempotent Stripe webhook settlement for licenses/storage-upgrades, and clone/storage enforcement for org-attributed projects.
+
 **Follow-up:** full build publish/host pipeline for playable builds remains tracked under `publish-host`.
 
 **Impact: Large.**

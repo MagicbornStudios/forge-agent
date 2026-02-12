@@ -23,46 +23,79 @@ function TabsActions({ children }: { children?: React.ReactNode }) {
 }
 TabsActions.displayName = 'EditorApp.Tabs.Actions';
 
+function TabsLeft({ children }: { children?: React.ReactNode }) {
+  return <>{children}</>;
+}
+TabsLeft.displayName = 'EditorApp.Tabs.Left';
+
+function TabsMain({ children }: { children?: React.ReactNode }) {
+  return <>{children}</>;
+}
+TabsMain.displayName = 'EditorApp.Tabs.Main';
+
+function TabsRight({ children }: { children?: React.ReactNode }) {
+  return <>{children}</>;
+}
+TabsRight.displayName = 'EditorApp.Tabs.Right';
+
 function hasAnyTabsSlot(children: React.ReactNode): boolean {
   let found = false;
   React.Children.forEach(children, (child) => {
     if (!React.isValidElement(child)) return;
     const type = child.type as React.ComponentType<{ children?: React.ReactNode }>;
-    if (type === TabsMenubar || type === TabsActions) found = true;
+    if (
+      type === TabsMenubar ||
+      type === TabsActions ||
+      type === TabsLeft ||
+      type === TabsMain ||
+      type === TabsRight
+    ) {
+      found = true;
+    }
   });
   return found;
 }
 
 function collectTabsSlots(children: React.ReactNode): {
-  menubar: React.ReactNode;
+  leading: React.ReactNode;
   actions: React.ReactNode;
   tabChildren: React.ReactNode[];
 } {
-  let menubar: React.ReactNode = undefined;
+  let leading: React.ReactNode = undefined;
   let actions: React.ReactNode = undefined;
-  const tabChildren: React.ReactNode[] = [];
+  let explicitMainChildren: React.ReactNode[] | null = null;
+  const looseChildren: React.ReactNode[] = [];
   React.Children.forEach(children, (child) => {
     if (!React.isValidElement(child)) {
-      tabChildren.push(child);
+      looseChildren.push(child);
       return;
     }
     const type = child.type as React.ComponentType<{ children?: React.ReactNode }>;
-    if (type === TabsMenubar) {
-      menubar = (child as React.ReactElement<{ children?: React.ReactNode }>).props.children;
-    } else if (type === TabsActions) {
+    if (type === TabsMenubar || type === TabsLeft) {
+      leading = (child as React.ReactElement<{ children?: React.ReactNode }>).props.children;
+    } else if (type === TabsActions || type === TabsRight) {
       actions = (child as React.ReactElement<{ children?: React.ReactNode }>).props.children;
+    } else if (type === TabsMain) {
+      const mainChildren = React.Children.toArray(
+        (child as React.ReactElement<{ children?: React.ReactNode }>).props.children
+      );
+      explicitMainChildren = [...(explicitMainChildren ?? []), ...mainChildren];
     } else {
-      tabChildren.push(child);
+      looseChildren.push(child);
     }
   });
-  return { menubar, actions, tabChildren };
+  return {
+    leading,
+    actions,
+    tabChildren: explicitMainChildren ?? looseChildren,
+  };
 }
 
 export interface EditorAppTabsProps extends EditorTabGroupProps {}
 
 /**
  * EditorApp.Tabs — tab row with optional Menubar and Actions slots.
- * When slot children are used, place menubar (File, View, etc.) in .Menubar and app actions (project switcher, editor buttons) in .Actions.
+ * When slot children are used, place left content in .Left (or legacy .Menubar), tabs in .Main, and right actions in .Right (or legacy .Actions).
  * Props leading/actions remain supported for backward compatibility; slot content overrides when present.
  */
 function EditorAppTabs({
@@ -77,12 +110,12 @@ function EditorAppTabs({
   const resolved =
     useSlots && React.Children.count(children) > 0
       ? collectTabsSlots(children)
-      : { menubar: leading, actions, tabChildren: React.Children.toArray(children) };
+      : { leading, actions, tabChildren: React.Children.toArray(children) };
 
   return (
     <EditorTabGroup
       label={label}
-      leading={resolved.menubar}
+      leading={resolved.leading}
       actions={resolved.actions}
       tabListClassName={tabListClassName}
       className={cn('shrink-0', className)}
@@ -102,9 +135,11 @@ function EditorAppTabs({
  * ```tsx
  * <EditorApp>
  *   <EditorApp.Tabs label="Editor tabs">
- *     <EditorApp.Tabs.Menubar><EditorMenubar menus={merged} /></EditorApp.Tabs.Menubar>
- *     <EditorApp.Tabs.Actions><ProjectSwitcher ... /><EditorTab ... /></EditorApp.Tabs.Actions>
- *     <EditorApp.Tab label="Forge" ... />
+ *     <EditorApp.Tabs.Left><EditorMenubar menus={merged} /></EditorApp.Tabs.Left>
+ *     <EditorApp.Tabs.Main>
+ *       <EditorApp.Tab label="Forge" ... />
+ *     </EditorApp.Tabs.Main>
+ *     <EditorApp.Tabs.Right><ProjectSwitcher ... /></EditorApp.Tabs.Right>
  *   </EditorApp.Tabs>
  *   <EditorApp.Content>...</EditorApp.Content>
  * </EditorApp>
@@ -116,7 +151,13 @@ function EditorAppRoot({ children, className }: EditorAppProps) {
 }
 
 export const EditorApp = Object.assign(EditorAppRoot, {
-  Tabs: Object.assign(EditorAppTabs, { Menubar: TabsMenubar, Actions: TabsActions }),
+  Tabs: Object.assign(EditorAppTabs, {
+    Left: TabsLeft,
+    Main: TabsMain,
+    Right: TabsRight,
+    Menubar: TabsMenubar,
+    Actions: TabsActions,
+  }),
   Tab: AppTab,
   Content: AppContent,
 });

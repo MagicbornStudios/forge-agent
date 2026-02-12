@@ -279,8 +279,10 @@ export function ModelSwitcher({ provider, variant = 'toolbar' }: ModelSwitcherPr
 
       <PopoverContent
         className="w-[26rem] min-w-[22rem] max-w-[90vw] overflow-hidden border-border/70 bg-popover p-0 shadow-[var(--shadow-xl)]"
+        side={variant === 'composer' ? 'top' : 'bottom'}
         align="end"
-        portalled={variant !== 'composer'}
+        collisionPadding={12}
+        portalled
       >
         <div className="flex items-start justify-between gap-3 border-b bg-muted/40 px-[var(--panel-padding)] py-[var(--control-padding-y)]">
           <div className="min-w-0">

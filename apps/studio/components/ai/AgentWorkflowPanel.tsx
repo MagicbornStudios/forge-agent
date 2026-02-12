@@ -10,7 +10,7 @@ import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@forg
 import { ItemGroup, Item, ItemContent, ItemTitle, ItemDescription } from '@forge/ui/item';
 import { useWorkflowRun } from '@/lib/ai';
 import type { Selection } from '@forge/shared';
-import type { AIHighlightPayload } from '@forge/shared/copilot/types';
+import type { AIHighlightPayload } from '@forge/shared/assistant';
 import type { ForgeGraphDoc, ForgeGraphPatchOp } from '@forge/types/graph';
 
 export interface AgentWorkflowPanelProps {

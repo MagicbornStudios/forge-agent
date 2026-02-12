@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
+import { PLATFORM_ROUTES } from '@/lib/constants/routes';
 
 export default function DashboardProductDetailRedirectPage() {
-  redirect('/dashboard/listings');
+  redirect(PLATFORM_ROUTES.dashboardListings);
 }

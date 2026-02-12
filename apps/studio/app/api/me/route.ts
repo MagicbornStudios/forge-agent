@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getPayload } from 'payload';
 import config from '@/payload.config';
 import { ensureOrganizationContext } from '@/lib/server/organizations';
+import { resolveBillingOrganizationContext } from '@/lib/server/billing/context';
 
 /**
  * @swagger
@@ -52,10 +53,11 @@ export async function GET(req: Request) {
         : null;
     const orgContext =
       typedUser != null ? await ensureOrganizationContext(payload, typedUser) : null;
-    const activeMembership =
-      orgContext?.memberships.find(
-        (membership) => membership.organizationId === orgContext.activeOrganizationId,
-      ) ?? null;
+    const billingContext =
+      typedUser != null
+        ? await resolveBillingOrganizationContext(payload, typedUser)
+        : null;
+    const activeOrganization = billingContext?.activeOrganization ?? null;
 
     return NextResponse.json({
       user: {
@@ -66,7 +68,24 @@ export async function GET(req: Request) {
         plan: user.plan ?? null,
         defaultOrganizationId: orgContext?.activeOrganizationId ?? null,
         stripeConnectAccountId:
-          activeMembership?.stripeConnectAccountId ?? user.stripeConnectAccountId ?? null,
+          activeOrganization?.stripeConnectAccountId ?? user.stripeConnectAccountId ?? null,
+        activeOrganization:
+          activeOrganization == null
+            ? null
+            : {
+                organizationId: activeOrganization.organizationId,
+                organizationName: activeOrganization.organizationName,
+                organizationSlug: activeOrganization.organizationSlug,
+                role: activeOrganization.role,
+                planTier: activeOrganization.planTier,
+                storageQuotaBytes: activeOrganization.storageQuotaBytes,
+                storageUsedBytes: activeOrganization.storageUsedBytes,
+                storageWarningThresholdPercent:
+                  activeOrganization.storageWarningThresholdPercent,
+                enterpriseSourceAccess: activeOrganization.enterpriseSourceAccess,
+                enterprisePremiumSupport: activeOrganization.enterprisePremiumSupport,
+                enterpriseCustomEditors: activeOrganization.enterpriseCustomEditors,
+              },
       },
     });
   } catch (error) {

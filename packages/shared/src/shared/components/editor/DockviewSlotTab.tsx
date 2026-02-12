@@ -1,34 +1,23 @@
 'use client';
 
 import * as React from 'react';
+
+/** @deprecated Use icon (React.ReactNode) instead. Kept for EditorPanel/EditorRail backward compat. */
+export type DockLayoutSlotIconKey = string;
 import type { IDockviewPanelHeaderProps } from 'dockview';
 import { cn } from '@forge/shared/lib/utils';
-import { BookOpen, LayoutDashboard, ScanSearch, Settings, Wrench, X, type LucideIcon } from 'lucide-react';
+import { LayoutDashboard, X } from 'lucide-react';
 import { Button } from '@forge/ui/button';
 import { Label } from '@forge/ui/label';
-
-const SLOT_ICON_MAP: Record<string, LucideIcon> = {
-  library: BookOpen,
-  left: BookOpen,
-  main: LayoutDashboard,
-  inspector: ScanSearch,
-  right: ScanSearch,
-  settings: Settings,
-  workbench: Wrench,
-  bottom: Wrench,
-};
-
-export type DockLayoutSlotIconKey = keyof typeof SLOT_ICON_MAP;
 
 export function DockviewSlotTab(
   props: IDockviewPanelHeaderProps & React.HTMLAttributes<HTMLDivElement>
 ) {
   const { api, containerApi, params, className, ...rest } = props;
   const slotId = (params?.slotId as string) ?? 'main';
-  const iconKey = (params?.iconKey as string) ?? slotId;
+  const icon = params?.icon as React.ReactNode | undefined;
   const titleOverride = params?.title as string | undefined;
   const displayTitle = titleOverride ?? api.title ?? slotId;
-  const IconComponent = SLOT_ICON_MAP[iconKey] ?? SLOT_ICON_MAP.main;
   const isActive = api.isGroupActive;
 
   const handleClose = React.useCallback(
@@ -57,11 +46,9 @@ export function DockviewSlotTab(
       aria-selected={isActive}
       {...rest}
     >
-      {IconComponent && (
-        <span className="shrink-0 text-muted-foreground" aria-hidden>
-          <IconComponent className="size-[var(--icon-size)]" />
-        </span>
-      )}
+      <span className="shrink-0 text-muted-foreground" aria-hidden>
+        {icon != null ? icon : <LayoutDashboard className="size-[var(--icon-size)]" />}
+      </span>
       <Label className="font-semibold text-foreground truncate flex-1">{displayTitle}</Label>
       <Button variant="ghost" size="icon" onClick={handleClose} aria-label="Close panel" className="shrink-0 rounded p-[var(--control-padding-y)] text-muted-foreground hover:text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded-sm border-none">
         <X className="size-[var(--icon-size)] text-muted-foreground hover:text-foreground" />

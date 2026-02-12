@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { getStudioApiUrl } from '@/lib/api/studio';
+import { logout } from '@/lib/api/studio';
 
 export function UserNav() {
   const router = useRouter();
@@ -28,10 +28,7 @@ export function UserNav() {
   }, [user]);
 
   async function handleLogout() {
-    await fetch(`${getStudioApiUrl()}/api/users/logout`, {
-      method: 'POST',
-      credentials: 'include',
-    }).catch(() => null);
+    await logout().catch(() => null);
     router.push('/login');
     router.refresh();
   }

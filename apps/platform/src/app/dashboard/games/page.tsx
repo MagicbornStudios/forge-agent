@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { ExternalLink, Search } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { Badge } from '@/components/ui/badge';
@@ -13,16 +12,9 @@ import { useCreatorProjects } from '@/lib/data/hooks/use-dashboard-data';
 import { getStudioApiUrl } from '@/lib/api/studio';
 
 export default function DashboardGamesPage() {
-  const { user, isLoading: authLoading, activeOrganizationId } = useAuth();
-  const router = useRouter();
+  const { user, activeOrganizationId } = useAuth();
   const [query, setQuery] = useState('');
   const projectsQuery = useCreatorProjects(activeOrganizationId, !!user);
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace('/login?returnUrl=/dashboard/games');
-    }
-  }, [authLoading, user, router]);
 
   const filtered = useMemo(() => {
     const projects = projectsQuery.data ?? [];
@@ -37,7 +29,7 @@ export default function DashboardGamesPage() {
     });
   }, [projectsQuery.data, query]);
 
-  if (authLoading || projectsQuery.isLoading) {
+  if (projectsQuery.isLoading) {
     return (
       <main className="p-6">
         <p className="text-sm text-muted-foreground">Loading games...</p>

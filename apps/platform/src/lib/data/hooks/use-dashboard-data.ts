@@ -1,16 +1,20 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  createEnterpriseRequest,
   fetchAiUsageSeries,
   fetchAiUsageSummary,
   fetchApiKeys,
+  fetchEnterpriseRequests,
   fetchLicenses,
   fetchMyListings,
   fetchMyProjects,
   fetchRevenueSummary,
+  fetchStorageBreakdown,
+  fetchStorageSummary,
 } from '@/lib/api/studio';
-import { PLATFORM_QUERY_KEYS } from '@/lib/data/keys';
+import { PLATFORM_QUERY_KEYS } from '@/lib/constants/query-keys';
 
 export function useCreatorListings(orgId: number | null, enabled = true) {
   return useQuery({
@@ -39,7 +43,7 @@ export function useRevenueSummary(orgId: number | null, enabled = true) {
 export function useLicenses(orgId: number | null, enabled = true) {
   return useQuery({
     queryKey: PLATFORM_QUERY_KEYS.licenses(orgId),
-    queryFn: () => fetchLicenses(),
+    queryFn: () => fetchLicenses(orgId ?? undefined),
     enabled,
   });
 }
@@ -73,5 +77,47 @@ export function useAiUsageSeries(
     queryKey: PLATFORM_QUERY_KEYS.aiUsageSeries(orgId, range),
     queryFn: () => fetchAiUsageSeries({ orgId: orgId ?? undefined, range }),
     enabled,
+  });
+}
+
+export function useStorageSummary(orgId: number | null, enabled = true) {
+  return useQuery({
+    queryKey: PLATFORM_QUERY_KEYS.storageSummary(orgId),
+    queryFn: () => fetchStorageSummary(orgId ?? undefined),
+    enabled,
+  });
+}
+
+export function useStorageBreakdown(
+  orgId: number | null,
+  groupBy: 'org' | 'user' | 'project',
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: PLATFORM_QUERY_KEYS.storageBreakdown(orgId, groupBy),
+    queryFn: () =>
+      fetchStorageBreakdown({ orgId: orgId ?? undefined, groupBy }),
+    enabled,
+  });
+}
+
+export function useEnterpriseRequests(orgId: number | null, enabled = true) {
+  return useQuery({
+    queryKey: PLATFORM_QUERY_KEYS.enterpriseRequests(orgId),
+    queryFn: () => fetchEnterpriseRequests(orgId ?? undefined),
+    enabled,
+  });
+}
+
+export function useCreateEnterpriseRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { type: 'source_access' | 'premium_support' | 'custom_editor'; notes?: string; orgId?: number | null }) =>
+      createEnterpriseRequest(input),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: PLATFORM_QUERY_KEYS.enterpriseRequests(variables.orgId ?? null),
+      });
+    },
   });
 }

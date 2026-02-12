@@ -7,13 +7,15 @@ import {
   requireAuthenticatedUser,
   resolveOrganizationFromInput,
 } from '@/lib/server/organizations';
-
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+import { requireStripeSecretKey, resolvePublicAppUrl } from '@/lib/env';
 
 export async function POST(req: Request) {
-  if (!stripeSecretKey) {
+  let stripeSecretKey: string;
+  try {
+    stripeSecretKey = requireStripeSecretKey();
+  } catch (error) {
     return NextResponse.json(
-      { error: 'Stripe is not configured' },
+      { error: error instanceof Error ? error.message : 'Stripe is not configured' },
       { status: 503 }
     );
   }
@@ -48,18 +50,18 @@ export async function POST(req: Request) {
       depth: 0,
     });
 
-    const accountId =
-      organization?.stripeConnectAccountId ?? user.stripeConnectAccountId;
+    const accountId = organization?.stripeConnectAccountId ?? null;
     if (!accountId) {
       return NextResponse.json(
         { error: 'Complete Connect account setup first' },
         { status: 400 }
       );
     }
+    const fallbackBaseUrl = resolvePublicAppUrl('http://localhost:3000');
     const base =
       typeof body?.baseUrl === 'string' && body.baseUrl
         ? body.baseUrl
-        : process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+        : fallbackBaseUrl;
     const returnUrl =
       typeof body?.returnUrl === 'string' && body.returnUrl
         ? body.returnUrl

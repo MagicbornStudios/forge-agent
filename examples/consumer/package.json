@@ -11,10 +11,6 @@
   "dependencies": {
     "@forge/dev-kit": "workspace:*",
     "@ai-sdk/openai": "^3.0.25",
-    "@copilotkit/react-core": "^1.51.2",
-    "@copilotkit/react-ui": "^1.51.2",
-    "@copilotkit/shared": "^1.51.2",
-    "@copilotkit/runtime": "^1.51.2",
     "next": "15.5.9",
     "openai": "^5.23.2",
     "react": "^19.2.1",

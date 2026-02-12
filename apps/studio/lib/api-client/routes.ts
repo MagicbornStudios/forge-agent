@@ -46,8 +46,7 @@ export const API_ROUTES = {
   // Dev
   DEV_LOG: '/api/dev/log',
 
-  // CopilotKit / Assistant
-  COPILOTKIT: '/api/copilotkit',
+  // Assistant
   ASSISTANT_CHAT: '/api/assistant-chat',
 
   // Docs (Swagger)

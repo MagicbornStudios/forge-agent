@@ -82,6 +82,12 @@ export async function POST(
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Clone failed';
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status =
+      message.toLowerCase().includes('storage limit')
+        ? 409
+        : message.includes('unique') || message.includes('duplicate')
+          ? 409
+          : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

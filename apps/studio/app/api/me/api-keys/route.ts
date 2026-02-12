@@ -96,7 +96,12 @@ export async function GET(req: Request) {
     }
 
     const requestedOrgId = parseOrganizationIdFromRequestUrl(req);
-    const context = await resolveOrganizationFromInput(payload, user, requestedOrgId);
+    const context = await resolveOrganizationFromInput(
+      payload,
+      user,
+      requestedOrgId,
+      { strictRequestedMembership: requestedOrgId != null },
+    );
 
     const result = await payload.find({
       collection: 'api-keys',

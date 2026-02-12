@@ -1,17 +1,11 @@
 /**
- * Core contracts for CopilotKit domain integration.
+ * Core contracts for domain integration.
  *
- * Every workspace domain (forge, video, writer, etc.) implements
- * `DomainCopilotContract` to get context, actions, suggestions,
- * and highlights wired up via a single `useDomainCopilot()` call.
+ * CopilotKit removed; types kept for legacy domain copilot code (context, suggestions, action shapes).
+ * AIHighlightPayload moved to @forge/shared/assistant.
  */
 
-import type { Parameter } from '@copilotkit/shared';
-import type {
-  FrontendAction,
-  ActionRenderProps,
-  ActionRenderPropsNoArgs,
-} from '@copilotkit/react-core';
+import type { ReactNode } from 'react';
 import type { Selection } from '@forge/shared';
 
 // ---------------------------------------------------------------------------
@@ -28,7 +22,7 @@ export interface ActionResult<T = unknown> {
 }
 
 // ---------------------------------------------------------------------------
-// AI highlights
+// AI highlights (prefer @forge/shared/assistant for new code)
 // ---------------------------------------------------------------------------
 
 /**
@@ -45,7 +39,7 @@ export interface AIHighlightPayload {
 // Context snapshot
 // ---------------------------------------------------------------------------
 
-/** Shape of the readable context exposed to CopilotKit per domain. */
+/** Shape of the readable context exposed per domain. */
 export interface DomainContextSnapshot {
   domain: string;
   workspaceId: string;
@@ -66,24 +60,36 @@ export interface DomainSuggestion {
 }
 
 // ---------------------------------------------------------------------------
-// Action config
+// Action config (generic; CopilotKit removed)
 // ---------------------------------------------------------------------------
 
-/** Parameter descriptor for a copilot action (CopilotKit Parameter). */
-export type CopilotActionParameter = Parameter;
+/** Parameter descriptor for an action. */
+export interface CopilotActionParameter {
+  name: string;
+  type: string;
+  description?: string;
+  required?: boolean;
+}
 
-/**
- * Configuration for a single CopilotKit action.
- *
- * Alias of CopilotKit FrontendAction so it stays compatible with useCopilotAction.
- */
-export type CopilotActionConfig<T extends Parameter[] | [] = []> = FrontendAction<T>;
+/** Configuration for a domain action (legacy). */
+export interface CopilotActionConfig<T extends CopilotActionParameter[] | [] = []> {
+  name: string;
+  description: string;
+  parameters?: T;
+  handler?: (args: Record<string, unknown>) => Promise<ActionResult>;
+  render?: (props: CopilotActionRenderProps<T>) => ReactNode;
+  available?: 'enabled' | 'disabled';
+}
 
-/** Render props for generative UI actions (re-exported for convenience). */
-export type CopilotActionRenderProps<T extends Parameter[] | [] = []> = ActionRenderProps<T>;
+/** Render props for generative UI (status, args, result). */
+export interface CopilotActionRenderProps<T extends CopilotActionParameter[] | [] = []> {
+  args: Record<string, unknown>;
+  status: 'idle' | 'inProgress' | 'complete' | 'error';
+  result?: ActionResult;
+}
 
-/** Render props when actions have no args (re-exported for convenience). */
-export type CopilotActionRenderPropsNoArgs<T extends Parameter[] | [] = []> = ActionRenderPropsNoArgs<T>;
+/** Shorthand when action has no parameters. */
+export type CopilotActionRenderPropsNoArgs = CopilotActionRenderProps<[]>;
 
 // ---------------------------------------------------------------------------
 // Domain contract

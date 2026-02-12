@@ -2,9 +2,10 @@ import { NextResponse } from 'next/server';
 import { getPayload } from 'payload';
 import config from '@/payload.config';
 import {
-  ensureOrganizationContext,
+  parseOrganizationIdFromRequestUrl,
   requireAuthenticatedUser,
 } from '@/lib/server/organizations';
+import { resolveBillingOrganizationContext } from '@/lib/server/billing/context';
 
 export async function GET(req: Request) {
   try {
@@ -14,15 +15,16 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const context = await ensureOrganizationContext(payload, user);
-    const activeOrganization =
-      context.memberships.find(
-        (membership) => membership.organizationId === context.activeOrganizationId,
-      ) ?? null;
+    const requestedOrgId = parseOrganizationIdFromRequestUrl(req);
+    const context = await resolveBillingOrganizationContext(
+      payload,
+      user,
+      requestedOrgId,
+    );
 
     return NextResponse.json({
       activeOrganizationId: context.activeOrganizationId,
-      activeOrganization,
+      activeOrganization: context.activeOrganization,
       memberships: context.memberships,
     });
   } catch (error) {

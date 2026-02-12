@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload';
+import { selfOnlyAccess } from '../access/authorization.ts';
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -7,10 +8,10 @@ export const Users: CollectionConfig = {
     useAsTitle: 'name',
   },
   access: {
-    read: () => true,
+    read: selfOnlyAccess,
     create: () => true,
-    update: () => true,
-    delete: () => true,
+    update: selfOnlyAccess,
+    delete: selfOnlyAccess,
   },
   fields: [
     {
@@ -53,3 +54,4 @@ export const Users: CollectionConfig = {
     },
   ],
 };
+

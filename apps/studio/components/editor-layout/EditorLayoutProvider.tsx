@@ -1,15 +1,10 @@
 'use client';
 
 import * as React from 'react';
-import {
-  PanelRegistrationContextProvider,
-  type RailSide,
-  type RailPanelDescriptor,
-} from '@forge/shared/components/editor';
-import { usePanelRegistryStore } from '@/lib/editor-registry/panel-registry';
+import { PanelRegistrationContextProvider } from '@forge/shared/components/editor';
 
 export interface EditorLayoutProviderProps {
-  /** Editor id (e.g. dialogue, character). Used for panel registry and visibility keys. */
+  /** Editor id (e.g. dialogue, character). Used for visibility keys and menu scope. */
   editorId: string;
   /** Optional viewport id for settings context (e.g. narrative, storylet). */
   viewportId?: string | null;
@@ -19,9 +14,8 @@ export interface EditorLayoutProviderProps {
 }
 
 /**
- * Provides panel registration context for EditorRail/EditorPanel. Clears any existing
- * panels for this editor on mount so switching editors resets the layout registry.
- * Must wrap EditorRail(s) and EditorLayout.
+ * Provides editor context (editorId) for EditorMenubarContribution and other editor-scoped components.
+ * Must wrap editor layout and menubar contribution.
  */
 export function EditorLayoutProvider({
   editorId,
@@ -29,22 +23,7 @@ export function EditorLayoutProvider({
   projectId,
   children,
 }: EditorLayoutProviderProps) {
-  const clearEditor = usePanelRegistryStore((s) => s.clearEditor);
-  const setRailPanels = usePanelRegistryStore((s) => s.setRailPanels);
-
-  React.useEffect(() => {
-    clearEditor(editorId);
-    return () => clearEditor(editorId);
-  }, [editorId, clearEditor]);
-
-  const value = React.useMemo(
-    () => ({
-      editorId,
-      setRailPanels: (side: RailSide, descriptors: RailPanelDescriptor[]) =>
-        setRailPanels(editorId, side, descriptors),
-    }),
-    [editorId, setRailPanels],
-  );
+  const value = React.useMemo(() => ({ editorId }), [editorId]);
 
   return (
     <PanelRegistrationContextProvider value={value}>

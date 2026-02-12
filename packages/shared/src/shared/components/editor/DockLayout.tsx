@@ -14,7 +14,8 @@ import { useShallow } from 'zustand/shallow';
 import { DockviewReact } from 'dockview';
 import type { DockviewReadyEvent, IDockviewPanelProps } from 'dockview';
 import { cn } from '@forge/shared/lib/utils';
-import { DockviewSlotTab, type DockLayoutSlotIconKey } from './DockviewSlotTab';
+import { BookOpen, LayoutDashboard, ScanSearch, Settings, Wrench } from 'lucide-react';
+import { DockviewSlotTab } from './DockviewSlotTab';
 
 /** Store for slot content so SlotPanel re-renders when content changes (Dockview may not re-render on context change). */
 interface SlotContentState {
@@ -28,8 +29,6 @@ const useSlotContentStore = create<SlotContentState>((set) => ({
   setSlots: (slots) => set({ slots, version: Date.now() }),
 }));
 
-export type { DockLayoutSlotIconKey };
-
 export interface DockLayoutViewport {
   viewportId?: string;
   viewportType?: string;
@@ -38,7 +37,7 @@ export interface DockLayoutViewport {
 
 export interface DockLayoutSlotConfig {
   title?: string;
-  iconKey?: DockLayoutSlotIconKey;
+  icon?: React.ReactNode;
 }
 
 /**
@@ -48,7 +47,7 @@ export interface DockLayoutSlotConfig {
 export interface RailPanelDescriptor {
   id: string;
   title: string;
-  iconKey?: DockLayoutSlotIconKey;
+  icon?: React.ReactNode;
   content: React.ReactNode;
 }
 
@@ -134,11 +133,18 @@ function SlotPanel(props: IDockviewPanelProps) {
   return <div className="h-full w-full min-h-0 min-w-0 overflow-hidden">{resolved}</div>;
 }
 
-const DEFAULT_SLOT_CONFIG: Record<SlotId, { title: string; iconKey: DockLayoutSlotIconKey }> = {
-  left: { title: 'Library', iconKey: 'library' },
-  main: { title: 'Main', iconKey: 'main' },
-  right: { title: 'Inspector', iconKey: 'inspector' },
-  bottom: { title: 'Assistant', iconKey: 'workbench' },
+const DEFAULT_SLOT_ICONS = {
+  left: <BookOpen className="size-[var(--icon-size)]" />,
+  main: <LayoutDashboard className="size-[var(--icon-size)]" />,
+  right: <ScanSearch className="size-[var(--icon-size)]" />,
+  bottom: <Wrench className="size-[var(--icon-size)]" />,
+};
+
+const DEFAULT_SLOT_CONFIG: Record<SlotId, { title: string; icon: React.ReactNode }> = {
+  left: { title: 'Library', icon: DEFAULT_SLOT_ICONS.left },
+  main: { title: 'Main', icon: DEFAULT_SLOT_ICONS.main },
+  right: { title: 'Inspector', icon: DEFAULT_SLOT_ICONS.right },
+  bottom: { title: 'Assistant', icon: DEFAULT_SLOT_ICONS.bottom },
 };
 
 /** Slot components for declarative layout. Use with EditorDockLayout: <EditorDockLayout><EditorDockLayout.Left>…</EditorDockLayout.Left>…</EditorDockLayout>. */
@@ -162,6 +168,25 @@ function DockLayoutBottom({ children }: { children?: React.ReactNode }) {
 }
 DockLayoutBottom.displayName = 'DockLayout.Bottom';
 
+/** Panel descriptor for multi-panel rails. Renders null; used only for collection. */
+export interface DockLayoutPanelProps {
+  id: string;
+  title: string;
+  icon?: React.ReactNode;
+  children?: React.ReactNode;
+}
+
+function DockLayoutPanel(_props: DockLayoutPanelProps) {
+  return null;
+}
+DockLayoutPanel.displayName = 'DockLayout.Panel';
+
+function isDockLayoutPanelChild(
+  child: React.ReactNode
+): child is React.ReactElement<DockLayoutPanelProps> {
+  return React.isValidElement(child) && child.type === DockLayoutPanel;
+}
+
 const SLOT_COMPONENTS: Record<SlotId, React.ComponentType<{ children?: React.ReactNode }>> = {
   left: DockLayoutLeft,
   main: DockLayoutMain,
@@ -169,19 +194,43 @@ const SLOT_COMPONENTS: Record<SlotId, React.ComponentType<{ children?: React.Rea
   bottom: DockLayoutBottom,
 };
 
-function collectSlotsFromChildren(children: React.ReactNode): Partial<Record<SlotId, React.ReactNode>> {
-  const collected: Partial<Record<SlotId, React.ReactNode>> = {};
+export type { DockLayoutPanelProps };
+
+/** Collected slot data: either a single ReactNode (legacy) or RailPanelDescriptor[] (multi-panel). */
+type CollectedSlot = React.ReactNode | RailPanelDescriptor[];
+
+function collectSlotsFromChildren(children: React.ReactNode): {
+  slots: Partial<Record<SlotId, React.ReactNode>>;
+  panelsFromSlots: Partial<Record<SlotId, RailPanelDescriptor[]>>;
+} {
+  const slots: Partial<Record<SlotId, React.ReactNode>> = {};
+  const panelsFromSlots: Partial<Record<SlotId, RailPanelDescriptor[]>> = {};
+
   React.Children.forEach(children, (child) => {
     if (!React.isValidElement(child)) return;
     const type = child.type as React.ComponentType<{ children?: React.ReactNode }>;
     for (const slotId of SLOT_IDS) {
       if (type === SLOT_COMPONENTS[slotId]) {
-        collected[slotId] = (child as React.ReactElement<{ children?: React.ReactNode }>).props.children;
+        const slotChildren = (child as React.ReactElement<{ children?: React.ReactNode }>).props.children;
+        const panelDescriptors: RailPanelDescriptor[] = [];
+        let hasPanelChildren = false;
+        React.Children.forEach(slotChildren, (c) => {
+          if (isDockLayoutPanelChild(c)) {
+            hasPanelChildren = true;
+            const { id, title, icon, children: content } = c.props;
+            panelDescriptors.push({ id, title, icon, content: content ?? null });
+          }
+        });
+        if (hasPanelChildren && panelDescriptors.length > 0) {
+          panelsFromSlots[slotId] = panelDescriptors;
+        } else if (slotChildren != null) {
+          slots[slotId] = slotChildren;
+        }
         break;
       }
     }
   });
-  return collected;
+  return { slots, panelsFromSlots };
 }
 
 type LayoutSlots = {
@@ -208,8 +257,8 @@ function percentToPixels(percent: number | undefined, total: number | undefined)
   return Math.max(0, Math.round(((percent as number) / 100) * (total as number)));
 }
 
-const DEFAULT_RIGHT_INSPECTOR_CONFIG = { title: 'Inspector', iconKey: 'inspector' as DockLayoutSlotIconKey };
-const DEFAULT_RIGHT_SETTINGS_CONFIG = { title: 'Settings', iconKey: 'settings' as DockLayoutSlotIconKey };
+const DEFAULT_RIGHT_INSPECTOR_CONFIG = { title: 'Inspector', icon: <ScanSearch className="size-[var(--icon-size)]" /> };
+const DEFAULT_RIGHT_SETTINGS_CONFIG = { title: 'Settings', icon: <Settings className="size-[var(--icon-size)]" /> };
 
 interface BuildLayoutOptions {
   slots: LayoutSlots;
@@ -235,7 +284,7 @@ function buildDefaultLayout(api: DockviewReadyEvent['api'], options: BuildLayout
       id: first.id,
       component: 'slot',
       tabComponent: 'slotTab',
-      params: { slotId: first.id, iconKey: first.iconKey ?? DEFAULT_SLOT_CONFIG.main.iconKey, title: first.title },
+      params: { slotId: first.id, icon: first.icon ?? DEFAULT_SLOT_CONFIG.main.icon, title: first.title },
       title: first.title,
     });
     for (let i = 1; i < mainPanels!.length; i++) {
@@ -244,7 +293,7 @@ function buildDefaultLayout(api: DockviewReadyEvent['api'], options: BuildLayout
         id: p.id,
         component: 'slot',
         tabComponent: 'slotTab',
-        params: { slotId: p.id, iconKey: p.iconKey ?? DEFAULT_SLOT_CONFIG.main.iconKey, title: p.title },
+        params: { slotId: p.id, icon: p.icon ?? DEFAULT_SLOT_CONFIG.main.icon, title: p.title },
         title: p.title,
         position: { referencePanel: mainRefId, direction: 'within' },
       });
@@ -255,7 +304,7 @@ function buildDefaultLayout(api: DockviewReadyEvent['api'], options: BuildLayout
       id: 'main',
       component: 'slot',
       tabComponent: 'slotTab',
-      params: { slotId: 'main', iconKey: mainConfig.iconKey, title: mainConfig.title },
+      params: { slotId: 'main', icon: mainConfig.icon, title: mainConfig.title },
       title: mainConfig.title,
     });
   }
@@ -265,7 +314,7 @@ function buildDefaultLayout(api: DockviewReadyEvent['api'], options: BuildLayout
       id: leftPanels[0].id,
       component: 'slot',
       tabComponent: 'slotTab',
-      params: { slotId: leftPanels[0].id, iconKey: leftPanels[0].iconKey ?? DEFAULT_SLOT_CONFIG.left.iconKey, title: leftPanels[0].title },
+      params: { slotId: leftPanels[0].id, icon: leftPanels[0].icon ?? DEFAULT_SLOT_CONFIG.left.icon, title: leftPanels[0].title },
       title: leftPanels[0].title,
       position: { referencePanel: mainRefId, direction: 'left' },
       ...(sizeOverrides?.left ?? {}),
@@ -276,7 +325,7 @@ function buildDefaultLayout(api: DockviewReadyEvent['api'], options: BuildLayout
         id: p.id,
         component: 'slot',
         tabComponent: 'slotTab',
-        params: { slotId: p.id, iconKey: p.iconKey ?? DEFAULT_SLOT_CONFIG.left.iconKey, title: p.title },
+        params: { slotId: p.id, icon: p.icon ?? DEFAULT_SLOT_CONFIG.left.icon, title: p.title },
         title: p.title,
         position: { referencePanel: leftPanels[0].id, direction: 'within' },
       });
@@ -287,7 +336,7 @@ function buildDefaultLayout(api: DockviewReadyEvent['api'], options: BuildLayout
       id: 'left',
       component: 'slot',
       tabComponent: 'slotTab',
-      params: { slotId: 'left', iconKey: leftConfig.iconKey, title: leftConfig.title },
+      params: { slotId: 'left', icon: leftConfig.icon, title: leftConfig.title },
       title: leftConfig.title,
       position: { referencePanel: mainRefId, direction: 'left' },
       ...(sizeOverrides?.left ?? {}),
@@ -299,7 +348,7 @@ function buildDefaultLayout(api: DockviewReadyEvent['api'], options: BuildLayout
       id: rightPanels[0].id,
       component: 'slot',
       tabComponent: 'slotTab',
-      params: { slotId: rightPanels[0].id, iconKey: rightPanels[0].iconKey ?? DEFAULT_SLOT_CONFIG.right.iconKey, title: rightPanels[0].title },
+      params: { slotId: rightPanels[0].id, icon: rightPanels[0].icon ?? DEFAULT_SLOT_CONFIG.right.icon, title: rightPanels[0].title },
       title: rightPanels[0].title,
       position: { referencePanel: mainRefId, direction: 'right' },
       ...(sizeOverrides?.right ?? {}),
@@ -310,7 +359,7 @@ function buildDefaultLayout(api: DockviewReadyEvent['api'], options: BuildLayout
         id: p.id,
         component: 'slot',
         tabComponent: 'slotTab',
-        params: { slotId: p.id, iconKey: p.iconKey ?? DEFAULT_SLOT_CONFIG.right.iconKey, title: p.title },
+        params: { slotId: p.id, icon: p.icon ?? DEFAULT_SLOT_CONFIG.right.icon, title: p.title },
         title: p.title,
         position: { referencePanel: rightPanels[0].id, direction: 'within' },
       });
@@ -322,7 +371,7 @@ function buildDefaultLayout(api: DockviewReadyEvent['api'], options: BuildLayout
       id: RIGHT_INSPECTOR_PANEL_ID,
       component: 'slot',
       tabComponent: 'slotTab',
-      params: { slotId: RIGHT_INSPECTOR_PANEL_ID, iconKey: inspectorConfig.iconKey, title: inspectorConfig.title },
+      params: { slotId: RIGHT_INSPECTOR_PANEL_ID, icon: inspectorConfig.icon, title: inspectorConfig.title },
       title: inspectorConfig.title,
       position: { referencePanel: mainRefId, direction: 'right' },
       ...(sizeOverrides?.right ?? {}),
@@ -331,7 +380,7 @@ function buildDefaultLayout(api: DockviewReadyEvent['api'], options: BuildLayout
       id: RIGHT_SETTINGS_PANEL_ID,
       component: 'slot',
       tabComponent: 'slotTab',
-      params: { slotId: RIGHT_SETTINGS_PANEL_ID, iconKey: settingsConfig.iconKey, title: settingsConfig.title },
+      params: { slotId: RIGHT_SETTINGS_PANEL_ID, icon: settingsConfig.icon, title: settingsConfig.title },
       title: settingsConfig.title,
       position: { referencePanel: RIGHT_INSPECTOR_PANEL_ID, direction: 'within' },
     });
@@ -341,7 +390,7 @@ function buildDefaultLayout(api: DockviewReadyEvent['api'], options: BuildLayout
       id: 'right',
       component: 'slot',
       tabComponent: 'slotTab',
-      params: { slotId: 'right', iconKey: rightConfig.iconKey, title: rightConfig.title },
+      params: { slotId: 'right', icon: rightConfig.icon, title: rightConfig.title },
       title: rightConfig.title,
       position: { referencePanel: mainRefId, direction: 'right' },
       ...(sizeOverrides?.right ?? {}),
@@ -353,7 +402,7 @@ function buildDefaultLayout(api: DockviewReadyEvent['api'], options: BuildLayout
       id: bottomPanels[0].id,
       component: 'slot',
       tabComponent: 'slotTab',
-      params: { slotId: bottomPanels[0].id, iconKey: bottomPanels[0].iconKey ?? DEFAULT_SLOT_CONFIG.bottom.iconKey, title: bottomPanels[0].title },
+      params: { slotId: bottomPanels[0].id, icon: bottomPanels[0].icon ?? DEFAULT_SLOT_CONFIG.bottom.icon, title: bottomPanels[0].title },
       title: bottomPanels[0].title,
       position: { referencePanel: mainRefId, direction: 'below' },
       ...(sizeOverrides?.bottom ?? {}),
@@ -364,7 +413,7 @@ function buildDefaultLayout(api: DockviewReadyEvent['api'], options: BuildLayout
         id: p.id,
         component: 'slot',
         tabComponent: 'slotTab',
-        params: { slotId: p.id, iconKey: p.iconKey ?? DEFAULT_SLOT_CONFIG.bottom.iconKey, title: p.title },
+        params: { slotId: p.id, icon: p.icon ?? DEFAULT_SLOT_CONFIG.bottom.icon, title: p.title },
         title: p.title,
         position: { referencePanel: bottomPanels[0].id, direction: 'within' },
       });
@@ -375,7 +424,7 @@ function buildDefaultLayout(api: DockviewReadyEvent['api'], options: BuildLayout
       id: 'bottom',
       component: 'slot',
       tabComponent: 'slotTab',
-      params: { slotId: 'bottom', iconKey: bottomConfig.iconKey, title: bottomConfig.title },
+      params: { slotId: 'bottom', icon: bottomConfig.icon, title: bottomConfig.title },
       title: bottomConfig.title,
       position: { referencePanel: mainRefId, direction: 'below' },
       ...(sizeOverrides?.bottom ?? {}),
@@ -416,49 +465,54 @@ const DockLayoutRoot = forwardRef<DockLayoutRef, DockLayoutProps>(function DockL
     typeof onLayoutChange === 'function' && typeof clearLayout === 'function';
 
   const collected = React.useMemo(
-    () => (children != null ? collectSlotsFromChildren(children) : {}),
+    () => (children != null ? collectSlotsFromChildren(children) : { slots: {}, panelsFromSlots: {} }),
     [children]
   );
-  const left = collected.left ?? leftProp;
-  const main = collected.main ?? mainProp;
-  const right = collected.right ?? rightProp;
+  const left = collected.slots?.left ?? leftProp;
+  const main = collected.slots?.main ?? mainProp;
+  const right = collected.slots?.right ?? rightProp;
   const rightInspector = rightInspectorProp;
   const rightSettings = rightSettingsProp;
-  const bottom = collected.bottom ?? bottomProp;
+  const bottom = collected.slots?.bottom ?? bottomProp;
 
-  const useRightSplit = rightPanelsProp == null && rightInspector != null && rightSettings != null;
+  const leftPanels = leftPanelsProp ?? collected.panelsFromSlots?.left;
+  const mainPanels = mainPanelsProp ?? collected.panelsFromSlots?.main;
+  const rightPanels = rightPanelsProp ?? collected.panelsFromSlots?.right;
+  const bottomPanels = bottomPanelsProp ?? collected.panelsFromSlots?.bottom;
+
+  const useRightSplit = rightPanels == null && rightInspector != null && rightSettings != null;
   const layoutSlots: LayoutSlots = React.useMemo(
     () => ({
-      left: leftPanelsProp == null ? left : undefined,
-      main: mainPanelsProp == null ? main : undefined,
-      right: rightPanelsProp == null && !useRightSplit ? right : undefined,
-      rightInspector: rightPanelsProp == null && useRightSplit ? rightInspector : undefined,
-      rightSettings: rightPanelsProp == null && useRightSplit ? rightSettings : undefined,
-      bottom: bottomPanelsProp == null ? bottom : undefined,
+      left: leftPanels == null ? left : undefined,
+      main: mainPanels == null ? main : undefined,
+      right: rightPanels == null && !useRightSplit ? right : undefined,
+      rightInspector: rightPanels == null && useRightSplit ? rightInspector : undefined,
+      rightSettings: rightPanels == null && useRightSplit ? rightSettings : undefined,
+      bottom: bottomPanels == null ? bottom : undefined,
     }),
-    [leftPanelsProp, mainPanelsProp, rightPanelsProp, bottomPanelsProp, left, main, right, rightInspector, rightSettings, bottom, useRightSplit]
+    [leftPanels, mainPanels, rightPanels, bottomPanels, left, main, right, rightInspector, rightSettings, bottom, useRightSplit]
   );
 
   /** Resolved slot id -> content for context and store. From *Panels arrays or legacy left/main/right/bottom. */
   const resolvedSlots = React.useMemo((): Record<string, React.ReactNode | undefined> => {
     const out: Record<string, React.ReactNode | undefined> = {};
-    if (leftPanelsProp?.length) {
-      for (const p of leftPanelsProp) out[p.id] = p.content;
+    if (leftPanels?.length) {
+      for (const p of leftPanels) out[p.id] = p.content;
     } else if (left != null) out.left = left;
-    if (mainPanelsProp?.length) {
-      for (const p of mainPanelsProp) out[p.id] = p.content;
+    if (mainPanels?.length) {
+      for (const p of mainPanels) out[p.id] = p.content;
     } else if (main != null) out.main = main;
-    if (rightPanelsProp?.length) {
-      for (const p of rightPanelsProp) out[p.id] = p.content;
+    if (rightPanels?.length) {
+      for (const p of rightPanels) out[p.id] = p.content;
     } else if (useRightSplit) {
       out[RIGHT_INSPECTOR_PANEL_ID] = rightInspector;
       out[RIGHT_SETTINGS_PANEL_ID] = rightSettings;
     } else if (right != null) out.right = right;
-    if (bottomPanelsProp?.length) {
-      for (const p of bottomPanelsProp) out[p.id] = p.content;
+    if (bottomPanels?.length) {
+      for (const p of bottomPanels) out[p.id] = p.content;
     } else if (bottom != null) out.bottom = bottom;
     return out;
-  }, [leftPanelsProp, mainPanelsProp, rightPanelsProp, bottomPanelsProp, left, main, right, rightInspector, rightSettings, bottom, useRightSplit]);
+  }, [leftPanels, mainPanels, rightPanels, bottomPanels, left, main, right, rightInspector, rightSettings, bottom, useRightSplit]);
 
   const [api, setApi] = useState<DockviewReadyEvent['api'] | null>(null);
   const [layoutSeed, setLayoutSeed] = useState(0);
@@ -466,18 +520,18 @@ const DockLayoutRoot = forwardRef<DockLayoutRef, DockLayoutProps>(function DockL
   const slotsRef = useRef({
     layoutSlots,
     slotConfig,
-    leftPanels: leftPanelsProp,
-    mainPanels: mainPanelsProp,
-    rightPanels: rightPanelsProp,
-    bottomPanels: bottomPanelsProp,
+    leftPanels,
+    mainPanels,
+    rightPanels,
+    bottomPanels,
   });
   slotsRef.current = {
     layoutSlots,
     slotConfig,
-    leftPanels: leftPanelsProp,
-    mainPanels: mainPanelsProp,
-    rightPanels: rightPanelsProp,
-    bottomPanels: bottomPanelsProp,
+    leftPanels,
+    mainPanels,
+    rightPanels,
+    bottomPanels,
   };
 
   const storageKey = layoutId ? `dockview-${layoutId}` : undefined;
@@ -664,6 +718,7 @@ export const EditorDockLayout = Object.assign(DockLayoutRoot, {
   Main: DockLayoutMain,
   Right: DockLayoutRight,
   Bottom: DockLayoutBottom,
+  Panel: DockLayoutPanel,
 });
 
 /** @deprecated Use EditorDockLayout. Kept for backward compatibility. */

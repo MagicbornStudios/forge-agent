@@ -12,6 +12,7 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -23,6 +24,7 @@ import { useAuth } from '@/components/auth/AuthProvider';
 import { navItems } from '@/config/nav-config';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useFilteredNavItems } from '@/hooks/use-nav';
+import { PLATFORM_ROUTES } from '@/lib/constants/routes';
 import { IconChevronRight } from '@tabler/icons-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -40,9 +42,33 @@ export default function AppSidebar() {
     // Side effects based on sidebar state changes
   }, [isOpen]);
 
+  const isPathActive = React.useCallback(
+    (url: string) => {
+      if (pathname === url) return true;
+      if (url === '/') return false;
+      return pathname.startsWith(`${url}/`);
+    },
+    [pathname]
+  );
+
   return (
     <Sidebar collapsible='icon'>
       <SidebarHeader className='border-b border-sidebar-border/60 px-2 py-2'>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              size='lg'
+              tooltip='Dashboard home'
+              isActive={isPathActive(PLATFORM_ROUTES.dashboardOverview)}
+            >
+              <Link href={PLATFORM_ROUTES.dashboardOverview}>
+                <Icons.logo />
+                <span className='min-w-0 truncate font-semibold'>Forge Platform</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
         <OrgSwitcher />
       </SidebarHeader>
       <SidebarContent className='overflow-x-hidden'>
@@ -51,23 +77,31 @@ export default function AppSidebar() {
           <SidebarMenu>
             {itemsToShow.map((item) => {
               const Icon = item.icon ? Icons[item.icon] : Icons.logo;
-              return item?.items && item?.items?.length > 0 ? (
+              const hasChildren = Boolean(item.items && item.items.length > 0);
+              const hasActiveChild =
+                hasChildren && item.items ? item.items.some((subItem) => isPathActive(subItem.url)) : false;
+              const isParentActive = isPathActive(item.url) || hasActiveChild;
+              return hasChildren ? (
                 <Collapsible
                   key={item.title}
                   asChild
-                  defaultOpen={item.isActive}
+                  defaultOpen={isParentActive || item.isActive}
                   className='group/collapsible'
                 >
                   <SidebarMenuItem>
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton
-                        tooltip={item.title}
-                        isActive={pathname === item.url}
-                      >
+                    <SidebarMenuButton asChild tooltip={item.title} isActive={isParentActive}>
+                      <Link href={item.url}>
                         {item.icon && <Icon />}
                         <span className='min-w-0 truncate'>{item.title}</span>
-                        <IconChevronRight className='ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90' />
-                      </SidebarMenuButton>
+                      </Link>
+                    </SidebarMenuButton>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuAction
+                        showOnHover
+                        aria-label={`Toggle ${item.title} section`}
+                      >
+                        <IconChevronRight className='transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90' />
+                      </SidebarMenuAction>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <SidebarMenuSub>
@@ -75,7 +109,7 @@ export default function AppSidebar() {
                           <SidebarMenuSubItem key={subItem.title}>
                             <SidebarMenuSubButton
                               asChild
-                              isActive={pathname === subItem.url}
+                              isActive={isPathActive(subItem.url)}
                             >
                               <Link href={subItem.url}>
                                 <span className='min-w-0 truncate'>{subItem.title}</span>
@@ -92,7 +126,7 @@ export default function AppSidebar() {
                   <SidebarMenuButton
                     asChild
                     tooltip={item.title}
-                    isActive={pathname === item.url}
+                    isActive={isPathActive(item.url)}
                   >
                     <Link href={item.url}>
                       <Icon />

@@ -1,16 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { PricingTable, type PricingPlan } from '@/components/pricing/pricing-table';
+import { BillingStatusBanner } from '@/components/dashboard/billing-status-banner';
+import { EnterpriseAccessCard } from '@/components/dashboard/enterprise-access-card';
+import { StorageBreakdownTable } from '@/components/dashboard/storage-breakdown-table';
+import { StorageUsageCards } from '@/components/dashboard/storage-usage-cards';
 import {
   createCheckoutSession,
   createConnectAccount,
   createConnectOnboardingLink,
+  createStorageUpgradeCheckoutSession,
   getStudioApiUrl,
 } from '@/lib/api/studio';
+import {
+  useStorageBreakdown,
+  useStorageSummary,
+} from '@/lib/data/hooks/use-dashboard-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -40,22 +49,23 @@ const planOptions: PricingPlan[] = [
 ];
 
 export default function DashboardBillingPage() {
-  const { user, isLoading, activeOrganizationId, activeOrganization, refreshUser } = useAuth();
-  const router = useRouter();
+  const { user, activeOrganizationId, activeOrganization, refreshUser } = useAuth();
   const searchParams = useSearchParams();
 
   const [upgradeLoading, setUpgradeLoading] = useState(false);
+  const [storageUpgradeLoading, setStorageUpgradeLoading] = useState(false);
   const [connectLoading, setConnectLoading] = useState(false);
   const [onboardingLoading, setOnboardingLoading] = useState(false);
+  const [breakdownGroupBy, setBreakdownGroupBy] = useState<'org' | 'user' | 'project'>('project');
   const [error, setError] = useState<string | null>(null);
 
   const success = searchParams.get('success') === '1';
-
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.replace('/login?returnUrl=/dashboard/billing');
-    }
-  }, [isLoading, user, router]);
+  const storageSummaryQuery = useStorageSummary(activeOrganizationId, !!user);
+  const storageBreakdownQuery = useStorageBreakdown(
+    activeOrganizationId,
+    breakdownGroupBy,
+    !!user,
+  );
 
   async function handleUpgrade() {
     setUpgradeLoading(true);
@@ -63,7 +73,11 @@ export default function DashboardBillingPage() {
     try {
       const origin = typeof window !== 'undefined' ? window.location.origin : '';
       const billingUrl = `${origin}/dashboard/billing`;
-      const { url } = await createCheckoutSession(`${billingUrl}?success=1`, billingUrl);
+      const { url } = await createCheckoutSession({
+        successUrl: `${billingUrl}?success=1`,
+        cancelUrl: billingUrl,
+        orgId: activeOrganizationId,
+      });
       if (url) {
         window.location.href = url;
         return;
@@ -88,6 +102,27 @@ export default function DashboardBillingPage() {
     }
   }
 
+  async function handleStorageUpgrade() {
+    setStorageUpgradeLoading(true);
+    setError(null);
+    try {
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      const { url } = await createStorageUpgradeCheckoutSession({
+        orgId: activeOrganizationId,
+        successUrl: `${origin}/dashboard/billing?storage=success`,
+        cancelUrl: `${origin}/dashboard/billing?storage=cancel`,
+      });
+      if (url) {
+        window.location.href = url;
+        return;
+      }
+      setStorageUpgradeLoading(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to start storage checkout');
+      setStorageUpgradeLoading(false);
+    }
+  }
+
   async function handleOnboarding() {
     setOnboardingLoading(true);
     setError(null);
@@ -108,7 +143,7 @@ export default function DashboardBillingPage() {
     }
   }
 
-  if (isLoading) {
+  if (storageSummaryQuery.isLoading || storageBreakdownQuery.isLoading) {
     return (
       <main className="p-6">
         <p className="text-sm text-muted-foreground">Loading billing...</p>
@@ -118,7 +153,7 @@ export default function DashboardBillingPage() {
 
   if (!user) return null;
 
-  const plan = user.plan ?? 'free';
+  const plan = activeOrganization?.planTier ?? user.plan ?? 'free';
 
   return (
     <main className="space-y-6 p-6">
@@ -135,11 +170,19 @@ export default function DashboardBillingPage() {
         </p>
       ) : null}
 
+      {searchParams.get('storage') === 'success' ? (
+        <p className="rounded-md border border-border bg-card px-3 py-2 text-sm text-muted-foreground">
+          Storage upgrade applied successfully.
+        </p>
+      ) : null}
+
       {error ? (
         <p className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
           {error}
         </p>
       ) : null}
+
+      <BillingStatusBanner storage={storageSummaryQuery.data?.summary} />
 
       <section className="grid gap-4 lg:grid-cols-2">
         <Card>
@@ -161,6 +204,9 @@ export default function DashboardBillingPage() {
               )}
               <Button asChild variant="outline">
                 <Link href="/pricing">Compare plans</Link>
+              </Button>
+              <Button variant="outline" onClick={handleStorageUpgrade} disabled={storageUpgradeLoading}>
+                {storageUpgradeLoading ? 'Redirecting...' : 'Upgrade storage'}
               </Button>
             </div>
           </CardContent>
@@ -201,6 +247,51 @@ export default function DashboardBillingPage() {
           </CardContent>
         </Card>
       </section>
+
+      <StorageUsageCards data={storageSummaryQuery.data} />
+
+      <section className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="text-base font-semibold">Storage allocation</h2>
+            <p className="text-sm text-muted-foreground">
+              Usage grouped by organization, user, or project.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant={breakdownGroupBy === 'org' ? 'default' : 'outline'}
+              onClick={() => setBreakdownGroupBy('org')}
+            >
+              Org
+            </Button>
+            <Button
+              size="sm"
+              variant={breakdownGroupBy === 'user' ? 'default' : 'outline'}
+              onClick={() => setBreakdownGroupBy('user')}
+            >
+              User
+            </Button>
+            <Button
+              size="sm"
+              variant={breakdownGroupBy === 'project' ? 'default' : 'outline'}
+              onClick={() => setBreakdownGroupBy('project')}
+            >
+              Project
+            </Button>
+          </div>
+        </div>
+        <StorageBreakdownTable
+          rows={storageBreakdownQuery.data?.rows}
+          groupBy={breakdownGroupBy}
+        />
+      </section>
+
+      <EnterpriseAccessCard
+        orgId={activeOrganizationId}
+        activeOrganization={activeOrganization}
+      />
 
       <PricingTable
         plans={planOptions}

@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -23,7 +22,7 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { createApiKey, revokeApiKey, type ApiKeyScope } from '@/lib/api/studio';
 import { useApiKeys } from '@/lib/data/hooks/use-dashboard-data';
-import { PLATFORM_QUERY_KEYS } from '@/lib/data/keys';
+import { PLATFORM_QUERY_KEYS } from '@/lib/constants/query-keys';
 
 const SCOPE_OPTIONS: Array<{ label: string; value: ApiKeyScope; description: string }> = [
   { label: 'Assistant chat', value: 'ai.chat', description: '/api/assistant-chat' },
@@ -49,7 +48,6 @@ function formatUsd(value: number): string {
 
 export default function DashboardApiKeysPage() {
   const { user, isLoading: authLoading, activeOrganization, activeOrganizationId } = useAuth();
-  const router = useRouter();
   const queryClient = useQueryClient();
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -60,12 +58,6 @@ export default function DashboardApiKeysPage() {
   const [createdApiKey, setCreatedApiKey] = useState<string | null>(null);
 
   const apiKeysQuery = useApiKeys(activeOrganizationId, !!user);
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace('/login?returnUrl=/dashboard/api-keys');
-    }
-  }, [authLoading, user, router]);
 
   const createKeyMutation = useMutation({
     mutationFn: async () => {
@@ -372,4 +364,3 @@ export default function DashboardApiKeysPage() {
     </main>
   );
 }
-

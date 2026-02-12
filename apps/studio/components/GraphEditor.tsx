@@ -20,6 +20,7 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from '@forge/ui/context-menu';
+import { cn } from '@forge/ui/lib/utils';
 import { CharacterNode } from './nodes/CharacterNode';
 import { PlayerNode } from './nodes/PlayerNode';
 import { ConditionalNode } from './nodes/ConditionalNode';
@@ -63,6 +64,8 @@ export interface GraphEditorProps {
   onDropCreateNode?: (nodeType: ForgeNodeType, position: { x: number; y: number }) => void;
   nodeTypes?: Record<string, React.ComponentType<any>>;
   edgeTypes?: Record<string, React.ComponentType<any>>;
+  /** Applied to the root wrapper. Use "dialogue-graph-editor" for Dialogue graphs (enables per-type CSS). */
+  className?: string;
   children?: React.ReactNode;
 }
 
@@ -79,6 +82,7 @@ export function GraphEditor({
   onDropCreateNode,
   nodeTypes: nodeTypesProp,
   edgeTypes: edgeTypesProp,
+  className,
   children,
 }: GraphEditorProps) {
   const viewportRef = useRef<ReactFlowInstance | null>(null);
@@ -216,6 +220,7 @@ export function GraphEditor({
   const edges = graph.flow.edges.map((e) => ({
     ...e,
     selected: selectedEdgeIds.includes(e.id),
+    animated: true,
     className:
       (isHighlighted?.('forge.edge', e.id) ?? aiHighlightIds.edgeIds.includes(e.id))
         ? AI_EDGE_HIGHLIGHT_CLASS
@@ -223,7 +228,7 @@ export function GraphEditor({
   }));
 
   return (
-    <div className="h-full w-full">
+    <div className={cn('h-full w-full', className)}>
       <ContextMenu>
         <ContextMenuTrigger className="h-full w-full">
           <ReactFlow

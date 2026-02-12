@@ -19,6 +19,8 @@ import { Organizations } from './organizations.ts';
 import { OrganizationMemberships } from './organization-memberships.ts';
 import { AiUsageEvents } from './ai-usage-events.ts';
 import { ApiKeys } from './api-keys.ts';
+import { StorageUsageEvents } from './storage-usage-events.ts';
+import { EnterpriseRequests } from './enterprise-requests.ts';
 
 export const collections = [
   Users,
@@ -42,6 +44,8 @@ export const collections = [
   OrganizationMemberships,
   AiUsageEvents,
   ApiKeys,
+  StorageUsageEvents,
+  EnterpriseRequests,
 ];
 
 export {
@@ -66,4 +70,7 @@ export {
   OrganizationMemberships,
   AiUsageEvents,
   ApiKeys,
+  StorageUsageEvents,
+  EnterpriseRequests,
 };
+

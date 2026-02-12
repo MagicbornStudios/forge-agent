@@ -2,7 +2,7 @@
 title: 01 - Foundation
 
 created: 2026-02-04
-updated: 2026-02-07
+updated: 2026-02-12
 ---
 
 # 01 - Foundation
@@ -28,10 +28,18 @@ Repo structure, packages, and key concepts so you can run the app and navigate t
 
 ```bash
 pnpm install
+pnpm env:setup
 pnpm dev
 ```
 
-Configure `.env.local` (e.g. `OPENROUTER_API_KEY`, `PAYLOAD_SECRET`). After changing Payload collections, run `pnpm payload:types`.
+Env setup is manifest-driven:
+
+- `pnpm env:sync:examples` regenerates `apps/studio/.env.example` and `apps/platform/.env.example`.
+- `pnpm env:setup -- --app studio|platform|all` creates/updates `.env.local` files interactively.
+- `pnpm env:doctor -- --app studio|platform|all --mode local|preview|production [--vercel]` checks drift and required keys (masked output).
+- `pnpm env:ensure:local -- --app studio|platform` runs automatically before `dev:studio` / `dev:platform`.
+
+After changing Payload collections, run `pnpm payload:types`.
 
 ## What the AI can do at this stage
 

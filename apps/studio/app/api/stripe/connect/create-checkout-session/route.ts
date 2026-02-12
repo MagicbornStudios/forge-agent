@@ -3,16 +3,18 @@ import { getPayload } from 'payload';
 import config from '@/payload.config';
 import Stripe from 'stripe';
 import { requireAuthenticatedUser } from '@/lib/server/organizations';
-
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+import { requireStripeSecretKey, resolvePublicAppUrl } from '@/lib/env';
 
 /** Platform take: 10% of listing price (TBD in business docs). */
 const PLATFORM_FEE_PERCENT = 0.1;
 
 export async function POST(req: Request) {
-  if (!stripeSecretKey) {
+  let stripeSecretKey: string;
+  try {
+    stripeSecretKey = requireStripeSecretKey();
+  } catch (error) {
     return NextResponse.json(
-      { error: 'Stripe is not configured' },
+      { error: error instanceof Error ? error.message : 'Stripe is not configured' },
       { status: 503 }
     );
   }
@@ -79,20 +81,29 @@ export async function POST(req: Request) {
           })
         : null;
     const creatorAccountId =
-      listingOrganization?.stripeConnectAccountId ??
-      (typeof creator === 'object' && creator != null && 'stripeConnectAccountId' in creator
-        ? (creator as { stripeConnectAccountId?: string | null }).stripeConnectAccountId
-        : null);
+      listingOrganizationId != null
+        ? listingOrganization?.stripeConnectAccountId ?? null
+        : typeof creator === 'object' &&
+            creator != null &&
+            'stripeConnectAccountId' in creator
+          ? (creator as { stripeConnectAccountId?: string | null }).stripeConnectAccountId
+          : null;
     if (!creatorAccountId) {
       return NextResponse.json(
-        { error: 'Creator has not set up payouts' },
+        {
+          error:
+            listingOrganizationId != null
+              ? 'Listing organization has not set up payouts'
+              : 'Creator has not set up payouts',
+        },
         { status: 400 }
       );
     }
+    const fallbackBaseUrl = resolvePublicAppUrl('http://localhost:3000');
     const base =
       typeof body?.baseUrl === 'string' && body.baseUrl
         ? body.baseUrl
-        : process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+        : fallbackBaseUrl;
     const successUrl =
       typeof body?.successUrl === 'string' && body.successUrl
         ? body.successUrl

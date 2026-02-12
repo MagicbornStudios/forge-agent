@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server';
 import { getPayload } from 'payload';
 import config from '@/payload.config';
 import {
-  ensureOrganizationContext,
   requireAuthenticatedUser,
 } from '@/lib/server/organizations';
+import { resolveBillingOrganizationContext } from '@/lib/server/billing/context';
 
 export async function POST(req: Request) {
   try {
@@ -28,16 +28,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const context = await ensureOrganizationContext(payload, user);
-    const membership = context.memberships.find(
-      (entry) => entry.organizationId === organizationId,
-    );
-    if (!membership) {
-      return NextResponse.json(
-        { error: 'Not a member of this organization' },
-        { status: 403 },
-      );
-    }
+    const context = await resolveBillingOrganizationContext(payload, user, organizationId);
 
     await payload.update({
       collection: 'users',
@@ -50,7 +41,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       activeOrganizationId: organizationId,
-      activeOrganization: membership,
+      activeOrganization:
+        context.memberships.find((entry) => entry.organizationId === organizationId) ?? null,
       memberships: context.memberships,
     });
   } catch (error) {

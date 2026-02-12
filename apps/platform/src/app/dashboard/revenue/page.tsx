@@ -1,33 +1,19 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useMemo } from 'react';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { RecentSales } from '@/components/dashboard/recent-sales';
 import { RevenueAreaChart } from '@/components/dashboard/revenue-area-chart';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useRevenueSummary } from '@/lib/data/hooks/use-dashboard-data';
-
-function formatCurrencyFromCents(cents: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(cents / 100);
-}
+import { formatCurrencyFromCents } from '@/lib/dashboard/format';
+import { buildRecentSales, buildRevenueTotals, buildRevenueTrend } from '@/lib/dashboard/selectors';
 
 export default function DashboardRevenuePage() {
-  const { user, isLoading: authLoading, activeOrganizationId, activeOrganization } = useAuth();
-  const router = useRouter();
+  const { user, activeOrganizationId, activeOrganization } = useAuth();
   const revenueQuery = useRevenueSummary(activeOrganizationId, !!user);
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace('/login?returnUrl=/dashboard/revenue');
-    }
-  }, [authLoading, user, router]);
-
-  const loading = authLoading || revenueQuery.isLoading;
+  const loading = revenueQuery.isLoading;
   const error =
     revenueQuery.error instanceof Error
       ? revenueQuery.error.message
@@ -35,37 +21,15 @@ export default function DashboardRevenuePage() {
         ? 'Failed to load revenue'
         : null;
 
-  const totals = useMemo(() => {
-    const total = revenueQuery.data?.totalEarningsCents ?? 0;
-    const fees = revenueQuery.data?.totalPlatformFeesCents ?? 0;
-    const gross = total + fees;
-    return { total, fees, gross };
-  }, [revenueQuery.data?.totalEarningsCents, revenueQuery.data?.totalPlatformFeesCents]);
+  const totals = useMemo(() => buildRevenueTotals(revenueQuery.data), [revenueQuery.data]);
 
-  const trend = useMemo(() => {
-    const grouped = new Map<string, { date: string; earningsUsd: number; feesUsd: number }>();
-    for (const entry of revenueQuery.data?.byLicense ?? []) {
-      const date = entry.grantedAt
-        ? new Date(entry.grantedAt).toISOString().slice(0, 10)
-        : 'unknown';
-      if (date === 'unknown') continue;
-      const row = grouped.get(date) ?? { date, earningsUsd: 0, feesUsd: 0 };
-      row.earningsUsd += (entry.amountCents - entry.platformFeeCents) / 100;
-      row.feesUsd += entry.platformFeeCents / 100;
-      grouped.set(date, row);
-    }
-    return [...grouped.values()].sort((a, b) => a.date.localeCompare(b.date));
-  }, [revenueQuery.data?.byLicense]);
+  const trend = useMemo(
+    () => buildRevenueTrend(revenueQuery.data?.byLicense ?? []),
+    [revenueQuery.data?.byLicense],
+  );
 
   const recentSales = useMemo(
-    () =>
-      [...(revenueQuery.data?.byLicense ?? [])]
-        .sort((a, b) => {
-          const dateA = a.grantedAt ? Date.parse(a.grantedAt) : 0;
-          const dateB = b.grantedAt ? Date.parse(b.grantedAt) : 0;
-          return dateB - dateA;
-        })
-        .slice(0, 8),
+    () => buildRecentSales(revenueQuery.data?.byLicense ?? [], 8),
     [revenueQuery.data?.byLicense],
   );
 

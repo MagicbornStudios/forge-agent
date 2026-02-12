@@ -92,13 +92,17 @@ export function ProjectSwitcher({
     <Button
       variant="outline"
       size={variant === 'full' ? 'default' : 'sm'}
-      className={variant === 'full' ? 'min-w-[200px] justify-between' : 'h-7 px-[var(--control-padding-x)] text-xs'}
+      className={
+        variant === 'full'
+          ? 'min-w-[200px] justify-between text-foreground'
+          : 'h-[var(--control-height-sm)] min-w-[170px] justify-between px-[var(--control-padding-x)] text-[11px] font-medium text-foreground bg-background border-border shadow-[var(--shadow-xs)] hover:bg-accent/40 hover:text-foreground'
+      }
       disabled={isLoading}
     >
-      <span className={variant === 'full' ? 'truncate' : 'truncate max-w-[120px]'}>
+      <span className={variant === 'full' ? 'truncate' : 'truncate max-w-[140px]'}>
         {triggerLabel}
       </span>
-      <ChevronDown className={variant === 'full' ? 'ml-2 size-3 shrink-0' : 'ml-1.5 size-[var(--icon-size-sm)] shrink-0'} />
+      <ChevronDown className={variant === 'full' ? 'ml-2 size-3 shrink-0' : 'ml-1.5 size-[var(--icon-size)] shrink-0'} />
     </Button>
   );
 
@@ -118,28 +122,28 @@ export function ProjectSwitcher({
           onOpenChange={onControlledOpenChange}
         >
           <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="min-w-[200px]">
+          <DropdownMenuContent align="start" className="min-w-[220px] p-[var(--menu-content-padding)]">
             {projects.map((project) => (
               <DropdownMenuItem
                 key={String(project.id)}
                 onClick={() => onProjectChange(project.id)}
-                className={selectedProjectId === project.id ? 'bg-accent text-xs' : 'text-xs'}
+                className={selectedProjectId === project.id ? 'bg-accent text-[11px]' : 'text-[11px]'}
               >
                 {project.title}
               </DropdownMenuItem>
             ))}
             {projects.length === 0 && !isLoading && (
-              <DropdownMenuItem disabled className="text-xs">No projects found</DropdownMenuItem>
+              <DropdownMenuItem disabled className="text-[11px]">No projects found</DropdownMenuItem>
             )}
             {error && (
-              <DropdownMenuItem disabled className="text-xs text-destructive">
+              <DropdownMenuItem disabled className="text-[11px] text-destructive">
                 {error}
               </DropdownMenuItem>
             )}
             {onCreateProject && (
               <>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setIsCreateDialogOpen(true)} className="text-xs">
+                <DropdownMenuItem onClick={() => setIsCreateDialogOpen(true)} className="text-[11px]">
                   <Plus className="mr-2 size-3 shrink-0" />
                   New project...
                 </DropdownMenuItem>
@@ -151,12 +155,16 @@ export function ProjectSwitcher({
           <Button
             variant="outline"
             size="icon"
-            className={variant === 'full' ? 'h-9 w-9' : 'h-7 w-7'}
+            className={
+              variant === 'full'
+                ? 'h-9 w-9 text-foreground'
+                : 'h-[var(--control-height-sm)] w-[var(--control-height-sm)] text-foreground bg-background border-border shadow-[var(--shadow-xs)] hover:bg-accent/40 hover:text-foreground'
+            }
             onClick={() => setIsCreateDialogOpen(true)}
             title="Create new project"
             disabled={isLoading}
           >
-            <Plus className={variant === 'full' ? 'size-3' : 'size-[var(--icon-size-sm)]'} />
+            <Plus className={variant === 'full' ? 'size-3' : 'size-[var(--icon-size)]'} />
           </Button>
         )}
         {children}

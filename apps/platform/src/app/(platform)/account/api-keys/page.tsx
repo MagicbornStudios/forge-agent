@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
+import { PLATFORM_ROUTES } from '@/lib/constants/routes';
 
 export default function AccountApiKeysRedirectPage() {
-  redirect('/dashboard/api-keys');
+  redirect(PLATFORM_ROUTES.dashboardApiKeys);
 }

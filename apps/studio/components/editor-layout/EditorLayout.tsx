@@ -11,6 +11,10 @@ import {
 import { useEditorPanels } from '@/lib/editor-registry/panel-registry';
 import { useSettingsStore } from '@/lib/settings/store';
 
+/**
+ * @deprecated Use EditorDockLayout with slot + Panel children instead. Editors now compose
+ * EditorDockLayout.Left/Main/Right + EditorDockLayout.Panel directly.
+ */
 export interface EditorLayoutProps {
   layoutId: string;
   layoutJson?: string | null;
@@ -42,10 +46,8 @@ function filterPanelsByVisibility(
 }
 
 /**
- * Consumes the panel registry for the current editor (from EditorLayoutProvider) and
- * renders EditorDockLayout with leftPanels/mainPanels/rightPanels/bottomPanels.
- * Filters panels by visibility (panel.visible.{editorId}-{panelId}). Must be used
- * within EditorLayoutProvider.
+ * @deprecated Use EditorDockLayout with slot + Panel children. Consumes the panel registry
+ * and renders EditorDockLayout. Must be used within EditorLayoutProvider.
  */
 export const EditorLayout = React.forwardRef<DockLayoutRef, EditorLayoutProps>(function EditorLayout(
   {

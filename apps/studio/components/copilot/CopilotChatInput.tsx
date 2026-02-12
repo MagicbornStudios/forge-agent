@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { InputProps } from '@copilotkit/react-ui';
 import { AudioLines, ArrowUp, Mic, MicOff, Paperclip, Square } from 'lucide-react';
 import { Button } from '@forge/ui/button';
 import { FeatureGate } from '@forge/shared';
@@ -48,6 +47,16 @@ function getSpeechRecognitionCtor(): SpeechRecognitionCtor | null {
   return speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition ?? null;
 }
 
+export interface ChatInputProps {
+  inProgress: boolean;
+  onSend: (text: string) => Promise<void>;
+  isVisible?: boolean;
+  onStop?: () => void;
+  onUpload?: () => void;
+  hideStopButton?: boolean;
+  chatReady?: boolean;
+}
+
 export function CopilotChatInput({
   inProgress,
   onSend,
@@ -56,7 +65,7 @@ export function CopilotChatInput({
   onUpload,
   hideStopButton = false,
   chatReady = false,
-}: InputProps) {
+}: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const dictationBaseRef = useRef('');

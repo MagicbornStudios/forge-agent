@@ -1,7 +1,7 @@
 ---
 title: 10 - Platform site (customer-facing)
 created: 2026-02-05
-updated: 2026-02-11
+updated: 2026-02-12
 ---
 
 # 10 - Platform site (customer-facing)
@@ -14,6 +14,18 @@ Overview of the customer-facing platform app: routes, layout, auth boundary, and
 - **Routes:** public routes (`/`, `/docs`, `/login`, `/pricing`, `/roadmap`, `/changelog`, `/privacy`, `/terms`, `/demo`, `/waitlist`, `/newsletter`, `/blog`) and app-shell routes (`/catalog`, `/catalog/[slug]`, `/checkout/*`, `/dashboard/*`).
 - **Canonical account surface:** `/dashboard/*`. Legacy `/account/*` and `/billing` are compatibility redirects.
 - **Auth/API boundary:** Platform does not host Payload. It uses Studio APIs via `NEXT_PUBLIC_STUDIO_APP_URL` (`POST /api/users/login`, `GET /api/me`, catalog/checkout/licenses routes) with `credentials: 'include'`.
+
+## Env setup (platform + studio)
+
+- Env keys are defined once in `scripts/env/manifest.mjs`.
+- `.env.example` files are generated; do not hand-edit them:
+  - `pnpm env:sync:examples`
+  - `pnpm env:sync:examples:check`
+- Local onboarding:
+  - `pnpm env:setup -- --app platform`
+  - `pnpm env:doctor -- --app platform --mode local`
+- Platform dev command runs env bootstrap automatically:
+  - `pnpm dev:platform` -> `pnpm env:ensure:local -- --app platform`
 
 ## Layout model
 
@@ -32,8 +44,16 @@ Overview of the customer-facing platform app: routes, layout, auth boundary, and
 | Dashboard routes | `apps/platform/src/app/dashboard` |
 | Docs routes | `apps/platform/src/app/docs` |
 | Docs shell components | `apps/platform/src/components/docs` |
-| Studio API client | `apps/platform/src/lib/api/studio.ts` |
+| Studio API client | `apps/platform/src/lib/api/client.ts` + `apps/platform/src/lib/api/*.ts` |
 | Auth context | `apps/platform/src/components/auth/AuthProvider.tsx` |
+
+## SaaS housekeeping conventions
+
+- **API boundary (client):** split by domain under `apps/platform/src/lib/api/*` with shared request utility in `apps/platform/src/lib/api/client.ts`.
+- **Auth redirect pattern:** one dashboard gate in `apps/platform/src/components/auth/RequireDashboardAuth.tsx` wired at `apps/platform/src/app/dashboard/layout.tsx`; do not duplicate per-page redirect effects.
+- **Constants-first:** use route/query/auth constants from `apps/platform/src/lib/constants/*` instead of hardcoded string arrays and URL literals.
+- **Quality checks:** run `pnpm --filter @forge/platform lint`, `pnpm --filter @forge/platform build`, `pnpm css:doctor:platform`, `pnpm hydration:doctor`, and `pnpm docs:runtime:doctor`.
+- **Template cleanup:** delete unused starter surface in small slices and validate each slice; keep compatibility redirects (`/account/*`, `/billing`, temporary dashboard aliases) until explicit removal.
 
 ## Notes
 

@@ -21,16 +21,33 @@ export function EditorTabGroup({
   tabListClassName,
 }: EditorTabGroupProps) {
   return (
-    <div className={cn('flex items-end border-b-2 border-[var(--context-accent)] bg-muted/40 pl-[var(--panel-padding)] pr-[var(--panel-padding)] py-[var(--control-padding-y)]', className)}>
-      {leading && <div className="flex items-center gap-[var(--control-gap)] shrink-0">{leading}</div>}
+    <div
+      className={cn(
+        'grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center border-b-2 border-[var(--context-accent)] bg-muted/40',
+        'gap-x-[var(--control-gap,0.375rem)] px-[var(--panel-padding,0.625rem)] py-[calc(var(--control-padding-y,0.25rem)+0.125rem)]',
+        className,
+      )}
+    >
+      {leading && (
+        <div className="col-start-1 row-start-1 flex min-w-0 items-center justify-start gap-[var(--control-gap,0.375rem)] pr-[calc(var(--control-gap,0.375rem)*2)]">
+          {leading}
+        </div>
+      )}
       <div
         role="tablist"
         aria-label={label}
-        className={cn('flex items-end gap-[var(--control-gap)]', tabListClassName)}
+        className={cn(
+          'col-start-2 row-start-1 flex min-w-0 max-w-full items-end justify-center gap-[var(--control-gap,0.375rem)] px-[var(--control-gap,0.375rem)]',
+          tabListClassName,
+        )}
       >
         {children}
       </div>
-      {actions && <div className="ml-auto flex items-center gap-[var(--control-gap)]">{actions}</div>}
+      {actions && (
+        <div className="col-start-3 row-start-1 ml-auto flex min-w-0 shrink-0 items-center justify-end gap-[var(--control-gap,0.375rem)] pl-[calc(var(--control-gap,0.375rem)*2)]">
+          {actions}
+        </div>
+      )}
     </div>
   );
 }

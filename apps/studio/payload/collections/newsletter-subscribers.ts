@@ -29,3 +29,4 @@ export const NewsletterSubscribers: CollectionConfig = {
     },
   ],
 };
+

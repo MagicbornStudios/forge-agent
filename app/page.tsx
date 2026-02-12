@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { CopilotKitProvider } from '@/components/providers/CopilotKitProvider';
+import { CopilotKitBypassProvider } from '@/components/providers/CopilotKitBypassProvider';
 import { TooltipProvider } from '@/components/providers/TooltipProvider';
 import { AppShell } from '@/components/AppShell';
 import { useGraphStore } from '@/lib/store';
@@ -41,9 +41,9 @@ function HomeContent() {
 export default function Home() {
   return (
     <TooltipProvider>
-      <CopilotKitProvider defaultOpen={true}>
+      <CopilotKitBypassProvider>
         <HomeContent />
-      </CopilotKitProvider>
+      </CopilotKitBypassProvider>
     </TooltipProvider>
   );
 }

@@ -29,9 +29,9 @@ import { DialogueAssistantPanel } from '@/components/editors/dialogue/DialogueAs
 import { ModelSwitcher } from '@/components/model-switcher';
 import { useEditorPanelVisibility } from '@/lib/app-shell/useEditorPanelVisibility';
 import { useSettingsStore } from '@/lib/settings/store';
-import { useAIHighlight } from '@forge/shared/copilot/use-ai-highlight';
-import { useDomainCopilot } from '@forge/shared/copilot/use-domain-copilot';
-import { useForgeContract } from '@forge/domain-forge/copilot';
+import { useAIHighlight } from '@forge/shared/assistant';
+import { useForgeAssistantContract } from '@forge/domain-forge/assistant';
+import { planStepToOp } from '@forge/domain-forge/copilot/plan-utils';
 import { useCreateForgePlan } from '@/lib/data/hooks';
 import {
   EditorShell,
@@ -40,8 +40,7 @@ import {
   EditorOverlaySurface,
   EditorReviewBar,
   EditorDockPanel,
-  EditorRail,
-  EditorPanel,
+  EditorDockLayout,
   usePanelLock,
   type PanelTabDef,
   EditorInspector,
@@ -50,7 +49,6 @@ import {
 } from '@forge/shared';
 import {
   EditorLayoutProvider,
-  EditorLayout,
   EditorMenubarContribution,
   EditorMenubarMenuSlot,
 } from '@/components/editor-layout';
@@ -58,7 +56,6 @@ import { Badge } from '@forge/ui/badge';
 import { Button } from '@forge/ui/button';
 import { Card } from '@forge/ui/card';
 import { Drawer, DrawerContent, DrawerTitle } from '@forge/ui';
-import { Library, ScanSearch, Wrench } from 'lucide-react';
 import { useEntitlements, CAPABILITIES } from '@forge/shared/entitlements';
 import type { OverlaySpec, ActiveOverlay, Selection } from '@forge/shared';
 import { isEntity } from '@forge/shared';
@@ -71,6 +68,7 @@ import {
   FilePlus2,
   GitBranch,
   Layers,
+  LayoutDashboard,
   LayoutPanelTop,
   MessageCircle,
   PanelBottom,
@@ -78,9 +76,11 @@ import {
   PanelRight,
   Plus,
   Save,
+  ScanSearch,
   Shield,
   User,
   Users,
+  Wrench,
 } from 'lucide-react';
 import type { EditorDescriptor } from '@/lib/editor-registry/editor-registry';
 import { cn } from '@forge/shared/lib/utils';
@@ -302,6 +302,7 @@ function ForgeGraphPanel({
       <div className="flex-1 min-h-0">
         {graph ? (
           <GraphEditor
+            className="dialogue-graph-editor"
             graph={graph}
             applyOperations={applyOperations}
             selectedNodeIds={selectedNodeIds}
@@ -707,22 +708,50 @@ export function DialogueEditor() {
     return createForgePlanMutation.mutateAsync({ goal, graphSummary });
   }, [createForgePlanMutation]);
 
-  const forgeContract = useForgeContract({
+  const executePlan = useCallback(
+    (steps: unknown[]) => {
+      const ops = (Array.isArray(steps) ? steps : [])
+        .map((s) => planStepToOp(typeof s === 'object' && s !== null ? (s as Record<string, unknown>) : {}))
+        .filter(Boolean) as ForgeGraphPatchOp[];
+      if (ops.length === 0) return;
+      applyActiveOperations(ops);
+      const nodeIds: string[] = [];
+      const edgeIds: string[] = [];
+      for (const op of ops) {
+        if (op.type === 'createNode' && op.id) nodeIds.push(op.id);
+        if (op.type === 'updateNode') nodeIds.push(op.nodeId);
+        if (op.type === 'createEdge') {
+          const g2 = activeScope === 'narrative' ? narrativeGraph : storyletGraph;
+          const edge = g2?.flow.edges.find((e) => e.source === op.source && e.target === op.target);
+          if (edge) edgeIds.push(edge.id);
+        }
+      }
+      if (nodeIds.length || edgeIds.length) {
+        onAIHighlight({
+          entities: {
+            ...(nodeIds.length ? { 'forge.node': nodeIds } : {}),
+            ...(edgeIds.length ? { 'forge.edge': edgeIds } : {}),
+          },
+        });
+      }
+      setPendingFromPlanActive(true);
+    },
+    [applyActiveOperations, activeScope, narrativeGraph, storyletGraph, onAIHighlight, setPendingFromPlanActive]
+  );
+
+  const forgeAssistantContract = useForgeAssistantContract({
     graph: activeGraph,
     selection: activeSelection,
     isDirty: activeDirty,
     applyOperations: applyActiveOperations,
-    openOverlay,
-    revealSelection,
     onAIHighlight,
     clearAIHighlights: clearHighlights,
-    createNodeOverlayId: CREATE_NODE_OVERLAY_ID,
     createPlanApi,
     setPendingFromPlan: setPendingFromPlanActive,
-    commitGraph,
+    openOverlay,
+    revealSelection,
+    createNodeOverlayId: CREATE_NODE_OVERLAY_ID,
   });
-
-  useDomainCopilot(forgeContract, { toolsEnabled });
 
   const overlays = useMemo<OverlaySpec[]>(
     () => [
@@ -920,9 +949,6 @@ export function DialogueEditor() {
   );
 
   const { visibility: panelVisibility, setVisible: setPanelVisible, restoreAll: restoreAllPanels, panelSpecs } = useEditorPanelVisibility('dialogue');
-  const dockLayouts = useEditorStore((s) => s.dockLayouts);
-  const setDockLayout = useEditorStore((s) => s.setDockLayout);
-  const clearDockLayout = useEditorStore((s) => s.clearDockLayout);
   const setSettingsViewportId = useEditorStore((s) => s.setSettingsViewportId);
   const setSettingsSidebarOpen = useEditorStore((s) => s.setSettingsSidebarOpen);
   const layoutRef = useRef<DockLayoutRef>(null);
@@ -1153,25 +1179,25 @@ export function DialogueEditor() {
                 variant="outline"
                 size="sm"
                 onClick={() => window.open(link.href, '_blank')}
-                className="border-border text-foreground"
+                className="border-border/70 bg-background px-[var(--control-padding-x)] text-foreground shadow-[var(--shadow-xs)]"
               >
                 {link.icon}
-                <span className="ml-1.5 text-xs">{link.label}</span>
+                <span className="ml-1.5 text-[11px]">{link.label}</span>
               </EditorToolbar.Button>
             ))}
             {showAgentName !== false && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="secondary" className="px-[var(--badge-padding-x)] py-[var(--badge-padding-y)] text-[11px] leading-none">
                 Agent: {agentName ?? 'Default'}
               </Badge>
             )}
             <EditorToolbar.Separator />
             {dirtyByScope.narrative && (
-              <Badge variant="outline" className="text-xs text-amber-500 border-amber-500/50">
+              <Badge variant="outline" className="px-[var(--badge-padding-x)] py-[var(--badge-padding-y)] text-[11px] text-amber-500 border-amber-500/50">
                 Narrative unsaved
               </Badge>
             )}
             {dirtyByScope.storylet && (
-              <Badge variant="outline" className="text-xs text-amber-500 border-amber-500/50">
+              <Badge variant="outline" className="px-[var(--badge-padding-x)] py-[var(--badge-padding-y)] text-[11px] text-amber-500 border-amber-500/50">
                 Storylet unsaved
               </Badge>
             )}
@@ -1191,40 +1217,38 @@ export function DialogueEditor() {
             <EditorMenubarMenuSlot id="file" label="File" items={fileMenuItems} />
             <EditorMenubarMenuSlot id="view" label="View" items={viewMenuItems} />
           </EditorMenubarContribution>
-          <EditorRail side="left">
-            <EditorPanel id="left" title="Library" iconKey="library">
-              {leftPanel}
-            </EditorPanel>
-          </EditorRail>
-          <EditorRail side="main">
-            <EditorPanel id="main" title="Dialogue Graphs" iconKey="main">
-              {mainPanel}
-            </EditorPanel>
-          </EditorRail>
-          <EditorRail side="right">
-            <EditorPanel id="right" title="Inspector" iconKey="inspector">
-              {inspectorContent}
-            </EditorPanel>
-            <EditorPanel id={CHAT_PANEL_ID} title="Chat" iconKey="chat">
-              <div className="h-full min-h-0">
-                <DialogueAssistantPanel
-                  composerTrailing={<ModelSwitcher provider="assistantUi" variant="composer" />}
-                />
-              </div>
-            </EditorPanel>
-          </EditorRail>
-          <EditorLayout
+          <EditorDockLayout
             ref={layoutRef}
             layoutId={DIALOGUE_LAYOUT_ID}
-            layoutJson={dockLayouts[DIALOGUE_LAYOUT_ID] ?? undefined}
-            onLayoutChange={(json: string) => setDockLayout(DIALOGUE_LAYOUT_ID, json)}
-            clearLayout={() => clearDockLayout(DIALOGUE_LAYOUT_ID)}
             viewport={{ viewportId, viewportType: 'react-flow' }}
-            slots={{
-              left: { title: 'Library' },
-              main: { title: 'Dialogue Graphs' },
-            }}
-          />
+            slots={{ left: { title: 'Library' }, main: { title: 'Dialogue Graphs' } }}
+          >
+            <EditorDockLayout.Left>
+              <EditorDockLayout.Panel id="left" title="Library" icon={<BookOpen size={14} />}>
+                {leftPanel}
+              </EditorDockLayout.Panel>
+            </EditorDockLayout.Left>
+            <EditorDockLayout.Main>
+              <EditorDockLayout.Panel id="main" title="Dialogue Graphs" icon={<LayoutDashboard size={14} />}>
+                {mainPanel}
+              </EditorDockLayout.Panel>
+            </EditorDockLayout.Main>
+            <EditorDockLayout.Right>
+              <EditorDockLayout.Panel id="right" title="Inspector" icon={<ScanSearch size={14} />}>
+                {inspectorContent}
+              </EditorDockLayout.Panel>
+              <EditorDockLayout.Panel id={CHAT_PANEL_ID} title="Chat" icon={<MessageCircle size={14} />}>
+                <div className="h-full min-h-0">
+                  <DialogueAssistantPanel
+                    contract={toolsEnabled ? forgeAssistantContract : undefined}
+                    toolsEnabled={toolsEnabled}
+                    executePlan={toolsEnabled ? executePlan : undefined}
+                    composerTrailing={<ModelSwitcher provider="assistantUi" variant="composer" />}
+                  />
+                </div>
+              </EditorDockLayout.Panel>
+            </EditorDockLayout.Right>
+          </EditorDockLayout>
         </EditorLayoutProvider>
 
         <Drawer open={drawerOpen} onOpenChange={(open: boolean) => setBottomDrawerOpen('dialogue', open)}>

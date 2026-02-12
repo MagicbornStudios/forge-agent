@@ -10,16 +10,13 @@ import {
   EditorStatusBar,
   EditorOverlaySurface,
   EditorDockPanel,
-  EditorRail,
-  EditorPanel,
+  EditorDockLayout,
 } from '@forge/shared/components/editor';
 import type { OverlaySpec, ActiveOverlay, Selection, DockLayoutRef } from '@forge/shared';
 import { isEntity } from '@forge/shared';
 
 // Copilot
-import { useAIHighlight } from '@forge/shared/copilot/use-ai-highlight';
-import { useDomainCopilot } from '@forge/shared/copilot/use-domain-copilot';
-import { useCharacterContract } from '@forge/domain-character';
+import { useAIHighlight } from '@forge/shared/assistant';
 
 // AppShell
 import { useEditorStore } from '@/lib/app-shell/store';
@@ -29,7 +26,6 @@ import { DialogueAssistantPanel } from '@/components/editors/dialogue/DialogueAs
 import { ModelSwitcher } from '@/components/model-switcher';
 import { useEditorPanelVisibility } from '@/lib/app-shell/useEditorPanelVisibility';
 import { useSettingsStore } from '@/lib/settings/store';
-import { useEntitlements, CAPABILITIES } from '@forge/shared/entitlements';
 
 // Data hooks
 import {
@@ -49,7 +45,7 @@ import {
 import { useCharacterStore } from '@/lib/domains/character/store';
 
 // Components
-import { LayoutPanelTop, PanelLeft, PanelRight, Plus, Users } from 'lucide-react';
+import { BookOpen, LayoutDashboard, LayoutPanelTop, MessageCircle, PanelLeft, PanelRight, Plus, ScanSearch, Users } from 'lucide-react';
 import type { EditorDescriptor } from '@/lib/editor-registry/editor-registry';
 import { Button } from '@forge/ui/button';
 import { RelationshipGraphEditor, type CharacterViewportHandle } from '@/components/character/RelationshipGraphEditor';
@@ -59,7 +55,6 @@ import { CreateCharacterModal } from '@/components/character/CreateCharacterModa
 import { useAppMenubarContribution } from '@/lib/contexts/AppMenubarContext';
 import {
   EditorLayoutProvider,
-  EditorLayout,
   EditorMenubarContribution,
   EditorMenubarMenuSlot,
 } from '@/components/editor-layout';
@@ -154,9 +149,6 @@ export function CharacterEditor() {
   const showRightPanel = useSettingsStore((s) =>
     s.getSettingValue('panel.visible.character-right', { editorId, viewportId }),
   ) as boolean | undefined;
-  const entitlements = useEntitlements();
-  const toolsEnabled = toolsEnabledSetting !== false && entitlements.has(CAPABILITIES.STUDIO_AI_TOOLS);
-
   // Character store
   const store = useCharacterStore();
   const {
@@ -317,26 +309,6 @@ export function CharacterEditor() {
       });
   }, [handleCreateCharacter, projectId]);
 
-  // ---- Copilot contract ----
-  const contract = useCharacterContract({
-    characters,
-    relationships,
-    activeCharacterId,
-    projectId,
-    selection: charSelection,
-    isDirty: store.isDirty,
-    createCharacter: handleCreateCharacter,
-    updateCharacter: handleUpdateCharacter,
-    createRelationship: handleCreateRelationship,
-    generateImage: handleGenerateImage,
-    generateSpeech: handleGenerateSpeech,
-    setActiveCharacter,
-    onAIHighlight,
-    clearAIHighlights: clearHighlights,
-  });
-
-  useDomainCopilot(contract, { toolsEnabled });
-
   // ---- Overlay specs ----
   const overlays = useMemo<OverlaySpec[]>(
     () => [
@@ -400,9 +372,6 @@ export function CharacterEditor() {
     [openOverlay],
   );
   const { visibility: panelVisibility, setVisible: setPanelVisible, restoreAll: restoreAllPanels, panelSpecs } = useEditorPanelVisibility('character');
-  const dockLayouts = useEditorStore((s) => s.dockLayouts);
-  const setDockLayout = useEditorStore((s) => s.setDockLayout);
-  const clearDockLayout = useEditorStore((s) => s.clearDockLayout);
   const layoutRef = useRef<DockLayoutRef>(null);
   const CHARACTER_LAYOUT_ID = 'character-mode';
 
@@ -576,39 +545,37 @@ export function CharacterEditor() {
             <EditorMenubarMenuSlot id="file" label="File" items={fileMenuItems} />
             <EditorMenubarMenuSlot id="view" label="View" items={viewMenuItems} />
           </EditorMenubarContribution>
-          <EditorRail side="left">
-            <EditorPanel id="left" title="Characters" iconKey="library">
-              {leftPanel}
-            </EditorPanel>
-          </EditorRail>
-          <EditorRail side="main">
-            <EditorPanel id="main" title="Graph" iconKey="main">
-              {mainContent}
-            </EditorPanel>
-          </EditorRail>
-          <EditorRail side="right">
-            <EditorPanel id="right" title="Properties" iconKey="inspector">
-              {rightPanel}
-            </EditorPanel>
-            <EditorPanel id={CHAT_PANEL_ID} title="Chat" iconKey="chat">
-              <div className="h-full min-h-0">
-                <DialogueAssistantPanel
-                  composerTrailing={<ModelSwitcher provider="assistantUi" variant="composer" />}
-                />
-              </div>
-            </EditorPanel>
-          </EditorRail>
-          <EditorLayout
+          <EditorDockLayout
             ref={layoutRef}
             layoutId={CHARACTER_LAYOUT_ID}
-            layoutJson={dockLayouts[CHARACTER_LAYOUT_ID] ?? undefined}
-            onLayoutChange={(json: string) => setDockLayout(CHARACTER_LAYOUT_ID, json)}
-            clearLayout={() => clearDockLayout(CHARACTER_LAYOUT_ID)}
             viewport={{ viewportId, viewportType: 'react-flow' }}
-            slots={{ left: { title: 'Characters' } }}
+            slots={{ left: { title: 'Characters' }, main: { title: 'Graph' } }}
             leftDefaultSize={20}
             rightDefaultSize={25}
-          />
+          >
+            <EditorDockLayout.Left>
+              <EditorDockLayout.Panel id="left" title="Characters" icon={<BookOpen size={14} />}>
+                {leftPanel}
+              </EditorDockLayout.Panel>
+            </EditorDockLayout.Left>
+            <EditorDockLayout.Main>
+              <EditorDockLayout.Panel id="main" title="Graph" icon={<LayoutDashboard size={14} />}>
+                {mainContent}
+              </EditorDockLayout.Panel>
+            </EditorDockLayout.Main>
+            <EditorDockLayout.Right>
+              <EditorDockLayout.Panel id="right" title="Properties" icon={<ScanSearch size={14} />}>
+                {rightPanel}
+              </EditorDockLayout.Panel>
+              <EditorDockLayout.Panel id={CHAT_PANEL_ID} title="Chat" icon={<MessageCircle size={14} />}>
+                <div className="h-full min-h-0">
+                  <DialogueAssistantPanel
+                    composerTrailing={<ModelSwitcher provider="assistantUi" variant="composer" />}
+                  />
+                </div>
+              </EditorDockLayout.Panel>
+            </EditorDockLayout.Right>
+          </EditorDockLayout>
         </EditorLayoutProvider>
 
         <EditorStatusBar>

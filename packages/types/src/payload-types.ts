@@ -88,6 +88,8 @@ export interface Config {
     'organization-memberships': OrganizationMembership;
     'ai-usage-events': AiUsageEvent;
     'api-keys': ApiKey;
+    'storage-usage-events': StorageUsageEvent;
+    'enterprise-requests': EnterpriseRequest;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -116,6 +118,8 @@ export interface Config {
     'organization-memberships': OrganizationMembershipsSelect<false> | OrganizationMembershipsSelect<true>;
     'ai-usage-events': AiUsageEventsSelect<false> | AiUsageEventsSelect<true>;
     'api-keys': ApiKeysSelect<false> | ApiKeysSelect<true>;
+    'storage-usage-events': StorageUsageEventsSelect<false> | StorageUsageEventsSelect<true>;
+    'enterprise-requests': EnterpriseRequestsSelect<false> | EnterpriseRequestsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -203,6 +207,30 @@ export interface Organization {
    */
   stripeConnectAccountId?: string | null;
   stripeConnectOnboardingComplete?: boolean | null;
+  planTier: 'free' | 'pro' | 'enterprise';
+  /**
+   * Total storage quota in bytes for this organization.
+   */
+  storageQuotaBytes: number;
+  /**
+   * Current measured storage usage in bytes.
+   */
+  storageUsedBytes: number;
+  /**
+   * Warning threshold percentage for storage usage alerts.
+   */
+  storageWarningThresholdPercent: number;
+  enterpriseSourceAccess?: boolean | null;
+  enterprisePremiumSupport?: boolean | null;
+  enterpriseCustomEditors?: boolean | null;
+  /**
+   * Stripe customer id for storage/billing add-ons.
+   */
+  stripeCustomerId?: string | null;
+  /**
+   * Last processed storage checkout session for idempotency.
+   */
+  lastStorageUpgradeSessionId?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -222,6 +250,10 @@ export interface Project {
    * Owning organization for creator dashboards (optional during migration).
    */
   organization?: (number | null) | Organization;
+  /**
+   * Estimated storage footprint for project-owned documents.
+   */
+  estimatedSizeBytes: number;
   forgeGraph?: (number | null) | ForgeGraph;
   updatedAt: string;
   createdAt: string;
@@ -395,6 +427,18 @@ export interface Character {
 export interface Media {
   id: number;
   alt?: string | null;
+  /**
+   * Organization that owns this media asset.
+   */
+  organization: number | Organization;
+  /**
+   * User who uploaded this media.
+   */
+  uploadedByUser?: (number | null) | User;
+  /**
+   * Optional project attribution for storage breakdowns.
+   */
+  project?: (number | null) | Project;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -742,6 +786,50 @@ export interface ApiKey {
   createdAt: string;
 }
 /**
+ * Immutable ledger of storage deltas used for organization quota tracking.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "storage-usage-events".
+ */
+export interface StorageUsageEvent {
+  id: number;
+  organization: number | Organization;
+  user?: (number | null) | User;
+  project?: (number | null) | Project;
+  source: 'media_upload' | 'project_write' | 'clone' | 'delete' | 'recompute';
+  deltaBytes: number;
+  totalAfterBytes: number;
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  createdAt: string;
+  updatedAt: string;
+}
+/**
+ * Customer enterprise request tickets (source access/support/custom editors).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "enterprise-requests".
+ */
+export interface EnterpriseRequest {
+  id: number;
+  organization: number | Organization;
+  requestedByUser: number | User;
+  type: 'source_access' | 'premium_support' | 'custom_editor';
+  status: 'open' | 'in_review' | 'approved' | 'rejected' | 'completed';
+  notes?: string | null;
+  resolvedAt?: string | null;
+  resolvedBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -848,6 +936,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'api-keys';
         value: number | ApiKey;
+      } | null)
+    | ({
+        relationTo: 'storage-usage-events';
+        value: number | StorageUsageEvent;
+      } | null)
+    | ({
+        relationTo: 'enterprise-requests';
+        value: number | EnterpriseRequest;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -930,6 +1026,7 @@ export interface ProjectsSelect<T extends boolean = true> {
   status?: T;
   owner?: T;
   organization?: T;
+  estimatedSizeBytes?: T;
   forgeGraph?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1025,6 +1122,9 @@ export interface RelationshipsSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  organization?: T;
+  uploadedByUser?: T;
+  project?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -1185,6 +1285,15 @@ export interface OrganizationsSelect<T extends boolean = true> {
   owner?: T;
   stripeConnectAccountId?: T;
   stripeConnectOnboardingComplete?: T;
+  planTier?: T;
+  storageQuotaBytes?: T;
+  storageUsedBytes?: T;
+  storageWarningThresholdPercent?: T;
+  enterpriseSourceAccess?: T;
+  enterprisePremiumSupport?: T;
+  enterpriseCustomEditors?: T;
+  stripeCustomerId?: T;
+  lastStorageUpgradeSessionId?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1247,6 +1356,36 @@ export interface ApiKeysSelect<T extends boolean = true> {
   inputTokens?: T;
   outputTokens?: T;
   totalCostUsd?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "storage-usage-events_select".
+ */
+export interface StorageUsageEventsSelect<T extends boolean = true> {
+  organization?: T;
+  user?: T;
+  project?: T;
+  source?: T;
+  deltaBytes?: T;
+  totalAfterBytes?: T;
+  metadata?: T;
+  createdAt?: T;
+  updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "enterprise-requests_select".
+ */
+export interface EnterpriseRequestsSelect<T extends boolean = true> {
+  organization?: T;
+  requestedByUser?: T;
+  type?: T;
+  status?: T;
+  notes?: T;
+  resolvedAt?: T;
+  resolvedBy?: T;
   updatedAt?: T;
   createdAt?: T;
 }

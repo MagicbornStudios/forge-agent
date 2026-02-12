@@ -125,7 +125,7 @@ function renderMenuItems(items: EditorMenubarItem[]) {
       return <MenubarSeparator key={item.id} />;
     }
     const itemClassName = cn(
-      'flex min-w-0 items-center gap-[var(--control-gap)] px-[var(--control-padding-x)] py-[var(--control-padding-y)] text-xs'
+      'flex min-w-0 items-center gap-[var(--control-gap)] rounded-sm px-[var(--menu-item-padding-x)] py-[calc(var(--menu-item-padding-y)-0.125rem)] text-[11px]'
     );
     const iconSlot =
       item.icon != null ? (
@@ -203,8 +203,8 @@ export function EditorMenubar({ menus, children, className }: EditorMenubarProps
   return (
     <Menubar
       className={cn(
-        'h-[var(--control-height)] border border-border/60 rounded-md bg-muted/30 px-[var(--control-padding-x)] py-[var(--control-padding-y)] shadow-[var(--shadow-sm)]',
-        'gap-[var(--control-gap)]',
+        'min-h-[var(--control-height-sm)] rounded-md border border-border/60 bg-background/90 px-[2px] py-[2px] shadow-[var(--shadow-xs)]',
+        'gap-[var(--control-gap)] backdrop-blur-[1px]',
         className
       )}
     >
@@ -212,16 +212,15 @@ export function EditorMenubar({ menus, children, className }: EditorMenubarProps
         <MenubarMenu key={menu.id}>
           <MenubarTrigger
             className={cn(
-              'text-xs px-[var(--control-padding-x)] py-[var(--control-padding-y)]',
-              'rounded-sm border border-transparent bg-transparent text-foreground',
-              'hover:bg-accent/50 hover:border-border/50',
-              'data-[state=open]:bg-accent data-[state=open]:border-border/50',
-              'focus:bg-accent focus:border-border/50'
+              'h-[calc(var(--control-height-sm)-0.25rem)] rounded-sm border border-transparent bg-transparent px-[calc(var(--control-padding-x)-0.125rem)] py-0 text-[11px] font-medium text-foreground',
+              'hover:bg-accent/60 hover:border-border/50',
+              'data-[state=open]:bg-accent data-[state=open]:border-border/60',
+              'focus:bg-accent focus:border-border/60'
             )}
           >
             <span className="truncate min-w-0">{menu.label}</span>
           </MenubarTrigger>
-          <MenubarContent className="py-[var(--control-padding-y)]">
+          <MenubarContent className="py-[var(--menu-content-padding)]">
             {renderMenuItems(menu.items)}
           </MenubarContent>
         </MenubarMenu>

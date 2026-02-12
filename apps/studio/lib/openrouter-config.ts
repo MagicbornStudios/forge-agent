@@ -1,32 +1,19 @@
 import 'server-only';
-
-const DEFAULT_TIMEOUT_MS = 60000;
-const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
-
-const parseTimeout = (value?: string) => {
-  if (!value) {
-    return DEFAULT_TIMEOUT_MS;
-  }
-  const parsed = Number.parseInt(value, 10);
-  if (Number.isNaN(parsed) || parsed <= 0) {
-    return DEFAULT_TIMEOUT_MS;
-  }
-  return parsed;
-};
+import { getOpenRouterBaseUrl, getOpenRouterTimeoutMs, requireOpenRouterApiKey } from '@/lib/env';
 
 export type OpenRouterConfig = {
-  apiKey?: string;
+  apiKey: string;
   baseUrl: string;
   timeoutMs: number;
 };
 
 export const getOpenRouterConfig = (): OpenRouterConfig => {
-  const apiKey = process.env.OPENROUTER_API_KEY?.trim();
-  const baseUrl = process.env.OPENROUTER_BASE_URL?.trim() || OPENROUTER_BASE_URL;
+  const apiKey = requireOpenRouterApiKey();
+  const baseUrl = getOpenRouterBaseUrl();
   const config: OpenRouterConfig = {
     apiKey,
     baseUrl,
-    timeoutMs: parseTimeout(process.env.OPENROUTER_TIMEOUT_MS),
+    timeoutMs: getOpenRouterTimeoutMs(),
   };
   if (process.env.NODE_ENV === 'development') {
     console.log('[OpenRouter] config resolved', {

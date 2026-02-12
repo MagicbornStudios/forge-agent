@@ -6,6 +6,7 @@ import {
   requireAuthenticatedUser,
   resolveOrganizationFromInput,
 } from '@/lib/server/organizations';
+import { findAllDocs } from '@/lib/server/payload-pagination';
 
 /**
  * GET /api/me/revenue — Creator revenue summary (licenses where listing.creator = current user).
@@ -27,7 +28,7 @@ export async function GET(req: Request) {
     );
     const activeOrgId = context.activeOrganizationId;
 
-    const creatorListings = await payload.find({
+    const creatorListings = await findAllDocs<Record<string, unknown>>(payload, {
       collection: 'listings',
       where: {
         or: [
@@ -40,32 +41,55 @@ export async function GET(req: Request) {
           },
         ],
       },
-      limit: 5000,
       depth: 0,
+      overrideAccess: true,
+      limit: 500,
     });
-    const listingIds = creatorListings.docs.map((l) => l.id);
+    const listingIds = creatorListings
+      .map((listing) => Number(listing.id))
+      .filter((id) => Number.isFinite(id) && id > 0);
     if (listingIds.length === 0) {
       return NextResponse.json({
+        activeOrganizationId: activeOrgId,
         totalEarningsCents: 0,
         totalPlatformFeesCents: 0,
         byLicense: [],
       });
     }
-    const licensesResult = await payload.find({
+
+    const licenseDocs = await findAllDocs<Record<string, unknown>>(payload, {
       collection: 'licenses',
-      where: { listing: { in: listingIds } },
+      where: {
+        or: [
+          {
+            sellerOrganization: {
+              equals: activeOrgId,
+            },
+          },
+          {
+            and: [
+              { sellerOrganization: { exists: false } },
+              { listing: { in: listingIds } },
+            ],
+          },
+        ],
+      },
       depth: 1,
-      limit: 5000,
+      overrideAccess: true,
+      limit: 500,
     });
+
     let totalEarningsCents = 0;
     let totalPlatformFeesCents = 0;
-    const byLicense = licensesResult.docs.map((lic) => {
+    const byLicense = licenseDocs.map((lic) => {
       const amount = typeof lic.amountCents === 'number' ? lic.amountCents : 0;
       const fee = typeof lic.platformFeeCents === 'number' ? lic.platformFeeCents : 0;
       totalEarningsCents += amount - fee;
       totalPlatformFeesCents += fee;
       const listing =
-        typeof lic.listing === 'object' && lic.listing != null && typeof (lic.listing as { title?: string }).title === 'string'
+        typeof lic.listing === 'object' &&
+        lic.listing != null &&
+        typeof (lic.listing as { title?: string }).title === 'string'
           ? (lic.listing as { title: string }).title
           : 'Listing';
       return {

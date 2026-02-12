@@ -35,7 +35,10 @@
       "WebSearch",
       "WebFetch(domain:v1.yarnspinner.dev)",
       "Bash(pnpm dlx shadcn@latest add:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(find:*)",
+      "Bash(exit:*)",
+      "Bash(printf:*)"
     ]
   }
 }

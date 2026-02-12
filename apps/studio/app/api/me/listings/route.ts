@@ -6,6 +6,7 @@ import {
   requireAuthenticatedUser,
   resolveOrganizationFromInput,
 } from '@/lib/server/organizations';
+import { findAllDocs } from '@/lib/server/payload-pagination';
 
 export async function GET(req: Request) {
   try {
@@ -23,7 +24,7 @@ export async function GET(req: Request) {
     );
     const activeOrgId = context.activeOrganizationId;
 
-    const result = await payload.find({
+    const docs = await findAllDocs<Record<string, unknown>>(payload, {
       collection: 'listings',
       where: {
         or: [
@@ -37,11 +38,12 @@ export async function GET(req: Request) {
         ],
       },
       depth: 1,
-      limit: 500,
+      overrideAccess: true,
+      limit: 250,
       sort: '-updatedAt',
     });
 
-    const listings = result.docs.map((doc) => {
+    const listings = docs.map((doc) => {
       const project =
         typeof doc.project === 'object' && doc.project != null ? doc.project : null;
       const thumbnail =

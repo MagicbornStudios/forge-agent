@@ -20,6 +20,7 @@ export async function GET(request: Request) {
       sort: '-updatedAt',
       limit: slug ? 1 : 100,
       depth: 1,
+      overrideAccess: true,
     });
 
     const docs = result.docs;

@@ -1,12 +1,14 @@
 import type { CollectionConfig } from 'payload';
+import { organizationScopedAccess } from '../access/authorization.ts';
 
 export const OrganizationMemberships: CollectionConfig = {
   slug: 'organization-memberships',
   access: {
-    read: ({ req }) => !!req.user,
-    create: ({ req }) => !!req.user,
-    update: ({ req }) => !!req.user,
-    delete: ({ req }) => !!req.user,
+    read: ({ req }) =>
+      organizationScopedAccess({ req }, { organizationField: 'organization' }),
+    create: () => false,
+    update: () => false,
+    delete: () => false,
   },
   admin: {
     useAsTitle: 'id',
@@ -43,3 +45,4 @@ export const OrganizationMemberships: CollectionConfig = {
     },
   ],
 };
+

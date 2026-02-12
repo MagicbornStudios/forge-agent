@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload';
+import { projectScopedAccess, requireAuthenticated } from '../access/authorization.ts';
 
 function validateReactFlowJson(value: unknown): true | string {
   if (typeof value !== 'object' || value === null) return 'flow must be an object';
@@ -27,10 +28,10 @@ function validateReactFlowJson(value: unknown): true | string {
 export const ForgeGraphs: CollectionConfig = {
   slug: 'forge-graphs',
   access: {
-    read: () => true,
-    create: () => true,
-    update: () => true,
-    delete: () => true,
+    read: ({ req }) => projectScopedAccess({ req }),
+    create: requireAuthenticated,
+    update: ({ req }) => projectScopedAccess({ req }),
+    delete: ({ req }) => projectScopedAccess({ req }),
   },
   fields: [
     {
@@ -63,3 +64,4 @@ export const ForgeGraphs: CollectionConfig = {
     },
   ],
 };
+

@@ -57,6 +57,14 @@
   --graph-sidebar-border: oklch(0.3211 0 0);
 
   /* Node-type tokens */
+  --node-npc-accent: var(--graph-node-npc-border);
+  --node-player-accent: var(--graph-node-player-border);
+  --node-conditional-accent: var(--graph-node-conditional-border);
+  --node-act-accent: var(--graph-edge-choice-1);
+  --node-chapter-accent: var(--graph-edge-choice-2);
+  --node-page-accent: var(--graph-edge-choice-3);
+  --node-storylet-accent: var(--graph-edge-choice-4);
+  --node-detour-accent: var(--graph-edge-choice-5);
   --graph-node-npc-bg: oklch(0.26 0.02 45);
   --graph-node-npc-border: oklch(0.38 0.03 35);
   --graph-node-npc-header: oklch(0.30 0.04 25);

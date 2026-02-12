@@ -6,6 +6,7 @@ import {
   requireAuthenticatedUser,
   resolveOrganizationFromInput,
 } from '@/lib/server/organizations';
+import { findAllDocs } from '@/lib/server/payload-pagination';
 
 type RangeKey = '7d' | '30d' | '90d';
 
@@ -60,7 +61,7 @@ export async function GET(req: Request) {
     const startIso = rangeStartIso(range);
     const activeOrgId = context.activeOrganizationId;
 
-    const result = await payload.find({
+    const docs = await findAllDocs<AiUsageDoc>(payload, {
       collection: 'ai-usage-events',
       where: {
         and: [
@@ -79,11 +80,10 @@ export async function GET(req: Request) {
         ],
       },
       sort: 'createdAt',
-      limit: 5000,
+      overrideAccess: true,
+      limit: 500,
       depth: 0,
     });
-
-    const docs = result.docs as AiUsageDoc[];
     const byDay = new Map<
       string,
       {

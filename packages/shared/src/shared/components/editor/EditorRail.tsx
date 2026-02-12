@@ -37,18 +37,21 @@ function extractDescriptors(children: React.ReactNode): RailPanelDescriptor[] {
 }
 
 /**
- * Registers its EditorPanel children with the layout registry for the given side.
- * Does not render layout itself; use EditorLayout (Studio) to consume the registry.
- * Must be used within EditorLayoutProvider.
+ * @deprecated Use EditorDockLayout.Left/Main/Right with EditorDockLayout.Panel children instead.
+ * Registers EditorPanel children with the layout registry. No-op when used with simplified
+ * EditorLayoutProvider (no setRailPanels). Must be used within EditorLayoutProvider.
  */
 export function EditorRail({ side, children }: EditorRailProps) {
-  const { editorId, setRailPanels } = usePanelRegistration();
+  const ctx = usePanelRegistration();
+  const setRailPanels = 'setRailPanels' in ctx ? (ctx as { setRailPanels: (side: RailSide, d: RailPanelDescriptor[]) => void }).setRailPanels : undefined;
   const descriptors = React.useMemo(() => extractDescriptors(children), [children]);
 
   React.useEffect(() => {
-    setRailPanels(side, descriptors);
-    return () => setRailPanels(side, []);
-  }, [editorId, side, descriptors, setRailPanels]);
+    if (setRailPanels) {
+      setRailPanels(side, descriptors);
+      return () => setRailPanels(side, []);
+    }
+  }, [side, descriptors, setRailPanels]);
 
   return null;
 }

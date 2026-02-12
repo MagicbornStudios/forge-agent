@@ -1,12 +1,13 @@
 import type { CollectionConfig } from 'payload';
+import { projectScopedAccess, requireAuthenticated } from '../access/authorization.ts';
 
 export const Characters: CollectionConfig = {
   slug: 'characters',
   access: {
-    read: () => true,
-    create: () => true,
-    update: () => true,
-    delete: () => true,
+    read: ({ req }) => projectScopedAccess({ req }),
+    create: requireAuthenticated,
+    update: ({ req }) => projectScopedAccess({ req }),
+    delete: ({ req }) => projectScopedAccess({ req }),
   },
   admin: {
     useAsTitle: 'name',
@@ -62,3 +63,4 @@ export const Characters: CollectionConfig = {
     },
   ],
 };
+

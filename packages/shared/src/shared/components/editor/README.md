@@ -17,9 +17,9 @@ and clearer naming.
 ## Docking + layout (rails and composable panels)
 
 - **Rails** — Left, main, right, and bottom are **rails**; each rail can have one or more **panel tabs** (Dockview-level tabs). Content of each tab is one **EditorDockPanel** (or equivalent), which can be leaf content, inner tabs via `PanelTabs`, or (future) nested panels.
-- **Declarative panel registration (Studio):** Use **EditorLayoutProvider**(editorId) and **EditorRail**(side) + **EditorPanel**(id, title, iconKey) from shared; **EditorLayout** from Studio subscribes to the panel registry and renders **EditorDockLayout**. Panel visibility and View menu derive from the registry; visibility key is `panel.visible.{editorId}-{panelId}`. EditorRail and EditorPanel must be used inside EditorLayoutProvider.
-- **Shared panel content:** Shared panels (e.g. Chat) are implemented once; editors that want the panel add an **EditorPanel** with a **stable id** (e.g. `CHAT_PANEL_ID`) and the same content component. Visibility and View menu derive from the panel registry; schema keys are `panel.visible.{editorId}-{panelId}`. See decisions.md "Shared panel content and editor-scoped contributions."
-- `EditorDockLayout` - dockable panel layout. Use **config-driven rails** via `leftPanels`, `mainPanels`, `rightPanels`, `bottomPanels` (arrays of `RailPanelDescriptor`: `{ id, title, iconKey?, content }`). First panel in each array is placed on that side; rest are sibling tabs (`direction: 'within'`). When a rail’s panels array is omitted, legacy props apply: `left`, `main`, `right`, `rightInspector`+`rightSettings`, `bottom`. Declarative slots (`EditorDockLayout.Left`, `.Main`, `.Right`, `.Bottom`) or props; slot children override props. Built on **Dockview** for drag-to-reorder, floating panels, and tab grouping. Layout is persisted to `localStorage['dockview-{layoutId}']` when `layoutId` is set. Use a ref and call `ref.current.resetLayout()` to restore default panels. (`DockLayout` is a deprecated alias.)
+- **UI-first panel layout (recommended):** Compose **EditorDockLayout.Left** / `.Main` / `.Right` / `.Bottom` slot children with **EditorDockLayout.Panel** children. Pass `icon` as `React.ReactNode`. No store, no effects; panels are collected in render. **EditorLayoutProvider**(editorId) provides `editorId` only; View menu and `useEditorPanelVisibility` use `EDITOR_PANEL_SPECS` for panel toggles.
+- **Shared panel content:** Shared panels (e.g. Chat) are implemented once; editors add an **EditorDockLayout.Panel** with a **stable id** (e.g. `CHAT_PANEL_ID`). Visibility key: `panel.visible.{editorId}-{panelId}`. See decisions.md "Shared panel content and editor-scoped contributions."
+- `EditorDockLayout` - dockable panel layout. **Slot + Panel children** (recommended) or **config-driven rails** via `leftPanels`, `mainPanels`, `rightPanels`, `bottomPanels` (arrays of `RailPanelDescriptor`: `{ id, title, iconKey?, content }`). First panel in each array is placed on that side; rest are sibling tabs (`direction: 'within'`). When a rail’s panels array is omitted, legacy props apply: `left`, `main`, `right`, `rightInspector`+`rightSettings`, `bottom`. Declarative slots (`EditorDockLayout.Left`, `.Main`, `.Right`, `.Bottom`) or props; slot children override props. Built on **Dockview** for drag-to-reorder, floating panels, and tab grouping. Layout is persisted to `localStorage['dockview-{layoutId}']` when `layoutId` is set. Use `ref.current.resetLayout()` to restore default. **EditorRail**, **EditorPanel**, **EditorLayout** are deprecated. (`DockLayout` is a deprecated alias.)
 - `EditorDockPanel` - single panel (header, tabs, lock overlay, scroll). Use as the content for each rail panel tab. (`DockPanel` is a deprecated alias.)
 - `PanelTabs` - tabs within an EditorDockPanel (e.g. Library: Graphs | Nodes).
 - `ViewportMeta` - metadata wrapper for editor surfaces.
@@ -67,6 +67,7 @@ import {
   EditorDockPanel,
   EditorStatusBar,
 } from '@forge/shared/components/editor';
+import { BookOpen, LayoutDashboard, ScanSearch } from 'lucide-react';
 
 export function ExampleEditor() {
   return (
@@ -82,13 +83,19 @@ export function ExampleEditor() {
           layoutId="example"
         >
           <EditorDockLayout.Left>
-            <EditorDockPanel panelId="left" title="Library" />
+            <EditorDockLayout.Panel id="left" title="Library" icon={<BookOpen size={14} />}>
+              <EditorDockPanel panelId="left">Content</EditorDockPanel>
+            </EditorDockLayout.Panel>
           </EditorDockLayout.Left>
           <EditorDockLayout.Main>
-            <EditorDockPanel panelId="main" scrollable={false}>Main</EditorDockPanel>
+            <EditorDockLayout.Panel id="main" title="Main" icon={<LayoutDashboard size={14} />}>
+              <EditorDockPanel panelId="main" scrollable={false}>Main</EditorDockPanel>
+            </EditorDockLayout.Panel>
           </EditorDockLayout.Main>
           <EditorDockLayout.Right>
-            <EditorDockPanel panelId="right" title="Inspector" />
+            <EditorDockLayout.Panel id="right" title="Inspector" icon={<ScanSearch size={14} />}>
+              <EditorDockPanel panelId="right">Inspector</EditorDockPanel>
+            </EditorDockLayout.Panel>
           </EditorDockLayout.Right>
         </EditorDockLayout>
       </EditorShell.Layout>

@@ -1,12 +1,14 @@
 ---
-title: CopilotKit editor integration
+title: CopilotKit editor integration (archived)
 created: 2026-02-04
-updated: 2026-02-07
+updated: 2026-02-12
 ---
 
-# CopilotKit editor integration
+# CopilotKit editor integration (archived)
 
-## Pattern: context + actions
+**Status: CopilotKit removed.** Assistant UI and domain assistant contracts replace this. See [AI architecture](../ai/00-index.mdx) and [migration](../ai/migration/00-index.mdx).
+
+## Pattern: context + actions (historical)
 
 - **Context** describes current state so the agent can reason (e.g. which editor, what graph, dirty state). Supply it via `useCopilotReadable` in the editor component or via `useDomainCopilot` contracts.
 - **Actions** perform edits. Register them with `useCopilotAction`; the agent calls them to change the graph, document, etc.

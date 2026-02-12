@@ -6,15 +6,19 @@ import type { RailPanelDescriptor } from '@forge/shared/components/editor';
 
 export type RailSide = 'left' | 'main' | 'right' | 'bottom';
 
+/**
+ * @deprecated Panel layout is now UI-first (EditorDockLayout.Panel slot children).
+ * This registry is no longer used by Dialogue/Character editors. useEditorPanels returns
+ * EMPTY_RAIL; useEditorPanelVisibility uses EDITOR_PANEL_SPECS fallback.
+ */
 export interface EditorPanelsState {
-  /** editorId -> rail side -> list of panel descriptors */
   panels: Record<string, Record<RailSide, RailPanelDescriptor[]>>;
   setRailPanels: (editorId: string, side: RailSide, descriptors: RailPanelDescriptor[]) => void;
   clearEditor: (editorId: string) => void;
   getPanels: (editorId: string) => Record<RailSide, RailPanelDescriptor[]>;
 }
 
-/** Stable empty rail so selectors never return a new reference when panels[editorId] is missing (avoids getSnapshot loop). */
+/** Stable empty rail so selectors never return a new reference when panels[editorId] is missing. */
 const EMPTY_RAIL: Record<RailSide, RailPanelDescriptor[]> = {
   left: [],
   main: [],

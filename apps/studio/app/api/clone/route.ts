@@ -43,7 +43,11 @@ export async function POST(req: Request) {
     const message =
       error instanceof Error ? error.message : 'Clone failed';
     const status =
-      message.includes('unique') || message.includes('duplicate') ? 409 : 500;
+      message.toLowerCase().includes('storage limit')
+        ? 409
+        : message.includes('unique') || message.includes('duplicate')
+          ? 409
+          : 500;
     return NextResponse.json({ error: message }, { status });
   }
 }

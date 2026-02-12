@@ -24,6 +24,7 @@ Reference for agents and humans. Update when adding or removing major choices.
 | Persistence (client) | localStorage (versioned keys) | App shell route, last document ids, and local UX preferences. |
 | AI/chat | CopilotKit + OpenRouter (+ OpenAI SDK adapter) | Agent UX and model routing with provider fallback strategy. |
 | Analytics vs billing usage | PostHog + `ai-usage-events` ledger | PostHog for behavior; persisted usage ledger for billing-grade cost visibility. |
+| Storage + entitlement metering | `storage-usage-events` + org billing fields | Org-scoped quota tracking, warning/limit enforcement, and upgrade flows. |
 | Styling | Tailwind + shadcn (`packages/ui`) | Shared primitives; platform keeps app-local style layers. |
 | Shared editor kit | packages/shared (EditorShell, DockLayout) | Single layout/contract for Dialogue, Video, Character, Strategy. |
 
@@ -63,7 +64,7 @@ Reference for agents and humans. Update when adding or removing major choices.
 - **Shared UI atoms and third-party components** (shadcn registries, ElevenLabs, etc.): `packages/ui`; see [how-to 15 - Shadcn registries and UI components](how-to/15-shadcn-registries-and-components.mdx) for adding components and vendor CLI workarounds.
 - **Query keys and hooks:** `apps/studio/lib/data/keys.ts`, `apps/studio/lib/data/hooks/`
 - **Persisted client state:** Zustand persist on app-shell store (`apps/studio/lib/app-shell/store.ts`) and graph/video stores (draft partialize); see **docs/agent-artifacts/core/decisions.md**.
-- **Business-critical collections:** `organizations`, `organization-memberships`, `ai-usage-events`, `listings`, `licenses` under `apps/studio/payload/collections/`.
+- **Business-critical collections:** `organizations`, `organization-memberships`, `ai-usage-events`, `api-keys`, `storage-usage-events`, `enterprise-requests`, `listings`, `licenses` under `apps/studio/payload/collections/`.
 - **Decisions and rationale:** **docs/agent-artifacts/core/decisions.md**
 
 ---

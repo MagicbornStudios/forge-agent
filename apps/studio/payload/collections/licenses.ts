@@ -12,6 +12,12 @@ export const Licenses: CollectionConfig = {
     useAsTitle: 'id',
     description: 'License records for clone purchases; created by Stripe webhook.',
   },
+  indexes: [
+    {
+      fields: ['stripeSessionId'],
+      unique: true,
+    },
+  ],
   fields: [
     {
       name: 'user',
@@ -36,6 +42,7 @@ export const Licenses: CollectionConfig = {
       name: 'stripeSessionId',
       type: 'text',
       required: true,
+      unique: true,
       admin: { description: 'Stripe Checkout session id (cs_xxx)' },
     },
     {
@@ -67,3 +74,4 @@ export const Licenses: CollectionConfig = {
     },
   ],
 };
+

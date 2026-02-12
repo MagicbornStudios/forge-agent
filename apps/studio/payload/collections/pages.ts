@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload';
+import { projectScopedAccess, requireAuthenticated } from '../access/authorization.ts';
 
 /**
  * Notion-inspired pages for WriterMode.
@@ -7,10 +8,10 @@ import type { CollectionConfig } from 'payload';
 export const Pages: CollectionConfig = {
   slug: 'pages',
   access: {
-    read: () => true,
-    create: () => true,
-    update: () => true,
-    delete: () => true,
+    read: ({ req }) => projectScopedAccess({ req }),
+    create: requireAuthenticated,
+    update: ({ req }) => projectScopedAccess({ req }),
+    delete: ({ req }) => projectScopedAccess({ req }),
   },
   fields: [
     {
@@ -60,3 +61,4 @@ export const Pages: CollectionConfig = {
     },
   ],
 };
+

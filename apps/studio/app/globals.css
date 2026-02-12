@@ -1,6 +1,7 @@
 /* All @import must come first (CSS spec); dependencies may contain font @import url() */
 @import "@twick/studio/dist/studio.css";
-@import "@forge/shared/styles/editor";
+@import "dockview/dist/styles/dockview.css";
+@import "../../../packages/shared/src/shared/styles/dockview-overrides.css";
 @import "tw-animate-css";
 @import "../../../packages/shared/src/shared/styles/themes.css";
 @import "../../../packages/shared/src/shared/styles/contexts.css";
@@ -17,11 +18,7 @@
 @source "../../../packages/domain-forge/src/**/*.{ts,tsx,jsx,mdx}";
 @source "../../../packages/ui/src/**/*.{ts,tsx,jsx,mdx}";
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
+
 
 @theme inline {
   /* Spotify-like radius scale (see themes.css and 03-design-language.mdx) */
@@ -88,17 +85,19 @@
 /* Semantic tokens (--background, --foreground, etc.) come from themes.css.
    Do not redefine them here or they will override the theme. */
 
+/* ⚠️ CRITICAL: Do NOT add padding: 0 or margin: 0 to * or ::before/::after.
+   It strips default padding from buttons, labels, inputs, badges and caused days of
+   debugging. See docs/agent-artifacts/core/errors-and-attempts.md § Universal
+   padding/margin reset and styling-and-ui-consistency rule 26. */
+
 @layer base {
-  * {
+  /* * {
     @apply border-border outline-ring/50;
-  }
+  } */
   body {
     @apply bg-background text-foreground font-sans;
     letter-spacing: var(--tracking-normal);
   }
 }
 
-/* Keep CopilotKit sidebar below our Sheet/Drawer/Dropdown overlays (z-[200]) */
-.copilotKitSidebar {
-  z-index: 20;
-}
+

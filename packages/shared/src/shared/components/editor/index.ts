@@ -29,8 +29,8 @@ export type {
   DockLayoutProps,
   DockLayoutViewport,
   DockLayoutSlotConfig,
-  DockLayoutSlotIconKey,
   DockLayoutRef,
+  DockLayoutPanelProps,
   RailPanelDescriptor,
 } from './DockLayout';
 

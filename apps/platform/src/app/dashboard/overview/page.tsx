@@ -1,74 +1,70 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { AiUsageAreaChart } from '@/components/dashboard/ai-usage-area-chart';
+import { BillingStatusBanner } from '@/components/dashboard/billing-status-banner';
+import { EnterpriseAccessCard } from '@/components/dashboard/enterprise-access-card';
 import { RecentSales } from '@/components/dashboard/recent-sales';
 import { RecentSalesSkeleton } from '@/components/dashboard/recent-sales-skeleton';
 import { RevenueAreaChart } from '@/components/dashboard/revenue-area-chart';
+import { StorageUsageCards } from '@/components/dashboard/storage-usage-cards';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAiUsageSeries, useAiUsageSummary, useCreatorListings, useLicenses, useRevenueSummary } from '@/lib/data/hooks/use-dashboard-data';
+import {
+  useAiUsageSeries,
+  useAiUsageSummary,
+  useCreatorListings,
+  useLicenses,
+  useRevenueSummary,
+  useStorageSummary,
+} from '@/lib/data/hooks/use-dashboard-data';
 import { createConnectAccount, createConnectOnboardingLink, getStudioApiUrl } from '@/lib/api/studio';
-
-function formatCurrencyFromCents(cents: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 2,
-  }).format(cents / 100);
-}
-
-function formatUsd(value: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 4,
-  }).format(value);
-}
+import { formatCurrencyFromCents, formatUsd } from '@/lib/dashboard/format';
+import {
+  buildAiTrend,
+  buildOverviewMetrics,
+  buildRecentSales,
+  buildRevenueTrend,
+} from '@/lib/dashboard/selectors';
+import { PLATFORM_ROUTES } from '@/lib/constants/routes';
 
 export default function DashboardOverviewPage() {
   const {
     user,
-    isLoading: authLoading,
     activeOrganizationId,
     activeOrganization,
     refreshUser,
   } = useAuth();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [connectLoading, setConnectLoading] = useState(false);
   const [onboardingLoading, setOnboardingLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace('/login?returnUrl=/dashboard/overview');
-    }
-  }, [authLoading, user, router]);
 
   const listingsQuery = useCreatorListings(activeOrganizationId, !!user);
   const licensesQuery = useLicenses(activeOrganizationId, !!user);
   const revenueQuery = useRevenueSummary(activeOrganizationId, !!user);
   const aiSummaryQuery = useAiUsageSummary(activeOrganizationId, '30d', !!user);
   const aiSeriesQuery = useAiUsageSeries(activeOrganizationId, '30d', !!user);
+  const storageSummaryQuery = useStorageSummary(activeOrganizationId, !!user);
 
   const loading =
-    authLoading ||
     listingsQuery.isLoading ||
     licensesQuery.isLoading ||
     revenueQuery.isLoading ||
     aiSummaryQuery.isLoading ||
-    aiSeriesQuery.isLoading;
+    aiSeriesQuery.isLoading ||
+    storageSummaryQuery.isLoading;
 
   const queryError =
     listingsQuery.error ??
     licensesQuery.error ??
     revenueQuery.error ??
     aiSummaryQuery.error ??
-    aiSeriesQuery.error;
+    aiSeriesQuery.error ??
+    storageSummaryQuery.error;
   const error =
     localError ??
     (queryError instanceof Error
@@ -77,61 +73,26 @@ export default function DashboardOverviewPage() {
         ? 'Failed to load dashboard data'
         : null);
 
-  const metrics = useMemo(() => {
-    const listings = listingsQuery.data ?? [];
-    const licenses = licensesQuery.data ?? [];
-    const revenue = revenueQuery.data;
-    const aiSummary = aiSummaryQuery.data?.summary;
-    const published = listings.filter((listing) => listing.status === 'published').length;
-    const free = listings.filter((listing) => listing.price === 0).length;
-    return {
-      totalListings: listings.length,
-      publishedListings: published,
-      freeListings: free,
-      licensesSold: licenses.length,
-      totalEarningsCents: revenue?.totalEarningsCents ?? 0,
-      platformFeesCents: revenue?.totalPlatformFeesCents ?? 0,
-      aiRequests: aiSummary?.requestCount ?? 0,
-      aiSpendUsd: aiSummary?.totalCostUsd ?? 0,
-    };
-  }, [aiSummaryQuery.data?.summary, licensesQuery.data, listingsQuery.data, revenueQuery.data]);
-
-  const revenueTrend = useMemo(() => {
-    const byLicense = revenueQuery.data?.byLicense ?? [];
-    const grouped = new Map<string, { date: string; earningsUsd: number; feesUsd: number }>();
-    for (const item of byLicense) {
-      const date = item.grantedAt
-        ? new Date(item.grantedAt).toISOString().slice(0, 10)
-        : 'unknown';
-      const row = grouped.get(date) ?? { date, earningsUsd: 0, feesUsd: 0 };
-      row.earningsUsd += (item.amountCents - item.platformFeeCents) / 100;
-      row.feesUsd += item.platformFeeCents / 100;
-      grouped.set(date, row);
-    }
-    return [...grouped.values()]
-      .filter((row) => row.date !== 'unknown')
-      .sort((a, b) => a.date.localeCompare(b.date));
-  }, [revenueQuery.data?.byLicense]);
-
-  const aiTrend = useMemo(
+  const metrics = useMemo(
     () =>
-      (aiSeriesQuery.data?.series ?? []).map((entry) => ({
-        date: entry.date,
-        totalCostUsd: entry.totalCostUsd,
-        totalTokensK: Number((entry.totalTokens / 1000).toFixed(2)),
-      })),
-    [aiSeriesQuery.data?.series],
+      buildOverviewMetrics(
+        listingsQuery.data ?? [],
+        licensesQuery.data ?? [],
+        revenueQuery.data,
+        aiSummaryQuery.data?.summary,
+      ),
+    [aiSummaryQuery.data?.summary, licensesQuery.data, listingsQuery.data, revenueQuery.data],
   );
 
+  const revenueTrend = useMemo(
+    () => buildRevenueTrend(revenueQuery.data?.byLicense ?? []),
+    [revenueQuery.data?.byLicense],
+  );
+
+  const aiTrend = useMemo(() => buildAiTrend(aiSeriesQuery.data?.series ?? []), [aiSeriesQuery.data?.series]);
+
   const recentSales = useMemo(
-    () =>
-      [...(revenueQuery.data?.byLicense ?? [])]
-        .sort((a, b) => {
-          const dateA = a.grantedAt ? Date.parse(a.grantedAt) : 0;
-          const dateB = b.grantedAt ? Date.parse(b.grantedAt) : 0;
-          return dateB - dateA;
-        })
-        .slice(0, 6),
+    () => buildRecentSales(revenueQuery.data?.byLicense ?? [], 6),
     [revenueQuery.data?.byLicense],
   );
 
@@ -241,6 +202,9 @@ export default function DashboardOverviewPage() {
         </Card>
       </section>
 
+      <BillingStatusBanner storage={storageSummaryQuery.data?.summary} />
+      <StorageUsageCards data={storageSummaryQuery.data} />
+
       <section className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
@@ -317,13 +281,13 @@ export default function DashboardOverviewPage() {
 
       <section className="flex flex-wrap gap-2">
         <Button asChild variant="outline">
-          <Link href="/dashboard/listings">Manage listings</Link>
+          <Link href={PLATFORM_ROUTES.dashboardListings}>Manage listings</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link href="/dashboard/games">View games</Link>
+          <Link href={PLATFORM_ROUTES.dashboardGames}>View games</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link href="/dashboard/revenue">Open revenue</Link>
+          <Link href={PLATFORM_ROUTES.dashboardRevenue}>Open revenue</Link>
         </Button>
         <Button asChild>
           <a href={getStudioApiUrl()} target="_blank" rel="noreferrer">
@@ -331,6 +295,11 @@ export default function DashboardOverviewPage() {
           </a>
         </Button>
       </section>
+
+      <EnterpriseAccessCard
+        orgId={activeOrganizationId}
+        activeOrganization={activeOrganization}
+      />
     </main>
   );
 }

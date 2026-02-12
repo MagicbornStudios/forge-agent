@@ -1,7 +1,7 @@
 ---
 title: Styling and UI consistency
 created: 2026-02-07
-updated: 2026-02-10
+updated: 2026-02-11
 ---
 
 Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx).
@@ -42,6 +42,7 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 23. **Docs layout baseline** - Use the shared docs shell (`DocsLayoutShell`) with **headless Fumadocs source** (serialized page tree + custom MDX map) for Studio docs. Do not import runtime Fumadocs layout/page components (`fumadocs-ui/layouts/docs`, `fumadocs-ui/page`) on the current stack. Keep custom behavior through MDX component overrides and route-scoped docs CSS token bridging (`--color-fd-*` mapped to shadcn/theme tokens). Run `pnpm docs:runtime:doctor` (included in `pnpm docs:doctor`) for guardrails.
 24. **No interactive nesting** - Never place interactive descendants inside interactive wrappers (e.g. `button` containing `Switch`, `Button` containing `input`, anchor inside button unless `asChild` semantics remove the wrapper). Hydration can fail in React/Next for invalid HTML trees. Run `pnpm hydration:doctor` to catch regressions.
 25. **Tooltips on buttons** - Studio uses no Radix tooltips; native `title` only via `EditorButton` / `TooltipIconButton`. Do not wrap `Button` in Radix `Tooltip` until Radix ships the React 19 fix. See [standard-practices](standard-practices.md) § Tooltips and [errors-and-attempts](errors-and-attempts.md).
+26. **No universal padding/margin reset** - Never add `padding: 0` or `margin: 0` to the universal selector `*` (or `::before`, `::after`). It strips default padding from buttons, labels, inputs, badges and caused days of debugging. Tailwind preflight already normalizes; do not add our own. See [errors-and-attempts](errors-and-attempts.md) § Universal padding/margin reset and the comment in `apps/studio/app/globals.css` above `@layer base`.
 
 ## Process when making UI/styling changes
 

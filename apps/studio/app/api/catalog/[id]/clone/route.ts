@@ -112,7 +112,11 @@ export async function POST(
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to clone listing.';
     const status =
-      message.includes('unique') || message.includes('duplicate') ? 409 : 500;
+      message.toLowerCase().includes('storage limit')
+        ? 409
+        : message.includes('unique') || message.includes('duplicate')
+          ? 409
+          : 500;
     return NextResponse.json({ error: message }, { status });
   }
 }

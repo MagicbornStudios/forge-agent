@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useMemo, useState } from 'react';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { ProductForm, type ProductFilterValues } from '@/components/dashboard/product-form';
 import { ProductListingRow } from '@/components/dashboard/product-listing';
@@ -22,16 +21,9 @@ const DEFAULT_FILTERS: ProductFilterValues = {
 };
 
 export default function DashboardListingsPage() {
-  const { user, isLoading: authLoading, activeOrganizationId } = useAuth();
-  const router = useRouter();
+  const { user, activeOrganizationId } = useAuth();
   const [filters, setFilters] = useState<ProductFilterValues>(DEFAULT_FILTERS);
   const listingsQuery = useCreatorListings(activeOrganizationId, !!user);
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace('/login?returnUrl=/dashboard/listings');
-    }
-  }, [authLoading, user, router]);
 
   const filtered = useMemo(() => {
     const listings = listingsQuery.data ?? [];
@@ -53,7 +45,7 @@ export default function DashboardListingsPage() {
     await navigator.clipboard.writeText(url);
   }
 
-  if (authLoading || listingsQuery.isLoading) {
+  if (listingsQuery.isLoading) {
     return (
       <main className="p-6">
         <p className="text-sm text-muted-foreground">Loading listings...</p>

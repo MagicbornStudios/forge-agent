@@ -1,12 +1,41 @@
 import type { CollectionConfig } from 'payload';
+import {
+  organizationScopedAccess,
+  requireAuthenticated,
+} from '../access/authorization.ts';
+import { recordOrganizationStorageDelta } from '../../lib/server/storage-metering.ts';
+
+function asNumericId(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) return value;
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  }
+  if (typeof value === 'object' && value != null && 'id' in value) {
+    return asNumericId((value as { id?: unknown }).id);
+  }
+  return null;
+}
 
 export const Projects: CollectionConfig = {
   slug: 'projects',
   access: {
-    read: () => true,
-    create: () => true,
-    update: () => true,
-    delete: () => true,
+    read: ({ req }) =>
+      organizationScopedAccess(
+        { req },
+        { ownerField: 'owner', organizationField: 'organization' },
+      ),
+    create: requireAuthenticated,
+    update: ({ req }) =>
+      organizationScopedAccess(
+        { req },
+        { ownerField: 'owner', organizationField: 'organization' },
+      ),
+    delete: ({ req }) =>
+      organizationScopedAccess(
+        { req },
+        { ownerField: 'owner', organizationField: 'organization' },
+      ),
   },
   hooks: {
     beforeChange: [
@@ -26,6 +55,33 @@ export const Projects: CollectionConfig = {
               : requestUser.defaultOrganization;
         }
         return nextData;
+      },
+    ],
+    afterDelete: [
+      async ({ doc, req }) => {
+        const organizationId = asNumericId((doc as { organization?: unknown }).organization);
+        const estimatedSizeBytes = Math.max(
+          0,
+          Math.round(
+            typeof (doc as { estimatedSizeBytes?: unknown }).estimatedSizeBytes === 'number'
+              ? ((doc as { estimatedSizeBytes?: number }).estimatedSizeBytes ?? 0)
+              : Number((doc as { estimatedSizeBytes?: unknown }).estimatedSizeBytes ?? 0),
+          ),
+        );
+        if (organizationId != null && estimatedSizeBytes > 0) {
+          await recordOrganizationStorageDelta(req.payload, {
+            organizationId,
+            userId: asNumericId((doc as { owner?: unknown }).owner),
+            projectId: asNumericId((doc as { id?: unknown }).id),
+            source: 'delete',
+            deltaBytes: -estimatedSizeBytes,
+            metadata: {
+              collection: 'projects',
+              reason: 'project-delete',
+            },
+          });
+        }
+        return doc;
       },
     ],
   },
@@ -80,9 +136,19 @@ export const Projects: CollectionConfig = {
       },
     },
     {
+      name: 'estimatedSizeBytes',
+      type: 'number',
+      required: true,
+      defaultValue: 0,
+      admin: {
+        description: 'Estimated storage footprint for project-owned documents.',
+      },
+    },
+    {
       name: 'forgeGraph',
       type: 'relationship',
       relationTo: 'forge-graphs',
     },
   ],
 };
+

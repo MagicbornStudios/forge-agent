@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { cn } from '@forge/shared/lib/utils';
 import type { Selection, InspectorSection } from '../../workspace';
+import { ScrollArea } from '@forge/ui/scroll-area';
 
 export interface EditorInspectorProps {
   children?: React.ReactNode;

@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { login } from '@/lib/api/studio';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { PLATFORM_ROUTES, ROUTE_QUERY_KEYS } from '@/lib/constants/routes';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,9 +26,9 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(email, password);
-      const returnUrl = searchParams.get('returnUrl');
+      const returnUrl = searchParams.get(ROUTE_QUERY_KEYS.returnUrl);
       const target =
-        returnUrl && returnUrl.startsWith('/') ? returnUrl : '/dashboard/overview';
+        returnUrl && returnUrl.startsWith('/') ? returnUrl : PLATFORM_ROUTES.dashboardOverview;
       await refreshUser();
       router.replace(target);
       router.refresh();

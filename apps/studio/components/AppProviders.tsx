@@ -3,36 +3,156 @@
 import React from 'react';
 import { LivePlayerProvider } from '@twick/live-player';
 import { TimelineProvider, INITIAL_TIMELINE_DATA } from '@twick/timeline';
-import { CopilotKitProvider } from '@/components/providers/CopilotKitProvider';
+import { CopilotKitBypassProvider } from '@/components/providers/CopilotKitBypassProvider';
+import { LocalDevAuthGate } from '@/components/providers/LocalDevAuthGate';
 import { AppProviders as SharedAppProviders } from '@forge/shared/components/app';
 import { EntitlementsProvider } from '@/components/providers/EntitlementsProvider';
 import { AppShellPersistGate } from '@/components/persistence/AppShellPersistGate';
 import { DirtyBeforeUnload } from '@/components/persistence/DirtyBeforeUnload';
+import { OpenSettingsSheetProvider } from '@/lib/contexts/OpenSettingsSheetContext';
+import { StudioMenubarProvider } from '@/lib/contexts/AppMenubarContext';
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarHeader,
+  SidebarContent,
+  useSidebar,
+} from '@forge/ui/sidebar';
+import { Button } from '@forge/ui/button';
+import { AppSettingsPanelContent } from '@/components/settings/AppSettingsPanelContent';
+import { useEditorStore } from '@/lib/app-shell/store';
+import { cn } from '@forge/shared/lib/utils';
+import { X } from 'lucide-react';
 
 export interface AppProvidersProps {
   children: React.ReactNode;
   copilotDefaultOpen?: boolean;
 }
 
-export function AppProviders({ children, copilotDefaultOpen = true }: AppProvidersProps) {
+function MainWithSettingsMargin({ children }: { children: React.ReactNode }) {
+  const { open, state } = useSidebar();
+  const showMargin = open && state === 'expanded';
+  return (
+    <div
+      className={cn(
+        'flex flex-1 flex-col min-h-0 min-w-0 transition-[margin] duration-200 ease-linear',
+        showMargin && 'md:mr-[var(--sidebar-width)]'
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** CopilotKit removed; BypassProvider supplies CopilotSidebarContext for legacy useCopilotSidebar consumers (e.g. devtools). */
+export function AppProviders({ children }: AppProvidersProps) {
+  const settingsSidebarOpen = useEditorStore((s) => s.settingsSidebarOpen);
+  const setSettingsSidebarOpen = useEditorStore((s) => s.setSettingsSidebarOpen);
+  const requestOpenSettings = useEditorStore((s) => s.requestOpenSettings);
+  const setRequestOpenSettings = useEditorStore((s) => s.setRequestOpenSettings);
+  const activeWorkspaceId = useEditorStore((s) => s.route.activeWorkspaceId);
+  const activeProjectId = useEditorStore((s) => s.activeProjectId);
+  const settingsViewportId = useEditorStore((s) => s.settingsViewportId);
+
+  React.useEffect(() => {
+    if (!requestOpenSettings) return;
+    setSettingsSidebarOpen(true);
+    setRequestOpenSettings(false);
+  }, [requestOpenSettings, setSettingsSidebarOpen, setRequestOpenSettings]);
+
+  React.useEffect(() => {
+    if (!settingsSidebarOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSettingsSidebarOpen(false);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [settingsSidebarOpen, setSettingsSidebarOpen]);
+
   return (
     <AppShellPersistGate>
       <DirtyBeforeUnload />
-      <EntitlementsProvider>
-        <LivePlayerProvider>
-          <TimelineProvider
-            contextId="studio-video"
-            initialData={INITIAL_TIMELINE_DATA}
-            undoRedoPersistenceKey="studio-video-history"
-          >
-            <SharedAppProviders>
-              <CopilotKitProvider defaultOpen={copilotDefaultOpen}>
-                {children}
-              </CopilotKitProvider>
-            </SharedAppProviders>
-          </TimelineProvider>
-        </LivePlayerProvider>
-      </EntitlementsProvider>
+      <LocalDevAuthGate>
+        <EntitlementsProvider>
+          <LivePlayerProvider>
+            <TimelineProvider
+              contextId="studio-video"
+              initialData={INITIAL_TIMELINE_DATA}
+              undoRedoPersistenceKey="studio-video-history"
+            >
+              <SharedAppProviders>
+                <CopilotKitBypassProvider>
+                  <OpenSettingsSheetProvider>
+                    <StudioMenubarProvider>
+                      <SidebarProvider
+                        open={settingsSidebarOpen}
+                        onOpenChange={setSettingsSidebarOpen}
+                        className="flex flex-col h-screen min-h-0 w-full"
+                        style={
+                          {
+                            '--sidebar-width': '20rem',
+                            '--sidebar-width-mobile': '18rem',
+                          } as React.CSSProperties
+                        }
+                      >
+                        {settingsSidebarOpen && (
+                          <button
+                            type="button"
+                            aria-label="Close settings sidebar"
+                            onClick={() => setSettingsSidebarOpen(false)}
+                            className="fixed inset-0 z-[9] hidden bg-transparent md:block"
+                          />
+                        )}
+                        <MainWithSettingsMargin>{children}</MainWithSettingsMargin>
+                        <Sidebar
+                          side="right"
+                          collapsible="offcanvas"
+                          className="border-l border-sidebar-border"
+                        >
+                          <SidebarHeader className="border-b border-sidebar-border p-[var(--panel-padding)]">
+                            <div className="flex items-start justify-between gap-[var(--control-gap)]">
+                              <div>
+                                <h2 className="text-sm font-semibold text-sidebar-foreground">
+                                  Settings
+                                </h2>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  App and editor defaults; viewport settings when in context.
+                                </p>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                aria-label="Close settings"
+                                className="h-[var(--control-height-sm)] w-[var(--control-height-sm)] shrink-0 text-muted-foreground hover:text-foreground"
+                                onClick={() => setSettingsSidebarOpen(false)}
+                              >
+                                <X className="size-4" />
+                              </Button>
+                            </div>
+                          </SidebarHeader>
+                          <SidebarContent className="flex-1 min-h-0">
+                            <AppSettingsPanelContent
+                              activeEditorId={activeWorkspaceId}
+                              activeProjectId={
+                                activeProjectId != null ? String(activeProjectId) : null
+                              }
+                              viewportId={settingsViewportId ?? 'main'}
+                              className="h-full"
+                            />
+                          </SidebarContent>
+                        </Sidebar>
+                      </SidebarProvider>
+                    </StudioMenubarProvider>
+                  </OpenSettingsSheetProvider>
+                </CopilotKitBypassProvider>
+              </SharedAppProviders>
+            </TimelineProvider>
+          </LivePlayerProvider>
+        </EntitlementsProvider>
+      </LocalDevAuthGate>
     </AppShellPersistGate>
   );
 }
