@@ -359,6 +359,14 @@ AI routes require either authenticated session or valid API key with required sc
 
 ---
 
+## Viewport defaults overrides for graph settings
+
+**Decision:** Viewport-scoped settings that need **different defaults per viewport** (e.g. `graph.allowedNodeTypes` for narrative vs storylet vs character) use **config overrides** in `apps/studio/lib/settings/config.ts`. `VIEWPORT_DEFAULTS_OVERRIDES` merges over generated `VIEWPORT_DEFAULTS`; `getViewportDefaults` applies overrides when resolving a given `editorId:viewportId`. The tree registers a single default (e.g. storylet case); config overrides narrative to `["PAGE"]`, storylet to `["CHARACTER","PLAYER","CONDITIONAL"]`, character to `["characterCard"]`.
+
+**Rationale:** Codegen produces one default per field per viewport key; we cannot vary defaults per viewport without either per-viewport registration components or config overrides. Config overrides keep the tree simple and avoid duplicate GraphViewportSettings per viewport.
+
+---
+
 ## Clone semantics (paid clone)
 
 **Decision:** When a user **pays to clone** a project or template, they receive a **license** and can **clone again** (no per-clone fee after purchase). The **listing creator** chooses per listing: **indefinite** (purchaser always gets current project state on clone-again) or **version-only** (purchaser gets the same snapshot as at purchase). We persist a **license** record (user, listing, Stripe session id, grantedAt, optional snapshot) to enable clone-again and future audio/licenses.

@@ -33,6 +33,7 @@ import { ViewportSettingsProvider } from './ViewportSettingsProvider';
 import { GraphViewportSettings } from './GraphViewportSettings';
 import { toast } from 'sonner';
 import { SettingsService } from '@/lib/api-client';
+import { VIEWPORT_ACCENT_COLORS } from '@/lib/app-shell/editor-metadata';
 import type { SettingsSection } from './types';
 
 export interface AppSettingsPanelContentProps {
@@ -79,6 +80,7 @@ const FIELD_ICONS: Record<string, React.ReactNode> = {
   'ui.toastsEnabled': <Bell className={iconSize} />,
   'editor.locked': <Lock className={iconSize} />,
   'panel.visible.dialogue-left': <LayoutPanelTop className={iconSize} />,
+  'panel.visible.dialogue-main': <LayoutPanelTop className={iconSize} />,
   'panel.visible.dialogue-right': <LayoutPanelTop className={iconSize} />,
   'panel.visible.dialogue-chat': <LayoutPanelTop className={iconSize} />,
   'panel.visible.dialogue-bottom': <LayoutPanelTop className={iconSize} />,
@@ -93,6 +95,38 @@ const FIELD_ICONS: Record<string, React.ReactNode> = {
 /** No project/editor registration in tree yet; empty until we add scope registration. */
 const PROJECT_SECTIONS_PLACEHOLDER: SettingsSection[] = [];
 const EDITOR_SECTIONS_PLACEHOLDER: SettingsSection[] = [];
+
+function ViewportSettingsContent({
+  activeEditorId,
+  viewportId,
+}: {
+  activeEditorId: string;
+  viewportId: string;
+}) {
+  const accentColor =
+    VIEWPORT_ACCENT_COLORS[`${activeEditorId}:${viewportId}`] ?? 'var(--context-accent)';
+  const contextLabel =
+    activeEditorId === 'dialogue'
+      ? viewportId === 'narrative'
+        ? 'Narrative graph'
+        : viewportId === 'storylet'
+          ? 'Storylet graph'
+          : viewportId
+      : activeEditorId === 'character'
+        ? 'Character graph'
+        : `${activeEditorId}: ${viewportId}`;
+
+  return (
+    <div className="flex flex-col gap-[var(--control-gap)]">
+      <p className="text-xs text-muted-foreground">
+        Context: <span className="font-medium text-foreground">{contextLabel}</span>
+      </p>
+      <ViewportSettingsProvider editorId={activeEditorId} viewportId={viewportId}>
+        <GraphViewportSettings accentBorderColor={accentColor} />
+      </ViewportSettingsProvider>
+    </div>
+  );
+}
 
 function getScopeAndId(
   tab: TabId,
@@ -229,9 +263,10 @@ export function AppSettingsPanelContent({
         disabled: !showViewport,
         content:
           activeEditorId != null && viewportId ? (
-            <ViewportSettingsProvider editorId={activeEditorId} viewportId={viewportId}>
-              <GraphViewportSettings />
-            </ViewportSettingsProvider>
+            <ViewportSettingsContent
+              activeEditorId={activeEditorId}
+              viewportId={viewportId}
+            />
           ) : null,
       },
     ];

@@ -13,16 +13,20 @@ export function applyPatchOperation(
   switch (operation.type) {
     case 'createNode': {
       const nodeId = operation.id ?? `node_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const baseData: Record<string, unknown> = {
+        id: nodeId,
+        type: operation.nodeType,
+        label: operation.data?.label || `New ${operation.nodeType} Node`,
+        ...operation.data,
+      };
+      if (operation.nodeType === 'PAGE' && baseData.pageType == null) {
+        baseData.pageType = 'PAGE';
+      }
       const newNode: ForgeReactFlowNode = {
         id: nodeId,
         type: operation.nodeType.toLowerCase(),
         position: operation.position,
-        data: {
-          id: nodeId,
-          type: operation.nodeType,
-          label: operation.data?.label || `New ${operation.nodeType} Node`,
-          ...operation.data,
-        },
+        data: baseData as ForgeReactFlowNode['data'],
       };
       newGraph.flow.nodes.push(newNode);
       break;

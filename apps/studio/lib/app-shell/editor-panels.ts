@@ -1,6 +1,6 @@
 /**
  * Per-editor panel specs for View menu toggles and "Restore all panels".
- * Keys match apps/studio/lib/settings/schema.ts (panel.visible.*); storage is app scope.
+ * Keys match panel.visible.* in AppSettingsRegistrations (tree-as-source); storage is app scope.
  *
  * Used when editors use UI-first EditorDockLayout.Panel (no panel registry).
  * useEditorPanelVisibility falls back here when useEditorPanels returns empty.

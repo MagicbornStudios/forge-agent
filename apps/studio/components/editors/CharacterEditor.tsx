@@ -375,6 +375,14 @@ export function CharacterEditor() {
   const layoutRef = useRef<DockLayoutRef>(null);
   const CHARACTER_LAYOUT_ID = 'character-mode';
 
+  const handlePanelClosed = useCallback(
+    (slotId: string) => {
+      const spec = panelSpecs.find((p) => p.id === slotId);
+      if (spec) setPanelVisible(spec.key, false);
+    },
+    [panelSpecs, setPanelVisible]
+  );
+
   const viewMenuItems = useMemo(
     () => {
       const panelIcons: Record<string, React.ReactNode> = {
@@ -552,6 +560,7 @@ export function CharacterEditor() {
             slots={{ left: { title: 'Characters' }, main: { title: 'Graph' } }}
             leftDefaultSize={20}
             rightDefaultSize={25}
+            onPanelClosed={handlePanelClosed}
           >
             <EditorDockLayout.Left>
               <EditorDockLayout.Panel id="left" title="Characters" icon={<BookOpen size={14} />}>

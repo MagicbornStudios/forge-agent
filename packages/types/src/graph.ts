@@ -5,7 +5,10 @@ export const FORGE_NODE_TYPE = {
   CHARACTER: 'CHARACTER',
   PLAYER: 'PLAYER',
   CONDITIONAL: 'CONDITIONAL',
+  PAGE: 'PAGE',
 } as const;
+
+export type PageType = 'ACT' | 'CHAPTER' | 'PAGE';
 
 export type ForgeNodeType = typeof FORGE_NODE_TYPE[keyof typeof FORGE_NODE_TYPE];
 
@@ -22,6 +25,8 @@ export type ForgeNode = {
   label?: string;
   speaker?: string;
   content?: string;
+  /** When type === 'PAGE', the structural level (Act, Chapter, Page). */
+  pageType?: PageType;
   choices?: Array<{
     id: string;
     text: string;

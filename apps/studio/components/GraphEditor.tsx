@@ -24,15 +24,18 @@ import { cn } from '@forge/ui/lib/utils';
 import { CharacterNode } from './nodes/CharacterNode';
 import { PlayerNode } from './nodes/PlayerNode';
 import { ConditionalNode } from './nodes/ConditionalNode';
+import { PageNode } from './nodes/PageNode';
 import { FlowBackground } from './forge';
 
 const nodeTypes = {
   character: CharacterNode,
   player: PlayerNode,
   conditional: ConditionalNode,
+  page: PageNode,
   CHARACTER: CharacterNode,
   PLAYER: PlayerNode,
   CONDITIONAL: ConditionalNode,
+  PAGE: PageNode,
 };
 
 const AI_NODE_HIGHLIGHT_CLASS = 'ring-2 ring-amber-400 ring-offset-2';
@@ -67,6 +70,8 @@ export interface GraphEditorProps {
   /** Applied to the root wrapper. Use "dialogue-graph-editor" for Dialogue graphs (enables per-type CSS). */
   className?: string;
   children?: React.ReactNode;
+  /** Allow dragging nodes. Default true. */
+  nodesDraggable?: boolean;
 }
 
 export function GraphEditor({
@@ -84,6 +89,7 @@ export function GraphEditor({
   edgeTypes: edgeTypesProp,
   className,
   children,
+  nodesDraggable = true,
 }: GraphEditorProps) {
   const viewportRef = useRef<ReactFlowInstance | null>(null);
 
@@ -243,6 +249,7 @@ export function GraphEditor({
             edgeTypes={edgeTypesProp}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
+            nodesDraggable={nodesDraggable}
             fitView
           >
             <FlowBackground />

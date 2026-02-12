@@ -93,6 +93,8 @@ export interface DockLayoutProps {
   layoutJson?: string | null;
   onLayoutChange?: (json: string) => void;
   clearLayout?: () => void;
+  /** Called when a panel is closed by the user (e.g. tab X). Use to sync View menu state. */
+  onPanelClosed?: (slotId: string) => void;
 }
 
 const SLOT_IDS = ['left', 'main', 'right', 'bottom'] as const;
@@ -458,6 +460,7 @@ const DockLayoutRoot = forwardRef<DockLayoutRef, DockLayoutProps>(function DockL
     layoutJson,
     onLayoutChange,
     clearLayout,
+    onPanelClosed,
   },
   ref
 ) {
@@ -637,6 +640,14 @@ const DockLayoutRoot = forwardRef<DockLayoutRef, DockLayoutProps>(function DockL
   );
 
   useEffect(() => {
+    if (!api || !onPanelClosed) return;
+    const disposable = api.onDidRemovePanel((panel) => {
+      onPanelClosed(panel.id);
+    });
+    return () => disposable.dispose();
+  }, [api, onPanelClosed]);
+
+  useEffect(() => {
     if (!api) return;
     if (isControlled && onLayoutChange) {
       const disposable = api.onDidLayoutChange(() => {
@@ -691,6 +702,54 @@ const DockLayoutRoot = forwardRef<DockLayoutRef, DockLayoutProps>(function DockL
     prevSlotsRef.current = resolvedSlots;
     useSlotContentStore.getState().setSlots(resolvedSlots);
   }, [resolvedSlots, slotIdsKey]);
+
+  /** Sync panel visibility: remove panels with null content, add panels with content (Option B). */
+  useEffect(() => {
+    if (!api) return;
+    const { leftPanels, mainPanels, rightPanels, bottomPanels } = slotsRef.current;
+    const mainRefId = mainPanels?.length ? mainPanels[0].id : 'main';
+
+    const addPanel = (
+      desc: RailPanelDescriptor,
+      position: { referencePanel: string; direction: 'left' | 'right' | 'below' | 'within' },
+      configKey: keyof typeof DEFAULT_SLOT_CONFIG
+    ) => {
+      const defaultConfig = DEFAULT_SLOT_CONFIG[configKey];
+      api.addPanel({
+        id: desc.id,
+        component: 'slot',
+        tabComponent: 'slotTab',
+        params: { slotId: desc.id, icon: desc.icon ?? defaultConfig.icon, title: desc.title },
+        title: desc.title,
+        position,
+      });
+    };
+
+    for (const slotId of Object.keys(resolvedSlots)) {
+      const content = resolvedSlots[slotId];
+      const panel = api.getPanel(slotId);
+      if (content == null && panel) panel.api.close();
+    }
+
+    const rails: { panels: RailPanelDescriptor[] | undefined; configKey: keyof typeof DEFAULT_SLOT_CONFIG }[] = [
+      { panels: leftPanels, configKey: 'left' },
+      { panels: rightPanels, configKey: 'right' },
+      { panels: bottomPanels, configKey: 'bottom' },
+    ];
+    for (const { panels, configKey } of rails) {
+      if (!panels?.length) continue;
+      const visible = panels.filter((p) => resolvedSlots[p.id] != null);
+      for (let i = 0; i < visible.length; i++) {
+        const desc = visible[i];
+        if (api.getPanel(desc.id)) continue;
+        const refId = i === 0 ? mainRefId : visible[0].id;
+        const direction: 'left' | 'right' | 'below' | 'within' = i === 0
+          ? (configKey === 'left' ? 'left' : configKey === 'right' ? 'right' : 'below')
+          : 'within';
+        addPanel(desc, { referencePanel: refId, direction }, configKey);
+      }
+    }
+  }, [api, resolvedSlots]);
 
   return (
     <DockLayoutContentContext.Provider value={resolvedSlots}>

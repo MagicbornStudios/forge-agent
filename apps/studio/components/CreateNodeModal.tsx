@@ -35,6 +35,8 @@ type Props = ModalComponentProps<CreateNodeModalPayload> & {
     content?: string;
     speaker?: string;
   }) => void;
+  /** If set, only these node types are shown/valid. */
+  allowedNodeTypes?: string[];
 };
 
 type CreateNodeFormValues = {
@@ -44,11 +46,19 @@ type CreateNodeFormValues = {
   speaker: string;
 };
 
-export function CreateNodeModal({ route, onClose, onSubmit }: Props) {
+export function CreateNodeModal({ route, onClose, onSubmit, allowedNodeTypes }: Props) {
   const payload = (route.payload ?? {}) as CreateNodeModalPayload;
+  const typeOptions = allowedNodeTypes
+    ? Object.values(FORGE_NODE_TYPE).filter((t) => allowedNodeTypes.includes(t))
+    : Object.values(FORGE_NODE_TYPE);
+  const defaultType = typeOptions.includes(
+    (payload.nodeType ?? FORGE_NODE_TYPE.CHARACTER) as (typeof typeOptions)[number]
+  )
+    ? (payload.nodeType ?? FORGE_NODE_TYPE.CHARACTER)
+    : typeOptions[0];
   const form = useForm<CreateNodeFormValues>({
     defaultValues: {
-      nodeType: payload.nodeType ?? FORGE_NODE_TYPE.CHARACTER,
+      nodeType: defaultType as ForgeNodeType,
       label: payload.label ?? '',
       content: payload.content ?? '',
       speaker: payload.speaker ?? '',
@@ -82,7 +92,7 @@ export function CreateNodeModal({ route, onClose, onSubmit }: Props) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {Object.values(FORGE_NODE_TYPE).map((t) => (
+                  {typeOptions.map((t) => (
                     <SelectItem key={t} value={t}>
                       {t}
                     </SelectItem>

@@ -761,6 +761,16 @@ References:
 
 ---
 
+## Panel hide not reclaiming space (View > Layout > Hide Library)
+
+**Problem**: Hiding a panel (e.g. Library) via View > Layout only hid the **content**; the panel slot stayed in the Dockview layout, so the space was not reclaimed and adjacent panels did not expand.
+
+**Fix (Option B)**: DockLayout has an effect that syncs panel visibility to the Dockview API. When `resolvedSlots[slotId]` becomes null (panel content hidden), we call `panel.api.close()` to remove the panel from the layout. When content is restored, we re-add the panel with `api.addPanel()` and the correct position. This dynamically mutates the layout instead of only changing slot content. See `packages/shared/.../DockLayout.tsx` useEffect "Sync panel visibility".
+
+**View menu label sync**: When the user closes a panel via the Dockview tab X (instead of View > Hide), our settings store was not updated, so the View menu still showed "Hide" instead of "Show". Fix: DockLayout now accepts `onPanelClosed?(slotId)`. Editors pass a callback that calls `setPanelVisible(spec.key, false)` for the removed panel. DockLayout subscribes to `api.onDidRemovePanel` and invokes the callback.
+
+---
+
 ## Dockview tab props leaking to DOM
 
 **Problem**: Dockview panel header props include `containerApi` and other non-DOM fields. Spreading them onto a `<div>` triggers React warnings or invalid DOM props.

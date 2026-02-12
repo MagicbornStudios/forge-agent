@@ -12,9 +12,19 @@
 .react-flow__node {
   background-color: transparent;
   border: none;
+  outline: none;
+  box-shadow: none;
 }
 
 .react-flow__node.selected {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Suppress resize/selection UI borders that can cause double-border effect */
+.react-flow__resize-control,
+.react-flow__nodesselection {
+  border: none;
   outline: none;
 }
 

@@ -19,6 +19,8 @@ export interface SettingsSectionProps {
   description?: string;
   /** Optional icon (React node) for the section header. */
   icon?: React.ReactNode;
+  /** Optional left border color (e.g. viewport context accent). */
+  accentBorderColor?: string;
   children?: React.ReactNode;
 }
 
@@ -49,6 +51,7 @@ export function SettingsSection({
   title,
   description,
   icon,
+  accentBorderColor,
   children,
 }: SettingsSectionProps) {
   const { scope, scopeId } = useSettingsRegistration();
@@ -73,7 +76,14 @@ export function SettingsSection({
   const childArray = React.Children.toArray(children);
 
   return (
-    <Card className="p-4 space-y-4">
+    <Card
+      className="p-4 space-y-4"
+      style={
+        accentBorderColor
+          ? { borderLeftWidth: 3, borderLeftStyle: 'solid', borderLeftColor: accentBorderColor }
+          : undefined
+      }
+    >
       <FieldSet className="gap-4">
         <FieldLegend className="flex items-center gap-[var(--control-gap)]">
           {icon != null && (

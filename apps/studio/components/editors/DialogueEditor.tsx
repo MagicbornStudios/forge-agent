@@ -66,6 +66,7 @@ import {
   Boxes,
   Code,
   FilePlus2,
+  FileText,
   GitBranch,
   Layers,
   LayoutDashboard,
@@ -272,6 +273,9 @@ function ForgeGraphPanel({
   const showMiniMap = useSettingsStore(
     (s) => (s.getSettingValue('graph.showMiniMap', { editorId: 'dialogue', viewportId: scope }) as boolean | undefined) ?? true
   );
+  const nodesDraggable = useSettingsStore(
+    (s) => (s.getSettingValue('graph.nodesDraggable', { editorId: 'dialogue', viewportId: scope }) as boolean | undefined) ?? true
+  );
   const setSetting = useSettingsStore((s) => s.setSetting);
   const handleToggleMiniMap = useCallback(() => {
     setSetting('viewport', 'graph.showMiniMap', !showMiniMap, {
@@ -312,6 +316,7 @@ function ForgeGraphPanel({
             onViewportReady={onViewportReady}
             onRequestCreateNode={onRequestCreateNode}
             onDropCreateNode={onDropCreateNode}
+            nodesDraggable={nodesDraggable}
           >
             <GraphLeftToolbar
               showMiniMap={showMiniMap}
@@ -391,8 +396,14 @@ export function DialogueEditor() {
   const showLeftPanel = useSettingsStore((s) =>
     s.getSettingValue('panel.visible.dialogue-left', { editorId, viewportId }),
   ) as boolean | undefined;
+  const showMainPanel = useSettingsStore((s) =>
+    s.getSettingValue('panel.visible.dialogue-main', { editorId, viewportId }),
+  ) as boolean | undefined;
   const showRightPanel = useSettingsStore((s) =>
     s.getSettingValue('panel.visible.dialogue-right', { editorId, viewportId }),
+  ) as boolean | undefined;
+  const showChatPanel = useSettingsStore((s) =>
+    s.getSettingValue('panel.visible.dialogue-chat', { editorId, viewportId }),
   ) as boolean | undefined;
   const showBottomPanel = useSettingsStore((s) =>
     s.getSettingValue('panel.visible.dialogue-bottom', { editorId, viewportId }),
@@ -753,6 +764,11 @@ export function DialogueEditor() {
     createNodeOverlayId: CREATE_NODE_OVERLAY_ID,
   });
 
+  const allowedNodeTypes = useSettingsStore((s) => {
+    const v = s.getSettingValue('graph.allowedNodeTypes', { editorId: 'dialogue', viewportId: activeScope });
+    return (Array.isArray(v) ? v : ['CHARACTER', 'PLAYER', 'CONDITIONAL']) as string[];
+  });
+
   const overlays = useMemo<OverlaySpec[]>(
     () => [
       {
@@ -769,7 +785,9 @@ export function DialogueEditor() {
               payload: payload as { nodeType?: ForgeNodeType; label?: string; content?: string; speaker?: string },
             }}
             onClose={onDismiss}
+            allowedNodeTypes={allowedNodeTypes}
             onSubmit={({ nodeType, label, content, speaker }) => {
+              if (!allowedNodeTypes.includes(nodeType)) return;
               const position = { x: Math.random() * 400, y: Math.random() * 400 };
               applyOperations(activeScope, [
                 { type: 'createNode', nodeType, position, data: { label, content, speaker } },
@@ -779,7 +797,7 @@ export function DialogueEditor() {
         ),
       },
     ],
-    [activeScope, applyOperations]
+    [activeScope, applyOperations, allowedNodeTypes]
   );
 
   const workflowPanel = useMemo(
@@ -810,8 +828,16 @@ export function DialogueEditor() {
     [activeGraph, applyActiveOperations]
   );
 
-  const nodePaletteItems: NodePaletteItem[] = useMemo(
+  const nodePaletteItemsBase: NodePaletteItem[] = useMemo(
     () => [
+      {
+        id: 'page',
+        label: 'Page',
+        icon: <FileText size={14} className="text-[var(--graph-node-page-border)]" />,
+        category: 'dialogue',
+        description: 'Act, Chapter, or Page node for narrative structure',
+        dragType: FORGE_NODE_TYPE.PAGE,
+      },
       {
         id: 'character',
         label: 'Character',
@@ -840,6 +866,11 @@ export function DialogueEditor() {
     []
   );
 
+  const nodePaletteItems = useMemo(
+    () => nodePaletteItemsBase.filter((item) => allowedNodeTypes.includes(item.dragType)),
+    [nodePaletteItemsBase, allowedNodeTypes]
+  );
+
   const handleCreateGraph = useCallback(
     (scope: ForgeGraphScope) => {
       if (!projectId) return;
@@ -861,6 +892,15 @@ export function DialogueEditor() {
 
   const handleDropCreateNode = useCallback(
     (scope: ForgeGraphScope) => (nodeType: ForgeNodeType, position: { x: number; y: number }) => {
+      const allowed = useSettingsStore.getState().getSettingValue('graph.allowedNodeTypes', {
+        editorId: 'dialogue',
+        viewportId: scope,
+      });
+      const list = Array.isArray(allowed) ? allowed : ['CHARACTER', 'PLAYER', 'CONDITIONAL'];
+      if (!list.includes(nodeType)) {
+        toast.error(`Cannot add ${nodeType} nodes to this graph. Check viewport settings.`);
+        return;
+      }
       setActiveScope(scope);
       applyOperations(scope, [{ type: 'createNode', nodeType, position }]);
     },
@@ -953,6 +993,14 @@ export function DialogueEditor() {
   const setSettingsSidebarOpen = useEditorStore((s) => s.setSettingsSidebarOpen);
   const layoutRef = useRef<DockLayoutRef>(null);
   const DIALOGUE_LAYOUT_ID = 'dialogue-mode';
+
+  const handlePanelClosed = useCallback(
+    (slotId: string) => {
+      const spec = panelSpecs.find((p) => p.id === slotId);
+      if (spec) setPanelVisible(spec.key, false);
+    },
+    [panelSpecs, setPanelVisible]
+  );
 
   useEffect(() => {
     setSettingsViewportId(activeScope);
@@ -1136,20 +1184,33 @@ export function DialogueEditor() {
     );
 
   const isEditorLocked = editorLock.locked || globalLocked === true;
-  const mainPanel = (
-    <EditorDockPanel
-      panelId="dialogue-main"
-      title="Dialogue Graphs"
-      hideTitleBar
-      scrollable={false}
-      locked={isEditorLocked}
-      lockedProps={{
-        description: editorLock.reason ?? (globalLocked ? 'Editor locked in settings.' : undefined),
-      }}
-    >
-      {mainContent}
-    </EditorDockPanel>
-  );
+  const mainPanel =
+    showMainPanel === false ? undefined : (
+      <EditorDockPanel
+        panelId="dialogue-main"
+        title="Dialogue Graphs"
+        hideTitleBar
+        scrollable={false}
+        locked={isEditorLocked}
+        lockedProps={{
+          description: editorLock.reason ?? (globalLocked ? 'Editor locked in settings.' : undefined),
+        }}
+      >
+        {mainContent}
+      </EditorDockPanel>
+    );
+
+  const chatContent =
+    showChatPanel === false ? undefined : (
+      <div className="h-full min-h-0">
+        <DialogueAssistantPanel
+          contract={toolsEnabled ? forgeAssistantContract : undefined}
+          toolsEnabled={toolsEnabled}
+          executePlan={toolsEnabled ? executePlan : undefined}
+          composerTrailing={<ModelSwitcher provider="assistantUi" variant="composer" />}
+        />
+      </div>
+    );
 
   const drawerOpen = Boolean(bottomDrawerOpen && showBottomPanel !== false);
 
@@ -1222,6 +1283,7 @@ export function DialogueEditor() {
             layoutId={DIALOGUE_LAYOUT_ID}
             viewport={{ viewportId, viewportType: 'react-flow' }}
             slots={{ left: { title: 'Library' }, main: { title: 'Dialogue Graphs' } }}
+            onPanelClosed={handlePanelClosed}
           >
             <EditorDockLayout.Left>
               <EditorDockLayout.Panel id="left" title="Library" icon={<BookOpen size={14} />}>
@@ -1238,14 +1300,7 @@ export function DialogueEditor() {
                 {inspectorContent}
               </EditorDockLayout.Panel>
               <EditorDockLayout.Panel id={CHAT_PANEL_ID} title="Chat" icon={<MessageCircle size={14} />}>
-                <div className="h-full min-h-0">
-                  <DialogueAssistantPanel
-                    contract={toolsEnabled ? forgeAssistantContract : undefined}
-                    toolsEnabled={toolsEnabled}
-                    executePlan={toolsEnabled ? executePlan : undefined}
-                    composerTrailing={<ModelSwitcher provider="assistantUi" variant="composer" />}
-                  />
-                </div>
+                {chatContent}
               </EditorDockLayout.Panel>
             </EditorDockLayout.Right>
           </EditorDockLayout>

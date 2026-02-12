@@ -80,6 +80,10 @@
   --graph-node-conditional-header: oklch(0.30 0.05 145);
   --graph-node-conditional-text: oklch(1.0 0 0);
   --graph-node-conditional-selected: oklch(0.72 0.22 150);
+  --graph-node-page-bg: oklch(0.26 0.02 45);
+  --graph-node-page-border: oklch(0.38 0.06 35);
+  --graph-node-page-header: oklch(0.35 0.08 25);
+  --graph-node-page-selected: oklch(0.72 0.22 150);
 
   /* Chart + edge choice (aligned) */
   --chart-1: var(--graph-edge-choice-1);
@@ -392,6 +396,10 @@
   --graph-node-conditional-border: oklch(0.58 0.12 140);
   --graph-node-conditional-header: oklch(0.88 0.06 145);
   --graph-node-conditional-text: var(--text-primary);
+  --graph-node-page-bg: oklch(0.90 0.04 45);
+  --graph-node-page-border: oklch(0.60 0.10 35);
+  --graph-node-page-header: oklch(0.85 0.08 25);
+  --graph-node-page-selected: oklch(0.55 0.15 15);
   --graph-edge-default: oklch(0.60 0.03 250);
   --graph-edge-default-hover: oklch(0.50 0.05 250);
   --graph-edge-choice-1: oklch(0.50 0.18 15);

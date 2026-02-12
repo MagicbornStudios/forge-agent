@@ -131,6 +131,9 @@ export function AppSettingsRegistrations() {
         <SettingsField fieldKey="panel.visible.dialogue-left" label="Dialogue left panel" type="toggle" default={true}>
           <Switch />
         </SettingsField>
+        <SettingsField fieldKey="panel.visible.dialogue-main" label="Dialogue main panel" type="toggle" default={true}>
+          <Switch />
+        </SettingsField>
         <SettingsField fieldKey="panel.visible.dialogue-right" label="Dialogue right panel" type="toggle" default={true}>
           <Switch />
         </SettingsField>

@@ -14,6 +14,7 @@ export const APP_DEFAULTS: SettingsDefaults = {
   "ai.showAgentName": true,
   "editor.locked": false,
   "panel.visible.dialogue-left": true,
+  "panel.visible.dialogue-main": true,
   "panel.visible.dialogue-right": true,
   "panel.visible.dialogue-chat": true,
   "panel.visible.dialogue-bottom": true,
@@ -27,19 +28,37 @@ export const APP_DEFAULTS: SettingsDefaults = {
 
 export const VIEWPORT_DEFAULTS: Record<string, SettingsDefaults> = {
   "dialogue:narrative": {
+    "graph.nodesDraggable": true,
     "graph.showMiniMap": true,
     "graph.animatedEdges": true,
-    "graph.layoutAlgorithm": "none"
+    "graph.layoutAlgorithm": "none",
+    "graph.allowedNodeTypes": [
+      "CHARACTER",
+      "PLAYER",
+      "CONDITIONAL"
+    ]
   },
   "dialogue:storylet": {
+    "graph.nodesDraggable": true,
     "graph.showMiniMap": true,
     "graph.animatedEdges": true,
-    "graph.layoutAlgorithm": "none"
+    "graph.layoutAlgorithm": "none",
+    "graph.allowedNodeTypes": [
+      "CHARACTER",
+      "PLAYER",
+      "CONDITIONAL"
+    ]
   },
   "character:main": {
+    "graph.nodesDraggable": true,
     "graph.showMiniMap": true,
     "graph.animatedEdges": true,
-    "graph.layoutAlgorithm": "none"
+    "graph.layoutAlgorithm": "none",
+    "graph.allowedNodeTypes": [
+      "CHARACTER",
+      "PLAYER",
+      "CONDITIONAL"
+    ]
   }
 };
 

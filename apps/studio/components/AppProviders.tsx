@@ -97,14 +97,6 @@ export function AppProviders({ children }: AppProvidersProps) {
                           } as React.CSSProperties
                         }
                       >
-                        {settingsSidebarOpen && (
-                          <button
-                            type="button"
-                            aria-label="Close settings sidebar"
-                            onClick={() => setSettingsSidebarOpen(false)}
-                            className="fixed inset-0 z-[9] hidden bg-transparent md:block"
-                          />
-                        )}
                         <MainWithSettingsMargin>{children}</MainWithSettingsMargin>
                         <Sidebar
                           side="right"

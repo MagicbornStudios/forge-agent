@@ -4,10 +4,12 @@ import * as React from 'react';
 import type { InspectorSection } from '@forge/shared';
 import { isEntity } from '@forge/shared';
 import type { ForgeGraphDoc, ForgeGraphPatchOp } from '@forge/types/graph';
+import type { PageType } from '@forge/types/graph';
 import { Input } from '@forge/ui/input';
 import { Textarea } from '@forge/ui/textarea';
 import { Label } from '@forge/ui/label';
 import { Badge } from '@forge/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@forge/ui/select';
 
 export interface DialogueInspectorSectionsParams {
   graph: ForgeGraphDoc | null;
@@ -54,11 +56,17 @@ export function dialogueInspectorSections({
   ];
 }
 
+const PAGE_TYPE_OPTIONS: { value: PageType; label: string }[] = [
+  { value: 'ACT', label: 'Act' },
+  { value: 'CHAPTER', label: 'Chapter' },
+  { value: 'PAGE', label: 'Page' },
+];
+
 function NodeFields({
   data,
   onUpdate,
 }: {
-  data: { type?: string; label?: string; content?: string; speaker?: string };
+  data: { type?: string; label?: string; content?: string; speaker?: string; pageType?: PageType };
   onUpdate: (updates: Record<string, unknown>) => void;
 }) {
   const fieldId = React.useId();
@@ -79,6 +87,7 @@ function NodeFields({
   const labelId = `${fieldId}-label`;
   const contentId = `${fieldId}-content`;
   const speakerId = `${fieldId}-speaker`;
+  const isPageNode = data.type === 'PAGE';
 
   return (
     <div className="space-y-3">
@@ -90,6 +99,26 @@ function NodeFields({
           </Badge>
         </div>
       </div>
+      {isPageNode && (
+        <div>
+          <Label className="text-xs font-medium text-muted-foreground">Page type</Label>
+          <Select
+            value={(data.pageType ?? 'PAGE') as string}
+            onValueChange={(v) => onUpdate({ pageType: v as PageType })}
+          >
+            <SelectTrigger className="h-8 text-sm mt-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PAGE_TYPE_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
       <div>
         <Label htmlFor={labelId} className="text-xs font-medium text-muted-foreground">Label</Label>
         <Input
