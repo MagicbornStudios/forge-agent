@@ -1,0 +1,17 @@
+{
+  "mode": "interactive",
+  "runtime": "prompt-pack",
+  "scope": "monorepo",
+  "git": {
+    "autoCommit": true,
+    "commitPrefix": "forge-loop"
+  },
+  "verification": {
+    "docs": true,
+    "build": true,
+    "tests": true
+  },
+  "legacySync": {
+    "enabled": true
+  }
+}
