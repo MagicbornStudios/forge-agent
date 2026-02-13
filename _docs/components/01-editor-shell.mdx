@@ -1,0 +1,120 @@
+---
+title: EditorShell
+---
+
+# EditorShell
+
+The outermost container for every editor. Sets theme context, density, domain scoping, and provides the flex layout skeleton.
+
+**File:** `packages/shared/src/shared/components/editor/EditorShell.tsx`
+
+## Overview
+
+`EditorShell` wraps every editor (Dialogue, Character, Video). It provides:
+
+- **Data attributes** for CSS theming (`data-editor-id`, `data-domain`, `data-theme`, `data-density`)
+- **Flex layout skeleton** (toolbar → content → status bar)
+- **Slot-based composition** for structured editor shells
+- **Theme context** for domain-specific color schemes
+
+## Install
+
+```bash
+pnpm add @forge/shared
+```
+
+```tsx
+import { EditorShell } from '@forge/shared/components/editor';
+```
+
+## Basic usage
+
+```tsx
+<EditorShell
+  editorId="dialogue"
+  title="Dialogue Editor"
+  domain="dialogue"
+  theme="dark"
+  density="comfortable"
+>
+  <EditorToolbar>...</EditorToolbar>
+  <EditorDockLayout>...</EditorDockLayout>
+  <EditorStatusBar>Ready</EditorStatusBar>
+</EditorShell>
+```
+
+## Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `editorId` | `string` | **Critical.** Unique editor id. Sets `data-editor-id` for settings, assistant context, CSS scoping. |
+| `title` | `string` | Display name. Used in aria-label. |
+| `subtitle` | `string` | Optional (e.g. active document name). |
+| `domain` | `string` | Domain for theming. Sets `data-domain`. |
+| `theme` | `string` | `'dark'`, `'light'`, `'system'`. Read from settings in practice. |
+| `density` | `'compact' \| 'comfortable' \| string` | Density. Sets `data-density`. |
+| `className` | `string` | Extra Tailwind classes. |
+
+## Slot composition
+
+Use `EditorShell.Toolbar`, `.Layout`, `.StatusBar`, `.Overlay`, `.Settings`:
+
+```tsx
+<EditorShell editorId="dialogue" title="Dialogue" domain="dialogue">
+  <EditorShell.Toolbar>
+    <EditorToolbar>...</EditorToolbar>
+  </EditorShell.Toolbar>
+  <EditorShell.Layout>
+    <EditorDockLayout>...</EditorDockLayout>
+  </EditorShell.Layout>
+  <EditorShell.StatusBar>
+    <EditorStatusBar>Ready</EditorStatusBar>
+  </EditorShell.StatusBar>
+  <EditorShell.Overlay>
+    <EditorOverlaySurface ... />
+  </EditorShell.Overlay>
+</EditorShell>
+```
+
+Slots render in order: Header → Toolbar+Settings → Layout → StatusBar → Overlay. When using slots, only slot content renders.
+
+## Real example
+
+From `apps/studio/components/editors/CharacterEditor.tsx`:
+
+```tsx
+const editorTheme = useSettingsStore((s) =>
+  s.getSettingValue('ui.theme', { editorId })
+) as string | undefined;
+
+return (
+  <EditorShell
+    editorId="character"
+    title="Characters"
+    subtitle={activeChar?.name}
+    domain="character"
+    theme={editorTheme}
+    density={editorDensity}
+    className="bg-canvas"
+  >
+    <EditorToolbar>...</EditorToolbar>
+    <EditorDockLayout layoutId="character-mode" ...>...</EditorDockLayout>
+    <EditorStatusBar>...</EditorStatusBar>
+    <EditorOverlaySurface ... />
+  </EditorShell>
+);
+```
+
+## Related
+
+- [DockLayout](02-dock-layout) — Resizable panel layout
+- [EditorToolbar](04-editor-toolbar)
+- [EditorOverlay](06-editor-overlay)
+
+<details>
+<summary>For coding agents</summary>
+<!-- AGENT_SECTION -->
+File refs: `packages/shared/src/shared/components/editor/EditorShell.tsx`, `apps/studio/components/editors/CharacterEditor.tsx`, `apps/studio/components/editors/DialogueEditor.tsx`
+Related: components/02-dock-layout, how-to/05-building-an-editor, STATUS § Studio
+Do not: Use WorkspaceShell (legacy); always set editorId; use slot composition not raw children; do not hardcode theme/density—pull from useSettingsStore
+</details>

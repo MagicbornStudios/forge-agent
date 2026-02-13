@@ -2,8 +2,6 @@
 title: API reference
 ---
 
-# API reference
-
 Programmatic APIs for Forge packages.
 
 ## Packages

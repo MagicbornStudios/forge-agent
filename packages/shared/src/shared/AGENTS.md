@@ -31,9 +31,9 @@ Workspace Platform Engineer: owns `packages/shared/src/shared` (editor component
 
 Recommended composition is slot-based (`EditorShell.*`, `EditorApp.Tabs.Menubar`/`.Actions`, `EditorDockLayout.*`); raw children and prop-based APIs remain supported for backward compatibility. Follow the "Recommended editor scaffold" in `components/editor/README.md` (and dev-kit docs when present). Extend the editor types and `DockLayout` (or equivalent) in `packages/shared/src/shared/components/editor/`. Document the new slot in `components/editor/README.md`. Do not add one-off layouts per domain.
 
-## Unified editor / Copilot
+## Unified editor / Assistant
 
-- Shell-level context and actions live in `apps/studio/components/AppShell.tsx` (not in shared). Shared provides `DomainCopilotContract`, `useDomainCopilot`, and `agent-types` for per-editor and co-agent use. See root **AGENTS.md** and **docs/17-co-agents-and-multi-agent.mdx**.
+- Shell-level context and actions live in `apps/studio/components/AppShell.tsx` (not in shared). Shared provides `DomainAssistantContract`, `useDomainAssistant`, and domain contract types for per-editor and assistant use. See root **AGENTS.md** and **docs/how-to/07-assistant-and-ai.mdx**.
 
 ## Pitfalls
 
@@ -41,4 +41,4 @@ Recommended composition is slot-based (`EditorShell.*`, `EditorApp.Tabs.Menubar`
 - Vendored dependencies (e.g. Twick) live under `vendor/`; follow [How-to 24](../../../../docs/how-to/24-vendoring-third-party-code.mdx) for version alignment, submodule updates, and Verdaccio publishing.
 - Forge publish flow: `registry:forge:build` + `registry:forge:publish:local`.
 - Twick publish flow: `vendor:twick:build` + `vendor:twick:publish:local`.
-- Verdaccio login is optional; 409 conflict fix is documented in [How-to 25](../../../../docs/how-to/25-verdaccio-local-registry.mdx).
+- Verdaccio login is optional; 409 conflict fix is documented in [How-to 25 - Verdaccio](../../../../docs/how-to/25-verdaccio-local-registry.mdx).

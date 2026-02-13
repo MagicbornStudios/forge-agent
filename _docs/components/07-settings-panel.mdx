@@ -1,0 +1,61 @@
+---
+title: SettingsPanel
+---
+
+# SettingsPanel
+
+Data-driven settings UI with scope inheritance, override badges, reset.
+
+**File:** `apps/studio/components/settings/SettingsPanel.tsx`
+
+## Overview
+
+- **Hierarchical scopes** — app, project, editor, viewport
+- **Inheritance** — Child scopes inherit from parent
+- **Override visualization** — Badges when value overrides inherited
+- **Reset** — Revert to inherited/default
+
+## Basic usage
+
+```tsx
+import { SettingsPanel } from '@/components/settings/SettingsPanel';
+
+const sections: SettingsSection[] = [
+  {
+    id: 'ai-core',
+    title: 'AI Core',
+    fields: [
+      { key: 'ai.agentName', label: 'Agent Name', type: 'text' },
+      { key: 'ai.autoSuggest', label: 'Auto Suggestions', type: 'toggle' },
+    ],
+  },
+];
+
+<SettingsPanel
+  scope="editor"
+  sections={sections}
+  editorId="dialogue"
+/>
+```
+
+## Props
+
+| Prop | Description |
+|------|-------------|
+| `scope` | `'app' \| 'project' \| 'editor' \| 'viewport'` |
+| `sections` | Section definitions with fields |
+| `editorId` | For editor scope |
+| `viewportId` | For viewport scope |
+
+## Related
+
+- [SettingsField](08-settings-field)
+- [SettingsSection](apps/studio/components/settings/SettingsSection.tsx)
+
+<details>
+<summary>For coding agents</summary>
+<!-- AGENT_SECTION -->
+File refs: `apps/studio/components/settings/SettingsPanel.tsx`, `apps/studio/lib/settings/store.ts`, `apps/studio/components/settings/AppSettingsPanelContent.tsx`
+Related: components/08-settings-field, STATUS § Settings tree-as-source, decisions § Settings
+Do not: Use schema as source of defaults; use tree + registry; run settings:generate for codegen
+</details>

@@ -1,0 +1,500 @@
+---
+title: Workflow Examples
+description: Real examples of building with Forge Platform
+icon: "🔄"
+---
+
+See how teams use Forge Platform workflows to build faster with AI assistance.
+
+---
+
+## Example 1: Building a Task Editor
+
+Watch how a developer builds a custom task management editor using Forge components.
+
+### The Conversation
+
+**Developer**: "I need to build a task editor with a kanban board view and detail panel"
+
+**Forge AI**: "I'll help you build that using @forge/dev-kit components. Let me create a plan:
+
+1. Set up EditorShell with DockLayout
+2. Create left panel with kanban board (using task cards)
+3. Create right panel with task details inspector
+4. Add toolbar with view toggles and filters
+5. Connect to your task data model
+
+Should I proceed with this plan?"
+
+**Developer**: "Yes, and add a timeline view too"
+
+### The Implementation
+
+```tsx
+import {
+  EditorShell,
+  DockLayout,
+  DockPanel,
+  EditorToolbar,
+  EditorInspector
+} from '@forge/dev-kit'
+
+export function TaskEditor() {
+  return (
+    <EditorShell>
+      <EditorToolbar>
+        <ViewToggle views={['kanban', 'timeline', 'list']} />
+        <FilterButton />
+      </EditorToolbar>
+
+      <DockLayout>
+        <DockPanel id="main" title="Tasks">
+          {view === 'kanban' && <KanbanBoard />}
+          {view === 'timeline' && <TimelineView />}
+          {view === 'list' && <ListView />}
+        </DockPanel>
+
+        <DockPanel id="inspector" title="Details" position="right">
+          <EditorInspector>
+            <TaskDetailsForm />
+          </EditorInspector>
+        </DockPanel>
+      </DockLayout>
+    </EditorShell>
+  )
+}
+```
+
+### The Result
+
+- **Time**: 2 hours from idea to working prototype
+- **Components used**: 6 from @forge/dev-kit
+- **Custom code**: ~200 lines
+- **AI generated**: 60% (with developer review)
+
+---
+
+## Example 2: Character Relationship Editor
+
+Building a character database with visual relationship graphs.
+
+### The Conversation
+
+**Writer**: "Clone the character editor but for my sci-fi universe with factions"
+
+**Forge AI**: "I'll clone the Forge Character Editor template and customize it for factions:
+
+**Plan**:
+1. Clone character editor template
+2. Add faction system (organizations with hierarchies)
+3. Modify relationship graph to show faction allegiances
+4. Add conflict tracking between factions
+5. Update AI prompts for sci-fi context
+
+Would you like me to proceed?"
+
+**Writer**: "Yes, and add a timeline for major events"
+
+### The Cloning Process
+
+```bash
+# Forge AI executes
+forge clone character-editor --name scifi-universe
+
+# Customizes for user
+- Added Faction entity type
+- Updated relationship types (ally, enemy, neutral, infiltrator)
+- Added timeline panel to DockLayout
+- Updated AI context prompts
+```
+
+### The Customization
+
+```tsx
+// AI generated this customization
+import { CharacterEditor } from '@forge/templates/character-editor'
+
+export function SciFiUniverseEditor() {
+  return (
+    <CharacterEditor
+      entityTypes={['character', 'faction', 'planet']}
+      relationshipTypes={[
+        'ally',
+        'enemy',
+        'neutral',
+        'infiltrator',
+        'family'
+      ]}
+      aiContext={{
+        genre: 'sci-fi',
+        setting: 'space opera',
+        themes: ['politics', 'war', 'technology']
+      }}
+      additionalPanels={[
+        <TimelinePanel key="timeline" />,
+        <FactionHierarchy key="factions" />
+      ]}
+    />
+  )
+}
+```
+
+### The Result
+
+- **Time**: 30 minutes from clone to customization
+- **Cloned**: 15 components, 2,000 lines of code
+- **Customized**: 8 components modified
+- **Ready to use**: Immediately
+
+---
+
+## Example 3: AI-Assisted Dialogue Writing
+
+Using AI workflows to generate and refine game dialogue.
+
+### The Conversation
+
+**Game Designer**: "Generate dialogue for a merchant NPC who's secretly a spy"
+
+**Forge AI**: "I'll create dialogue options with this character context:
+
+**Character Profile**:
+- Role: Merchant (cover), Spy (secret)
+- Personality: Friendly but evasive
+- Knowledge: Town gossip, black market connections
+- Hidden agenda: Gathering intel for rival faction
+
+**Dialogue Scenarios**:
+1. First meeting (establishing trust)
+2. Buying/selling goods (cover story)
+3. Probing for information (subtle)
+4. If player discovers secret (defensive)
+
+Should I generate initial dialogue for each scenario?"
+
+**Game Designer**: "Yes, make it Yarn Spinner format"
+
+### The AI Generation
+
+```text
+title: MerchantSpy_FirstMeeting
+tags: merchant spy
+---
+MerchantSpy: Welcome, traveler! Looking for supplies? I've got the best prices in town.
+-> Just browsing
+    MerchantSpy: Take your time! Let me know if you need anything... or if you hear any interesting news.
+    [[Subtle probe for information]]
+-> What do you have?
+    MerchantSpy: The usual - weapons, armor, potions. And perhaps... specialty items, for the right buyer.
+    [[Opens shop interface]]
+-> You seem friendly for a merchant
+    MerchantSpy: [laughs] Can't make coin with a sour face! Besides, travelers bring the best stories.
+    MerchantSpy: Speaking of which, heard anything interesting on the road?
+    [[Trying to gather intel]]
+===
+```
+
+### The Workflow
+
+1. **AI generates** initial dialogue based on character profile
+2. **Designer reviews** in visual graph editor
+3. **Designer edits** to match tone and pacing
+4. **AI suggests** alternative branches
+5. **Export** to Yarn Spinner for Unity
+
+### The Result
+
+- **Time**: 15 minutes per character vs 1 hour manual
+- **Quality**: 80% usable with minor edits
+- **Variations**: AI generates 3 tone variations to choose from
+- **Consistency**: Character personality maintained across scenarios
+
+---
+
+## Example 4: Building a Custom Domain Editor
+
+A developer builds a restaurant menu editor using Forge components.
+
+### The Plan
+
+**Forge AI generates this plan**:
+
+```markdown
+# Restaurant Menu Editor
+
+## Structure
+- EditorShell (root container)
+- EditorToolbar (menu actions)
+- DockLayout with:
+  - Left: Category tree (Appetizers, Mains, Desserts)
+  - Center: Item list with cards
+  - Right: Item detail editor (EditorInspector)
+
+## Components Needed
+- @forge/dev-kit: EditorShell, DockLayout, DockPanel, EditorToolbar, EditorInspector
+- @forge/ui: Card, Input, Textarea, Button, Select, Badge
+- Custom: ImageUpload, PriceInput, AllergenTags
+
+## Data Model
+```typescript
+interface MenuItem {
+  id: string
+  name: string
+  description: string
+  price: number
+  category: string
+  allergens: string[]
+  image?: string
+  available: boolean
+}
+```
+
+## Implementation Steps
+1. Set up editor shell and layout (5 min)
+2. Create category tree component (10 min)
+3. Build item card grid (15 min)
+4. Create detail form in inspector (20 min)
+5. Add toolbar actions (10 min)
+6. Connect AI for description generation (10 min)
+
+**Total time: ~70 minutes**
+```
+
+### The Implementation
+
+```tsx
+import {
+  EditorShell,
+  DockLayout,
+  DockPanel,
+  EditorToolbar,
+  EditorInspector
+} from '@forge/dev-kit'
+import { Card, Input, Badge, Button } from '@forge/ui'
+
+export function MenuEditor() {
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
+  const [items, setItems] = useState<MenuItem[]>([])
+
+  return (
+    <EditorShell>
+      <EditorToolbar>
+        <Button onClick={createNewItem}>
+          <Plus /> New Item
+        </Button>
+        <Button onClick={generateDescription}>
+          <Sparkles /> AI Describe
+        </Button>
+      </EditorToolbar>
+
+      <DockLayout>
+        {/* Category Tree */}
+        <DockPanel id="categories" title="Categories" position="left" width={200}>
+          <CategoryTree
+            categories={['Appetizers', 'Mains', 'Desserts', 'Drinks']}
+            onSelect={filterByCategory}
+          />
+        </DockPanel>
+
+        {/* Item Grid */}
+        <DockPanel id="items" title="Menu Items">
+          <div className="grid grid-cols-3 gap-4 p-4">
+            {items.map(item => (
+              <Card key={item.id} onClick={() => setSelectedItem(item)}>
+                <img src={item.image} alt={item.name} />
+                <h3>{item.name}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {item.description}
+                </p>
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold">${item.price}</span>
+                  <Badge variant={item.available ? 'default' : 'secondary'}>
+                    {item.available ? 'Available' : 'Out of Stock'}
+                  </Badge>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </DockPanel>
+
+        {/* Detail Editor */}
+        <DockPanel id="inspector" title="Details" position="right" width={300}>
+          <EditorInspector>
+            {selectedItem && (
+              <MenuItemForm
+                item={selectedItem}
+                onChange={updateItem}
+              />
+            )}
+          </EditorInspector>
+        </DockPanel>
+      </DockLayout>
+    </EditorShell>
+  )
+}
+```
+
+### The AI Integration
+
+```tsx
+async function generateDescription(item: MenuItem) {
+  const description = await forgeAI.generate({
+    prompt: `Write an appetizing menu description for: ${item.name}`,
+    context: {
+      category: item.category,
+      ingredients: item.ingredients,
+      allergens: item.allergens
+    },
+    tone: 'professional, mouth-watering',
+    length: '2-3 sentences'
+  })
+
+  return description
+}
+```
+
+### The Result
+
+- **Time**: 70 minutes from plan to working editor
+- **Components**: 12 from @forge (8 from dev-kit, 4 from ui)
+- **Custom code**: ~300 lines
+- **Features**: Full CRUD, AI descriptions, category filtering, image upload
+
+---
+
+## Example 5: Team Collaboration Workflow
+
+A narrative team collaborating on game dialogue in real-time.
+
+### The Setup
+
+**Team Structure**:
+- 1 Lead Writer (editing dialogue)
+- 2 Junior Writers (creating variations)
+- 1 Designer (reviewing flow)
+
+### The Workflow
+
+**9:00 AM** - Lead Writer creates main quest dialogue structure
+```
+[Lead creates]
+- Quest start node
+- 3 choice branches
+- Quest completion node
+
+[AI suggests]
+- Additional flavor branches
+- Failure paths
+- NPC reaction variations
+```
+
+**10:00 AM** - Junior Writer 1 sees changes, adds NPC personality
+```
+[Junior 1 working on]
+- NPC background dialogue
+- Character reactions
+
+[Sees in real-time]
+- Lead's structure changes
+- AI's suggested branches
+```
+
+**10:30 AM** - Junior Writer 2 generates dialogue variations
+```
+[Junior 2 uses AI to]
+- Generate 3 tone variations per choice
+- Create alternate opening lines
+- Add contextual responses
+
+[Lead reviews in real-time]
+- Approves variations
+- Requests tone adjustments
+```
+
+**11:00 AM** - Designer reviews dialogue flow
+```
+[Designer tests]
+- Visual graph navigation
+- Choice consequences
+- Story coherence
+
+[Leaves feedback]
+- Comments on specific nodes
+- Suggests additional branches
+```
+
+### The Collaboration Features Used
+
+- **Real-time sync**: All team members see changes instantly
+- **Presence indicators**: See who's editing what
+- **Comments**: Threaded discussions on specific nodes
+- **Version history**: Rollback if needed
+- **AI assistance**: Each team member can use AI independently
+- **Role-based access**: Designer can view/comment but not edit dialogue text
+
+### The Result
+
+- **Time**: 2 hours for complete quest dialogue
+- **Collaboration**: 4 people working simultaneously
+- **Conflicts**: Zero (real-time conflict resolution)
+- **Quality**: Higher (immediate peer review)
+- **Efficiency**: 3x faster than traditional workflow
+
+---
+
+## Common Patterns
+
+### Pattern 1: Clone → Customize → Deploy
+
+```bash
+1. Clone existing template
+2. Customize for your domain
+3. Deploy and iterate
+```
+
+**Use when**: Your use case is similar to existing templates
+
+### Pattern 2: Compose → Build → Integrate
+
+```tsx
+1. Compose Forge components
+2. Build custom business logic
+3. Integrate with existing systems
+```
+
+**Use when**: Building custom editors from scratch
+
+### Pattern 3: Generate → Review → Refine
+
+```markdown
+1. AI generates initial content
+2. Human reviews and edits
+3. AI refines based on feedback
+```
+
+**Use when**: Using AI for content creation
+
+### Pattern 4: Collaborate → Sync → Ship
+
+```text
+1. Team collaborates in real-time
+2. Changes sync automatically
+3. Export and ship to production
+```
+
+**Use when**: Team-based content creation
+
+---
+
+## Next Steps
+
+**Try these workflows yourself**:
+
+1. [Quick Start Tutorial](/docs/tutorials/quick-start) - Build your first editor (10 min)
+2. [Component Showcase](/docs/components) - See all available components
+3. [AI Integration Guide](/docs/ai-system) - Add AI to your workflows
+
+**Need help?**
+- [Discord Community](https://discord.gg/forge)
+- [Email Support](mailto:support@forge.com)
+- [Schedule Demo](/demo)

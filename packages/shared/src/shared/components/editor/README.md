@@ -53,7 +53,7 @@ The app tab row expects a **menubar**; put it in **EditorApp.Tabs.Menubar**. Bui
 
 ## Migration notes
 
-**Workspace\*** UI components have been removed; **Editor\*** + DockLayout are the only shell. Types (Selection, InspectorSection, ToolbarGroup, OverlaySpec, etc.) live in `shared/workspace` and are consumed by Editor*; there is a single home for these types (no duplicates in editor).
+**Workspace\*** UI components have been removed; **Editor\*** + EditorDockLayout are the only shell. Types (Selection, InspectorSection, ToolbarGroup, OverlaySpec, etc.) live in `shared/workspace` and are consumed by Editor*; there is a single home for these types (no duplicates in editor).
 
 ## Example
 

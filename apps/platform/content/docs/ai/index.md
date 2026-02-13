@@ -2,8 +2,6 @@
 title: AI integration
 ---
 
-# AI integration
-
 Forge uses CopilotKit for in-editor AI and assistant-ui/tool-ui for chat interfaces.
 
 ## Topics

@@ -1,0 +1,48 @@
+---
+title: Quick start - Build your first editor
+---
+
+# Quick start: Build your first editor
+
+Build a functional editor with Forge in ~10 minutes.
+
+## Prerequisites
+
+```bash
+pnpm add @forge/dev-kit
+```
+
+## Step 1: Editor shell
+
+```tsx
+import { EditorShell, EditorToolbar, EditorStatusBar } from '@forge/dev-kit';
+
+export function TaskEditor() {
+  return (
+    <EditorShell editorId="tasks" title="Tasks" domain="tasks" className="bg-canvas">
+      <EditorToolbar>
+        <EditorToolbar.Left><span>Tasks</span></EditorToolbar.Left>
+        <EditorToolbar.Right>
+          <EditorToolbar.Button onClick={() => console.log('Create')}>New Task</EditorToolbar.Button>
+        </EditorToolbar.Right>
+      </EditorToolbar>
+      <div className="flex-1 flex items-center justify-center">Editor content</div>
+      <EditorStatusBar>Ready</EditorStatusBar>
+    </EditorShell>
+  );
+}
+```
+
+## Step 2: Add layout
+
+Use `DockLayout` for left/main/right panels. See [adding-panels](adding-panels).
+
+**Next:** [Adding panels](adding-panels) or [how-to/05-building-an-editor](../how-to/05-building-an-editor)
+
+<details>
+<summary>For coding agents</summary>
+<!-- AGENT_SECTION -->
+File refs: `packages/shared/`, `@forge/dev-kit`
+Related: how-to/05-building-an-editor, components/01-editor-shell
+Do not: Use npm/yarn; use pnpm
+</details>

@@ -1,0 +1,71 @@
+---
+title: EditorToolbar
+---
+
+# EditorToolbar
+
+Toolbar for editors. Menubar, buttons, separators, left/center/right sections.
+
+**File:** `packages/shared/src/shared/components/editor/EditorToolbar.tsx`
+
+## Overview
+
+- **Compound API** — `.Left`, `.Right`, `.Center`, `.Group`, `.Button`, `.Menubar`
+- **Data-driven** via `groups` prop
+- **Feature gating** for entitlement-based UI
+
+## Basic usage
+
+```tsx
+<EditorToolbar className="bg-sidebar border-b">
+  <EditorToolbar.Left>
+    <span className="text-xs font-medium">My Editor</span>
+  </EditorToolbar.Left>
+  <EditorToolbar.Right>
+    <EditorToolbar.Button onClick={onSave}>Save</EditorToolbar.Button>
+  </EditorToolbar.Right>
+</EditorToolbar>
+```
+
+## Slots
+
+```tsx
+<EditorToolbar>
+  <EditorToolbar.Left>
+    <EditorToolbar.Menubar menus={menus} />
+    <EditorToolbar.Separator />
+    <span className="text-xs text-muted-foreground">{status}</span>
+  </EditorToolbar.Left>
+  <EditorToolbar.Center>...</EditorToolbar.Center>
+  <EditorToolbar.Right>
+    <EditorToolbar.Button onClick={onSave}>Save</EditorToolbar.Button>
+  </EditorToolbar.Right>
+</EditorToolbar>
+```
+
+## Grouping
+
+```tsx
+<EditorToolbar.Left>
+  <EditorToolbar.Group className="gap-[var(--control-gap)]">
+    <EditorToolbar.Button onClick={onNew}><Plus size={14} /></EditorToolbar.Button>
+    <EditorToolbar.Button onClick={onSave}><Save size={14} /></EditorToolbar.Button>
+  </EditorToolbar.Group>
+  <EditorToolbar.Separator />
+  <EditorToolbar.Group>
+    <EditorToolbar.Button onClick={onZoomIn}>...</EditorToolbar.Button>
+  </EditorToolbar.Group>
+</EditorToolbar.Left>
+```
+
+## Related
+
+- [EditorShell](01-editor-shell)
+
+<details>
+<summary>For coding agents</summary>
+<!-- AGENT_SECTION -->
+File refs: `packages/shared/src/shared/components/editor/EditorToolbar.tsx`, `apps/studio/components/editors/dialogue/GraphEditorToolbar.tsx`
+Related: components/01-editor-shell, styling-and-ui-consistency § Form controls
+Do not: Add imperative toolbar API; use compound slots
+</details>

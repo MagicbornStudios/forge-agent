@@ -1,0 +1,15 @@
+{
+  "title": "Components",
+  "pages": [
+    "00-index",
+    "01-editor-shell",
+    "02-dock-layout",
+    "03-dock-panel",
+    "04-editor-toolbar",
+    "05-editor-inspector",
+    "06-editor-overlay",
+    "07-settings-panel",
+    "08-settings-field",
+    "09-panel-tabs"
+  ]
+}

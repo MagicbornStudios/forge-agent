@@ -1,0 +1,72 @@
+---
+title: 07 - Assistant and AI
+---
+
+# 07 - Assistant and AI
+
+Domain contracts, Assistant UI, tools. Single source: [ai/02-domain-integration](../ai/02-domain-integration).
+
+## Overview
+
+- **Assistant UI** — Chat surface. No CopilotKit.
+- **Domain contract** — `DomainAssistantContract`: context, instructions, tools, suggestions, highlights
+- **Tools** — `forge_getGraph`, `forge_createNode`, `forge_createPlan`, `forge_executePlan`, etc.
+- **Route** — `POST /api/assistant-chat` (LangGraph or legacy stream)
+
+## DomainAssistantContract
+
+From `packages/shared/src/shared/assistant/domain-contract.ts`:
+
+```ts
+interface DomainAssistantContract {
+  domain: string;
+  getContextSnapshot(): DomainContextSnapshot;
+  getInstructions(): string;
+  createTools(): DomainTool[];
+  getSuggestions(): Array<{ title: string; message: string }>;
+  onHighlight(entities: Record<string, string[]>): void;
+  clearHighlights(): void;
+}
+```
+
+## Wiring
+
+```tsx
+import { useDomainAssistant, DomainToolsRenderer } from '@forge/shared/assistant';
+
+// In editor with AssistantRuntimeProvider:
+const contract = useForgeAssistantContract(deps);
+useDomainAssistant(contract, { enabled: true });
+<DomainToolsRenderer contract={contract} enabled={true} />
+```
+
+Render chat panel: `DialogueAssistantPanel` with `contract` and `toolsEnabled`.
+
+## Tool definition
+
+```ts
+interface DomainTool {
+  domain: string;
+  name: string;
+  description: string;
+  parameters: { type: 'object'; properties: Record<string, unknown>; required?: string[] };
+  execute: (args: unknown, context: DomainToolContext) => Promise<unknown>;
+  render?: (result: unknown) => ReactNode;  // e.g. PlanCard for forge_createPlan
+}
+```
+
+## References
+
+- Forge: `packages/domain-forge/src/assistant/`
+- Character: `packages/domain-character/src/assistant/`
+- `DialogueAssistantPanel`: `apps/studio/components/editors/dialogue/DialogueAssistantPanel.tsx`
+
+**Next:** [08 - Adding AI to editors](08-adding-ai-to-editors)
+
+<details>
+<summary>For coding agents</summary>
+<!-- AGENT_SECTION -->
+File refs: `packages/shared/src/shared/assistant/domain-contract.ts`, `packages/shared/src/shared/assistant/use-domain-assistant.ts`, `packages/domain-forge/src/assistant/tools.ts`, `apps/studio/app/api/assistant-chat/route.ts`
+Related: ai/02-domain-integration, ai/03-domains-forge-character, how-to/08-adding-ai-to-editors
+Do not: Use CopilotKit, useDomainCopilot, useCopilotAction; use Assistant UI and useDomainAssistant
+</details>

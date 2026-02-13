@@ -1,0 +1,39 @@
+---
+title: 06 - MCP integration
+---
+
+# 06 - MCP integration
+
+MCP descriptor contracts and tool-to-descriptor mapping. Executable MCP server deferred.
+
+## Adapter layer
+
+- `createForgeMcpAppDescriptor()`, `createCharacterMcpAppDescriptor()`
+- `domainToolToMcp()` — maps DomainTool to MCP tool schema
+- **Files:** `packages/assistant-runtime/src/mcp/`
+
+## McpAppDescriptor
+
+```ts
+type McpAppDescriptor = {
+  id: string;
+  name: string;
+  tools: McpToolDescriptor[];
+  metadata?: Record<string, unknown>;
+};
+```
+
+## Deferred
+
+- `@forge/mcp-studio` package and server process
+- Host transports (stdio, http)
+
+**Next:** [Migration](migration/00-index)
+
+<details>
+<summary>For coding agents</summary>
+<!-- AGENT_SECTION -->
+File refs: `packages/assistant-runtime/src/mcp/`
+Related: architecture/04-editors-as-mcp-apps
+Do not: Add MCP server without updating descriptor factories; assume adapter-only for now
+</details>

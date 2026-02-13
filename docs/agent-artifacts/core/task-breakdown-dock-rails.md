@@ -24,7 +24,7 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 
 | id | title | parent | tier | impact | status | doc |
 |----|-------|--------|------|--------|--------|-----|
-| dock-rails-api-shape | Define RailPanelDescriptor and leftPanels/mainPanels/rightPanels/bottomPanels in DockLayout; build default layout by iterating | dock-rails | 2 | Medium | open | [DockLayout](../../packages/shared/src/shared/components/editor/DockLayout.tsx) |
+| dock-rails-api-shape | RailPanelDescriptor + leftPanels/mainPanels/rightPanels/bottomPanels exist in EditorDockLayout; wire editors to array API (optional) | dock-rails | 2 | Medium | open | [EditorDockLayout](../../packages/shared/src/shared/components/editor/EditorDockLayout.tsx) |
 | dock-rails-wire-editors | Wire Dialogue/Character/Video to new rail API (mainPanels, rightPanels); deprecate or map old right/rightInspector/rightSettings | dock-rails | 2 | Medium | open | editors in apps/studio/components/editors |
 | dock-rails-naming | Align DockLayout, EditorDockPanel, shared editor README/AGENTS with rails and composable panels; document in errors-and-attempts/decisions | dock-rails | 3 | Small | open | README, AGENTS, decisions |
 

@@ -1,0 +1,197 @@
+================================================================================
+FILES WITH BOTH FRONTMATTER TITLE AND H1 HEADING
+================================================================================
+
+DUPLICATE HEADINGS (29 files):
+--------------------------------------------------------------------------------
+
+File: changelog.md
+  Title: Changelog
+  H1:    Changelog
+
+File: features.md
+  Title: Features
+  H1:    Features
+
+File: index.md
+  Title: Forge Platform Documentation
+  H1:    Forge Platform Documentation
+
+File: platform-features.mdx
+  Title: Platform Features
+  H1:    Platform Features
+
+File: platform-overview.mdx
+  Title: Forge Platform Developer Documentation
+  H1:    Forge Platform Developer Documentation
+
+File: pricing.md
+  Title: Pricing
+  H1:    Pricing
+
+File: ai\assistant-chat.md
+  Title: Assistant chat
+  H1:    Assistant chat
+
+File: ai\copilot.md
+  Title: CopilotKit setup
+  H1:    CopilotKit setup
+
+File: ai\domain-actions.md
+  Title: Domain actions
+  H1:    Domain actions
+
+File: ai\index.md
+  Title: AI integration
+  H1:    AI integration
+
+File: ai\openrouter.md
+  Title: OpenRouter model routing
+  H1:    OpenRouter model routing
+
+File: api-reference\agent-engine.md
+  Title: @forge/agent-engine
+  H1:    @forge/agent-engine
+
+File: api-reference\dev-kit.md
+  Title: @forge/dev-kit
+  H1:    @forge/dev-kit
+
+File: api-reference\index.md
+  Title: API reference
+  H1:    API reference
+
+File: api-reference\types.md
+  Title: @forge/types
+  H1:    @forge/types
+
+File: components\dock-panel.mdx
+  Title: EditorDockPanel Complete Reference
+  H1:    EditorDockPanel Complete Reference
+
+File: components\editor-inspector.mdx
+  Title: EditorInspector - Complete Guide
+  H1:    EditorInspector - Complete Guide
+
+File: components\editor-overlay.mdx
+  Title: EditorOverlaySurface - Complete Guide
+  H1:    EditorOverlaySurface - Complete Guide
+
+File: components\editor-shell.mdx
+  Title: EditorShell Complete Reference
+  H1:    EditorShell Complete Reference
+
+File: components\editor-toolbar.mdx
+  Title: EditorToolbar Complete Reference
+  H1:    EditorToolbar Complete Reference
+
+File: components\panel-tabs.mdx
+  Title: PanelTabs - Complete Guide
+  H1:    PanelTabs - Complete Guide
+
+File: components\settings-system.mdx
+  Title: Settings System - Complete Guide
+  H1:    Settings System - Complete Guide
+
+File: guides\architecture.mdx
+  Title: Forge Platform Architecture
+  H1:    Forge Platform Architecture
+
+File: reference\typescript-interfaces.mdx
+  Title: TypeScript Interfaces Reference
+  H1:    TypeScript Interfaces Reference
+
+File: yarn-spinner\export.md
+  Title: Export to .yarn
+  H1:    Export to .yarn
+
+File: yarn-spinner\import.md
+  Title: Import .yarn files
+  H1:    Import .yarn files
+
+File: yarn-spinner\index.md
+  Title: Yarn Spinner
+  H1:    Yarn Spinner
+
+File: yarn-spinner\node-types.md
+  Title: Node types
+  H1:    Node types
+
+File: yarn-spinner\syntax-reference.md
+  Title: Yarn syntax reference
+  H1:    Yarn syntax reference
+
+================================================================================
+DIFFERENT HEADINGS (16 files):
+--------------------------------------------------------------------------------
+
+File: developer-program.mdx
+  Title: Developer Program
+  H1:    Forge Developer Program
+
+File: getting-started.md
+  Title: Getting Started
+  H1:    Getting Started with Forge
+
+File: overview.mdx
+  Title: Platform Overview
+  H1:    🏗️ Forge Platform
+
+File: roadmap.md
+  Title: Roadmap
+  H1:    Product roadmap
+
+File: why-forge.mdx
+  Title: Why Forge?
+  H1:    Why Use Forge?
+
+File: ai-system\overview.mdx
+  Title: AI System Overview
+  H1:    🤖 AI System Overview
+
+File: components\dock-layout.mdx
+  Title: DockLayout Complete Reference
+  H1:    DockLayout (EditorDockLayout) Complete Reference
+
+File: components\index.mdx
+  Title: Component Showcase
+  H1:    🧩 Component Showcase
+
+File: developer-guide\index.mdx
+  Title: Developer Guide
+  H1:    🎓 Developer Guide
+
+File: guides\patterns.mdx
+  Title: Component Patterns
+  H1:    🎨 Component Patterns & Best Practices
+
+File: guides\performance.mdx
+  Title: Performance Optimization
+  H1:    ⚡ Performance Optimization
+
+File: guides\theming.mdx
+  Title: Theming & Styling
+  H1:    🎨 Theming & Styling System
+
+File: reference\packages.mdx
+  Title: Package Structure
+  H1:    📦 Package Structure Reference
+
+File: tutorials\adding-panels.mdx
+  Title: Tutorial - Adding Panels to Your Editor
+  H1:    Tutorial: Adding Panels to Your Editor
+
+File: tutorials\ai-integration.mdx
+  Title: AI Integration Tutorial
+  H1:    🤖 AI Integration Tutorial
+
+File: tutorials\quick-start.mdx
+  Title: Quick Start - Build Your First Editor in 10 Minutes
+  H1:    Quick Start: Build Your First Editor in 10 Minutes
+
+================================================================================
+SUMMARY:
+  Total files with both title and H1: 45
+  Files with duplicate headings: 29
+  Files with different headings: 16
+================================================================================

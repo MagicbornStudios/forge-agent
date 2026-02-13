@@ -1,0 +1,46 @@
+---
+title: Install and environment
+---
+
+# Install and environment
+
+## Step 1: Install
+
+From the repo root:
+
+```bash
+pnpm install
+```
+
+## Step 2: Environment
+
+**Recommended (portal):** Run `pnpm dev`. If env keys are missing, the **env portal** opens in your browser. Fill required values (e.g. `PAYLOAD_SECRET`, `OPENROUTER_API_KEY`), click Save, then rerun `pnpm dev`.
+
+**Manual setup:**
+
+```bash
+pnpm env:portal    # Web UI for Studio + Platform + Vercel sync
+# or
+pnpm env:setup     # CLI setup (--app studio|platform|all)
+```
+
+Env files go to `apps/studio/.env.local` and `apps/platform/.env.local`. Source of truth: `scripts/env/manifest.mjs`.
+
+**Minimal for local dev:**
+
+```env
+OPENROUTER_API_KEY=sk-or-v1-...
+PAYLOAD_SECRET=dev-secret-change-me
+```
+
+**Local auto-login** (optional): Set `NEXT_PUBLIC_LOCAL_DEV_AUTO_ADMIN=1` to use seeded admin (`admin@forge.local` / `admin12345`). See `apps/studio/.env.example`.
+
+**Pre-dev guard:** `pnpm dev` runs `pnpm env:bootstrap` first; when keys are missing, the portal opens. Set `FORGE_SKIP_ENV_BOOTSTRAP=1` or `CI=1` to skip.
+
+<details>
+<summary>For coding agents</summary>
+<!-- AGENT_SECTION -->
+File refs: `apps/studio/.env.example`, `scripts/env/manifest.mjs`, `scripts/env-bootstrap.mjs`, `scripts/env/env-portal.mjs`
+Related: SETUP.md, STATUS § Env DX system, onboarding/04-first-run
+Do not: Use npm or yarn; do not add env keys to .env.example that are secrets; manifest.mjs is source of truth for required keys
+</details>

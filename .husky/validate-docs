@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+# Validate documentation code blocks for invalid language tags
+# This prevents Shiki syntax highlighter errors
+
+echo "🔍 Validating documentation code blocks..."
+
+# Find invalid language tags in platform docs
+INVALID_YARN=$(grep -r '```yarn' apps/platform/content/docs/ --include="*.md" --include="*.mdx" 2>/dev/null || true)
+INVALID_NPM=$(grep -r '```npm' apps/platform/content/docs/ --include="*.md" --include="*.mdx" 2>/dev/null || true)
+INVALID_PNPM=$(grep -r '```pnpm' apps/platform/content/docs/ --include="*.md" --include="*.mdx" 2>/dev/null || true)
+
+if [ -n "$INVALID_YARN" ] || [ -n "$INVALID_NPM" ] || [ -n "$INVALID_PNPM" ]; then
+  echo ""
+  echo "❌ ERROR: Invalid code block language tags found!"
+  echo ""
+  echo "Shiki syntax highlighter doesn't support these language tags:"
+  echo "  - \`\`\`yarn"
+  echo "  - \`\`\`npm"
+  echo "  - \`\`\`pnpm"
+  echo ""
+  echo "Use these instead:"
+  echo "  ✅ \`\`\`bash  - for shell commands (npm install, pnpm dev, etc.)"
+  echo "  ✅ \`\`\`text  - for Yarn Spinner dialogue examples"
+  echo ""
+  echo "Files with errors:"
+  if [ -n "$INVALID_YARN" ]; then
+    echo "$INVALID_YARN"
+  fi
+  if [ -n "$INVALID_NPM" ]; then
+    echo "$INVALID_NPM"
+  fi
+  if [ -n "$INVALID_PNPM" ]; then
+    echo "$INVALID_PNPM"
+  fi
+  echo ""
+  echo "See .cursor/docs-standards.md for complete reference"
+  echo ""
+  exit 1
+fi
+
+echo "✅ All documentation code blocks valid"
+exit 0

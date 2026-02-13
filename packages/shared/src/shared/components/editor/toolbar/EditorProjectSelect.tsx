@@ -26,7 +26,7 @@ export interface EditorProjectSelectProps {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
-  tooltip?: React.ReactNode;
+  tooltip?: string;
 }
 
 export function EditorProjectSelect({

@@ -1,0 +1,205 @@
+---
+title: Package Structure
+created: 2026-02-12
+updated: 2026-02-12
+icon: "📦"
+---
+
+# 📦 Package Structure Reference
+
+**Complete guide to Forge's monorepo architecture and package organization**
+
+Understand how Forge is organized, what each package provides, and how to import and use them in your editors.
+
+---
+
+## Package Architecture
+
+Forge provides a single, unified package for building professional editors:
+
+## Installation
+
+```bash
+npm install @forge/dev-kit
+```
+
+The dev-kit includes everything you need:
+- Editor platform components (EditorShell, DockLayout, etc.)
+- UI components (Button, Card, Dialog, etc.)
+- AI integration utilities
+- TypeScript types
+- Settings system
+```
+
+---
+
+## What's in @forge/dev-kit
+
+### Editor Components
+
+```typescript
+// Core editor components
+import {
+  EditorShell,
+  EditorToolbar,
+  EditorDockLayout,
+  EditorDockPanel,
+  EditorStatusBar,
+  EditorInspector,
+  EditorOverlaySurface,
+} from '@forge/dev-kit';
+```
+
+**Available Components:**
+- EditorShell - Root container with theming
+- EditorToolbar - Customizable toolbar
+- EditorDockLayout - VSCode-style panels
+- EditorDockPanel - Individual panel wrapper
+- EditorStatusBar - Bottom status bar
+- EditorInspector - Properties panel
+- EditorOverlaySurface - Modal system
+
+---
+
+### UI Components
+
+```typescript
+// UI primitives from dev-kit/ui
+import {
+  Button,
+  Card,
+  Badge,
+  Input,
+  Select,
+  Dialog,
+  Drawer,
+  Popover,
+  Tooltip,
+} from '@forge/dev-kit/ui';
+```
+
+**40+ Components Included:**
+- Buttons, Cards, Badges
+- Dialogs, Drawers, Popovers
+- Inputs, Selects, Textareas
+- Tooltips, Tabs, Accordions
+- And more...
+
+---
+
+### TypeScript Types
+
+```typescript
+// Types included in dev-kit
+import type {
+  EditorShellProps,
+  DockLayoutProps,
+  Selection,
+  OverlaySpec,
+} from '@forge/dev-kit';
+```
+
+All components are fully typed with comprehensive JSDoc comments.
+
+---
+
+## Import Patterns
+
+### Editor Components
+
+```typescript
+// Import editor components
+import {
+  EditorShell,
+  EditorDockLayout,
+  EditorDockPanel,
+  EditorToolbar,
+  EditorStatusBar,
+} from '@forge/dev-kit';
+```
+
+### UI Components
+
+```typescript
+// Import UI primitives
+import {
+  Button,
+  Card,
+  Badge,
+  Input,
+  Dialog,
+  Tooltip,
+} from '@forge/dev-kit/ui';
+```
+
+### TypeScript Types
+
+```typescript
+// Import types
+import type {
+  EditorShellProps,
+  DockLayoutProps,
+  Selection,
+  OverlaySpec,
+  ActiveOverlay,
+} from '@forge/dev-kit';
+```
+
+---
+
+## Peer Dependencies
+
+@forge/dev-kit requires:
+
+```json
+{
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}
+```
+
+Install these alongside dev-kit:
+
+```bash
+npm install react@^19.0.0 react-dom@^19.0.0 @forge/dev-kit
+```
+
+---
+
+## Summary
+
+### Single Package Installation
+
+```bash
+npm install @forge/dev-kit
+```
+
+### What You Get
+
+| Feature | Import From |
+|---------|-------------|
+| **Editor Components** | `@forge/dev-kit` |
+| **UI Primitives** | `@forge/dev-kit/ui` |
+| **TypeScript Types** | `@forge/dev-kit` |
+| **Utilities** | `@forge/dev-kit/utils` |
+
+### Quick Start
+
+```typescript
+import { EditorShell, EditorDockLayout } from '@forge/dev-kit';
+import { Button, Card } from '@forge/dev-kit/ui';
+
+export function MyEditor() {
+  return (
+    <EditorShell editorId="my-editor" title="My Editor">
+      {/* Your editor content */}
+    </EditorShell>
+  );
+}
+```
+
+---
+
+**You now understand Forge's monorepo architecture and package structure.**

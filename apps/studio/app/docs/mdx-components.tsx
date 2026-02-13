@@ -4,7 +4,7 @@ import defaultMdxComponents from 'fumadocs-ui/mdx';
 import { cn } from '@forge/ui/lib/utils';
 import { Badge } from '@forge/ui/badge';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@forge/ui/card';
-import { ComponentPreview } from '@/components/docs';
+import { ComponentPreview, QuickNav, ShowcaseLink } from '@/components/docs';
 
 export interface CalloutProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'info' | 'note' | 'warning' | 'danger';
@@ -88,7 +88,9 @@ export function createMdxComponents(validSlugs: Set<string>) {
     const resolved = slug ? resolveSlug(slug) : null;
 
     if (resolved) {
-      const docHref = resolved === '00-docs-index' ? '/docs' : `/docs/${resolved}`;
+      const base = resolved === '00-docs-index' ? '/docs' : `/docs/${resolved}`;
+      const hash = href.includes('#') ? href.slice(href.indexOf('#')) : '';
+      const docHref = `${base}${hash}`;
       return (
         <Link href={docHref} {...props}>
           {children}
@@ -105,6 +107,8 @@ export function createMdxComponents(validSlugs: Set<string>) {
     Callout,
     Step,
     ComponentPreview,
+    QuickNav,
+    ShowcaseLink,
     Badge,
     Card,
     CardHeader,

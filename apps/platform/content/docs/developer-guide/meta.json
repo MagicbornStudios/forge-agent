@@ -1,0 +1,18 @@
+{
+  "title": "Developer Guide",
+  "pages": [
+    "index",
+    "core-concepts",
+    "quick-start",
+    "component-patterns",
+    "building-layouts",
+    "selection-and-inspector",
+    "menubar-and-toolbar",
+    "settings-integration",
+    "domain-contracts",
+    "tool-system",
+    "ai-integration",
+    "custom-workflows",
+    "performance-optimization"
+  ]
+}

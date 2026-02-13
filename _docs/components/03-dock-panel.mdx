@@ -1,0 +1,80 @@
+---
+title: DockPanel
+---
+
+# EditorDockPanel
+
+Individual panel within `EditorDockLayout`. Title bar, scrolling, tabs, lock overlays.
+
+**File:** `packages/shared/src/shared/components/editor/DockPanel.tsx`
+
+## Overview
+
+- **Title bars** with icons and actions
+- **ScrollArea** for scrollable content
+- **PanelTabs** for multi-mode panels
+- **Lock overlays** during AI operations
+- **panelId** for settings scoping
+
+## Basic usage
+
+```tsx
+<EditorDockPanel panelId="inspector" title="Inspector" icon={<ScanSearch size={14} />}>
+  <PropertyEditor selection={selection} />
+</EditorDockPanel>
+```
+
+## Key props
+
+| Prop | Description |
+|------|-------------|
+| `panelId` | **Required.** Unique panel id. |
+| `title` | Panel title in header. |
+| `icon` | Icon before title. |
+| `tabs` | Tab definitions for PanelTabs. |
+| `hideTitleBar` | When true, no title bar (e.g. title in dockview tab). |
+| `scrollable` | Default true. Set false for viewports (React Flow, Canvas). |
+| `locked` | Overlay with LockedOverlay during AI patch. |
+
+## Scrollable vs non-scrollable
+
+**Scrollable (default):** Lists, forms, inspector.
+
+```tsx
+<EditorDockPanel panelId="inspector" title="Inspector" scrollable>
+  <PropertyGroup>...</PropertyGroup>
+</EditorDockPanel>
+```
+
+**Non-scrollable:** React Flow, Canvas, viewports.
+
+```tsx
+<EditorDockPanel panelId="viewport" title="Viewport" scrollable={false}>
+  <ReactFlow nodes={nodes} edges={edges}>...</ReactFlow>
+</EditorDockPanel>
+```
+
+## Hide title bar
+
+When dockview shows the tab, hide the inner title bar:
+
+```tsx
+<EditorDockLayout.Panel id="nav" title="Navigator">
+  <EditorDockPanel panelId="nav-content" hideTitleBar>
+    {/* Content */}
+  </EditorDockPanel>
+</EditorDockLayout.Panel>
+```
+
+## Related
+
+- [DockLayout](02-dock-layout)
+- [PanelTabs](09-panel-tabs)
+
+<details>
+<summary>For coding agents</summary>
+<!-- AGENT_SECTION -->
+File refs: `packages/shared/src/shared/components/editor/DockPanel.tsx`, `packages/shared/src/shared/components/editor/PanelTabs.tsx`
+Related: components/02-dock-layout, components/09-panel-tabs
+Do not: Use scrollable={true} for React Flow or canvas viewports; they manage their own scroll
+</details>

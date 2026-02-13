@@ -1,0 +1,80 @@
+---
+title: 05 - Building an editor
+---
+
+# 05 - Building an editor
+
+Step-by-step: registry, shell, main content, inspector, domain contract.
+
+## Step 1: Add editor id and register
+
+**1a. Add to EDITOR_IDS** in `apps/studio/lib/app-shell/store.ts`:
+
+```ts
+export const EDITOR_IDS = ['dialogue', 'character', 'my-editor'] as const;
+```
+
+**1b. Add metadata** in `apps/studio/lib/app-shell/editor-metadata.ts`:
+
+```ts
+export const EDITOR_VIEWPORT_IDS: Record<EditorId, string> = {
+  dialogue: 'dialogue-graph',
+  character: 'character-graph',
+  'my-editor': 'my-viewport',
+};
+```
+
+**1c. Create editor descriptor** and register in `apps/studio/lib/editor-registry/editor-bootstrap.ts`:
+
+```ts
+import { MyEditor, editorDescriptor as myEditorDescriptor } from '@/components/editors/MyEditor';
+
+export function registerDefaultEditors(): void {
+  const { registerEditor } = useEditorRegistryStore.getState();
+  registerEditor({ ...dialogueDescriptor, component: DialogueEditor });
+  registerEditor({ ...characterDescriptor, component: CharacterEditor });
+  registerEditor({ ...myEditorDescriptor, component: MyEditor });
+}
+```
+
+**1d. Export editorDescriptor** from `MyEditor.tsx`:
+
+```tsx
+export const editorDescriptor: Omit<EditorDescriptor, 'component'> = {
+  id: 'my-editor',
+  label: 'My Editor',
+  summary: 'Brief description for menus',
+};
+```
+
+Tabs and content render from the registry. No manual branches in AppShell.
+
+## Step 2: Shell + slots
+
+Create `MyEditor.tsx`. Compose `EditorShell`, `EditorToolbar`, `EditorDockLayout`, `EditorStatusBar`, `EditorOverlaySurface`.
+
+## Step 3: Main content
+
+Put your editor UI in `EditorDockLayout.Main`. Hold selection in local state or store; expose for inspector and domain contract.
+
+## Step 4: Inspector (optional)
+
+Use `EditorDockLayout.Right` with `EditorDockPanel` wrapping `EditorInspector`. Pass `selection` and `sections`. Selection shape: `packages/shared/src/shared/workspace/selection.ts`.
+
+## Step 5: Domain contract and toolbar
+
+Implement `DomainAssistantContract`: `getContextSnapshot()`, `getInstructions()`, `createTools()`, `getSuggestions()`, `onHighlight`, `clearHighlights`. Wire via `useDomainAssistant` and `DialogueAssistantPanel` (or similar). See [07 - Assistant and AI](07-assistant-and-ai).
+
+## Step 6: Plan-commit (optional)
+
+For plan-execute-review-commit: add plan API, `forge_createPlan` / `forge_executePlan` tools, `EditorReviewBar`. Reference: DialogueEditor and `packages/domain-forge`.
+
+**Next:** [06 - Dialogue walkthrough](06-dialogue-walkthrough)
+
+<details>
+<summary>For coding agents</summary>
+<!-- AGENT_SECTION -->
+File refs: `apps/studio/lib/editor-registry/editor-bootstrap.ts`, `apps/studio/lib/app-shell/store.ts`, `apps/studio/lib/app-shell/editor-metadata.ts`, `apps/studio/components/editors/DialogueEditor.tsx`
+Related: how-to/07-assistant-and-ai, STATUS § Studio, components/01-editor-shell
+Do not: Add manual tab/render branch in AppShell; use registry. Do not use DomainCopilotContract (CopilotKit); use DomainAssistantContract
+</details>

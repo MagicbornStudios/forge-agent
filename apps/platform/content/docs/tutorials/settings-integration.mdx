@@ -1,0 +1,24 @@
+---
+title: Settings Integration
+description: Connect editor settings to scoped persistence with predictable inheritance.
+icon: Settings
+---
+
+# Settings Integration
+
+This tutorial shows how to wire settings in a stable order: schema, UI, store, and persistence.
+
+## Integration sequence
+
+1. Define settings keys and defaults.
+2. Render settings UI from declarative sections.
+3. Read values in editor components using scope.
+4. Persist changes through the settings API.
+5. Validate inheritance across app/editor/viewport scopes.
+
+## Validation checks
+
+- No magic setting keys
+- Defaults resolve without network
+- Scoped overrides do not leak across editors
+- Save/load round-trip matches UI state

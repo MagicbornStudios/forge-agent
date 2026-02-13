@@ -1,20 +1,14 @@
 ---
-title: Domain integration
-created: 2026-02-11
-updated: 2026-02-11
+title: 02 - Domain integration
 ---
 
-# Domain integration
+# 02 - Domain integration
 
-Every domain implements `DomainAssistantContract` and wires up via `useDomainAssistant`. This replaces the CopilotKit `useDomainCopilot` pattern.
+Every domain implements `DomainAssistantContract` and wires via `useDomainAssistant`.
 
----
+## Contract
 
-## Contract interface
-
-Every domain implements `DomainAssistantContract`:
-
-```typescript
+```ts
 interface DomainAssistantContract {
   domain: string;
   getContextSnapshot(): DomainContextSnapshot;
@@ -24,62 +18,23 @@ interface DomainAssistantContract {
   onHighlight(entities: Record<string, string[]>): void;
   clearHighlights(): void;
 }
-
-interface DomainTool {
-  domain: string;
-  name: string;
-  description: string;
-  parameters: {
-    type: 'object';
-    properties: Record<string, any>;
-    required?: string[];
-  };
-  execute: (args: any, context: DomainToolContext) => Promise<any>;
-  render?: (result: any) => React.ReactNode;
-}
 ```
 
-**Implementation**: [packages/shared/src/shared/assistant/domain-contract.ts](../../packages/shared/src/shared/assistant/domain-contract.ts) defines `DomainAssistantContract` and `DomainTool`. Migration source: [packages/shared/src/shared/copilot/types.ts](../../packages/shared/src/shared/copilot/types.ts) (CopilotKit `DomainCopilotContract`).
+**File:** `packages/shared/src/shared/assistant/domain-contract.ts`
 
----
+## Wiring
 
-## use-domain-assistant hook
-
-**File**: [packages/shared/src/shared/assistant/use-domain-assistant.ts](../../packages/shared/src/shared/assistant/use-domain-assistant.ts)
-
-The hook wires instructions via `useAssistantInstructions`. Tool registration uses `DomainToolsRenderer` (mount it alongside the hook); tools are registered via Assistant UI's `makeAssistantTool` when the renderer mounts each tool component.
-
-```typescript
+```tsx
 import { useDomainAssistant, DomainToolsRenderer } from '@forge/shared/assistant';
 
-// Inside AssistantRuntimeProvider:
 useDomainAssistant(contract, { enabled });
 <DomainToolsRenderer contract={contract} enabled={enabled} />
 ```
 
----
+**Next:** [03 - Domains (Forge, Character)](03-domains-forge-character)
 
-## Coexistence pattern
-
-Both systems run simultaneously during migration; a feature flag toggles which is active:
-
-```typescript
-// Both systems run simultaneously during migration
-export function ForgeEditor() {
-  // New Assistant UI
-  const assistantContract = useForgeAssistantContract(deps);
-  useDomainAssistant(assistantContract, { enabled: USE_ASSISTANT_UI });
-
-  // Old CopilotKit
-  const copilotContract = useForgeContract(deps);
-  useDomainCopilot(copilotContract, { toolsEnabled: !USE_ASSISTANT_UI });
-
-  return <EditorLayout>...</EditorLayout>;
-}
-```
-
----
-
-## Next
-
-- [03 - Domains (Forge, Character)](03-domains-forge-character.mdx) — Domain implementations
+<Callout variant="note" title="For coding agents">
+File refs: `packages/shared/src/shared/assistant/domain-contract.ts`, `use-domain-assistant.ts`
+Related: ai/03-domains-forge-character, how-to/07-assistant-and-ai
+Do not: Use useDomainCopilot; use useDomainAssistant
+</Callout>

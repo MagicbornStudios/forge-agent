@@ -1,0 +1,573 @@
+---
+title: Developer Program
+description: Build custom editors, get featured in Forge Studio, and earn revenue
+icon: "🚀"
+---
+
+# Forge Developer Program
+
+**Build once, sell everywhere. Earn 70% revenue share on your custom editors.**
+
+The Forge Developer Program is like the Unity Asset Store for narrative tools. Build custom editors using our dev-kit, submit them for review, and earn revenue when teams use your creations.
+
+---
+
+## What is the Developer Program?
+
+The Developer Program enables developers to create and monetize custom editors within the Forge ecosystem.
+
+### How It Works
+
+1. **Build** custom editors using `@forge/dev-kit`
+2. **Test** with real projects to ensure quality
+3. **Submit** for technical and quality review
+4. **Publish** to the Forge Studio marketplace
+5. **Earn** 70% of revenue from sales and subscriptions
+
+### Who Should Join?
+
+- **Tool developers** building workflow solutions
+- **Agencies** creating client-specific editors
+- **Game studios** with reusable narrative tools
+- **Indie developers** monetizing their expertise
+- **Technical writers** building specialized content tools
+
+---
+
+## Revenue Model
+
+### Revenue Sharing
+
+**70/30 split** - You keep 70%, Forge takes 30%
+
+This covers:
+- Hosting and infrastructure
+- Payment processing
+- Customer support
+- Platform maintenance
+- Marketing and promotion
+
+### Pricing Models You Control
+
+**Free editors:**
+- Build community and reputation
+- Upsell premium features
+- Offer freemium tiers
+
+**One-time purchase:**
+- $9.99 - $199+ depending on complexity
+- Lifetime access for purchasers
+- Updates included
+
+**Subscription:**
+- $4.99/month - $49/month recurring
+- Ongoing access to editor
+- Regular feature updates
+
+**Freemium:**
+- Free base version
+- Premium features via in-editor purchases
+- You control the upgrade path
+
+### Example Revenue Scenarios
+
+**Scenario 1: Quest Editor - $29 one-time**
+- 100 sales per month
+- $2,900 gross revenue
+- **$2,030 developer payout** (70%)
+- $24,360/year
+
+**Scenario 2: Timeline Editor - $19/month subscription**
+- 50 subscribers
+- $950/month gross revenue
+- **$665 developer payout** (70%)
+- $7,980/year
+
+**Scenario 3: Character Pack Template - $9.99 one-time**
+- 500 sales (popular in marketplace)
+- $4,995 gross revenue
+- **$3,496.50 developer payout** (70%)
+- One-time effort, ongoing passive income
+
+---
+
+## Submission Process
+
+### Phase 1: Development
+
+**1. Set up your environment**
+
+```bash
+# Install Forge dev-kit
+npm install @forge/dev-kit
+
+# Create your editor
+mkdir my-custom-editor
+cd my-custom-editor
+npm init -y
+```
+
+**2. Build your editor**
+
+Use Forge components and patterns:
+
+```typescript
+import {
+  EditorShell,
+  EditorDockLayout,
+  EditorDockPanel,
+  EditorToolbar,
+} from '@forge/dev-kit';
+
+export function MyCustomEditor() {
+  return (
+    <EditorShell
+      editorId="my-custom-editor"
+      title="My Custom Editor"
+    >
+      <EditorToolbar>
+        {/* Your custom toolbar */}
+      </EditorToolbar>
+
+      <EditorDockLayout layoutId="custom-layout">
+        <EditorDockLayout.Main>
+          <EditorDockPanel id="main" title="Main View">
+            {/* Your editor UI */}
+          </EditorDockPanel>
+        </EditorDockLayout.Main>
+      </EditorDockLayout>
+    </EditorShell>
+  );
+}
+```
+
+**3. Test thoroughly**
+
+- Create sample projects
+- Test all features
+- Verify data persistence
+- Check performance
+- Test AI integrations (if applicable)
+
+### Phase 2: Submission
+
+**1. Prepare submission materials**
+
+Create a submission package:
+
+```
+my-editor-submission/
+├── README.md              # Overview and features
+├── DEMO.md               # Demo projects and examples
+├── SCREENSHOTS/          # UI screenshots
+├── src/                  # Source code
+├── package.json          # Dependencies
+└── LICENSE.md            # License info
+```
+
+**2. Fill out submission form**
+
+Provide:
+- **Editor name** and description
+- **Target audience** (who uses this?)
+- **Key features** (what problems does it solve?)
+- **Pricing** (free, one-time, subscription)
+- **Demo video** (2-5 minute walkthrough)
+- **Screenshots** (3-5 high-quality images)
+- **Documentation** (user guide and API docs)
+
+**3. Submit for review**
+
+Via Forge Developer Portal:
+- Upload submission package
+- Agree to Developer Program Terms
+- Submit for technical review
+
+### Phase 3: Review Process
+
+**Technical Review (1-2 weeks)**
+
+We check:
+- ✅ Uses `@forge/dev-kit` components properly
+- ✅ Follows Forge component patterns
+- ✅ No security vulnerabilities
+- ✅ Performance benchmarks met
+- ✅ Works with Forge Platform services
+- ✅ Data persistence works correctly
+- ✅ Accessible (WCAG AA compliance)
+
+**Quality Review (1 week)**
+
+We evaluate:
+- ✅ UI/UX quality and consistency
+- ✅ Documentation completeness
+- ✅ Demo quality and clarity
+- ✅ Real-world usefulness
+- ✅ Competitive differentiation
+
+**Feedback and Iteration**
+
+If changes needed:
+- Detailed feedback provided
+- Resubmit when ready
+- No limit on resubmissions
+
+### Phase 4: Publication
+
+**Approval and listing**
+
+Once approved:
+- Editor listed in Forge Studio marketplace
+- Featured on platform homepage (first 30 days)
+- Included in weekly newsletter
+- Social media promotion
+
+**Your developer dashboard**
+
+Access to:
+- Sales analytics and revenue
+- Customer reviews and feedback
+- Download statistics
+- Support ticket management
+
+---
+
+## Requirements & Guidelines
+
+### Technical Requirements
+
+**Must use `@forge/dev-kit`**
+
+All editors must be built on our component library:
+
+```typescript
+// ✅ Good - uses Forge components
+import { EditorShell, DockLayout } from '@forge/dev-kit';
+
+// ❌ Bad - completely custom implementation
+import { CustomShell } from './my-custom-lib';
+```
+
+**TypeScript strongly recommended**
+
+Type-safe editors are easier to maintain:
+
+```typescript
+import type { EditorConfig, PanelConfig } from '@forge/dev-kit/types';
+
+interface QuestEditorState {
+  quests: Quest[];
+  selectedQuest: string | null;
+}
+```
+
+**Performance benchmarks**
+
+- Initial load: < 2 seconds
+- Panel rendering: < 100ms
+- Data save: < 500ms
+- Memory usage: < 200MB for typical projects
+
+**Browser compatibility**
+
+Support latest versions of:
+- Chrome/Edge (Chromium)
+- Firefox
+- Safari
+
+**Accessibility**
+
+- Keyboard navigation
+- Screen reader support
+- WCAG AA compliance
+- High contrast mode support
+
+### Design Guidelines
+
+**Follow Forge design language**
+
+Use provided components:
+- Buttons, inputs, dropdowns from `@forge/dev-kit/ui`
+- Theme variables for colors
+- Standard spacing and typography
+- Consistent iconography
+
+**Responsive layouts**
+
+- Support window resizing
+- Panels collapse gracefully
+- Mobile-friendly (if applicable)
+
+**Dark/light theme support**
+
+Inherit from EditorShell:
+- No hardcoded colors
+- Use CSS variables
+- Test in both modes
+
+### Documentation Requirements
+
+**User documentation**
+
+Must include:
+- Getting started guide
+- Feature overview with screenshots
+- Common workflows and examples
+- Troubleshooting section
+- FAQ
+
+**Developer documentation**
+
+If extensible:
+- API reference
+- Plugin/extension guide
+- Code examples
+- TypeScript types
+
+**Video tutorials**
+
+Highly recommended:
+- 2-5 minute overview
+- Feature walkthrough
+- Real-world example
+
+---
+
+## Marketing & Promotion
+
+### Featured Placement
+
+**New releases (first 30 days)**
+- Homepage featured section
+- "New in Studio" banner
+- Social media announcement
+- Newsletter feature
+
+**Editor of the month**
+- Selected based on quality and popularity
+- Extended homepage placement
+- Blog post deep-dive
+- Developer spotlight interview
+
+**Seasonal campaigns**
+- Holiday sales and bundles
+- Back-to-school promotions
+- Game jam packages
+- Anniversary celebrations
+
+### Community Showcase
+
+**Developer profile page**
+- Your bio and portfolio
+- All published editors
+- Ratings and reviews
+- Direct contact option
+
+**Case studies**
+- Real teams using your editor
+- Before/after comparisons
+- ROI and time saved
+- Testimonials
+
+**Social proof**
+- User reviews and ratings
+- Download/purchase counts
+- Featured user projects
+- Community feedback
+
+### Marketing Support
+
+**We provide:**
+- Press release template
+- Social media graphics
+- Marketing copy suggestions
+- Launch announcement coordination
+
+**You provide:**
+- Demo videos
+- Screenshots
+- User testimonials
+- Blog posts (optional)
+
+---
+
+## Success Stories
+
+### Example 1: Quest Editor
+
+**Developer:** Solo indie developer
+
+**Editor:** Visual quest dependency graph with prerequisite tracking
+
+**Pricing:** $39 one-time
+
+**Results:**
+- 150 sales in first 3 months
+- $5,250 gross revenue
+- **$3,675 developer payout**
+- 4.8-star rating, 45 reviews
+- Featured in "Tools for Game Jams" article
+
+**Key success factors:**
+- Solved real pain point (quest dependencies)
+- Excellent documentation with video tutorials
+- Active support and quick bug fixes
+- Regular feature updates based on feedback
+
+### Example 2: Timeline Editor
+
+**Developer:** Small agency (2 developers)
+
+**Editor:** Parallel timeline editor for branching narratives
+
+**Pricing:** $14.99/month subscription
+
+**Results:**
+- 80 active subscribers
+- $1,199/month gross revenue
+- **$839/month developer payout** ($10,068/year)
+- Essential tool for interactive fiction creators
+- 95% retention rate
+
+**Key success factors:**
+- Unique feature (parallel timelines)
+- Subscription ensures ongoing revenue
+- Monthly updates add value
+- Strong community engagement
+
+### Example 3: Inventory Template Pack
+
+**Developer:** Technical writer/designer
+
+**Editor:** Pre-configured inventory system templates
+
+**Pricing:** $12.99 one-time
+
+**Results:**
+- 400 sales (popular with beginners)
+- $5,196 gross revenue
+- **$3,637 developer payout**
+- Low-effort passive income
+- Led to consulting opportunities
+
+**Key success factors:**
+- Lower price point = higher volume
+- Templates save time (instant value)
+- Perfect for new users
+- Minimal ongoing support needed
+
+---
+
+## Support & Resources
+
+### Developer Documentation
+
+Access to:
+- Complete API reference
+- Component library docs
+- Code examples and templates
+- Best practices guide
+- Performance optimization tips
+
+### Technical Support
+
+**Developer support channels:**
+- Private Discord channel for approved developers
+- Direct email support (48-hour response)
+- Monthly office hours with Forge team
+- Dedicated Slack channel (Enterprise developers)
+
+**Priority bug fixes:**
+- Platform issues affecting your editor
+- Breaking changes advance notice
+- Migration guides for major updates
+
+### Developer Community
+
+**Connect with other developers:**
+- Share tips and patterns
+- Collaborate on complex features
+- Beta test new platform features
+- Influence roadmap priorities
+
+**Networking opportunities:**
+- Virtual developer meetups
+- Annual Forge Developer Conference
+- Showcase your work
+- Find collaboration partners
+
+---
+
+## Frequently Asked Questions
+
+### Do I need to be a company to join?
+
+No. Individual developers, freelancers, and companies can all join. You'll need to provide tax information for revenue payouts.
+
+### Can I sell my editor elsewhere?
+
+Yes, but it must use `@forge/dev-kit` which requires Forge Platform. You can't strip out Forge dependencies and sell standalone.
+
+### What if my editor stops working due to platform updates?
+
+We provide advance notice (minimum 90 days) for breaking changes and detailed migration guides. We work with developers to ensure smooth transitions.
+
+### Can I offer free trials?
+
+Yes. You control pricing, including free tiers, trial periods, and freemium models.
+
+### How do refunds work?
+
+Customers can request refunds within 14 days. We handle refund requests and absorb the cost. You keep your 70% of non-refunded sales.
+
+### Can I update my editor after publication?
+
+Yes. Push updates anytime through the Developer Portal. Users get automatic updates. We recommend a changelog and version numbering.
+
+### What happens if I abandon my editor?
+
+We'll mark it as "no longer maintained" after 6 months of no updates. It remains available for purchase, but with a clear notice. You continue earning revenue.
+
+### Can I build proprietary editors for clients?
+
+Yes. You can build private editors not listed in the marketplace. Client pays you directly, they get exclusive access. No revenue share with Forge.
+
+### Do you take a cut of client work?
+
+No. If you're building custom editors for clients under contract, you keep 100%. Revenue share only applies to marketplace sales.
+
+---
+
+## Get Started
+
+### Ready to join?
+
+1. **[Install dev-kit](/docs/getting-started)** - Start building
+2. **[Review requirements](#requirements--guidelines)** - Ensure compliance
+3. **[Submit your editor](#submission-process)** - Get listed
+4. **[Earn revenue](#revenue-model)** - Get paid for your work
+
+### Questions?
+
+- **Email:** developers@forge.com
+- **Discord:** [Developer Program channel](https://discord.gg/forge-dev)
+- **Documentation:** [Developer Docs](/docs/developer-guide)
+- **Office Hours:** Every Friday 2pm EST
+
+---
+
+## Developer Program Terms
+
+By joining the Forge Developer Program, you agree to:
+
+- Build quality editors using `@forge/dev-kit`
+- Maintain your editors with updates and bug fixes
+- Provide user support for your editors
+- Follow our code of conduct and community guidelines
+- Accept our revenue sharing model (70/30)
+
+Full terms: [Developer Program Agreement](/legal/developer-program)
+
+---
+
+[Join Developer Program](/developer-program/join) • [View Example Editors](/studio/marketplace) • [Read Developer Docs](/docs/developer-guide)

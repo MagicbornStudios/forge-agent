@@ -17,7 +17,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@forge/ui/c
 import { Input } from '@forge/ui/input';
 import { cn } from '@forge/ui/lib/utils';
 import { deserializePageTree } from 'fumadocs-core/source/client';
-import type { Root, Node, Item, Folder } from 'fumadocs-core/page-tree';
+import type { Root, Node, Item, Folder as TreeFolder } from 'fumadocs-core/page-tree';
 import type { SerializedPageTree } from 'fumadocs-core/source/client';
 import {
   BookMarked,
@@ -35,7 +35,7 @@ function isItem(node: Node): node is Item {
   return node.type === 'page';
 }
 
-function isFolder(node: Node): node is Folder {
+function isFolder(node: Node): node is TreeFolder {
   return node.type === 'folder';
 }
 

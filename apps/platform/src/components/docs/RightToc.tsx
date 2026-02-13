@@ -22,6 +22,9 @@ export function RightToc({ toc }: { toc: TableOfContents }) {
   React.useEffect(() => {
     if (!toc.length) return;
 
+    const mainContent = document.getElementById('docs-main-content');
+    if (!mainContent) return;
+
     const threshold = 112;
     const updateActive = () => {
       let active = '';
@@ -36,10 +39,10 @@ export function RightToc({ toc }: { toc: TableOfContents }) {
     };
 
     updateActive();
-    window.addEventListener('scroll', updateActive, { passive: true });
+    mainContent.addEventListener('scroll', updateActive, { passive: true });
     window.addEventListener('resize', updateActive);
     return () => {
-      window.removeEventListener('scroll', updateActive);
+      mainContent.removeEventListener('scroll', updateActive);
       window.removeEventListener('resize', updateActive);
     };
   }, [toc]);

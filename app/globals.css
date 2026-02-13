@@ -15,11 +15,7 @@
 @import "../packages/shared/src/shared/styles/graph.css";
 @import "../packages/shared/src/shared/styles/scrollbar.css";
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
+
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -83,9 +79,7 @@
    Do not redefine them here or they will override the theme. */
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
+
   body {
     @apply bg-background text-foreground font-sans;
     letter-spacing: var(--tracking-normal);

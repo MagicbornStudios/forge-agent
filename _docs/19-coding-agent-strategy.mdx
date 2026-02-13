@@ -1,0 +1,42 @@
+---
+title: Coding agent strategy
+---
+
+# Coding agent strategy
+
+How to use agent artifacts. Entry: root [AGENTS.md](../AGENTS.md), README, [index](index) § I'm a coding agent.
+
+## Loop
+
+1. **Before:** Read [STATUS](agent-artifacts/core/STATUS.md) and relevant AGENTS.md; check [errors-and-attempts](agent-artifacts/core/errors-and-attempts.md). For long artifacts, see [tool-usage § Reading long artifacts](agent-artifacts/core/tool-usage.md).
+2. **Pick:** STATUS § Next or [task-registry](agent-artifacts/core/task-registry.md).
+3. **Implement:** One slice; scope to apps, packages, docs.
+4. **After:** Update STATUS (Ralph Wiggum Done), scan docs for drift.
+
+## Key artifacts
+
+- **STATUS** — Current state, Done list
+- **decisions** — ADRs
+- **errors-and-attempts** — Do not repeat; user correction overrides
+- **tool-usage** — rg, list_dir, Read; AGENT_SECTION
+- **task-registry** — Granular tasks
+
+## User correction
+
+When the user explicitly rejects a hypothesis or forbids a fix: **stop**. Document in errors-and-attempts. Do not re-implement.
+
+## Scope
+
+Do not modify `.tmp/` or agent-download directories. Scope edits to apps, packages, docs.
+
+## UI/styling
+
+After implementing: update design docs and STATUS. Do **not** run browser screenshot automation. See [styling-and-ui-consistency](agent-artifacts/core/styling-and-ui-consistency.md) and [how-to 26](how-to/26-styling-debugging-with-cursor).
+
+<details>
+<summary>For coding agents</summary>
+<!-- AGENT_SECTION -->
+File refs: `agent-artifacts/core/`, root AGENTS.md
+Related: 18-agent-artifacts-index
+Do not: Skip STATUS update; retry failed pattern without checking errors-and-attempts; edit .tmp/
+</details>

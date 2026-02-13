@@ -1,6 +1,6 @@
 ---
 created: 2026-02-04
-updated: 2026-02-11
+updated: 2026-02-13
 ---
 
 # Forge Agent
@@ -56,7 +56,7 @@ See [AI migration index](docs/ai/migration/00-index.mdx).
 
 **Key components:**
 - [EditorShell, EditorDockLayout](packages/shared/src/shared/components/editor/README.md)
-- [Editor platform architecture](docs/architecture/05-editor-platform.mdx)
+- [Editor platform architecture](docs/architecture/01-editor-platform.mdx)
 - [Design language](docs/design/03-design-language.mdx)
 
 ---
@@ -65,45 +65,45 @@ See [AI migration index](docs/ai/migration/00-index.mdx).
 
 Foundational editor components (`@forge/shared`, `@forge/ui`) will be open sourced. Repo structure and API contracts are designed for consumption.
 
-- [Component library and registry](docs/architecture/04-component-library-and-registry.mdx)
+- [Component library and registry](docs/architecture/02-component-library.mdx)
 - [Verdaccio and local registry](docs/how-to/25-verdaccio-local-registry.mdx)
 
 ---
 
 ## Ralph Wiggum loop
 
-We use **agent artifacts** so "what is true now" and "what not to repeat" are explicit. Agents (and contributors) follow: **STATUS + AGENTS → pick one slice → implement → update STATUS (Done list) and affected docs.**
+We now run a `.planning`-first lifecycle with the internal `forge-loop` CLI.
 
-**Loop in one sentence:** Read [STATUS](docs/agent-artifacts/core/STATUS.md) and [AGENTS.md](AGENTS.md) → implement one slice → update STATUS Ralph Wiggum Done and docs.
+**Loop in one sentence:** `new-project -> discuss-phase -> plan-phase -> execute-phase -> verify-work -> progress -> sync-legacy`
+**Runtime policy:** prompt-pack only, no provider SDK/API coupling required.
+**Package:** `@forge/forge-loop` (bin: `forge-loop`).
 
-### Snippet: STATUS Done entry
+### Command chain
 
-```markdown
-- Done (2026-02-12): LangGraph chat infrastructure Phase 1 slice: added @forge/assistant-runtime...
-- Done (2026-02-12): Panel hide reclaims space (Option B): when panel content becomes null (View > Layout > Hide Library), DockLayout effect uses Dockview API (panel.api.close()) to remove the panel from the layout...
+```bash
+pnpm forge-loop:new-project -- --profile forge-agent
+pnpm forge-loop:discuss-phase -- 1
+pnpm forge-loop:plan-phase -- 1
+pnpm forge-loop:execute-phase -- 1 --non-interactive
+pnpm forge-loop:verify-work -- 1 --non-interactive --strict
+pnpm forge-loop:doctor
+pnpm forge-loop:progress
+pnpm forge-loop:sync-legacy
 ```
 
-### Snippet: errors-and-attempts (do not repeat)
+### Source of truth and continuity
 
-```markdown
-## Universal padding/margin reset — CRITICAL: never add to `*`
+- Source of truth: `.planning/*` (PROJECT, REQUIREMENTS, ROADMAP, STATE, DECISIONS, ERRORS, TASK-REGISTRY).
+- Temporary migration/refactor queue: `.planning/TEMP-REFACTOR-BACKLOG.md`.
+- Legacy continuity: `docs/agent-artifacts/core/*` is snapshot-synced with generated markers.
+- Legacy sections outside generated markers remain manual and untouched.
 
-**Problem**: `* { padding: 0 }` strips default padding from buttons, labels, inputs. Caused days of debugging.
-
-**Fix**: Do NOT add box-model resets to `*`. Use explicit tokens.
-```
-
-### Snippet: decisions ADR
-
-```markdown
-## Client boundary: Payload REST for CRUD, custom routes for app ops
-
-**Decision:** For collection CRUD, client uses Payload SDK. For app ops (auth, settings, AI), client uses our custom Next API routes.
-
-**Rationale:** Payload REST for full CRUD; custom routes for auth, settings, non-CRUD logic.
-```
-
-**Full artifacts:** [Agent artifacts index](docs/18-agent-artifacts-index.mdx) | [Coding agent strategy](docs/19-coding-agent-strategy.mdx)
+**Workflow guide:** [docs/how-to/forge-loop-workflow.mdx](docs/how-to/forge-loop-workflow.mdx)
+**Artifacts index:** [docs/18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx)
+**Manual usage:** [docs/how-to/forge-loop-manual-usage.mdx](docs/how-to/forge-loop-manual-usage.mdx)
+**Agent usage:** [docs/how-to/forge-loop-agent-usage.mdx](docs/how-to/forge-loop-agent-usage.mdx)
+**Package runbooks:** [packages/forge-loop/docs/01-quickstart.md](packages/forge-loop/docs/01-quickstart.md)
+**Package entrypoint:** `npx @forge/forge-loop --help` (after publish)
 
 ---
 
@@ -111,9 +111,9 @@ We use **agent artifacts** so "what is true now" and "what not to repeat" are ex
 
 | Section | Links |
 |---------|-------|
-| **Start here** | [docs/00-docs-index.mdx](docs/00-docs-index.mdx) |
+| **Start here** | [docs/index.mdx](docs/index.mdx) |
 | **How-to guides** | [how-to/00-index.mdx](docs/how-to/00-index.mdx) |
-| **Architecture** | [architecture/README.md](docs/architecture/README.md) |
+| **Architecture** | [architecture/00-index.mdx](docs/architecture/00-index.mdx) |
 | **AI architecture** | [ai/00-index.mdx](docs/ai/00-index.mdx) |
 | **Agent artifacts** | [18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx) |
 | **In-app** | [Docs](/docs) in Studio sidebar or http://localhost:3000/docs |
@@ -125,12 +125,16 @@ We use **agent artifacts** so "what is true now" and "what not to repeat" are ex
 | Command | When to run |
 |--------|-------------|
 | `pnpm dev` | Start Studio (default from repo root). Portal opens if keys missing. |
+| `pnpm dev:platform` | Start Platform (customer app, landing, docs). |
 | `pnpm build` | Build Studio (e.g. before deploy or to verify). |
 | `pnpm test` | Run tests (Studio). |
 | `pnpm payload:types` | After changing Payload collections. |
 | `pnpm env:portal` | Web UI for env setup and Vercel sync. |
 | `pnpm env:setup` | CLI env setup (manifest-driven). |
 | `pnpm env:doctor` | Check env drift. |
+| `pnpm forge-loop:progress` | Show lifecycle status and next action from `.planning`. |
+| `pnpm forge-loop:doctor` | Validate planning config/artifacts/git scope/legacy markers. |
+| `pnpm forge-loop:package:test` | Run package tests for `@forge/forge-loop`. |
 
 ---
 
@@ -139,7 +143,7 @@ We use **agent artifacts** so "what is true now" and "what not to repeat" are ex
 | Path | Purpose |
 |------|---------|
 | `apps/studio/` | Next.js app: App Shell, editors, Payload, Assistant UI. |
-| `packages/shared/` | Editor primitives: EditorShell, DockLayout, design tokens. |
+| `packages/shared/` | Editor primitives: EditorShell, EditorDockLayout, EditorDockPanel, design tokens. |
 | `packages/domain-forge/` | Forge domain logic, assistant contract, tools. |
 | `packages/assistant-runtime/` | LangGraph orchestrator, context assemblers, workflows, MCP adapters. |
 | `packages/ui/` | Shared shadcn UI atoms. |
@@ -153,7 +157,7 @@ We use **agent artifacts** so "what is true now" and "what not to repeat" are ex
 
 We expect every new contributor to **build their own workspace** and **submit a PR** to add it under `packages/shared/contributor_workspaces/`.
 
-1. Follow [05 - Building an editor](docs/how-to/05-building-a-workspace.mdx)
+1. Follow [05 - Building an editor](docs/how-to/05-building-an-editor.mdx)
 2. Implement your workspace (shell, slots, domain contract, optional AI actions)
 3. Open a PR with a subfolder under `contributor_workspaces/`
 
@@ -168,3 +172,4 @@ pnpm --filter @forge/consumer-example dev
 ```
 
 See `examples/consumer/README.md` for environment setup.
+

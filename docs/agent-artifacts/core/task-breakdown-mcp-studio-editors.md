@@ -6,7 +6,7 @@ updated: 2026-02-09
 
 # Task breakdown: MCP Studio and editors (chat-first)
 
-Initiative: **mcp-apps** (Studio and editors as MCP). See [product roadmap](../../roadmap/product.mdx) § Studio and editors as MCP, [07 - Editors as MCP Apps](../../architecture/07-modes-as-mcp-apps.mdx), [11 - MCP vs CopilotKit and assistant-ui](../../architecture/11-mcp-copilotkit-assistant-ui.mdx), [12 - MCP hosts and chat-first](../../architecture/12-mcp-hosts-and-chat-first.mdx).
+Initiative: **mcp-apps** (Studio and editors as MCP). See [product roadmap](../../roadmap/product.mdx) § Studio and editors as MCP, [04 - Editors as MCP Apps](../../architecture/04-editors-as-mcp-apps.mdx), [05 - Assistant UI architecture](../../architecture/05-assistant-ui-architecture.mdx).
 
 ## Lanes
 

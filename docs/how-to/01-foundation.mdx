@@ -1,49 +1,43 @@
 ---
 title: 01 - Foundation
-
-created: 2026-02-04
-updated: 2026-02-12
 ---
 
 # 01 - Foundation
 
-Repo structure, packages, and key concepts so you can run the app and navigate the codebase.
+Repo structure, packages, and key concepts. Run the app and navigate the codebase.
 
 ## Repo structure
 
-- **apps/studio/** - Next.js app: App Shell, editors, CopilotKit, Payload, API routes.
-- **packages/shared/** - Editor UI kit and headless contracts (`EditorShell`, `DockLayout`, toolbars, overlays).
-- **packages/domain-forge/** - Dialogue system (domain package): types, operations, Copilot contract (actions, context, suggestions).
-- **packages/ui/** - shadcn UI atoms (Button, Card, Dialog, etc.).
-- **packages/types/** - Payload-generated types and system/domain aliases (`ForgeGraphDoc`, etc.).
-- **docs/** - Documentation; how-tos live in `docs/how-to/`.
+| Path | Purpose |
+|------|---------|
+| `apps/studio/` | Next.js app: App Shell, Studio, editors, Payload, API routes |
+| `packages/shared/` | Editor UI kit: EditorShell, DockLayout, EditorToolbar, overlays, Assistant UI |
+| `packages/domain-forge/` | Dialogue domain: types, operations, assistant contract |
+| `packages/domain-character/` | Character domain: assistant contract |
+| `packages/ui/` | shadcn UI atoms |
+| `packages/types/` | Payload-generated types |
+| `docs/` | Documentation |
 
 ## Key concepts
 
-- **App Shell**: Owns editor tabs and the active editor. Only one editor is mounted at a time. See `apps/studio/components/AppShell.tsx` and `apps/studio/lib/app-shell/store.ts`.
-- **Editor**: A system-specific surface (Dialogue = graph, Video = timeline). Each uses `EditorShell` from shared and composes EditorHeader, EditorToolbar, DockLayout, EditorStatusBar, EditorOverlaySurface.
-- **System (domain package)**: Logic and Copilot contract for an editor (e.g. `packages/domain-forge`). Types come from `packages/types`.
+- **Studio** — Root component; owns registries (editor, menu, panel, settings). Host renders `AppProviders > AppShell > Studio`.
+- **Editor registry** — Editors register via `registerDefaultEditors()` in `apps/studio/lib/editor-registry/editor-bootstrap.ts`. Tabs and content come from registry.
+- **Editor** — Uses `EditorShell`, `EditorToolbar`, `EditorDockLayout`, `EditorStatusBar`, `EditorOverlaySurface`.
+- **Domain package** — Logic and assistant contract per editor (e.g. `packages/domain-forge`).
 
 ## Running the app
 
 ```bash
 pnpm install
-pnpm env:setup
 pnpm dev
 ```
 
-Env setup is manifest-driven:
+Env setup: `pnpm env:portal` or `pnpm env:setup`. After Payload collection changes: `pnpm payload:types`.
 
-- `pnpm env:sync:examples` regenerates `apps/studio/.env.example` and `apps/platform/.env.example`.
-- `pnpm env:setup -- --app studio|platform|all` creates/updates `.env.local` files interactively.
-- `pnpm env:doctor -- --app studio|platform|all --mode local|preview|production [--vercel]` checks drift and required keys (masked output).
-- `pnpm env:portal` opens the web UI for Studio + Platform + Vercel config.
-- `pnpm env:bootstrap` runs before `dev:studio` / `dev:platform`; when keys are missing, the portal opens.
+**Next:** [02 - Editor shell and slots](02-editor-shell)
 
-After changing Payload collections, run `pnpm payload:types`.
-
-## What the AI can do at this stage
-
-N/A - concepts only. No editor or agent wiring yet.
-
-**Next:** [02 - Editor shell and slots](02-workspace-shell.md)
+<Callout variant="note" title="For coding agents">
+File refs: `apps/studio/components/Studio.tsx`, `apps/studio/lib/editor-registry/editor-bootstrap.ts`, `apps/studio/lib/app-shell/store.ts`, `package.json`
+Related: onboarding/06-next-steps, how-to/05-building-an-editor
+Do not: Add manual editor branches in AppShell; use registry. Use pnpm not yarn
+</Callout>

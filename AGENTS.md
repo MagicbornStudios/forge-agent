@@ -5,11 +5,13 @@ updated: 2026-02-07
 
 # Forge Agent - Agent rules
 
-**New here?** Read this file, then [18-agent-artifacts-index](docs/18-agent-artifacts-index.mdx) and [19-coding-agent-strategy](docs/19-coding-agent-strategy.mdx). For **current work** use [STATUS](docs/agent-artifacts/core/STATUS.md) and [task-registry](docs/agent-artifacts/core/task-registry.md); for **what's broken** see [ISSUES](ISSUES.md).
+**New here?** Read this file, then [18-agent-artifacts-index](docs/18-agent-artifacts-index.mdx) and [19-coding-agent-strategy](docs/19-coding-agent-strategy.mdx). For **current work** use `.planning` artifacts first, then legacy snapshots in [STATUS](docs/agent-artifacts/core/STATUS.md) and [task-registry](docs/agent-artifacts/core/task-registry.md); for **what's broken** see [ISSUES](ISSUES.md).
 
 **User correction overrides agent assumptions:** When the user explicitly rejects a hypothesis or forbids a fix, stop. Do not re-implement it. Update [errors-and-attempts](docs/agent-artifacts/core/errors-and-attempts.md) so future agents find the correction. Push back once with evidence if needed; then defer.
 
 **Agent artifact index:** See [docs/18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx) for the full list of agent-only docs (agent-artifacts/core: STATUS, decisions, errors-and-attempts, tool-usage, compacting, standard-practices; all AGENTS.md). **Strategy and conventions:** [docs/19-coding-agent-strategy.mdx](docs/19-coding-agent-strategy.mdx). For **current state** and **failures**, read docs/agent-artifacts (index + core); for **granular "what can I do next?"** (small tasks by tier), see [task-registry](docs/agent-artifacts/core/task-registry.md) and [task-breakdown-system](docs/agent-artifacts/core/task-breakdown-system.md); for **known product/editor issues** (e.g. what's broken or locked), see [ISSUES.md](ISSUES.md); for **technical debt and refactors**, see [technical-debt-roadmap](docs/agent-artifacts/core/technical-debt-roadmap.md); for **area rules**, read this file and the relevant per-package AGENTS.md. Prefer **rg**/list_dir/Read to search and confirm - see [docs/agent-artifacts/core/tool-usage.md](docs/agent-artifacts/core/tool-usage.md). **Capabilities:** [SKILLS.md](SKILLS.md). **Human workflow and DoD:** [CONTRIBUTING.md](CONTRIBUTING.md) and [.github/pull_request_template.md](.github/pull_request_template.md).
+
+**Forge Loop lifecycle:** `.planning/` is the source of truth. Use `forge-loop` (`new-project`, `discuss-phase`, `plan-phase`, `execute-phase`, `verify-work`, `doctor`, `progress`, `sync-legacy`). Runtime is prompt-pack only (no provider SDK/API path required). Legacy files under `docs/agent-artifacts/core/*` are snapshot outputs, not primary planning storage.
 
 ## Scoped edits / .tmp
 
@@ -19,14 +21,14 @@ The `.tmp/` directory (and any path listed in .gitignore as agent-download/refer
 
 Owns **packages/shared/src/shared**: editor components, shared styles, and editor/selection/overlay/toolbar types (internal `shared/workspace`; consumed via `@forge/shared`).
 
-- **Loop**: Read **docs/agent-artifacts/core/STATUS.md** (see [18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx)) and **AGENTS.md** (root + `packages/shared/src/shared/AGENTS.md`) -> implement one vertical slice -> update STATUS (including **Ralph Wiggum loop**) and relevant AGENTS/README.
+- **Loop**: Follow `forge-loop` lifecycle from `.planning` artifacts, run `forge-loop doctor` before major phase runs, then run `forge-loop sync-legacy` to update snapshot sections in `docs/agent-artifacts/core/*`.
 - **Naming**: Use **EditorShell** for the declarative root (layout + slots). Do not introduce a separate "container" name for the same concept.
 - No imperative toolbar API; timeline is optional; no cross-domain imports in shared. Capabilities live in `packages/shared/src/shared/workspace/capabilities.ts` (contracts only).
 
 ## Studio and registries
 
-- **Studio** (`apps/studio/components/Studio.tsx`) is the single root: it owns all providers (Sidebar, StudioMenubarProvider, StudioSettingsProvider, OpenSettingsSheetProvider) and layout. The host renders `<Studio />`; **AppShell** is a thin wrapper that registers Copilot actions and renders Studio. **Registries** (editor, menu, panel, settings) follow one pattern: place components in the tree under a scope provider; they register on mount and unregister on unmount; consumers read from the store and filter by scope/context/target. **App shell store** (`apps/studio/lib/app-shell/store.ts`) remains canonical for route, activeProjectId, and UI state; Studio and editors consume it. Project switching lives in the tab bar; do not add editor-level project switchers.
-- **Agent layers**: (1) Shell: context (activeEditor, editorNames) and actions (switchEditor, openEditor, closeEditor). (2) Per-editor: domain contract when that editor is active. (3) Optional co-agents: see **docs/17-co-agents-and-multi-agent.mdx**.
+- **Studio** (`apps/studio/components/Studio.tsx`) is the single root: it owns all providers (Sidebar, StudioMenubarProvider, StudioSettingsProvider, OpenSettingsSheetProvider) and layout. The host renders `<Studio />`; **AppShell** is a thin wrapper that registers Assistant UI actions and renders Studio. **Registries** (editor, menu, panel, settings) follow one pattern: place components in the tree under a scope provider; they register on mount and unregister on unmount; consumers read from the store and filter by scope/context/target. **App shell store** (`apps/studio/lib/app-shell/store.ts`) remains canonical for route, activeProjectId, and UI state; Studio and editors consume it. Project switching lives in the tab bar; do not add editor-level project switchers.
+- **Agent layers**: (1) Shell: context (activeEditor, editorNames) and actions (switchEditor, openEditor, closeEditor). (2) Per-editor: domain contract when that editor is active. (3) Optional co-agents: see **docs/ai/05-agent-system.mdx** and **docs/ai/06-mcp-integration.mdx**.
 - **Do not repeat**: Before changing styling, model routing, or multi-editor registration, check **docs/agent-artifacts/core/errors-and-attempts.md** for known failures and fixes. For CopilotKit + OpenRouter use **OpenAI SDK** and **@ai-sdk/openai** with **baseURL** only; do not use `@openrouter/ai-sdk-provider`. See [errors-and-attempts.md](docs/agent-artifacts/core/errors-and-attempts.md) and [06-model-routing-and-openrouter.mdx](docs/architecture/06-model-routing-and-openrouter.mdx).
 
 ## Other agents
@@ -81,7 +83,7 @@ When touching editors (Dialogue, Character, Video, Strategy): use the shared she
 
 ## Persistence and data layer
 
-- **Read** `docs/agent-artifacts/core/decisions.md` and `docs/11-tech-stack.mdx` when changing persistence or the data layer (TanStack Query, Zustand drafts, API routes, localStorage).
+- **Read** `docs/agent-artifacts/core/decisions.md` and [how-to 01 - Foundation](docs/how-to/01-foundation.mdx) (stack overview) when changing persistence or the data layer (TanStack Query, Zustand drafts, API routes, localStorage).
 - **Update** those docs when making or rejecting a significant choice (e.g. adding a new backend, changing the client boundary).
 - **Keep one API boundary:** client talks only to our Next API routes; no direct Payload REST/GraphQL from the browser.
 - **API client:** Collection CRUD uses the **Payload SDK** (`lib/api-client/payload-sdk.ts`) against Payload REST. Custom endpoints use the **generated** client where it exists (Auth, Settings, Model, Ai), **manual client modules** in `lib/api-client/` (elevenlabs, media, workflows), or **vendor SDKs** (e.g. ElevenLabs server SDK in route handlers). Do not add raw `fetch` for `/api/*` in components, hooks, or stores - **extend the client** (add a new module under `lib/api-client/` or use a vendor SDK) instead. The OpenAPI/Swagger spec is for **documentation only** (no streaming support); do not direct agents to add new endpoints to the spec to get a client. Use the TanStack Query hooks in `apps/studio/lib/data/hooks/` for server state. Swagger UI at `/api-doc`, spec at `/api/docs`.

@@ -1,0 +1,39 @@
+---
+title: Agent artifacts index
+---
+
+# Agent artifacts index
+
+Files for AI/coding agents. Keep accurate and greppable.
+
+## Agent quick start
+
+- **Next:** Read [Coding agent strategy](19-coding-agent-strategy).
+- **Loop:** STATUS + AGENTS (root + area) → pick one slice → implement → update STATUS (Ralph Wiggum Done).
+
+## Living agent artifacts (core)
+
+- **[agent-artifacts/core/STATUS.md](agent-artifacts/core/STATUS.md)** — Current state, Ralph Wiggum loop, next steps. Granular tasks: [task-registry](agent-artifacts/core/task-registry.md).
+- **[agent-artifacts/core/task-registry.md](agent-artifacts/core/task-registry.md)** — Initiatives and quick picks.
+- **[agent-artifacts/core/decisions.md](agent-artifacts/core/decisions.md)** — Architecture decisions.
+- **[agent-artifacts/core/errors-and-attempts.md](agent-artifacts/core/errors-and-attempts.md)** — Known failures and fixes. **User correction overrides agent assumptions**—document and stop; do not re-implement.
+- **[agent-artifacts/core/tool-usage.md](agent-artifacts/core/tool-usage.md)** — rg, list_dir, Read; AGENT_SECTION grep.
+- **[agent-artifacts/core/styling-and-ui-consistency.md](agent-artifacts/core/styling-and-ui-consistency.md)** — Styling rules. See [how-to 26](how-to/26-styling-debugging-with-cursor).
+- **[ISSUES.md](../ISSUES.md)** (root) — Known product/editor issues.
+- **[AGENTS.md](../AGENTS.md)** (root) — Global agent rules.
+
+## Entrypoints
+
+Root AGENTS.md, README § Documentation, [index](index) § I'm a coding agent.
+
+## Search strategy
+
+Before retrying a failed approach, check [errors-and-attempts](agent-artifacts/core/errors-and-attempts.md). Grep `AGENT_SECTION` in docs for agent blocks.
+
+<details>
+<summary>For coding agents</summary>
+<!-- AGENT_SECTION -->
+File refs: `agent-artifacts/core/STATUS.md`, `agent-artifacts/core/task-registry.md`, `agent-artifacts/core/errors-and-attempts.md`, `agent-artifacts/core/tool-usage.md`
+Related: 19-coding-agent-strategy, root AGENTS.md
+Do not: Duplicate content; add plan docs to core (use archive)
+</details>

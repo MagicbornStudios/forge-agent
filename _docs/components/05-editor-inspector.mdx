@@ -1,0 +1,71 @@
+---
+title: EditorInspector
+---
+
+# EditorInspector
+
+Selection-driven properties panel. Shows context-sensitive forms based on current selection.
+
+**File:** `packages/shared/src/shared/components/editor/EditorInspector.tsx`
+
+## Overview
+
+- **Selection-driven** — Content changes with selection
+- **Conditional sections** — `section.when(selection)` predicate
+- **Type-safe** — Selection union from `packages/shared/src/shared/workspace/selection.ts`
+- **Border accent** — Visual indicator from context color
+
+## Selection types
+
+From `packages/shared/src/shared/workspace/selection.ts`:
+
+```ts
+export type Selection =
+  | { type: 'none' }
+  | SelectionEntity
+  | SelectionTextRange
+  | SelectionCanvasObject;
+
+export interface SelectionEntity {
+  type: 'entity';
+  entityType: string;  // e.g. 'forge.node', 'characters.cell'
+  id: string;
+  ref?: string;
+  meta?: Record<string, unknown>;
+}
+```
+
+## Basic usage
+
+```tsx
+<EditorInspector
+  selection={activeSelection}
+  sections={inspectorSections}
+/>
+```
+
+## Section definition
+
+```tsx
+const sections: InspectorSection[] = [
+  {
+    id: 'node-props',
+    when: (sel) => sel.type === 'entity' && sel.entityType === 'forge.node',
+    render: ({ selection }) => (
+      <NodeProperties id={selection.id} onUpdate={onUpdate} />
+    ),
+  },
+];
+```
+
+## Related
+
+- [DockPanel](03-dock-panel) — Inspector typically in right panel
+
+<details>
+<summary>For coding agents</summary>
+<!-- AGENT_SECTION -->
+File refs: `packages/shared/src/shared/components/editor/EditorInspector.tsx`, `packages/shared/src/shared/workspace/selection.ts`, `apps/studio/components/forge/ForgeInspectorSections.ts`
+Related: components/03-dock-panel, workspace/selection.ts
+Do not: Render inspector without selection; use section.when to filter; derive selection from domain store
+</details>

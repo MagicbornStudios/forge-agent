@@ -1,0 +1,74 @@
+---
+title: EditorOverlaySurface
+---
+
+# EditorOverlaySurface
+
+Declarative modal system for editors. Modals, drawers, popovers.
+
+**File:** `packages/shared/src/shared/workspace/overlays.ts`
+
+## Overview
+
+- **Declarative** — Define all overlays in one place
+- **Type-safe** — Payload types per overlay
+- **No registry** — Overlays scoped to editor
+- **Auto dismissal** — ESC, click-outside
+- **Size variants** — sm, md, lg, full
+
+## OverlaySpec
+
+```ts
+export interface OverlaySpec<P = Record<string, unknown>> {
+  id: string;
+  type: 'modal' | 'drawer' | 'popover';
+  title?: string;
+  size?: 'sm' | 'md' | 'lg' | 'full';
+  render: (props: { payload?: P; onDismiss: () => void }) => ReactNode;
+}
+```
+
+## Basic usage
+
+```tsx
+const overlays: OverlaySpec[] = [
+  {
+    id: 'create-node',
+    type: 'modal',
+    title: 'Create Node',
+    size: 'md',
+    render: ({ payload, onDismiss }) => (
+      <CreateNodeForm initialPos={payload} onDone={onDismiss} />
+    ),
+  },
+];
+
+<EditorOverlaySurface
+  overlays={overlays}
+  activeOverlay={activeOverlay}  // { id: 'create-node', payload?: {...} }
+  onDismiss={dismissOverlay}
+/>
+```
+
+## State pattern
+
+```tsx
+const [activeOverlay, setActiveOverlay] = useState<ActiveOverlay | null>(null);
+
+const openOverlay = (id: string, payload?: unknown) => {
+  setActiveOverlay({ id, payload });
+};
+const dismissOverlay = () => setActiveOverlay(null);
+```
+
+## Related
+
+- [EditorShell](01-editor-shell) — Overlay in EditorShell.Overlay slot
+
+<details>
+<summary>For coding agents</summary>
+<!-- AGENT_SECTION -->
+File refs: `packages/shared/src/shared/workspace/overlays.ts`, `packages/shared/src/shared/components/editor/EditorOverlaySurface.tsx`
+Related: components/01-editor-shell, domain-forge tools (openOverlay, createNodeOverlayId)
+Do not: Use global modal registry; overlays are editor-scoped; pass onDismiss to render
+</details>

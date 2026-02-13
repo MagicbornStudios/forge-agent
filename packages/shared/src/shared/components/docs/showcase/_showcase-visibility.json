@@ -1,0 +1,8 @@
+{
+  "internalOnly": [
+    "theme-switcher-demo",
+    "density-demo",
+    "codebase-agent-strategy-editor"
+  ]
+}
+

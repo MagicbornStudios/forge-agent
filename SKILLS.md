@@ -32,6 +32,8 @@ See root [AGENTS.md](AGENTS.md) § Persistence and data layer
 ### Testing expectations
 - Studio uses Jest
 - Run `pnpm test` before claiming work complete
+- Run `pnpm forge-loop:test` when touching loop lifecycle code
+- Run `pnpm forge-loop:doctor` before/after large loop refactors
 - `"N/A"` only allowed for docs/config/build-only changes (state reason in PR)
 
 ---
@@ -52,13 +54,10 @@ See root [AGENTS.md](AGENTS.md) § Persistence and data layer
 
 After finishing a slice:
 
-1. Update **STATUS → Ralph Wiggum Done**  
-   (or explain in PR why no update is needed)
+1. Update `.planning` artifacts with `forge-loop` (`execute-phase`, `verify-work`, `progress`, `doctor`)
 2. Update affected AGENTS/README if behavior changed
-3. Record time-wasting fixes in  
-   [errors-and-attempts](docs/agent-artifacts/core/errors-and-attempts.md)
-4. If AGENTS or core artifacts moved/added:  
-   update [18-agent-artifacts-index](docs/18-agent-artifacts-index.mdx) and root [AGENTS.md](AGENTS.md)
+3. Record time-wasting fixes in `.planning/ERRORS.md` and sync snapshots when needed
+4. If AGENTS or core artifacts moved/added: update [18-agent-artifacts-index](docs/18-agent-artifacts-index.mdx) and root [AGENTS.md](AGENTS.md)
 
 ---
 
@@ -78,3 +77,4 @@ After finishing a slice:
 - [Tool usage](docs/agent-artifacts/core/tool-usage.md) — how to search and navigate
 - [Decisions](docs/agent-artifacts/core/decisions.md) — architecture rules
 - [Errors and attempts](docs/agent-artifacts/core/errors-and-attempts.md) — avoid repeated mistakes
+

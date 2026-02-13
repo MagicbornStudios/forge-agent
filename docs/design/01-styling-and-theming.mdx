@@ -52,6 +52,10 @@ We drive density through CSS variables and `data-density`:
 
 **Themes:** Only two themes — **dark** and **light** — Spotify-inspired (near-black/white base, one green accent). `data-theme` applies only `light` or `dark`; no other theme blocks.
 
+<ShowcaseLink href="components/showcase/atoms#theme-density" label="View theme & density in Catalog">
+  Live demos for theme switcher and compact vs comfortable density.
+</ShowcaseLink>
+
 **Borders:** Prefer minimal full borders; use full borders only where it makes sense (e.g. inputs, dropdowns, modals). For cards and list items, prefer background separation or a single-edge accent; see [03 - Design language](03-design-language.mdx).
 
 **Primary tokens (compact)** in `packages/shared/src/shared/styles/themes.css`:
@@ -140,3 +144,9 @@ We use **four token layers**. Cascade order: `:root` → `[data-density]` → `[
 
 - Preserve focus rings and keyboard navigation (shadcn defaults).
 - Use `aria-label` for icon-only controls.
+
+<Callout variant="note" title="For coding agents">
+File refs: `packages/shared/src/shared/styles/themes.css`, `packages/ui/`, `packages/shared/src/shared/styles/contexts.css`
+Related: agent-artifacts/core/styling-and-ui-consistency, how-to/26-styling-debugging-with-cursor
+Do not: Use ad-hoc px/py; use design tokens; run screenshot automation
+</Callout>

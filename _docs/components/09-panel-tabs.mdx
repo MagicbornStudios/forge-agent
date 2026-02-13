@@ -1,0 +1,81 @@
+---
+title: PanelTabs
+---
+
+# PanelTabs
+
+Tab system for multi-mode panels. Icons, accent colors, controlled/uncontrolled.
+
+**File:** `packages/shared/src/shared/components/editor/PanelTabs.tsx`
+
+## Overview
+
+- **Icon support** — Per-tab icons
+- **Accent colors** — Active indicator color
+- **Controlled/uncontrolled** — `activeTabId` / `defaultTabId`
+- **Accessible** — Radix UI primitives
+- **Keyboard** — Arrow keys, Home, End
+
+## PanelTabDef
+
+```ts
+interface PanelTabDef {
+  id: string;
+  label: string;
+  icon?: React.ReactNode;
+  content: React.ReactNode;
+  accentColor?: string;
+  closable?: boolean;
+}
+```
+
+## Basic usage
+
+```tsx
+<PanelTabs
+  tabs={[
+    {
+      id: 'inspector',
+      label: 'Inspector',
+      icon: <ScanSearch size={12} />,
+      content: <EditorInspector selection={selection} sections={sections} />,
+    },
+    {
+      id: 'chat',
+      label: 'Chat',
+      icon: <MessageCircle size={12} />,
+      content: <DialogueAssistantPanel ... />,
+    },
+  ]}
+  defaultTabId="inspector"
+  onTabChange={setActiveTab}
+/>
+```
+
+## Controlled mode
+
+```tsx
+<PanelTabs
+  tabs={tabs}
+  activeTabId={activeTabId}
+  onTabChange={setActiveTabId}
+/>
+```
+
+## Used in EditorDockPanel
+
+```tsx
+<EditorDockPanel panelId="sidebar" tabs={tabDefs} defaultTabId="files" />
+```
+
+## Related
+
+- [DockPanel](03-dock-panel) — PanelTabs via `tabs` prop
+
+<details>
+<summary>For coding agents</summary>
+<!-- AGENT_SECTION -->
+File refs: `packages/shared/src/shared/components/editor/PanelTabs.tsx`, `packages/shared/src/shared/components/editor/DockPanel.tsx`
+Related: components/03-dock-panel
+Do not: Use custom tab implementations; PanelTabs is the standard
+</details>

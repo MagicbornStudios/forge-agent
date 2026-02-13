@@ -4,7 +4,7 @@ import * as React from 'react';
 import { usePanelRegistration } from './PanelRegistrationContext';
 import type { RailSide } from './PanelRegistrationContext';
 import { EditorPanel } from './EditorPanel';
-import type { RailPanelDescriptor } from './DockLayout';
+import type { RailPanelDescriptor } from './EditorDockLayout';
 import type { DockLayoutSlotIconKey } from './DockviewSlotTab';
 
 export interface EditorRailProps {
@@ -30,7 +30,7 @@ function extractDescriptors(children: React.ReactNode): RailPanelDescriptor[] {
   React.Children.forEach(children, (child) => {
     if (isEditorPanelChild(child)) {
       const { id, title, iconKey, children: content } = child.props;
-      list.push({ id, title, iconKey, content: content ?? null });
+      list.push({ id, title, icon: iconKey, content: content ?? null });
     }
   });
   return list;

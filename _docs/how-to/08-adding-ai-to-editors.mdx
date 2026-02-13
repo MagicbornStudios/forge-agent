@@ -1,0 +1,42 @@
+---
+title: 08 - Adding AI to editors
+---
+
+# 08 - Adding AI to editors
+
+System actions, app-level actions, agents. Architecture: [ai/00-index](../ai/00-index).
+
+## Overview
+
+- **Assistant UI** — One chat route: `POST /api/assistant-chat`. LangGraph or legacy stream.
+- **Context** — Shell (editor id, labels) + active domain contract when editor is mounted.
+- **Tools** — Domain tools (`forge_*`, `character_*`) + app-level if needed. Use consistent prefixes.
+
+## Adding domain tools
+
+1. Implement `DomainAssistantContract`: `getContextSnapshot()`, `getInstructions()`, `createTools()`, `getSuggestions()`, `onHighlight`, `clearHighlights`.
+2. In editor: `useDomainAssistant(contract, { enabled })` and `<DomainToolsRenderer contract={contract} enabled={enabled} />`.
+3. Mount chat panel (e.g. `DialogueAssistantPanel`) with `contract` and `toolsEnabled`.
+4. Reference: `packages/domain-forge/src/assistant/`, `packages/domain-character/src/assistant/`.
+
+## Adding app-level tools
+
+Register in the assistant runtime or route. Handlers can call internal APIs (`/api/image-generate`, etc.). Gate by capability; use `available: 'disabled'` when off.
+
+## Model routing
+
+OpenRouter is the model provider. See [architecture/03-model-routing-openrouter](../architecture/03-model-routing-openrouter). Model resolved per request.
+
+## Character voice (ElevenLabs)
+
+`ELEVENLABS_API_KEY` for TTS. Character forms use `/api/elevenlabs/voices` and `/api/elevenlabs/speech`.
+
+**Next:** Back to [00 - Index](00-index) or [24 - Vendoring](24-vendoring-third-party-code)
+
+<details>
+<summary>For coding agents</summary>
+<!-- AGENT_SECTION -->
+File refs: `apps/studio/app/api/assistant-chat/route.ts`, `packages/assistant-runtime/`, `packages/domain-forge/src/assistant/`
+Related: how-to/07-assistant-and-ai, ai/02-domain-integration
+Do not: Use CopilotKit; use Assistant UI and domain contracts
+</details>

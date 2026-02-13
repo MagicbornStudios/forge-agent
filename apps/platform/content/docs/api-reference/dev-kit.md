@@ -2,9 +2,7 @@
 title: "@forge/dev-kit"
 ---
 
-# @forge/dev-kit
-
-Convenience package that re-exports **@forge/shared** and **@forge/agent-engine**. UI atoms live in **@forge/ui** (or the `ui` namespace export from dev-kit).
+Convenience package that re-exports **@forge/dev-kit** and **@forge/agent-engine**. UI atoms live in **@forge/ui** (or the `ui` namespace export from dev-kit).
 
 ## Quick start
 
@@ -14,7 +12,7 @@ Convenience package that re-exports **@forge/shared** and **@forge/agent-engine*
 
 ## Editor styles
 
-For DockLayout/editor chrome styles, import once in your app CSS: `@import '@forge/dev-kit/styles/editor'` (or `@forge/shared/styles/editor`). Do not import dockview directly.
+For DockLayout/editor chrome styles, import once in your app CSS: `@import '@forge/dev-kit/styles/editor'` (or `@forge/dev-kit/styles/editor`). Do not import dockview directly.
 
 ## UI components
 

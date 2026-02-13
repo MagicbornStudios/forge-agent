@@ -1,0 +1,101 @@
+---
+title: DockLayout
+---
+
+# EditorDockLayout
+
+Resizable panel layout for editors. Built on [dockview](https://github.com/mathuo/dockview). Supports 2‑, 3‑, and 4‑pane layouts with persistence and viewport scoping.
+
+**File:** `packages/shared/src/shared/components/editor/DockLayout.tsx`
+
+## Overview
+
+- **Resizable panels** — Drag to resize
+- **Layout persistence** — localStorage or controlled state
+- **Slot composition** — `.Left`, `.Main`, `.Right`, `.Bottom`
+- **Config-driven rails** — Multi-panel tabs via `.Panel`
+- **Viewport scoping** — Settings resolution
+- **Dynamic panel visibility** — Show/hide without destroying state
+
+## Install
+
+```bash
+pnpm add @forge/shared dockview
+```
+
+```tsx
+import { EditorDockLayout } from '@forge/shared/components/editor';
+```
+
+## Basic usage: 2-pane
+
+```tsx
+<EditorDockLayout layoutId="my-editor" leftDefaultSize={20}>
+  <EditorDockLayout.Left>
+    <EditorDockPanel panelId="nav" title="Navigator">
+      {/* Left content */}
+    </EditorDockPanel>
+  </EditorDockLayout.Left>
+  <EditorDockLayout.Main>
+    <EditorDockPanel panelId="viewport" title="Viewport">
+      {/* Main content */}
+    </EditorDockPanel>
+  </EditorDockLayout.Main>
+</EditorDockLayout>
+```
+
+## 3-pane: Left | Main | Right
+
+```tsx
+<EditorDockLayout layoutId="three-pane" leftDefaultSize={20} rightDefaultSize={25}>
+  <EditorDockLayout.Left>...</EditorDockLayout.Left>
+  <EditorDockLayout.Main>...</EditorDockLayout.Main>
+  <EditorDockLayout.Right>...</EditorDockLayout.Right>
+</EditorDockLayout>
+```
+
+## Key props
+
+| Prop | Description |
+|------|-------------|
+| `layoutId` | Unique id for persistence. localStorage key: `dockview-${layoutId}` |
+| `viewport` | `{ viewportId, viewportType, viewportScope }` for settings |
+| `slots` | `{ left?, main?, right?, bottom? }` — `{ title, icon }` per slot |
+| `leftDefaultSize`, `rightDefaultSize`, `bottomDefaultSize` | Panel sizes (percent) |
+| `layoutJson`, `onLayoutChange`, `clearLayout` | Controlled mode |
+| `onPanelClosed` | Called when user closes a panel |
+
+## Multi-panel rails
+
+Use `.Panel` for tabbed panels:
+
+```tsx
+<EditorDockLayout.Left>
+  <EditorDockLayout.Panel id="graphs" title="Graphs" icon={<BookOpen size={14} />}>
+    {/* Graphs list */}
+  </EditorDockLayout.Panel>
+  <EditorDockLayout.Panel id="nodes" title="Nodes" icon={<Boxes size={14} />}>
+    {/* Node palette */}
+  </EditorDockLayout.Panel>
+</EditorDockLayout.Left>
+```
+
+## Reset layout
+
+```tsx
+const layoutRef = useRef<DockLayoutRef>(null);
+layoutRef.current?.resetLayout();
+```
+
+## Related
+
+- [DockPanel](03-dock-panel)
+- [EditorShell](01-editor-shell)
+
+<details>
+<summary>For coding agents</summary>
+<!-- AGENT_SECTION -->
+File refs: `packages/shared/src/shared/components/editor/DockLayout.tsx`, `apps/studio/components/editors/CharacterEditor.tsx`, `apps/studio/components/editors/DialogueEditor.tsx`
+Related: components/03-dock-panel, STATUS § UI-first dock layout, errors-and-attempts § Panel registry recursion
+Do not: Use imperative setRailPanels/panel-registry; use UI-first slot children. When panel content becomes null use panel.api.close() to reclaim space
+</details>

@@ -6,6 +6,19 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    date: '2026-02-12',
+    version: '0.3.0',
+    highlights: [
+      'LangGraph chat infrastructure: @forge/assistant-runtime, Forge/Character workflows, MCP adapters.',
+      'CopilotKit fully removed; domain contracts, tools, Assistant UI primary; model switcher stable.',
+      'Platform docs overhaul: audience nav, full component catalog, slug redirects, platform-docs-doctor.',
+      'Platform API decomposition, dashboard auth, org model, storage metering, API keys with AI attribution.',
+      'Env DX: manifest, portal, bootstrap, Vercel sync.',
+      'Studio: AppProviders consolidation, settings rail UX, panel hide reclaims space.',
+      'Docs migration: cutover to new structure, agent artifacts updated.',
+    ],
+  },
+  {
     date: '2026-02-07',
     version: '0.2.0',
     highlights: [

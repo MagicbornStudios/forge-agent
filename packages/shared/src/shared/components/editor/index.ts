@@ -24,7 +24,7 @@ export {
   DockLayout,
   RIGHT_INSPECTOR_PANEL_ID,
   RIGHT_SETTINGS_PANEL_ID,
-} from './DockLayout';
+} from './EditorDockLayout';
 export type {
   DockLayoutProps,
   DockLayoutViewport,
@@ -32,10 +32,10 @@ export type {
   DockLayoutRef,
   DockLayoutPanelProps,
   RailPanelDescriptor,
-} from './DockLayout';
+} from './EditorDockLayout';
 
-export { EditorDockPanel, DockPanel } from './DockPanel';
-export type { DockPanelProps } from './DockPanel';
+export { EditorDockPanel, DockPanel } from './EditorDockPanel';
+export type { DockPanelProps } from './EditorDockPanel';
 
 export { PanelTabs } from './PanelTabs';
 export type { PanelTabDef, PanelTabsProps } from './PanelTabs';

@@ -1,0 +1,71 @@
+---
+title: 25 - Verdaccio and local registry
+---
+
+# 25 - Verdaccio and local registry
+
+Local npm registry for publishing `@forge/*` and `@twick/*` to consumer repos without public npm.
+
+## Quick launch
+
+From repo root:
+
+```bash
+pnpm install
+pnpm registry:start
+```
+
+Verdaccio runs at **http://localhost:4873**. Config: [verdaccio.yaml](../../verdaccio.yaml).
+
+## Login (for publish)
+
+```bash
+npm adduser --registry http://localhost:4873 --auth-type=legacy
+```
+
+Non-interactive:
+
+```bash
+pnpm dlx npm-cli-login -u forge -p forge -e forge@local.dev -r http://localhost:4873
+```
+
+**E409 Conflict:** Username already in `verdaccio/storage/htpasswd`. Fix: `npm login --registry http://localhost:4873 --auth-type=legacy` or reset htpasswd (see doc).
+
+## Reset registry user
+
+```bash
+rm -f verdaccio/storage/htpasswd
+pnpm registry:start
+npm adduser --registry http://localhost:4873 --auth-type=legacy
+```
+
+## Publish flow
+
+1. Start Verdaccio
+2. Build: `pnpm registry:forge:build`
+3. Publish: `pnpm registry:forge:publish:local`
+
+Twick: [24 - Vendoring](24-vendoring-third-party-code) for Twick build + publish.
+
+## Consume from another repo
+
+1. **`.npmrc`** in consumer root:
+
+```ini
+@forge:registry=http://localhost:4873
+@twick:registry=http://localhost:4873
+```
+
+2. **`package.json`**: add `"@forge/dev-kit": "^0.1.0"`
+3. **Install:** Verdaccio running, then `pnpm install`
+4. Import: `EditorShell`, `DockLayout`, etc. from `@forge/dev-kit`
+
+**Next:** [26 - Styling debugging with Cursor](26-styling-debugging-with-cursor)
+
+<details>
+<summary>For coding agents</summary>
+<!-- AGENT_SECTION -->
+File refs: `verdaccio.yaml`, package.json scripts `registry:start`, `registry:forge:build`, `registry:forge:publish:local`
+Related: how-to/24-vendoring-third-party-code, how-to/05-building-an-editor
+Do not: Publish to npm before local testing; E409 fix documented above
+</details>

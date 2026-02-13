@@ -26,6 +26,7 @@ import { useEditorStore } from '@/lib/app-shell/store';
 import { EDITOR_VIEWPORT_IDS } from '@/lib/app-shell/editor-metadata';
 import { CHAT_PANEL_ID } from '@/lib/editor-registry/constants';
 import { DialogueAssistantPanel } from '@/components/editors/dialogue/DialogueAssistantPanel';
+import { YarnPanel, YARN_PANEL_ID } from '@/components/editors/dialogue/YarnPanel';
 import { ModelSwitcher } from '@/components/model-switcher';
 import { useEditorPanelVisibility } from '@/lib/app-shell/useEditorPanelVisibility';
 import { useSettingsStore } from '@/lib/settings/store';
@@ -66,6 +67,7 @@ import {
   BookOpen,
   Boxes,
   Code,
+  FileCode,
   FilePlus2,
   FileText,
   GitBranch,
@@ -407,6 +409,9 @@ export function DialogueEditor() {
   ) as boolean | undefined;
   const showChatPanel = useSettingsStore((s) =>
     s.getSettingValue('panel.visible.dialogue-chat', { editorId, viewportId }),
+  ) as boolean | undefined;
+  const showYarnPanel = useSettingsStore((s) =>
+    s.getSettingValue('panel.visible.dialogue-yarn', { editorId, viewportId }),
   ) as boolean | undefined;
   const showBottomPanel = useSettingsStore((s) =>
     s.getSettingValue('panel.visible.dialogue-bottom', { editorId, viewportId }),
@@ -1230,6 +1235,13 @@ export function DialogueEditor() {
     return headers;
   }, [activeScope, editorId, langGraphEnabled, projectId]);
 
+  const yarnContent =
+    showYarnPanel === false ? undefined : (
+      <div className="h-full min-h-0">
+        <YarnPanel graph={activeGraph} graphId={activeGraph?.id ?? null} />
+      </div>
+    );
+
   const chatContent =
     showChatPanel === false ? undefined : (
       <div className="h-full min-h-0">
@@ -1329,6 +1341,9 @@ export function DialogueEditor() {
             <EditorDockLayout.Right>
               <EditorDockLayout.Panel id="right" title="Inspector" icon={<ScanSearch size={14} />}>
                 {inspectorContent}
+              </EditorDockLayout.Panel>
+              <EditorDockLayout.Panel id={YARN_PANEL_ID} title="Yarn" icon={<FileCode size={14} />}>
+                {yarnContent}
               </EditorDockLayout.Panel>
               <EditorDockLayout.Panel id={CHAT_PANEL_ID} title="Chat" icon={<MessageCircle size={14} />}>
                 {chatContent}

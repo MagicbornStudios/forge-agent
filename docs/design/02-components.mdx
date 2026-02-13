@@ -74,6 +74,8 @@ import {
 - **Item / ItemGroup** - list rows and compact summaries (e.g. patch preview items).
 - **Form / FormField / FormItem** - React Hook Form helpers (see `CreateNodeModal` for the canonical pattern).
 
+<ShowcaseLink href="components/showcase/atoms" label="View atoms in Catalog" />
+
 ---
 
 ## Molecules (`@forge/shared`)
@@ -104,7 +106,7 @@ Editors use **DockLayout** (Dockview) for Unreal-style docking: drag-to-reorder,
 ### Gating + AI
 
 - `FeatureGate` (lock/hide/disable)
-- `useDomainCopilot`, `DomainCopilotContract`
+- `useDomainAssistant`, `DomainAssistantContract`
 - `PlanCard`, `PlanActionBar` (generative UI in chat)
 - `CodebaseAgentStrategyEditor` (assistant-ui strategy editor)
 
@@ -125,9 +127,12 @@ Use `ComponentPreview` to render registry examples inside docs.
 
 ## Organisms (app + domain)
 
-These live in the **app repo** and are not published.
+These live in the **app repo** and are not published. Full editors and Studio shell.
 
 - `AppShell` - editor tabs + active editor routing.
+
+<ShowcaseLink href="components/showcase/organisms" label="View organisms in Catalog" />
+
 - `DialogueEditor` - React Flow editor + AI workflow panel.
 - `VideoEditor` - Twick editor surface + AI contract.
 - `StrategyEditor` - CodebaseAgentStrategyEditor with tool UI.
@@ -207,3 +212,9 @@ To add a new shadcn registry or install components from a registry (e.g. `@lucid
 - **Atoms:** import from `@forge/ui`.
 - **Editor shell + AI helpers:** import from `@forge/dev-kit` (or `@forge/shared`).
 - **Domain logic:** stays in your app/system package - not in the shared layer.
+
+<Callout variant="note" title="For coding agents">
+File refs: `packages/ui/`, `packages/shared/`, `apps/studio/components/`
+Related: design/01-styling-and-theming, components/00-index
+Do not: Use useDomainCopilot; use useDomainAssistant
+</Callout>

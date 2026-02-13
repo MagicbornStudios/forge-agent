@@ -1,0 +1,55 @@
+---
+title: Components
+---
+
+# Components
+
+Editor primitives from `@forge/shared` and Studio settings. Build professional editors with EditorShell, DockLayout, DockPanel, and more.
+
+## Core editor components
+
+| # | Component | Description |
+|---|-----------|-------------|
+| [01](01-editor-shell) | EditorShell | Root container; theme, density, domain, slots |
+| [02](02-dock-layout) | DockLayout | Resizable panels; Left, Main, Right, Bottom |
+| [03](03-dock-panel) | DockPanel | Panel wrapper; title bar, scroll, tabs |
+| [04](04-editor-toolbar) | EditorToolbar | Toolbar with menubar, buttons, groups |
+| [05](05-editor-inspector) | EditorInspector | Selection-driven properties panel |
+| [06](06-editor-overlay) | EditorOverlaySurface | Modals, drawers, popovers |
+
+## Settings
+
+| # | Component | Description |
+|---|-----------|-------------|
+| [07](07-settings-panel) | SettingsPanel | Data-driven settings with scope inheritance |
+| [08](08-settings-field) | SettingsField | Individual field with store integration |
+
+## Panels
+
+| # | Component | Description |
+|---|-----------|-------------|
+| [09](09-panel-tabs) | PanelTabs | Tab system for multi-mode panels |
+
+## Quick start
+
+```tsx
+import {
+  EditorShell,
+  EditorToolbar,
+  EditorDockLayout,
+  EditorDockPanel,
+  EditorStatusBar,
+} from '@forge/shared/components/editor';
+
+<EditorShell editorId="my-editor" title="My Editor">
+  <EditorToolbar>...</EditorToolbar>
+  <EditorDockLayout layoutId="my-layout">
+    <EditorDockLayout.Main>
+      <EditorDockPanel panelId="main" title="Viewport">
+        <MyContent />
+      </EditorDockPanel>
+    </EditorDockLayout.Main>
+  </EditorDockLayout>
+  <EditorStatusBar>Ready</EditorStatusBar>
+</EditorShell>
+```

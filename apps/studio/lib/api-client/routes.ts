@@ -25,6 +25,7 @@ export const API_ROUTES = {
   // AI
   FORGE_PLAN: '/api/forge/plan',
   FORGE_STORY_BUILDER: '/api/forge/story-builder',
+  FORGE_YARN_EXPORT: '/api/forge/yarn-export',
   IMAGE_GENERATE: '/api/image-generate',
   STRUCTURED_OUTPUT: '/api/structured-output',
 

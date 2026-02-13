@@ -2,8 +2,6 @@
 title: Features
 ---
 
-# Features
-
 ## Unified editor shell
 
 One app shell hosts multiple editors. Each editor has its own surface (graph, timeline, etc.) and system logic. Only the active editor is rendered, so you get a focused experience without losing the ability to switch context.

@@ -1,0 +1,19 @@
+{
+  "name": "@forge/forge-loop",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "bin": {
+    "forge-loop": "./src/cli.mjs"
+  },
+  "files": [
+    "src",
+    "docs",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "node -e \"console.log('forge-loop: no build step (source-distributed mjs)')\"",
+    "test": "node --test \"src/__tests__/*.test.mjs\"",
+    "publish": "npm publish"
+  }
+}

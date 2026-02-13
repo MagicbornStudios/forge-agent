@@ -20,6 +20,10 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
+      "@forge/shared": ["../../packages/shared/src/index.ts"],
+      "@forge/shared/*": ["../../packages/shared/src/shared/*"],
+      "@forge/ui": ["../../packages/ui/src/index.ts"],
+      "@forge/ui/*": ["../../packages/ui/src/components/ui/*", "../../packages/ui/src/*"],
       "fumadocs-mdx:collections/*": ["./.source/*"],
       "~/*": ["./public/*"]
     }

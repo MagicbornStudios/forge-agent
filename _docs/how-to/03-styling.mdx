@@ -1,0 +1,31 @@
+---
+title: 03 - Styling and theming
+---
+
+# 03 - Styling and theming
+
+Design tokens, editor themes, and where UI atoms live.
+
+## Design tokens
+
+Semantic tokens in `packages/shared/src/shared/styles/themes.css`:
+`--background`, `--foreground`, `--border`, `--muted`, etc. Prefer these over raw colors.
+
+## Theme
+
+- **App theme** — `ui.theme` (settings) + `AppThemeProvider`; sets `<html data-theme="...">`. File: `apps/studio/components/providers/AppThemeProvider.tsx`
+- **Editor override** — `EditorShell` accepts `theme`; sets `data-theme` on editor root
+
+## UI atoms
+
+From `packages/ui`: `@forge/ui/button`, `@forge/ui/card`, `@forge/ui/dialog`, etc. Add via `npx shadcn@latest add <name>` in the UI package.
+
+**Next:** [04 - Data and state](04-data-and-state)
+
+<details>
+<summary>For coding agents</summary>
+<!-- AGENT_SECTION -->
+File refs: `packages/shared/src/shared/styles/themes.css`, `apps/studio/app/globals.css`, `packages/ui/`
+Related: design/01-styling-and-theming, styling-and-ui-consistency
+Do not: Add `* { padding: 0 }` or `* { margin: 0 }`; strips default padding from buttons/labels
+</details>

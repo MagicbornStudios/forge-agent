@@ -1,0 +1,51 @@
+---
+title: 02 - Editor shell and slots
+---
+
+# 02 - Editor shell and slots
+
+Every editor uses the same surfaces. Composition only; no data binding in this guide.
+
+## Shared components
+
+From `packages/shared/src/shared/components/editor/`:
+
+| Component | Purpose |
+|-----------|---------|
+| EditorShell | Root; `editorId`, `title`, `domain`, `theme`, `density` |
+| EditorToolbar | `.Left`, `.Right`, `.Center`, `.Group`, `.Button`, `.Menubar` |
+| EditorDockLayout | Slots: `.Left`, `.Main`, `.Right`, `.Bottom` |
+| EditorDockPanel | Panel wrapper; title, tabs, scrollable |
+| EditorStatusBar | Footer strip |
+| EditorOverlaySurface | `overlays`, `activeOverlay`, `onDismiss` |
+
+## Minimal shell
+
+```tsx
+<EditorShell editorId="my-editor" title="My Editor" domain="my">
+  <EditorToolbar>
+    <EditorToolbar.Left><span>My Editor</span></EditorToolbar.Left>
+  </EditorToolbar>
+  <EditorDockLayout layoutId="my-layout">
+    <EditorDockLayout.Main>
+      <EditorDockPanel panelId="main" title="Main">
+        Main content
+      </EditorDockPanel>
+    </EditorDockLayout.Main>
+  </EditorDockLayout>
+  <EditorStatusBar>Ready</EditorStatusBar>
+  <EditorOverlaySurface overlays={[]} activeOverlay={null} onDismiss={() => {}} />
+</EditorShell>
+```
+
+Reference: `apps/studio/components/editors/DialogueEditor.tsx`, `CharacterEditor.tsx`.
+
+**Next:** [03 - Styling and theming](03-styling)
+
+<details>
+<summary>For coding agents</summary>
+<!-- AGENT_SECTION -->
+File refs: `packages/shared/src/shared/components/editor/EditorShell.tsx`, `packages/shared/src/shared/components/editor/DockLayout.tsx`, `apps/studio/components/editors/DialogueEditor.tsx`
+Related: components/01-editor-shell, components/02-dock-layout
+Do not: Use WorkspaceShell or legacy workspace components
+</details>

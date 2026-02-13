@@ -1,0 +1,65 @@
+---
+title: SettingsField
+---
+
+# SettingsField
+
+Individual settings field with auto-rendering, custom controls, settings store integration.
+
+**File:** `apps/studio/components/settings/SettingsField.tsx`
+
+## Overview
+
+- **Auto-rendering** — Control type from field type
+- **Custom controls** — Render prop for custom input
+- **Store integration** — Binds to hierarchical settings store
+- **Inheritance** — Shows override badge, reset
+
+## Basic usage
+
+```tsx
+import { SettingsField } from '@/components/settings/SettingsField';
+import { SettingsSection } from '@/components/settings/SettingsSection';
+
+<SettingsSection scope="editor" scopeId="dialogue">
+  <SettingsField
+    fieldKey="ai.agentName"
+    label="Agent Name"
+    type="text"
+    placeholder="Enter name"
+  >
+    <Input />
+  </SettingsField>
+
+  <SettingsField
+    fieldKey="ai.autoSuggest"
+    label="Auto Suggestions"
+    type="toggle"
+  >
+    <Switch />
+  </SettingsField>
+</SettingsSection>
+```
+
+## Key props
+
+| Prop | Description |
+|------|-------------|
+| `fieldKey` | Setting key (e.g. `ai.agentName`) |
+| `label` | Field label |
+| `type` | `text`, `toggle`, `select`, etc. |
+| `description` | Help text |
+| `default` | Default when not overridden |
+
+## Related
+
+- [SettingsPanel](07-settings-panel)
+- [SettingsSection](apps/studio/components/settings/SettingsSection.tsx)
+
+<details>
+<summary>For coding agents</summary>
+<!-- AGENT_SECTION -->
+File refs: `apps/studio/components/settings/SettingsField.tsx`, `apps/studio/components/settings/SettingsSection.tsx`, `apps/studio/lib/settings/store.ts`
+Related: components/07-settings-panel, styling-and-ui-consistency § Form controls
+Do not: Return null from SettingsField/SettingsSection; they render. Use controlledCategory when inner tabs need to update
+</details>

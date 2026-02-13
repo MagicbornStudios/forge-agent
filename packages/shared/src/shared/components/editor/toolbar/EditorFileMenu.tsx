@@ -28,7 +28,7 @@ export type EditorFileMenuItem =
 export interface EditorFileMenuProps {
   items: EditorFileMenuItem[];
   trigger?: React.ReactNode;
-  tooltip?: React.ReactNode;
+  tooltip?: string;
 }
 
 function isSeparator(item: EditorFileMenuItem): item is { id: string; type: 'separator' } {

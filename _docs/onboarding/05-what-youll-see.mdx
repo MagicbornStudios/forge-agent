@@ -1,0 +1,36 @@
+---
+title: What you'll see
+---
+
+# What you'll see
+
+When Studio is running, you'll see:
+
+## Studio UI
+
+- **Project switcher** — Top-left; switch or create projects
+- **Editor tabs** — Dialogue, Character (and others when enabled)
+- **Main area** — Active editor (graph, timeline, inspector content)
+- **Right rail** — Inspector (selection properties) and Chat (Assistant UI)
+- **Docs** — In-app docs at [http://localhost:3000/docs](http://localhost:3000/docs): how-tos, architecture, AI
+
+## Editors
+
+- **Dialogue** — Dual narrative/storylet graphs per project; React Flow; AI plan-execute-review-commit
+- **Character** — Relationship graph, drag-drop characters, AI assistant
+- **Video** (locked) — Timeline UI; not MVP
+- **Strategy** (locked) — Codebase agent; not MVP
+
+## Key files
+
+- `apps/studio/components/Studio.tsx` — Root component; registries for editors, menus, panels
+- `apps/studio/registry/__index__.tsx` — Default editor registration
+- `packages/shared/src/shared/components/editor/` — EditorShell, DockLayout, DockPanel
+
+<details>
+<summary>For coding agents</summary>
+<!-- AGENT_SECTION -->
+File refs: `apps/studio/components/Studio.tsx`, `apps/studio/registry/__index__.tsx`, `apps/studio/lib/app-shell/editor-metadata.ts`, `packages/shared/src/shared/components/editor/`
+Related: STATUS § Studio, components/01-editor-shell, how-to/05-building-an-editor
+Do not: Add editor tabs manually in AppShell; use registry. Do not assume Video or Strategy are enabled
+</details>

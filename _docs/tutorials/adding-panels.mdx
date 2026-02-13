@@ -1,0 +1,40 @@
+---
+title: Adding panels
+---
+
+# Tutorial: Adding panels to your editor
+
+Multi-panel layout: navigator, main canvas, inspector, output.
+
+## Step 1: Basic 2-pane
+
+```tsx
+import { EditorShell, EditorToolbar, EditorInspector, EditorStatusBar } from '@forge/shared';
+
+<EditorShell>
+  <EditorToolbar>...</EditorToolbar>
+  <div className="flex flex-1 min-h-0">
+    <div className="flex-1">Canvas</div>
+    <EditorInspector selection={selection}>...</EditorInspector>
+  </div>
+  <EditorStatusBar>Ready</EditorStatusBar>
+</EditorShell>
+```
+
+## Step 2: DockLayout
+
+Use `DockLayout` and `DockPanel` for left/main/right. See [components/02-dock-layout](../components/02-dock-layout) and [components/03-dock-panel](../components/03-dock-panel).
+
+## Step 3: Panel tabs
+
+`PanelTabs` within a panel for multiple views. See [components/09-panel-tabs](../components/09-panel-tabs).
+
+**Next:** [AI integration](ai-integration)
+
+<details>
+<summary>For coding agents</summary>
+<!-- AGENT_SECTION -->
+File refs: `packages/shared/`, `EditorDockLayout`, `EditorDockPanel`
+Related: how-to/02-editor-shell, components/02-dock-layout
+Do not: Use ad-hoc layout; extend via DockLayout slots
+</details>
