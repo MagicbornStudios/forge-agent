@@ -6,7 +6,7 @@ Initial roadmap for Forge Loop lifecycle adoption.
 
 ## Phases
 
-- [ ] **Phase 01: Forge Loop bootstrap** - Establish lifecycle command baseline
+- [x] **Phase 01: Forge Loop bootstrap** - Establish lifecycle command baseline
 
 ## Phase Details
 
