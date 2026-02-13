@@ -14,6 +14,14 @@ When changing persistence or the data layer, read this file and **docs/11-tech-s
 
 ---
 
+## Documentation structure: showcase model, env reference, settings codegen
+
+**Decision:** Docs use a showcase model (atoms → molecules → organisms), environment variables reference from manifest, and settings codegen from tree-as-source. Structure: onboarding → showcase → how-to → architecture → reference. DocLink expects `.mdx`; hash anchors for sections.
+
+**Rationale:** Single source of truth for env (manifest), settings (tree + codegen), and components (showcase). Agents follow [docs-building](docs-building.md) when adding components, env vars, or settings.
+
+---
+
 ## Client boundary: Payload REST for CRUD, custom routes for app ops
 
 **Decision:** For collection CRUD (forge-graphs, video-docs), the client uses the **Payload SDK** against Payload's auto-generated REST API (`/api/forge-graphs`, `/api/video-docs`). For app-specific operations (auth shape, settings upsert, AI, model config, SSE), the client uses our **custom Next API routes** and the generated or manual client (e.g. `/api/me`, `/api/settings`, `/api/forge/plan`, `workflows.ts` for SSE).
@@ -519,3 +527,11 @@ AI routes require either authenticated session or valid API key with required sc
 - **FormField-within-Form style:** SettingsSection, EditorMenubarContribution only work inside the correct provider; document in README and AGENTS.
 
 **Rationale:** Single source of truth for panels, settings sections, and menubar; no duplicated panel/section lists; View menu and layout stay in sync; new editors add declarative components instead of editing global config.
+
+<!-- forge-loop:generated:start -->
+## Forge Loop Snapshot
+
+# Decisions
+
+No decisions recorded yet.
+<!-- forge-loop:generated:end -->

@@ -32,8 +32,8 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 - **Studio**: AppProviders owns the full shell (SidebarProvider, Settings sidebar, OpenSettingsSheetProvider, StudioMenubarProvider). Studio is content-only (tabs, editor content, sheets, toaster). Host renders AppProviders > AppShell > Studio. Editor registry (defaults on components, bootstrap at load), menu registry (tree-based, scope/context/target), panel and settings registries unchanged. Chat is in the right-rail Chat panel only; no Cmd+K popup. Help menu: Welcome, About.
 - **Consumer example**: `examples/consumer` shows a minimal Next app using `@forge/dev-kit` and `CodebaseAgentStrategyEditor` with `/api/assistant-chat`.
 - **Docs**: Studio docs use the shared docs shell (`DocsLayoutShell`) with headless Fumadocs source (serialized page tree + custom MDX components). Runtime Fumadocs layout/page imports are disabled on the current stack.
-- **Dialogue editor**: Dual narrative/storylet graphs per project with shared chrome (DockLayout dockable panels, PanelTabs). Right rail: Inspector + Chat (DialogueAssistantPanel). Project is selected at app level (see below). Yarn Spinner integration planned (export/import `.yarn` files, syntax preview, variable tracking).
-- **Editors as MCP Apps**: Architecture defined; each editor exposable as MCP App (tool + UI resource) for external hosts. See [07 - Editors as MCP Apps](../../architecture/07-modes-as-mcp-apps.mdx).
+- **Dialogue editor**: Dual narrative/storylet graphs per project with shared chrome (DockLayout dockable panels, PanelTabs). Right rail: Inspector, Yarn (Monaco preview + Download), Chat (DialogueAssistantPanel). Project is selected at app level (see below). Yarn Spinner: `@forge/yarn-converter`; `POST /api/forge/yarn-export` for full export with storylet/detour resolution; Monaco panel for preview; Download button for resolved .yarn file.
+- **Editors as MCP Apps**: Architecture defined; each editor exposable as MCP App (tool + UI resource) for external hosts. See [04 - Editors as MCP Apps](../../architecture/04-editors-as-mcp-apps.mdx).
 - **Character editor**: Aligned chrome with tabbed sidebar and node palette; drag-drop creates characters. Project is selected at app level.
 - **Forge graphs**: Collection includes `project` and `kind` fields; types regenerated.
 - **Payload + types**: Collections in `apps/studio/payload/collections`: users, organizations, organization-memberships, projects, listings, licenses, ai-usage-events, api-keys, storage-usage-events, enterprise-requests, forge-graphs, video-docs, settings-overrides, agent-sessions, waitlist, newsletter-subscribers, promotions. Custom API routes include `POST /api/waitlist`, `POST /api/newsletter`, `GET /api/promotions`, and org/financial routes used by platform. Types in `packages/types/src/payload-types.ts`.
@@ -42,11 +42,22 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 
 ## Ralph Wiggum loop
 
+- Done (2026-02-12): Yarn Spinner migration slice: extended `packages/types` (STORYLET, DETOUR, conditionalBlocks, storyletCall, ForgeChoice.conditions, etc.); created `packages/yarn-converter` (exportToYarn, importFromYarn, handlers, createPayloadGraphContext); added `POST /api/forge/yarn-export`; Yarn panel in DialogueEditor (Monaco preview, Download for full server-side export). Source: dialogue-forge `packages/forge/src/lib/yarn-converter`. Migration docs: `dialogue-forge/docs/plans/migration-forge-agent`.
+- Done (2026-02-11): MDX agent blocks and formatting fix: Replaced raw `<details><summary>` with `<Callout variant="note" title="For coding agents">` across 50+ docs to fix "Unexpected character !" build error. Removed inline QuickNav `items={[...]}` (acorn parse errors); use export const or omit. Updated docs-building, tool-usage, errors-and-attempts.
+- Done (2026-02-11): Documentation depth and navigation plan: Phase 1 QuickNav + ShowcaseLink MDX components; Phase 2 Catalog expansion (theme-switcher, density, settings-panel, assistant-panel, plan-card demos; atoms/molecules/organisms QuickNav + sections); Phase 3 Onboarding 03 consolidation (300+ lines); Phase 5 Design ShowcaseLink pattern; Phase 4 AI how-tos 07/08 expansion (350+/300+ lines); Phase 6 Studio vs Platform guide; Phase 7 Product/roadmap lean; Phase 8 building-studio/05 QuickNav, 03/04 to 60+; Phase 9 docs-building + agent strategy updates.
+- Done (2026-02-12): Platform docs component route fix: flat component URLs like `/docs/components/accordion` were 404 because generated docs are nested by category (`/docs/components/atoms/*`, `/docs/components/editor/*`, `/docs/components/assistant-ui/*`, `/docs/components/tool-ui/*`). Added router-level slug resolution in `apps/platform/src/app/docs/[[...slug]]/page.tsx` to redirect flat component routes to canonical category pages with deterministic precedence (atoms -> editor -> assistant-ui -> tool-ui). Validation: `pnpm build:platform` passes.
+
+- Done (2026-02-12): Platform docs overhaul (audience nav + full component catalog + guardrails): fixed Fumadocs meta schema blockers by enforcing string-only `pages` entries in platform docs metas; added audience-aware docs navigation with top tabs (`Platform` default, `Developer` opt-in) and sidebar filtering/icons; added docs slug aliases/redirects for legacy paths (`/docs/editor-shell` and `*-complete` variants); added generated component catalog pipeline (`scripts/generate-platform-component-docs.mjs`) covering atoms/editor/assistant-ui/tool-ui and runtime-safe demo wrappers; added docs guardrails (`scripts/platform-docs-doctor.mjs`) for meta schema, missing page targets, broken relative links, and component coverage; wired guardrail into root scripts (`docs:platform:doctor`, `build:platform`, `lint`). Validation: `pnpm docs:platform:generate`, `pnpm docs:platform:doctor`, `pnpm build:platform` all pass.
+- Done (2026-02-12): Platform docs showcase recovery (rendered previews, no placeholder fallback): `ComponentDemo` is now strict by generated id union (`ComponentDemoId`) and throws on missing renderer; generated contract file (`apps/platform/src/components/docs/component-demos/generated-ids.ts`) is produced by `docs:platform:generate`; demo registry resolves from `COMPONENT_DEMO_IDS` with typed category modules (atoms/editor/assistant-ui/tool-ui) and runtime harnesses; all generated component pages are wired to real demo renderers. Updated generator/doctor slug normalization for editor canonical slugs (`dock-layout`, `dock-panel`) so coverage remains stable after source renames. Validation: `pnpm docs:platform:generate`, `pnpm docs:platform:doctor`, `pnpm --filter @forge/platform build` pass (remaining build output includes one non-fatal a11y warning in tool-ui preview code).
+
+- Done (2026-02-11): Documentation overhaul: Fixed broken links (building-studio, DocLink hash preservation); updated reference (packages dev-kit note, guides index); created environment-variables reference from manifest; expanded onboarding (env portal flow, component showcase link); added settings-tree-as-source-and-codegen to architecture; expanded showcase (select/dialog/dropdown/tabs/switch/label, dock-layout/editor-toolbar/panel-tabs demos, "Used in" refs, descriptions); bottom-up build guide (Step 0 Atoms → Step 7); agent artifacts docs-building.md (Doc structure, DocLink, when to update showcase/settings/env), decisions ADR, STATUS update. Guidelines: [docs-building](docs-building.md).
+- Done (2026-02-12): Docs migration and artifacts update: Archived old docs to docs/legacy/; cutover docs/ from _docs (onboarding, components, how-to, tutorials, architecture, ai, guides, product, roadmap, design, reference); preserved agent-artifacts/core and archive; updated meta.json, docs-config; added tool-usage § Reading long artifacts; fixed AGENTS links (Assistant UI, 03-model-routing-openrouter, ai/05–06); README/CONTRIBUTING/SETUP path updates; fleshed out tutorials/quick-start and how-to/05-building-an-editor.
 - Done (2026-02-12): Studio docs sidebar nav fix: Shared `@forge/ui` Sidebar had no `collapsible="none"` branch; it always rendered fixed/hidden on desktop, causing nav links to not show. Added early-return in `packages/ui/src/components/ui/sidebar.tsx` for `collapsible="none"` that renders an in-flow div (matching Platform), so Studio docs sidebar appears like Platform. Updated `apps/studio/app/docs/docs.css` to use `:has(#nd-sidebar[data-slot='sidebar'])` so provider gets `padding-left: 0` for in-flow layout.
 - Done (2026-02-12): Env bootloader portal + Vercel sync: added `scripts/env/env-portal.mjs` (localhost-only web UI), `scripts/env-bootstrap.mjs` (gate for dev; launches portal when keys missing), Vercel sync (`vercel-api.mjs`, `vercel-sync.mjs`, `env:sync:vercel`), portal Vercel section and "Sync to Vercel" button, manifest launch metadata (launchGroup, vercelTargets, sharedValueHint), agent rules for env keys (update manifest + env:sync:examples), launch runbook (28-vercel-supabase-launch.mdx), README/SETUP/docs updates.
 - Done (2026-02-12): README and docs overhaul: README rewrite (hero, quick start, AI/LangGraph, Studio + editor platform, Ralph Wiggum snippets, docs index, repo structure, contributing); SETUP.md refresh (pnpm env:setup, manifest, LangGraph flags); docs/meta.json categorization (Getting started, Architecture, AI and LangGraph, Design, Product/business, For coding agents); cross-links added to 00-docs-index (Agent conversation flows), 08-copilotkit-vs-assistant-ui (AI architecture, agent flows).
+- Done (2026-02-12): AI/model routing stability: CopilotKit fully removed (no API calls); model switcher stable; Assistant UI + LangGraph primary. AI agent and model provider plan superseded by migration completion.
 - Done (2026-02-12): LangGraph chat infrastructure Phase 1 slice: added `@forge/assistant-runtime` (orchestrator, context assemblers, Forge/Character workflows, Payload session store, MCP descriptor adapters), integrated feature-flagged LangGraph path into `/api/assistant-chat` with transport headers, migrated Forge plan route to runtime and added `/api/forge/story-builder` + `forge_createStoryFromPremise`, added Character assistant contract/tools wiring, expanded `agent-sessions` schema/access for durable checkpoints, and updated AI migration/architecture/MCP docs.
-- Done (2026-02-12): Panel hide reclaims space (Option B): when panel content becomes null (View > Layout > Hide Library), DockLayout effect uses Dockview API (panel.api.close()) to remove the panel from the layout, reclaiming space. When content is restored, effect re-adds the panel with correct position. Packaged in packages/shared DockLayout.tsx.
+- Done (2026-02-12): Panel hide reclaims space (Option B): when panel content becomes null (View > Layout > Hide Library), DockLayout effect uses Dockview API (panel.api.close()) to remove the panel from the layout, reclaiming space. When content is restored, effect re-adds the panel with correct position. Packaged in packages/shared EditorDockLayout.tsx.
 - Done (2026-02-12): Viewport settings accent + editor-metadata cleanup: (1) Option B: accent border only on Graph viewport card (SettingsSection accentBorderColor prop); removed wrapper pl-3/-ml-1 that broke toggle layout. (2) Removed dead EDITOR_LABELS and EDITOR_SUMMARY (unused; registry descriptor has label/summary). (3) Removed getViewportAccentColor; inline VIEWPORT_ACCENT_COLORS lookup.
 - Done (2026-02-12): Graph panel settings cleanup: (1) Removed legacy schema.ts; config uses tree-as-source + VIEWPORT_DEFAULTS_OVERRIDES for narrative/storylet/character allowedNodeTypes. (2) Settings sidebar: manual close only (removed backdrop), viewport labeling in Viewport tab. (3) GraphViewportSettings: graph.nodesDraggable, graph.allowedNodeTypes (checkbox group). (4) GraphEditor nodesDraggable prop; DialogueEditor reads settings, filters node palette, enforces allowed types on drop and in CreateNodeModal. (5) PAGE node type with pageType (ACT|CHAPTER|PAGE), PageNode component, --graph-node-page-* tokens, inspector pageType Select. (6) graph.css: suppress React Flow wrapper/resize borders to fix double border. Plan: graph_panel_settings_cleanup_a48a95d0.
 - Done (2026-02-11): Graph styling system: node-type tokens (themes.css node accent aliases); CharacterNode/PlayerNode/ConditionalNode use --graph-node-{type}-* tokens and data-node-type; selection highlight via inset box-shadow on nodes (not wrapper); GraphEditor className prop and dialogue-graph-editor for Dialogue; animated edges; docs in 01-styling-and-theming § Graph node styling.
@@ -208,7 +219,7 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 - Done (2026-02-08): Platform-mono docs and decisions: added docs/business/ (revenue-and-stripe, listings-and-clones), ADRs in decisions.md (Stripe Connect day one, clone versioning, license, media refs), task breakdown (Connect pay-1a/b/c, license-1/2, list-3), mvp-and-revenue and how-to 12 links.
 - Done (2026-02-08): pay-1a Stripe Connect account (initial user-scoped model): users.stripeConnectAccountId; POST /api/stripe/connect/create-account (idempotent); docs (platform account id, support/legal URLs, payouts single-seller, business backlog); .env.example placeholders. Superseded by org-scoped Connect ownership in 2026-02-11 platform expansion.
 - Done (2026-02-08): pay-1b Connect onboarding link: POST /api/stripe/connect/onboarding-link; /api/me returns stripeConnectAccountId; AppBarUser "Set up payouts" for PLATFORM_LIST when no Connect account, opens Stripe hosted onboarding.
-- Done (2026-02-08): Model routing verification and refactor: model-routing matrix in 06-model-routing-and-openrouter.mdx; Jest contract tests (server-state, resolve-for-routes, responses-compat) in apps/studio/__tests__/model-router; optional verify-openrouter script + pnpm run verify-openrouter; root app/api/copilotkit and root lib/openrouter-config + lib/model-router removed; single CopilotKit runtime and model router in apps/studio only; errors-and-attempts and STATUS updated.
+- Done (2026-02-08): Model routing verification and refactor: model-routing matrix in 03-model-routing-openrouter.mdx; Jest contract tests (server-state, resolve-for-routes, responses-compat) in apps/studio/__tests__/model-router; optional verify-openrouter script + pnpm run verify-openrouter; root app/api/copilotkit and root lib/openrouter-config + lib/model-router removed; single CopilotKit runtime and model router in apps/studio only; errors-and-attempts and STATUS updated.
 - Done (2026-02-08): license-1 Licenses collection (user, listing, stripeSessionId, grantedAt, optional versionSnapshotId); webhook branches on metadata listingId/buyerId → create license (overrideAccess), else Pro plan upgrade.
 - Done (2026-02-08): clone-1 Clone-to-account API: POST /api/clone (body: projectId, optional slug); copies project, forge-graphs, characters, relationships, pages, blocks; media as refs; returns projectId.
 - Done (2026-02-08): Webhook first clone: clone logic in lib/clone/clone-project-to-user.ts; license.clonedProjectId added; webhook creates license then clones listing.project to buyer and updates license with clonedProjectId.
@@ -250,42 +261,38 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 
 ### Next steps (with impact sizes)
 
-**AI / model routing / CopilotKit (stability — do first tomorrow)**
+**MVP**
 
-0. **AI agent and model provider plan** — Discuss and document: who provides models (OpenRouter vs others), how the model switcher integrates with CopilotKit, and the intended load sequence. Single source of truth for model state; avoid duplicate fetches and sync loops. **[Impact: Small – planning/doc]**
-1. **Model switcher stability** — Model switcher is producing many errors (sync, registry, UI). Reduce errors: ensure single source of truth (settings ⇄ router), registry hydrated once, no oscillation. See [errors-and-attempts](./errors-and-attempts.md) (Model switcher registry empty, manual mode oscillation) and [06-model-routing-and-openrouter.mdx](../../architecture/06-model-routing-and-openrouter.mdx). **[Impact: Small–Medium]**
-2. **CopilotKit and Studio: reduce calls on load** — Too many CopilotKit/Studio calls on app load. Defer non-critical requests, batch where possible, single init path for runtime/sync so "what's next" is clear. **[Impact: Small–Medium]**
-
-**MVP (do after AI stability)**
-
-3. **First-class Yarn Spinner** — **MVP-critical.** Yarn export (and import) is in MVP. Export/import `.yarn` files; syntax preview panel; variable tracking. See [09 - Dialogue system and Yarn Spinner](../../architecture/09-dialogue-domain-and-yarn-spinner.mdx). **[Impact: Medium]**
-4. **GamePlayer** — **MVP-critical.** Playable runtime for Yarn Games. Build in phases: editor tab, load project dialogue, minimal runtime, then character/voice and polish. See [10 - GamePlayer](../../architecture/10-gameplayer.mdx). Prerequisite: Yarn export (or graph load). **[Impact: Medium–Large]**
-5. **Plans/capabilities for platform** — **MVP-critical.** **Complete.** CreateListingSheet gates PLATFORM_PUBLISH (status) and PLATFORM_MONETIZE (price); listings beforeChange enforces plan server-side. **[Impact: Small–Medium]**
-6. **Platform: monetization (clone / download)** — **MVP-critical.** **Complete.** See [MVP and first revenue](../../product/mvp-and-revenue.mdx). **[Impact: Epic]**
-7. **Platform: publish and host builds** — **MVP-critical.** Authors publish project build; we host playable narrative. Build pipeline, storage, playable runtime. See [10 - GamePlayer](../../architecture/10-gameplayer.mdx). **[Impact: Large]**
-8. **Apply gates to more surfaces** — Model selection or other surfaces as needed. **Copilot is not gated** (see decisions.md). **[Impact: Small]**
-9. **Project-scoped settings** — Add project scope (or scopeId = projectId) to settings-overrides and GET/POST; project-level defaults shared by project members. **[Impact: Medium]**
-10. **TRACE.md / before-after benchmark for Codebase Agent Strategy** — Proof-of-effectiveness for downloadable Strategy core; log where agent looks and what it finds (e.g. TRACE.md); benchmark before/after installation. **[Impact: Small–Medium]**
+1. **First-class Yarn Spinner** — **MVP-critical.** Yarn export (and import) is in MVP. Export/import `.yarn` files; syntax preview panel; variable tracking. See [09 - Dialogue system and Yarn Spinner](../../architecture/09-dialogue-domain-and-yarn-spinner.mdx). **[Impact: Medium]**
+2. **GamePlayer** — **MVP-critical.** Playable runtime for Yarn Games. Build in phases: editor tab, load project dialogue, minimal runtime, then character/voice and polish. See [10 - GamePlayer](../../architecture/10-gameplayer.mdx). Prerequisite: Yarn export (or graph load). **[Impact: Medium–Large]**
+3. **Plans/capabilities for platform** — **MVP-critical.** **Complete.** CreateListingSheet gates PLATFORM_PUBLISH (status) and PLATFORM_MONETIZE (price); listings beforeChange enforces plan server-side. **[Impact: Small–Medium]**
+4. **Platform: monetization (clone / download)** — **MVP-critical.** **Complete.** See [MVP and first revenue](../../product/mvp-and-revenue.mdx). **[Impact: Epic]**
+5. **Platform: publish and host builds** — **MVP-critical.** Authors publish project build; we host playable narrative. Build pipeline, storage, playable runtime. See [10 - GamePlayer](../../architecture/10-gameplayer.mdx). **[Impact: Large]**
+6. **Apply gates to more surfaces** — Model selection or other surfaces as needed. **Copilot is not gated** (see decisions.md). **[Impact: Small]**
+7. **Project-scoped settings** — Add project scope (or scopeId = projectId) to settings-overrides and GET/POST; project-level defaults shared by project members. **[Impact: Medium]**
+8. **TRACE.md / before-after benchmark for Codebase Agent Strategy** — Proof-of-effectiveness for downloadable Strategy core; log where agent looks and what it finds (e.g. TRACE.md); benchmark before/after installation. **[Impact: Small–Medium]**
 
 **After MVP**
 
-11. **Editors as MCP Apps** — **After MVP.** Define `McpAppDescriptor` per editor; build Studio MCP Server. See [07 - Editors as MCP Apps](../../architecture/07-modes-as-mcp-apps.mdx). **[Impact: Large]**
-12. **Developer program and editor ecosystem** — **After MVP.** Approved editors, data contracts, revenue split while official (no usage-based pay in Studio), publish updates to editor, community vs official apps, MCP Apps for third-party editors, submission (GitHub fork). See [Developer program and editor ecosystem](../../business/developer-program-and-editors.mdx). **[Impact: Epic]**
-13. **Marketing site overhaul (Part B)** — **Complete.** Placeholder routes (roadmap, changelog, pricing, demo, privacy, terms); docs content structure and nav; public roadmap and changelog pages; full pricing page; customer admin (sidebar, account/settings, account/billing, account/api-keys); optional login block and Hero “Watch Demo”. Implement as slices 1–8 per plan. **[Impact: Large]****When Video is unlocked (Video not in MVP)**
+9. **Editors as MCP Apps** — **After MVP.** Define `McpAppDescriptor` per editor; build Studio MCP Server. See [07 - Editors as MCP Apps](../../architecture/04-editors-as-mcp-apps.mdx). **[Impact: Large]**
+10. **Developer program and editor ecosystem** — **After MVP.** Approved editors, data contracts, revenue split while official (no usage-based pay in Studio), publish updates to editor, community vs official apps, MCP Apps for third-party editors, submission (GitHub fork). See [Developer program and editor ecosystem](../../business/developer-program-and-editors.mdx). **[Impact: Epic]**
+11. **Marketing site overhaul (Part B)** — **Complete.** Placeholder routes (roadmap, changelog, pricing, demo, privacy, terms); docs content structure and nav; public roadmap and changelog pages; full pricing page; customer admin (sidebar, account/settings, account/billing, account/api-keys); optional login block and Hero “Watch Demo”. Implement as slices 1–8 per plan. **[Impact: Large]**
 
-14. **Twick → VideoDoc persistence + plan/commit UI** — When Video editor is unlocked: map Twick timeline state to our `VideoDoc` draft and connect persistence (save/load); add plan/commit UI for video proposals. **[Impact: Medium]**
-15. **Video workflow panel** — When Video editor is unlocked: plan -> patch -> review mirroring Dialogue. **[Impact: Medium]**
+**When Video is unlocked (Video not in MVP)**
+
+12. **Twick → VideoDoc persistence + plan/commit UI** — When Video editor is unlocked: map Twick timeline state to our `VideoDoc` draft and connect persistence (save/load); add plan/commit UI for video proposals. **[Impact: Medium]**
+13. **Video workflow panel** — When Video editor is unlocked: plan -> patch -> review mirroring Dialogue. **[Impact: Medium]**
 
 **Ongoing**
 
-16. Track any new build warnings in [errors-and-attempts.md](./errors-and-attempts.md).
-17. Re-run `pnpm --filter @forge/studio build` after package updates.
+14. Track any new build warnings in [errors-and-attempts.md](./errors-and-attempts.md).
+15. Re-run `pnpm --filter @forge/studio build` after package updates.
 
 **Dev-kit**
 
-18. **Dev-kit single entrypoint and docs** — One package (`@forge/dev-kit`), one style import (bundled dockview + overrides), no dockview in user code. Customer-facing docs (Quick start, Install, First editor, Layout, Styling, API keys, Components/API ref, Editors, Private registry). Internal docs (04, 25, dev-kit-and-keys). Optional create-forge-app CLI. **[Impact: Medium–Large]** See [task-registry](./task-registry.md) initiative `dev-kit-single-entrypoint` and [task-breakdown-dev-kit-single-entrypoint](./task-breakdown-dev-kit-single-entrypoint.md).
+16. **Dev-kit single entrypoint and docs** — One package (`@forge/dev-kit`), one style import (bundled dockview + overrides), no dockview in user code. Customer-facing docs (Quick start, Install, First editor, Layout, Styling, API keys, Components/API ref, Editors, Private registry). Internal docs (04, 25, dev-kit-and-keys). Optional create-forge-app CLI. **[Impact: Medium–Large]** See [task-registry](./task-registry.md) initiative `dev-kit-single-entrypoint` and [task-breakdown-dev-kit-single-entrypoint](./task-breakdown-dev-kit-single-entrypoint.md).
 
-**Product roadmap:** [docs/roadmap/](../../roadmap/00-roadmap-index.mdx) - [product.mdx](../../roadmap/product.mdx) for editors and initiatives. **Roadmap remaining:** Full Yarn Spinner implementation (compiler, runtime preview, localization); vision/image input (model registry + chat upload); co-agents (documented, not used). Optional future: agent graphs/subgraphs in runtime. See [architecture/03-copilotkit-and-agents.mdx](../../architecture/03-copilotkit-and-agents.mdx) Section 12.
+**Product roadmap:** [docs/roadmap/](../../roadmap/00-index.mdx) - [product.mdx](../../roadmap/product.mdx) for editors and initiatives. **Roadmap remaining:** Full Yarn Spinner implementation (compiler, runtime preview, localization); vision/image input (model registry + chat upload); co-agents (documented, not used). Optional future: agent graphs/subgraphs in runtime. See [architecture/03-copilotkit-and-agents.mdx](../../architecture/03-copilotkit-and-agents.mdx) Section 12.
 
 ## What changed (recent)
 
@@ -312,3 +319,75 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 - Payload types now flow from the app config into a shared `packages/types` package.
 - Studio build succeeds; Payload emits a known dynamic import warning (documented in [errors-and-attempts.md](./errors-and-attempts.md)).
 - CopilotKit runtime uses OpenAI + @ai-sdk/openai with OpenRouter baseURL; provider stack (OpenRouter / ElevenLabs / Sora) documented in 06 and decisions.
+
+<!-- forge-loop:generated:start -->
+## Forge Loop Snapshot
+
+Source of truth: `.planning/`
+
+### PROJECT
+# Forge Agent
+
+## What This Is
+
+Planning workspace initialized by forge-loop.
+
+## Core Value
+
+Ship tested, traceable slices.
+
+## Requirements
+
+### Validated
+
+None yet.
+
+### Active
+
+- [ ] Define migration baseline
+- [ ] Plan first implementation slice
+
+### STATE
+# Project State
+
+## Current Position
+
+Phase: 01
+Plan: 01-02
+Status: In progress
+Last activity: 2026-02-13T17:37:33.056Z - Create execution summary and prepare verification
+
+## Execution
+
+- Active phase: Forge Loop bootstrap
+- Active plan: 01-02
+- Active task: Create execution summary and prepare verification
+
+### ROADMAP
+# Roadmap: Forge Agent
+
+## Overview
+
+Initial roadmap for Forge Loop lifecycle adoption.
+
+## Phases
+
+- [x] **Phase 01: Forge Loop bootstrap** - Establish lifecycle command baseline
+
+## Phase Details
+
+### Phase 01: Forge Loop bootstrap
+**Goal:** Establish lifecycle command baseline
+**Depends on:** Nothing
+**Requirements:** [REQ-01, REQ-02]
+**Plans:** 0 plans
+
+Plans:
+- [ ] 01-01: TBD (run `forge-loop plan-phase 01`)
+
+## Progress
+
+| Phase | Plans Complete | Status | Completed |
+|---|---|---|---|
+| 01. Forge Loop bootstrap | 0/0 | Not started | - |
+<!-- forge-loop:generated:end -->

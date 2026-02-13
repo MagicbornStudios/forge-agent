@@ -54,6 +54,90 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ---
 
+## MDX agent blocks: use Callout, not details
+
+**Problem**: Raw HTML `<details><summary>…</summary>…</details>` in MDX can cause build error: `Unexpected character ! (U+0021) before name`. Fumadocs/MDX parsers can choke on details content.
+
+**Fix**: Use `<Callout variant="note" title="For coding agents">` instead. Callout is registered in mdx-components and parses correctly.
+
+**Do not**: Use raw `<details>` or `<summary>` for agent blocks; use Callout. See [docs-building § Agent blocks](docs-building.md).
+
+---
+
+## QuickNav inline items: acorn parse error
+
+**Problem**: `<QuickNav items={[{ label: "X", href: "#x" }, ...]} />` with inline array/object in MDX causes "Could not parse expression with acorn" in fumadocs-mdx.
+
+**Fix**: Use `export const quickNavItems = [...];` in the MDX body, then `<QuickNav items={quickNavItems} />`. Or omit QuickNav until needed.
+
+---
+
+## Heading slug syntax: use `[#slug]`, not `{#slug}`
+
+**Problem**: Custom heading IDs like `## Title {#slug}` cause "Could not parse expression with acorn" in fumadocs-mdx. MDX parses `{...}` as a JS expression; `#slug` is invalid in that context.
+
+**Fix**: Use Fumadocs syntax `[#slug]` (square brackets): `## Title [#slug]`. Do not use `{#slug}` (curly braces).
+
+---
+
+## Fumadocs `meta.json` schema mismatch: `pages` must be strings only
+
+**Problem**: Platform docs build failed with `[MDX] invalid data` when `apps/platform/content/docs/meta.json` (or nested `meta.json`) used object entries in `pages` (for example `{ title, url, icon }`). Current Fumadocs schema in this repo accepts string targets only.
+
+**Fix**:
+
+- Keep every `pages` entry as a string path or separator marker (`---Section---`).
+- Do not store per-page metadata objects in `pages`; put page metadata in MDX frontmatter instead.
+- Run `pnpm docs:platform:doctor` after nav/meta edits to catch schema and target-existence regressions before `build:platform`.
+
+**Do not**:
+
+- Reintroduce object nodes into any docs `meta.json` `pages` array.
+- Skip the doctor check when changing docs nav, generated component docs, or aliases.
+
+---
+
+## Docs component flat-route 404 (`/docs/components/<slug>`)
+
+**Problem**: Generated component docs are grouped under category folders (for example `/docs/components/atoms/accordion`), but flat URLs like `/docs/components/accordion` returned 404 when no explicit alias existed.
+
+**Fix**:
+
+- Added router-level category resolution in `apps/platform/src/app/docs/[[...slug]]/page.tsx` to map flat component slugs to canonical generated paths.
+- Resolution precedence is deterministic: atoms -> editor -> assistant-ui -> tool-ui.
+
+**Do not**:
+
+- Assume every component doc lives directly under `/docs/components/*`; generated docs are nested by category by design.
+- Remove the flat-route resolver without adding equivalent aliases/redirect coverage.
+
+---
+
+## Platform component showcase fallback regression (`ComponentDemo` placeholders)
+
+**Problem**: Component docs pages rendered fallback text (`A custom runtime preview is not registered...`) instead of real component previews when demo IDs were missing from the runtime registry.
+
+**Fix**:
+
+- Make demo ids contract-generated and typed:
+  - `scripts/generate-platform-component-docs.mjs` emits `apps/platform/src/components/docs/component-demos/generated-ids.ts`
+  - exports `COMPONENT_DEMO_IDS` and `ComponentDemoId`.
+- Make runtime strict:
+  - `ComponentDemo` accepts `id: ComponentDemoId` (not `string`).
+  - Missing renderer throws hard error; no permissive prefix/text fallback rendering.
+- Build demo map from generated ids:
+  - `apps/platform/src/components/docs/component-demos/index.tsx` resolves from `COMPONENT_DEMO_IDS`.
+- Enforce with doctor:
+  - `scripts/platform-docs-doctor.mjs` verifies docs `<ComponentDemo id="..."/>` coverage against generated ids and fails if placeholder fallback code patterns are reintroduced.
+
+**Do not**:
+
+- Add/keep placeholder fallback UI for missing component demos.
+- Use untyped `string` ids for `ComponentDemo`.
+- Skip `pnpm docs:platform:generate` + `pnpm docs:platform:doctor` after component docs changes.
+
+---
+
 ## Payload type generation: collection imports must be Node-resolvable
 
 **Problem**: `pnpm payload:types` failed when collection files imported helpers through non-resolvable runtime paths (for example extension-less relative imports or `@/` aliases from files loaded directly by Payload's Node process).
@@ -235,7 +319,7 @@ The failure originates from `packages/ui/dist/index.mjs` being treated as a serv
 
 **Problem**: Selecting a node in one graph did not show the selection in the Inspector until the user focused another panel (e.g. the other graph). State (selection, activeScope) updated correctly, but the right-panel (slot) content did not re-render because Dockview controls when `SlotPanel` is rendered; when only React context changed (new `right={inspectorContent}` from the editor), Dockview did not re-render the panel.
 
-**Fix**: Use a **slot content store** (Zustand) so slot content drives re-renders independently of Dockview. In `DockLayout.tsx`: (1) Create a module-level store holding `slots: Record<string, React.ReactNode>` and a `version` that bumps on each write. (2) In `DockLayoutRoot`, sync the resolved context value (left, main, right, rightInspector, rightSettings, bottom) into the store in `useLayoutEffect` when it changes. (3) In `SlotPanel`, subscribe to the store by `slotId` (e.g. `useSlotContentStore(s => ({ content: s.slots[slotId], version: s.version }))`) and render the stored content, with context as fallback. Then when the editor passes new `right={inspectorContent}`, the store updates and `SlotPanel` re-renders without requiring focus elsewhere. Ensure editor slot content (e.g. Inspector) is not over-memoized—dependency arrays should include `activeSelection`, `inspectorSections`, etc. When using a selector that returns an object or array, wrap with **useShallow** to avoid getSnapshot infinite loop (see next entry).
+**Fix**: Use a **slot content store** (Zustand) so slot content drives re-renders independently of Dockview. In `EditorDockLayout.tsx`: (1) Create a module-level store holding `slots: Record<string, React.ReactNode>` and a `version` that bumps on each write. (2) In `DockLayoutRoot`, sync the resolved context value (left, main, right, rightInspector, rightSettings, bottom) into the store in `useLayoutEffect` when it changes. (3) In `SlotPanel`, subscribe to the store by `slotId` (e.g. `useSlotContentStore(s => ({ content: s.slots[slotId], version: s.version }))`) and render the stored content, with context as fallback. Then when the editor passes new `right={inspectorContent}`, the store updates and `SlotPanel` re-renders without requiring focus elsewhere. Ensure editor slot content (e.g. Inspector) is not over-memoized—dependency arrays should include `activeSelection`, `inspectorSections`, etc. When using a selector that returns an object or array, wrap with **useShallow** to avoid getSnapshot infinite loop (see next entry).
 
 ---
 
@@ -666,7 +750,7 @@ References:
 
 ## Model routing: server-state only (single chat provider)
 
-**Design**: One slot — `assistantUiModelId` — in in-memory server-state for chat. **No model ID in request**: assistant-chat handler uses only `getAssistantUiModelId()`; do not send `x-forge-model` or body `modelName`. Client updates model only via POST to `/api/model-settings` with `{ provider: 'assistantUi', modelId }`. **ModelSwitcher** with `provider="assistantUi"`. Default from code via `getDefaultChatModelId()`. Use naming `assistantUi` (type `ModelProviderId`). See [06-model-routing-and-openrouter.mdx](../../architecture/06-model-routing-and-openrouter.mdx).
+**Design**: One slot — `assistantUiModelId` — in in-memory server-state for chat. **No model ID in request**: assistant-chat handler uses only `getAssistantUiModelId()`; do not send `x-forge-model` or body `modelName`. Client updates model only via POST to `/api/model-settings` with `{ provider: 'assistantUi', modelId }`. **ModelSwitcher** with `provider="assistantUi"`. Default from code via `getDefaultChatModelId()`. Use naming `assistantUi` (type `ModelProviderId`). See [03-model-routing-openrouter.mdx](../../architecture/03-model-routing-openrouter.mdx).
 
 ---
 
@@ -790,7 +874,7 @@ References:
 
 **Problem**: Hiding a panel (e.g. Library) via View > Layout only hid the **content**; the panel slot stayed in the Dockview layout, so the space was not reclaimed and adjacent panels did not expand.
 
-**Fix (Option B)**: DockLayout has an effect that syncs panel visibility to the Dockview API. When `resolvedSlots[slotId]` becomes null (panel content hidden), we call `panel.api.close()` to remove the panel from the layout. When content is restored, we re-add the panel with `api.addPanel()` and the correct position. This dynamically mutates the layout instead of only changing slot content. See `packages/shared/.../DockLayout.tsx` useEffect "Sync panel visibility".
+**Fix (Option B)**: DockLayout has an effect that syncs panel visibility to the Dockview API. When `resolvedSlots[slotId]` becomes null (panel content hidden), we call `panel.api.close()` to remove the panel from the layout. When content is restored, we re-add the panel with `api.addPanel()` and the correct position. This dynamically mutates the layout instead of only changing slot content. See `packages/shared/.../EditorDockLayout.tsx` useEffect "Sync panel visibility".
 
 **View menu label sync**: When the user closes a panel via the Dockview tab X (instead of View > Hide), our settings store was not updated, so the View menu still showed "Hide" instead of "Show". Fix: DockLayout now accepts `onPanelClosed?(slotId)`. Editors pass a callback that calls `setPanelVisible(spec.key, false)` for the removed panel. DockLayout subscribes to `api.onDidRemovePanel` and invokes the callback.
 
@@ -981,7 +1065,7 @@ References: `packages/shared/src/shared/components/editor/EditorOverlaySurface.t
 
 **Problem**: Using `@openrouter/ai-sdk-provider` (e.g. `createOpenRouter`) for the CopilotKit agent causes interface mismatch. CopilotKit expects `openai` for the adapter and `@ai-sdk/openai` for BuiltInAgent; the OpenRouter provider uses a different shape. We swapped runtimes multiple times trying to use the OpenRouter SDK.
 
-**Fix**: Do **not** use `@openrouter/ai-sdk-provider` for the CopilotKit route or for `createForgeCopilotRuntime` in shared. Use **OpenAI** (`openai` package) with `baseURL: config.baseUrl` and **createOpenAI** from `@ai-sdk/openai` with the same baseURL. Model fallbacks are implemented via a custom fetch that injects `models: [primary, ...fallbacks]` into the request body (see [openrouter-fetch.ts](../../apps/studio/lib/model-router/openrouter-fetch.ts)). Reference: [06-model-routing-and-openrouter.mdx](../../architecture/06-model-routing-and-openrouter.mdx).
+**Fix**: Do **not** use `@openrouter/ai-sdk-provider` for the CopilotKit route or for `createForgeCopilotRuntime` in shared. Use **OpenAI** (`openai` package) with `baseURL: config.baseUrl` and **createOpenAI** from `@ai-sdk/openai` with the same baseURL. Model fallbacks are implemented via a custom fetch that injects `models: [primary, ...fallbacks]` into the request body (see [openrouter-fetch.ts](../../apps/studio/lib/model-router/openrouter-fetch.ts)). Reference: [03-model-routing-openrouter.mdx](../../architecture/03-model-routing-openrouter.mdx).
 
 ---
 
@@ -1082,13 +1166,13 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 
 **Problem**: Model switcher is producing many errors; Studio makes too many calls on app load. Related: registry hydration, settings ⇄ router sync (see "Model switcher registry empty" and "Model switcher manual mode oscillation" in this file).
 
-**Planned work**: (0) **AI agent and model provider plan** — discuss/document single source of truth, who provides models, avoid duplicate fetches and sync loops. (1) **Model switcher stability** — single source of truth, registry hydrated once, no oscillation. (2) **Reduce Studio calls on load** — fewer calls, defer/batch, single init path. See [STATUS § Next](./STATUS.md) and initiative `model-routing-stability` in [task-registry](./task-registry.md). Architecture: [06-model-routing-and-openrouter.mdx](../../architecture/06-model-routing-and-openrouter.mdx).
+**Planned work**: (0) **AI agent and model provider plan** — discuss/document single source of truth, who provides models, avoid duplicate fetches and sync loops. (1) **Model switcher stability** — single source of truth, registry hydrated once, no oscillation. (2) **Reduce Studio calls on load** — fewer calls, defer/batch, single init path. See [STATUS § Next](./STATUS.md) and initiative `model-routing-stability` in [task-registry](./task-registry.md). Architecture: [03-model-routing-openrouter.mdx](../../architecture/03-model-routing-openrouter.mdx).
 
 ---
 
 ## Single model router at Studio (no root duplicate)
 
-**Do not** add a second model router at repo root. The **single** model router (server-state, registry, openrouter-config) lives **only** in `apps/studio`. All AI/model API routes are under `apps/studio/app/api/`. See [06-model-routing-and-openrouter.mdx](../../architecture/06-model-routing-and-openrouter.mdx).
+**Do not** add a second model router at repo root. The **single** model router (server-state, registry, openrouter-config) lives **only** in `apps/studio`. All AI/model API routes are under `apps/studio/app/api/`. See [03-model-routing-openrouter.mdx](../../architecture/03-model-routing-openrouter.mdx).
 
 ---
 
@@ -1113,3 +1197,11 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 ---
 
 *(Add new entries when new errors are found and fixed.)*
+
+<!-- forge-loop:generated:start -->
+## Forge Loop Snapshot
+
+# Errors and Attempts
+
+No errors recorded yet.
+<!-- forge-loop:generated:end -->

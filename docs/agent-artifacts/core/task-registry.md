@@ -14,7 +14,7 @@ Single entry point for "all work in tiers." For **granular, pickable tasks** (es
 
 | id | title | impact | status | breakdown | STATUS |
 |----|-------|--------|--------|-----------|--------|
-| model-routing-copilotkit-stability | AI agent / model provider plan; model switcher stability; reduce CopilotKit/Studio calls on load | Small–Medium | open | TBD (plan then implement) | [Next § AI/model](./STATUS.md) |
+| model-routing-copilotkit-stability | AI agent / model provider plan; model switcher stability; reduce CopilotKit/Studio calls on load | Small–Medium | done | TBD (plan then implement) | [Next § AI/model](./STATUS.md) |
 | ui-polish | Editor UI polish: compact modern icons + spacing audit (tokens, menus, inputs, badges) | Medium | open | [breakdown](task-breakdown-ui-polish.md) | — |
 | yarn-spinner | First-class Yarn Spinner | Medium | open | — | [Next #3](./STATUS.md) |
 | gameplayer | GamePlayer | Medium–Large | open | — | [Next #4](./STATUS.md) |
@@ -35,7 +35,7 @@ Single entry point for "all work in tiers." For **granular, pickable tasks** (es
 | platform-org-financial-visibility | Platform org model and financial visibility (org switcher, org-scoped APIs, AI usage ledger, Stripe Connect org context) | Medium-Large | done | [breakdown](task-breakdown-creator-dashboard.md) org + finance lanes | [STATUS](./STATUS.md) |
 | platform-sanity-housekeeping | Platform SaaS housekeeping refactor (API decomposition, dashboard auth gate, constants, cleanup slices, quality guardrails) | Medium | in_progress | TBD (continue phased cleanup from 30 remaining knip files) | [STATUS](./STATUS.md) |
 | import-adapters | Adapters: Yarn (MVP), then Ink, Twine, Ren'Py; optional AI-assisted import (see [potential-ideas](../../roadmap/potential-ideas.md)) | Medium–Large | open | — | [Ecosystem and import](../../business/ecosystem-and-import-strategy.mdx) |
-| dock-rails | Dock rails and composable panels: config-driven left/main/right/bottom as panel lists; RailPanelDescriptor; main/right as tab lists; naming and docs | Medium | open | [breakdown](task-breakdown-dock-rails.md) | — |
+| dock-rails | Dock rails and composable panels: config-driven left/main/right/bottom as panel lists; RailPanelDescriptor type and *Panels array API already exist in DockLayout; wire editors to array API; naming and docs | Medium | open | [breakdown](task-breakdown-dock-rails.md) | — |
 | editor-declarative-registries | Declarative editor components and registries: EditorRail/EditorPanel/EditorLayout, panel registry; SettingsSection/SettingsField, settings registry; EditorMenubarContribution; all editors migrated | Large | done | [breakdown](task-breakdown-editor-declarative-registries.md) | — |
 | editor-registration-declarative | Register editors declaratively (like panels/settings): editor registry + Studio + menu registry + naming (StudioApp, StudioMenubarProvider, StudioSettingsProvider) | Small–Medium | done | Studio refactor plan | decisions.md § Studio as single entrypoint |
 
@@ -62,7 +62,7 @@ For easy small tasks: pick from the table below, or see breakdown docs and filte
 | ui-polish-dialog-3 | Audit modal/icon button sizing and close affordances (12px icon baseline) | ui-polish | open |
 | ui-polish-dialog-4 | Normalize entity media sections (images/audio/video lists + inline actions) across character/location flows | ui-polish | open |
 | ui-polish-docs-3 | Capture before/after screenshots (human) and save to docs/images | ui-polish | open |
-| dock-rails-api-shape | Define RailPanelDescriptor and leftPanels/mainPanels/rightPanels/bottomPanels in DockLayout; build default layout by iterating | dock-rails | open |
+| dock-rails-api-shape | RailPanelDescriptor + leftPanels/mainPanels/rightPanels/bottomPanels already exist in DockLayout; wire editors to array API (optional; slot children work) | dock-rails | open |
 | dock-rails-wire-editors | Wire Dialogue/Character/Video to new rail API (mainPanels, rightPanels); map or deprecate old right/rightInspector/rightSettings | dock-rails | open |
 | dock-rails-naming | Align DockLayout, EditorDockPanel, README/AGENTS with rails and composable panels; document in errors-and-attempts/decisions | dock-rails | open |
 | assistant-ui-migration-docs | Create docs/ai/ architecture and migration documentation | assistant-ui-migration | done |
@@ -75,3 +75,11 @@ For easy small tasks: pick from the table below, or see breakdown docs and filte
 | assistant-ui-phase-7 | Cleanup: remove CopilotKit, docs, optimization | assistant-ui-migration | open |
 
 *(More quick picks and open tasks are in [task-breakdown-platform-monetization.md](./task-breakdown-platform-monetization.md) and [task-breakdown-dev-kit-single-entrypoint.md](./task-breakdown-dev-kit-single-entrypoint.md).)*
+
+<!-- forge-loop:generated:start -->
+## Forge Loop Snapshot
+
+# Task Registry
+
+No tasks recorded yet.
+<!-- forge-loop:generated:end -->
