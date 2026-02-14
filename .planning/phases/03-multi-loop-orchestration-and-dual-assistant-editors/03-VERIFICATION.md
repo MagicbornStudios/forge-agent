@@ -1,6 +1,6 @@
 ---
 phase: 03-multi-loop-orchestration-and-dual-assistant-editors
-verified: 2026-02-14T18:27:39.823Z
+verified: 2026-02-14T18:33:15.784Z
 status: gaps_found
 score: 0/8
 ---
@@ -33,7 +33,7 @@ score: 0/8
    - Environments: .env.local
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 12.6s
+ ✓ Compiled successfully in 22.1s
    Linting and checking validity of types ...
    Collecting page data ...
    Generating static pages (0/43) ...
@@ -95,7 +95,7 @@ Route (app)                                 Size  First Load JS
 
 
 ƒ  (Dynamic)  server-rendered on demand |
-| pnpm --filter @forge/studio build | FAIL | ⚠ Compiled with warnings in 119s
+| pnpm --filter @forge/studio build | FAIL | ⚠ Compiled with warnings in 103s
 
 ../../node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/typescript.js
 Critical dependency: the request of a dependency is an expression
@@ -104,7 +104,7 @@ Import trace for requested module:
 ../../node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/typescript.js
 ../../node_modules/.pnpm/@payloadcms+drizzle@3.74.0_@libsql+client@0.14.0_@opentelemetry+api@1.9.0_@types+pg@8.10.2_pa_msw3xvwd3gkad3fahmgh3o6s24/node_modules/@payloadcms/drizzle/dist/utilities/blocksToJsonMigrator.js
 ../../node_modules/.pnpm/@payloadcms+drizzle@3.74.0_@libsql+client@0.14.0_@opentelemetry+api@1.9.0_@types+pg@8.10.2_pa_msw3xvwd3gkad3fahmgh3o6s24/node_modules/@payloadcms/drizzle/dist/index.js
-../../node_modules/.pnpm/@payloadcms+db-sqlite@3.74.0_@opentelemetry+api@1.9.0_@types+pg@8.10.2_payload@3.74.0_graphql_vqyuzmnzyil5xgrfsstma2bt5e/node_modules/@payloadcms/db-sqlite/dist/index.js
+../../node_modules/.pnpm/@payloadcms+db-postgres@3.74.0_@libsql+client@0.14.0_@opentelemetry+api@1.9.0_payload@3.74.0__2bwhaqxnwmcpjvhaz3tkkximse/node_modules/@payloadcms/db-postgres/dist/index.js
 ./payload.config.ts
 ./app/(payload)/api/[...slug]/route.ts
 
@@ -125,10 +125,10 @@ Failed to compile.
 
 info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules |
 | pnpm --filter @forge/studio test -- --runInBand | FAIL | PASS __tests__/character/media-meta.test.ts
-PASS __tests__/model-router/selection.test.ts
 PASS __tests__/model-router/server-state.test.ts
+PASS __tests__/model-router/selection.test.ts
 PASS __tests__/model-router/responses-compat.test.ts
-FAIL __tests__/assistant-runtime.test.ts
+FAIL __tests__/settings/settings-codegen.test.tsx
   ● Test suite failed to run
 
     Cannot find module '../build/Release/canvas.node'
@@ -182,7 +182,7 @@ FAIL __tests__/assistant-runtime.test.ts
       at Object.<anonymous> (../../node_modules/.pnpm/jsdom@20.0.3_canvas@2.11.2/node_modules/jsdom/lib/jsdom/living/generated/AbortSignal.js:184:14)
       at Module.call [as require] (../../node_modules/.pnpm/next@15.5.9_@babel+core@7.29.0_@opentelemetry+api@1.9.0_babel-plugin-macros@3.1.0_react-dom@1_6to4nanp7aerwuhfbyw2e4bm4m/node_modules/next/src/server/require-hook.ts:74:26)
 
-FAIL __tests__/settings/settings-codegen.test.tsx
+FAIL __tests__/assistant-runtime.test.ts
   ● Test suite failed to run
 
     Cannot find module '../build/Release/canvas.node'
@@ -239,7 +239,7 @@ FAIL __tests__/settings/settings-codegen.test.tsx
 Test Suites: 2 failed, 4 passed, 6 total
 Tests:       14 passed, 14 total
 Snapshots:   0 total
-Time:        2.066 s
+Time:        2.368 s
 Ran all test suites. |
 | pnpm forge-loop:test | PASS | > forge-agent@ forge-loop:test C:\Users\benja\Documents\forge-agent
 > pnpm --filter @forge/forge-loop test
@@ -248,44 +248,44 @@ Ran all test suites. |
 > @forge/forge-loop@0.1.0 test C:\Users\benja\Documents\forge-agent\packages\forge-loop
 > node --test "src/__tests__/*.test.mjs"
 
-✔ required package runbooks exist (4.1694ms)
-✔ package.json includes docs and readme in published files (1.6647ms)
-✔ package docs and generated prompt templates are agent-agnostic (26.3849ms)
-✔ doctor validates planning artifacts and reports next action (681.6212ms)
-✔ headless env gate runs only when headless flag is set (1.9164ms)
-✔ headless env gate respects env enabled and enforce flags (1.3841ms)
-✔ execute-phase summary upserts tasks and remains idempotent on rerun (2411.0612ms)
-✔ commit message formatters follow contract (2.6657ms)
-✔ commitPaths skips when repository is not git (127.9755ms)
-✔ commitPaths skips when no tracked changes are present (882.6022ms)
-✔ isInCommitScope matches allowed glob patterns (1.298ms)
-✔ commitPaths blocks out-of-scope files when commitScope is set (363.9023ms)
-✔ commitPaths blocks staged files outside commit scope (486.8947ms)
-✔ assertCommitResult throws on failed commit result (0.7722ms)
-✔ parseStatusSections returns expected heading sections (3.0401ms)
-✔ parseRalphDoneItems returns only done bullet lines (5.7601ms)
-✔ parseNextItems parses bold and non-bold numbered lines (1.0759ms)
-✔ parseTaskRegistryInitiatives parses markdown table rows (0.8666ms)
-✔ buildMigrationWarnings reports missing key inputs (0.6282ms)
-✔ loop:new creates loop scaffold and loop:use + --loop drive progress routing (1283.413ms)
-✔ updateGeneratedBlock injects generated section when markers are missing (4.2391ms)
-✔ updateGeneratedBlock only replaces marker section and is idempotent (3.8033ms)
-✔ new-project migrates legacy docs into .planning tree (433.8676ms)
-✔ new-project on existing .planning reports guidance and does not overwrite (481.4995ms)
-✔ new-project supports forge-loop profile (239.6473ms)
-✔ new-project accepts generic as deprecated alias for forge-loop (231.9481ms)
-✔ new-project supports custom profile with forge-loop verification baseline (228.8253ms)
-✔ plan-phase creates plan files with required frontmatter fields (690.426ms)
-✔ sync-legacy respects legacySync.enabled flag (595.6264ms)
-✔ validatePlanFrontmatter accepts required schema (5.9368ms)
-✔ validatePlanFrontmatter fails missing required schema fields (1.8725ms)
-✔ parsePlanFrontmatterYaml returns typed values (1.2211ms)
-✔ validateWaveOrdering checks dependency graph and wave ordering (0.7939ms)
-✔ parsePlanWave reads wave from frontmatter (0.9065ms)
-✔ buildVerificationCommandPlan selects matrix commands by changed paths (2.8308ms)
-✔ buildVerificationCommandPlan supports forge-loop profile (2.1826ms)
-✔ verify-work emits expected check matrix in command output (5075.5191ms)
-✔ verify-work --strict exits non-zero when checks fail (3002.789ms)
+✔ required package runbooks exist (4.0325ms)
+✔ package.json includes docs and readme in published files (0.8425ms)
+✔ package docs and generated prompt templates are agent-agnostic (23.001ms)
+✔ doctor validates planning artifacts and reports next action (799.9449ms)
+✔ headless env gate runs only when headless flag is set (2.9638ms)
+✔ headless env gate respects env enabled and enforce flags (1.1241ms)
+✔ execute-phase summary upserts tasks and remains idempotent on rerun (2471.5276ms)
+✔ commit message formatters follow contract (2.6041ms)
+✔ commitPaths skips when repository is not git (110.2397ms)
+✔ commitPaths skips when no tracked changes are present (1010.4185ms)
+✔ isInCommitScope matches allowed glob patterns (1.1582ms)
+✔ commitPaths blocks out-of-scope files when commitScope is set (326.2083ms)
+✔ commitPaths blocks staged files outside commit scope (519.1409ms)
+✔ assertCommitResult throws on failed commit result (1.2348ms)
+✔ parseStatusSections returns expected heading sections (2.485ms)
+✔ parseRalphDoneItems returns only done bullet lines (9.49ms)
+✔ parseNextItems parses bold and non-bold numbered lines (0.8034ms)
+✔ parseTaskRegistryInitiatives parses markdown table rows (3.7976ms)
+✔ buildMigrationWarnings reports missing key inputs (2.1382ms)
+✔ loop:new creates loop scaffold and loop:use + --loop drive progress routing (1329.0715ms)
+✔ updateGeneratedBlock injects generated section when markers are missing (2.8074ms)
+✔ updateGeneratedBlock only replaces marker section and is idempotent (3.7217ms)
+✔ new-project migrates legacy docs into .planning tree (455.5278ms)
+✔ new-project on existing .planning reports guidance and does not overwrite (465.2756ms)
+✔ new-project supports forge-loop profile (233.4072ms)
+✔ new-project accepts generic as deprecated alias for forge-loop (253.5028ms)
+✔ new-project supports custom profile with forge-loop verification baseline (219.4336ms)
+✔ plan-phase creates plan files with required frontmatter fields (698.0009ms)
+✔ sync-legacy respects legacySync.enabled flag (616.277ms)
+✔ validatePlanFrontmatter accepts required schema (7.3217ms)
+✔ validatePlanFrontmatter fails missing required schema fields (0.7558ms)
+✔ parsePlanFrontmatterYaml returns typed values (0.5133ms)
+✔ validateWaveOrdering checks dependency graph and wave ordering (0.821ms)
+✔ parsePlanWave reads wave from frontmatter (1.3312ms)
+✔ buildVerificationCommandPlan selects matrix commands by changed paths (3.0585ms)
+✔ buildVerificationCommandPlan supports forge-loop profile (1.3168ms)
+✔ verify-work emits expected check matrix in command output (4880.6498ms)
+✔ verify-work --strict exits non-zero when checks fail (2853.2718ms)
 ℹ tests 38
 ℹ suites 0
 ℹ pass 38
@@ -293,7 +293,7 @@ Ran all test suites. |
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 8614.4779 |
+ℹ duration_ms 8352.0938 |
 
 ## UAT Truths
 
