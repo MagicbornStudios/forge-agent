@@ -1,6 +1,7 @@
 /**
- * Scans registry/default/example/*.tsx and writes registry/__index__.tsx
- * so ComponentPreview can lazy-load example components by name.
+ * Generates registry/__index__.tsx for non-showcase examples.
+ * Showcase demos now live in packages/shared (run `pnpm build:showcase-registry` from root).
+ * This script produces an empty registry; add files to registry/default/example/ for non-showcase demos.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -16,10 +17,7 @@ if (!fs.existsSync(examplesDir)) {
 }
 
 const files = fs.readdirSync(examplesDir).filter((f) => f.endsWith('.tsx'));
-const entries = files.map((f) => {
-  const name = f.replace(/\.tsx$/, '');
-  return { name };
-});
+const entries = files.map((f) => ({ name: f.replace(/\.tsx$/, '') }));
 
 function toExportName(name) {
   return name
@@ -32,24 +30,30 @@ function toLazyVar(name) {
   return 'Lazy_' + name.replace(/-/g, '_');
 }
 
-const lazyLines = entries.map(
-  (e) =>
-    `const ${toLazyVar(e.name)} = React.lazy(() => import('./default/example/${e.name}').then((m) => ({ default: m.${toExportName(e.name)} ?? m.default })));`
-);
-const indexEntries = entries.map((e) => `  '${e.name}': { component: ${toLazyVar(e.name)} },`);
+const lazyLines =
+  entries.length > 0
+    ? entries.map(
+        (e) =>
+          `const ${toLazyVar(e.name)} = React.lazy(() => import('./default/example/${e.name}').then((m) => ({ default: m.${toExportName(e.name)} ?? m.default })));`
+      )
+    : [];
+const indexEntries =
+  entries.length > 0
+    ? entries.map((e) => `  '${e.name}': { component: ${toLazyVar(e.name)} },`)
+    : [];
 
 const out = [
   "import React from 'react';",
-  "",
+  '',
   ...lazyLines,
-  "",
-  "export const Index = {",
+  '',
+  'export const Index = {',
   ...indexEntries,
-  "} as const;",
-  "",
-  "export type RegistryName = keyof typeof Index;",
+  '} as const;',
+  '',
+  'export type RegistryName = keyof typeof Index;',
 ].join('\n');
 
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
 fs.writeFileSync(outPath, out);
-console.log('Wrote ' + outPath + ' with ' + entries.length + ' example(s): ' + entries.map((e) => e.name).join(', '));
+console.log('Wrote ' + outPath + ' with ' + entries.length + ' example(s)');

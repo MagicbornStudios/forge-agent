@@ -220,12 +220,14 @@ export function runCommand(cwd, command, args = []) {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
   });
+  const spawnError = result.error instanceof Error ? result.error.message : '';
+  const stderr = [result.stderr?.trim() ?? '', spawnError].filter(Boolean).join('\n');
 
   return {
     command: `${command} ${args.join(' ')}`.trim(),
-    ok: result.status === 0,
+    ok: result.status === 0 && !result.error,
     status: result.status,
     stdout: result.stdout?.trim() ?? '',
-    stderr: result.stderr?.trim() ?? '',
+    stderr,
   };
 }

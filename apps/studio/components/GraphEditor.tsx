@@ -9,6 +9,8 @@ import ReactFlow, {
   type Connection,
   type ReactFlowInstance,
   type FitViewOptions,
+  type Node,
+  type Edge,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import type { ForgeGraphDoc, ForgeGraphPatchOp, ForgeNodeType } from '@forge/types/graph';
@@ -72,6 +74,12 @@ export interface GraphEditorProps {
   children?: React.ReactNode;
   /** Allow dragging nodes. Default true. */
   nodesDraggable?: boolean;
+  /** Called when the user clicks the pane (graph background). Use to switch active viewport. */
+  onPaneClick?: (event: React.MouseEvent) => void;
+  /** Called when user clicks a node. Use to immediately set scope + selection (supplements onSelectionChange). */
+  onNodeClick?: (event: React.MouseEvent, node: Node) => void;
+  /** Called when user clicks an edge. Use to immediately set scope + selection. */
+  onEdgeClick?: (event: React.MouseEvent, edge: Edge) => void;
 }
 
 export function GraphEditor({
@@ -90,6 +98,9 @@ export function GraphEditor({
   className,
   children,
   nodesDraggable = true,
+  onPaneClick,
+  onNodeClick,
+  onEdgeClick,
 }: GraphEditorProps) {
   const viewportRef = useRef<ReactFlowInstance | null>(null);
 
@@ -250,6 +261,9 @@ export function GraphEditor({
             onDragOver={handleDragOver}
             onDrop={handleDrop}
             nodesDraggable={nodesDraggable}
+            onPaneClick={onPaneClick}
+            onNodeClick={onNodeClick}
+            onEdgeClick={onEdgeClick}
             fitView
           >
             <FlowBackground />

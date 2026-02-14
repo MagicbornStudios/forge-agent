@@ -19,11 +19,13 @@ pnpm forge-loop:verify-work -- <phase> [--non-interactive] [--strict]
 pnpm forge-loop:progress
 pnpm forge-loop:sync-legacy
 pnpm forge-loop:doctor
+pnpm forge-env:doctor -- --mode headless --strict
+pnpm forge-repo-studio open --view env --mode headless
 ```
 
 ## Lifecycle
 
-1. `new-project`: initialize `.planning` and seed config/artifacts (`--profile forge-agent|generic`).
+1. `new-project`: initialize `.planning` and seed config/artifacts (`--profile forge-agent|forge-loop|custom`).
 2. `discuss-phase`: capture phase boundary decisions and generate discuss prompt pack.
 3. `plan-phase`: create research/plan files with schema-validated frontmatter and must-haves.
 4. `execute-phase`: run plan tasks, write idempotent summaries, update state, and auto-commit by task.
@@ -34,8 +36,10 @@ pnpm forge-loop:doctor
 ## Runtime policy
 
 - Runtime is `prompt-pack` only.
-- No provider SDK or API key is required by Forge Loop.
+- Forge Loop itself does not embed provider SDK calls.
 - Prompt packs are generated for coding-agent or manual runs.
+- For headless agent execution, validate env readiness with `pnpm forge-env:doctor -- --mode headless --strict`.
+- For interactive env triage, use RepoStudio: `pnpm forge-repo-studio open --view env`.
 
 ## Strict verification
 

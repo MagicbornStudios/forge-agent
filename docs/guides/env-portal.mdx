@@ -1,49 +1,33 @@
 ---
 title: Environment portal
-description: Web UI for editing .env.local. When it opens, how to use it, and Vercel sync.
+description: GUI for environment reconciliation and headless readiness checks.
 ---
 
 # Environment portal
 
-The env portal is a localhost-only web UI for editing `.env.local` for Studio and Platform. It reads from `scripts/env/manifest.mjs` and writes to `apps/studio/.env.local` and `apps/platform/.env.local`.
+Env GUI flow is now RepoStudio-first, backed by `@forge/forge-env`.
 
-## When it opens
+## Default launcher behavior
 
-- **Bootstrap:** Running `pnpm dev` runs `pnpm env:bootstrap` first. If required keys are missing for the current app, the portal opens in your browser at `http://127.0.0.1:3847`.
-- **Manual:** Run `pnpm env:portal` anytime to open the portal for ad-hoc edits.
+- `pnpm env:portal` and `forge-env portal` try to launch RepoStudio Env workspace first.
+- If RepoStudio is unavailable, fallback is the legacy inline portal UI at `http://127.0.0.1:3847`.
+- `forge-env portal --bootstrap` always uses bootstrap behavior that blocks until required keys are satisfied.
 
-To skip bootstrap (e.g. CI): set `FORGE_SKIP_ENV_BOOTSTRAP=1` or `CI=1`.
+## Force legacy portal
 
-## What you see
+```bash
+forge-env portal --legacy-portal
+```
 
-The portal shows two app sections: **@forge/studio** and **@forge/platform**. Each section lists variables grouped by manifest section:
+## Typical flow
 
-| Section | Contents |
-|---------|----------|
-| Core runtime | PAYLOAD_SECRET, DATABASE_URI, NEXT_PUBLIC_APP_URL |
-| Local developer bootstrap | Auto-admin, seed overrides |
-| AI and model routing | OpenRouter keys, LangGraph flags |
-| Stripe and billing | Stripe keys, price ids |
-| Media upload and voice | S3, ElevenLabs |
-| Analytics and logging | PostHog, LOG_LEVEL |
-| etc. | |
+1. Run doctor: `forge-env doctor --mode headless --strict`.
+2. Open GUI: `forge-repo-studio open --view env --mode headless`.
+3. Reconcile/write: `forge-env reconcile --write --sync-examples`.
+4. Re-run doctor.
 
-Required fields for local mode are highlighted. Secret fields use password inputs.
+## Notes
 
-## Flow
-
-1. **Fill** — Enter values for required keys (e.g. `PAYLOAD_SECRET`, `OPENROUTER_API_KEY`).
-2. **Save** — Click Save. The portal writes to `.env.local`.
-3. **Rerun** — If you opened via bootstrap, the server exits after save. Rerun `pnpm dev` to start the app.
-
-## Vercel sync
-
-The portal includes an optional **Vercel** section for syncing env vars to Vercel projects. Configure in `.env.vercel.local`:
-
-- `VERCEL_API_TOKEN` — For API access
-- `VERCEL_PROJECT_STUDIO` — Studio project id/name
-- `VERCEL_PROJECT_PLATFORM` — Platform project id/name
-
-Then use **Sync to Vercel** in the portal, or run `pnpm env:sync:vercel` from the CLI.
-
-See [28 — Vercel and Supabase launch](how-to/28-vercel-supabase-launch.mdx) for the full deploy flow.
+- In `forge-agent` profile, env targets include `apps/studio` and `apps/platform`.
+- Discovery now scans workspace targets from `pnpm-workspace.yaml`.
+- Reconcile is non-destructive by default (union + preserve, backups on write).

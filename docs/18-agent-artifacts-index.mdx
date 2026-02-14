@@ -10,7 +10,9 @@ Files for AI/coding agents. Keep accurate and greppable.
 
 - **Next:** Read [Coding agent strategy](19-coding-agent-strategy).
 - **Loop:** `forge-loop new-project -> discuss-phase -> plan-phase -> execute-phase -> verify-work -> doctor -> progress -> sync-legacy`.
-- **Runtime:** prompt-pack only (no provider SDK/API requirement).
+- **Runtime:** prompt-pack only (no embedded provider SDK/API execution path).
+- **Headless gate:** validate env readiness with `forge-env doctor --mode headless --strict`.
+- **GUI command center:** `forge-repo-studio open --view env` for env triage, allowlisted commands, and loop status.
 
 ## Source of truth (`.planning`)
 
@@ -23,7 +25,7 @@ Files for AI/coding agents. Keep accurate and greppable.
 - **`.planning/TASK-REGISTRY.md`** - Backlog registry (primary).
 - **`.planning/TEMP-REFACTOR-BACKLOG.md`** - Temporary migration/refactor queue.
 - **`.planning/phases/*`** - Context, research, plans, summaries, UAT, verification.
-- **`.planning/prompts/*`** - Runtime-agnostic prompt packs for Cursor/Codex/manual runs.
+- **`.planning/prompts/*`** - Runtime-agnostic prompt packs for coding-agent/manual runs.
 - **`.planning/migration-report.json`** - One-time migration report from legacy artifacts.
 
 See [how-to/forge-loop-workflow](how-to/forge-loop-workflow), [how-to/forge-loop-manual-usage](how-to/forge-loop-manual-usage), and [how-to/forge-loop-agent-usage](how-to/forge-loop-agent-usage).

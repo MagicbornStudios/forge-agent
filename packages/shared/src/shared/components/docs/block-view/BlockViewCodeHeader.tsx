@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { Check, Clipboard } from 'lucide-react';
-import { Button } from '@forge/ui/button';
+import { EditorButton } from '../../editor';
 import { cn } from '@forge/ui/lib/utils';
 
 const COPIED_DURATION_MS = 1500;
@@ -68,10 +68,10 @@ export function BlockViewCodeHeader({
       <span className="truncate text-xs font-medium text-muted-foreground">
         {filePath}
       </span>
-      <Button
+      <EditorButton
         size="icon"
         variant="ghost"
-        title={copied ? 'Copied' : 'Copy file contents'}
+        tooltip={copied ? 'Copied' : 'Copy file contents'}
         onClick={() => void copyToClipboard(code)}
       >
         {copied ? (
@@ -82,7 +82,7 @@ export function BlockViewCodeHeader({
         <span className="sr-only">
           {copied ? 'Copied' : 'Copy file contents'}
         </span>
-      </Button>
+      </EditorButton>
     </div>
   );
 }

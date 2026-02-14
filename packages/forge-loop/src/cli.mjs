@@ -12,11 +12,16 @@ import { runSyncLegacy } from './commands/sync-legacy.mjs';
 import { runDoctor } from './commands/doctor.mjs';
 
 function printUsage() {
-  console.log(`forge-loop v1.1\n\nUsage:\n  forge-loop <command> [options]\n\nFirst run:\n  forge-loop new-project --fresh --profile generic\n  forge-loop doctor\n\nCommands:\n  new-project [--fresh] [--profile forge-agent|generic]\n  migrate-legacy\n  discuss-phase <phase> [--notes "..."]\n  plan-phase <phase> [--skip-research] [--gaps]\n  execute-phase <phase> [--gaps-only] [--non-interactive]\n  verify-work <phase> [--non-interactive] [--strict]\n  progress\n  sync-legacy\n  doctor\n\nRunbooks:\n  docs/01-quickstart.md\n`);
+  console.log(`forge-loop v1.4\n\nUsage:\n  forge-loop <command> [options]\n\nFirst run:\n  forge-loop new-project --fresh --profile forge-loop\n  forge-loop doctor\n\nCommands:\n  new-project [--fresh] [--profile forge-agent|forge-loop|custom]\n  migrate-legacy\n  discuss-phase <phase> [--notes "..."]\n  plan-phase <phase> [--skip-research] [--gaps]\n  execute-phase <phase> [--gaps-only] [--non-interactive] [--headless]\n  verify-work <phase> [--non-interactive] [--strict] [--headless]\n  progress [--json]\n  sync-legacy\n  doctor [--headless]\n\nGlobal:\n  --json  Print machine-readable command output.\n\nRunbooks:\n  packages/forge-loop/docs/01-quickstart.md (repo)\n  docs/01-quickstart.md (published package)\n\nGUI companion:\n  forge-repo-studio open --view env --mode headless\n`);
 }
 
-function printResult(result) {
+function printResult(result, asJson = false) {
   if (!result) return;
+
+  if (asJson) {
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
 
   if (result.message) console.log(result.message);
   if (result.report) {
@@ -52,7 +57,8 @@ function printResult(result) {
   if (result.checks?.length) {
     console.log('Checks:');
     for (const check of result.checks) {
-      console.log(`- ${check.command}: ${check.ok ? 'PASS' : 'FAIL'}`);
+      const label = check.command || check.name || 'check';
+      console.log(`- ${label}: ${check.ok ? 'PASS' : 'FAIL'}`);
     }
   }
 }
@@ -67,6 +73,7 @@ async function main() {
   }
 
   const { positional, flags } = parseSimpleFlags(argv.slice(1));
+  const asJson = flags.has('json');
 
   let result = null;
 
@@ -93,12 +100,14 @@ async function main() {
       result = await runExecutePhase(positional[0], {
         gapsOnly: flags.has('gaps-only'),
         nonInteractive: flags.has('non-interactive'),
+        headless: flags.has('headless'),
         allowOutOfScope: flags.has('allow-out-of-scope'),
       });
       break;
     case 'verify-work':
       result = await runVerifyWork(positional[0], {
         nonInteractive: flags.has('non-interactive'),
+        headless: flags.has('headless'),
         strict: flags.has('strict') ? true : undefined,
         allowOutOfScope: flags.has('allow-out-of-scope'),
       });
@@ -113,13 +122,18 @@ async function main() {
       });
       break;
     case 'doctor':
-      result = await runDoctor();
+      result = await runDoctor({
+        headless: flags.has('headless'),
+      });
       break;
     default:
       throw new Error(`Unknown command: ${command}`);
   }
 
-  printResult(result);
+  printResult(result, asJson);
+  if (result?.ok === false) {
+    process.exitCode = 1;
+  }
 }
 
 main().catch((error) => {

@@ -39,6 +39,8 @@ interface AppShellState {
   settingsViewportId: string | null;
   /** Settings Sidebar (right rail) open. Not persisted. */
   settingsSidebarOpen: boolean;
+  /** Active settings tab (app|user|project|editor|viewport). Used for sidebar title/scope indicator. Not persisted. */
+  settingsActiveTab: 'app' | 'user' | 'project' | 'editor' | 'viewport' | null;
   /** Dock layout JSON by layoutId (Dockview). Persisted. */
   dockLayouts: Record<string, string>;
   setRoute: (route: Partial<Pick<AppShellRoute, 'activeWorkspaceId' | 'openWorkspaceIds'>>) => void;
@@ -56,6 +58,7 @@ interface AppShellState {
   setRequestOpenSettings: (value: boolean) => void;
   setSettingsViewportId: (id: string | null) => void;
   setSettingsSidebarOpen: (open: boolean) => void;
+  setSettingsActiveTab: (tab: 'app' | 'user' | 'project' | 'editor' | 'viewport' | null) => void;
   setDockLayout: (layoutId: string, json: string) => void;
   clearDockLayout: (layoutId: string) => void;
 }
@@ -212,6 +215,13 @@ export const useAppShellStore = create<AppShellState>()(
         setSettingsSidebarOpen: (open) => {
           set((state) => {
             state.settingsSidebarOpen = open;
+            if (!open) state.settingsActiveTab = null;
+          });
+        },
+
+        setSettingsActiveTab: (tab) => {
+          set((state) => {
+            state.settingsActiveTab = tab;
           });
         },
 

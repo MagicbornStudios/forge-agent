@@ -37,9 +37,15 @@ export async function runProgress() {
     if (execution.complete) status = 'complete';
 
     return {
-      phase,
+      phaseNumber: phase.phaseNumber,
+      phaseName: phase.name,
+      goal: phase.goal || '',
+      requirements: Array.isArray(phase.requirements) ? phase.requirements : [],
       status,
-      execution,
+      plans: execution.planCount,
+      summaries: execution.summaryCount,
+      complete: execution.complete,
+      incompletePlans: execution.incompletePlans.map((item) => path.basename(item)),
     };
   });
 
@@ -51,20 +57,20 @@ export async function runProgress() {
 
   for (const row of rows) {
     if (row.status === 'not-started') {
-      nextAction = `forge-loop discuss-phase ${row.phase.phaseNumber}`;
-      nextReason = `Phase ${row.phase.phaseNumber} has no plans yet.`;
+      nextAction = `forge-loop discuss-phase ${row.phaseNumber}`;
+      nextReason = `Phase ${row.phaseNumber} has no plans yet.`;
       break;
     }
 
     if (row.status === 'planned' || row.status === 'in-progress') {
-      nextAction = `forge-loop execute-phase ${row.phase.phaseNumber}`;
-      nextReason = `Phase ${row.phase.phaseNumber} has pending plan execution.`;
+      nextAction = `forge-loop execute-phase ${row.phaseNumber}`;
+      nextReason = `Phase ${row.phaseNumber} has pending plan execution.`;
       break;
     }
   }
 
   if (!nextAction) {
-    const lastPhase = rows[rows.length - 1].phase.phaseNumber;
+    const lastPhase = rows[rows.length - 1].phaseNumber;
     nextAction = `forge-loop verify-work ${lastPhase}`;
     nextReason = 'All known plans appear complete; verify latest phase outputs.';
   }
@@ -76,7 +82,7 @@ export async function runProgress() {
     '',
     '| Phase | Status | Plans | Summaries |',
     '|---|---|---:|---:|',
-    ...rows.map((row) => `| ${row.phase.phaseNumber} - ${row.phase.name} | ${row.status} | ${row.execution.planCount} | ${row.execution.summaryCount} |`),
+    ...rows.map((row) => `| ${row.phaseNumber} - ${row.phaseName} | ${row.status} | ${row.plans} | ${row.summaries} |`),
     '',
     `Next: ${nextAction}`,
     nextReason ? `Reason: ${nextReason}` : '',
@@ -85,6 +91,8 @@ export async function runProgress() {
   return {
     status: 'ok',
     percent,
+    completePhases: completed,
+    totalPhases: rows.length,
     rows,
     nextAction,
     nextReason,

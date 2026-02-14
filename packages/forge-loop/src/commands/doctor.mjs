@@ -7,10 +7,12 @@ import {
 import { fileExists, readText } from '../lib/fs-utils.mjs';
 import {
   getCommitScope,
+  getEnvSettings,
   getLegacySyncTargets,
   loadPlanningConfig,
 } from '../lib/config.mjs';
 import { getStagedFiles, isGitRepo, isInCommitScope } from '../lib/git.mjs';
+import { ensureHeadlessEnvReady } from '../lib/env-preflight.mjs';
 
 const REQUIRED_FILES = [
   PLANNING_FILES.project,
@@ -52,7 +54,7 @@ function printDoctorReport(checks, warnings, issues) {
   return `${lines.join('\n')}\n`;
 }
 
-export async function runDoctor() {
+export async function runDoctor(options = {}) {
   const checks = [];
   const warnings = [];
   const issues = [];
@@ -68,6 +70,7 @@ export async function runDoctor() {
   }
 
   const config = loadPlanningConfig();
+  const env = getEnvSettings(config);
   const runtimeOk = config.runtime === 'prompt-pack';
   checks.push({
     name: 'config.runtime',
@@ -75,6 +78,12 @@ export async function runDoctor() {
     details: `runtime=${config.runtime}`,
   });
   if (!runtimeOk) issues.push(`Unsupported runtime "${config.runtime}". Only "prompt-pack" is allowed.`);
+
+  checks.push({
+    name: 'config.env.profile',
+    ok: true,
+    details: env.enabled ? `enabled (${env.profile})` : 'disabled',
+  });
 
   const commitScope = getCommitScope(config);
   const commitScopeOk = Array.isArray(commitScope) && commitScope.length > 0;
@@ -125,6 +134,30 @@ export async function runDoctor() {
     }
   } else {
     warnings.push('Current directory is not a git repository.');
+  }
+
+  if (options.headless === true) {
+    try {
+      const envResult = ensureHeadlessEnvReady(config, {
+        headless: true,
+        autoLaunchPortal: options.autoLaunchPortal,
+      });
+      checks.push({
+        name: 'env.headless',
+        ok: true,
+        details: envResult.recovered
+          ? `ready (recovered via ${envResult.launchedRepoStudio ? 'repo-studio + ' : ''}portal, profile=${env.profile})`
+          : `ready (profile=${env.profile})`,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      checks.push({
+        name: 'env.headless',
+        ok: false,
+        details: 'failed',
+      });
+      issues.push(message);
+    }
   }
 
   const report = printDoctorReport(checks, warnings, issues);

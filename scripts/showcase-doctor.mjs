@@ -11,11 +11,14 @@ const sharedDemoRegistryPath = path.join(
   repoRoot,
   'packages/shared/src/shared/components/docs/showcase/demos/index.tsx',
 );
-const sharedDemoCategoryFiles = [
-  path.join(repoRoot, 'packages/shared/src/shared/components/docs/showcase/demos/atoms.tsx'),
-  path.join(repoRoot, 'packages/shared/src/shared/components/docs/showcase/demos/molecules.tsx'),
-  path.join(repoRoot, 'packages/shared/src/shared/components/docs/showcase/demos/organisms.tsx'),
-];
+const registryGeneratedPath = path.join(
+  repoRoot,
+  'packages/shared/src/shared/components/docs/showcase/demos/registry.generated.tsx',
+);
+const codeMapPath = path.join(
+  repoRoot,
+  'packages/shared/src/shared/components/docs/showcase/_showcase-code-map.json',
+);
 const studioShowcaseDir = path.join(repoRoot, 'docs/components/showcase');
 const platformShowcaseDir = path.join(repoRoot, 'apps/platform/content/docs/components/showcase');
 
@@ -26,15 +29,40 @@ function collectCatalogEntries() {
 }
 
 function extractRegistryIds() {
-  const content = [
-    fs.readFileSync(sharedDemoRegistryPath, 'utf8'),
-    ...sharedDemoCategoryFiles.map((filePath) => fs.readFileSync(filePath, 'utf8')),
-  ].join('\n');
+  const content = fs.existsSync(registryGeneratedPath)
+    ? fs.readFileSync(registryGeneratedPath, 'utf8')
+    : fs.readFileSync(sharedDemoRegistryPath, 'utf8');
   const ids = new Set();
   for (const match of content.matchAll(/['"]([a-z0-9-]+)['"]\s*:/gi)) {
     ids.add(match[1]);
   }
   return ids;
+}
+
+function loadCodeMap() {
+  if (!fs.existsSync(codeMapPath)) return {};
+  return JSON.parse(fs.readFileSync(codeMapPath, 'utf8'));
+}
+
+function validateRegistryAndCodeMap(entries) {
+  const failures = [];
+  const codeMap = loadCodeMap();
+  for (const entry of entries) {
+    const demoId = entry.demoId ?? entry.id;
+    const mapEntry = codeMap[demoId];
+    if (!mapEntry) {
+      failures.push(`code-map: ${demoId} missing from _showcase-code-map.json`);
+    } else {
+      const paths = Array.isArray(mapEntry) ? mapEntry : [mapEntry];
+      for (const p of paths) {
+        const fullPath = path.join(repoRoot, p.replace(/\//g, path.sep));
+        if (!fs.existsSync(fullPath)) {
+          failures.push(`code-map: ${demoId} references missing file: ${p}`);
+        }
+      }
+    }
+  }
+  return failures;
 }
 
 function readMdxDemoIds(filePath, componentTag, propName) {
@@ -54,16 +82,13 @@ function main() {
   const entryIds = entries.map((entry) => entry.id);
   const entryIdSet = new Set(entryIds);
 
+  failures.push(...validateRegistryAndCodeMap(entries));
+
   for (const entry of entries) {
     const files = entry.code?.files ?? [];
     if (files.length === 0) {
-      failures.push(`catalog: ${entry.id} has no code files`);
+      failures.push(`catalog: ${entry.id} has no code files (run pnpm docs:showcase:generate)`);
       continue;
-    }
-    for (const file of files) {
-      if (!file.path || !file.code || file.code.trim().length === 0) {
-        failures.push(`catalog: ${entry.id} has invalid code file data`);
-      }
     }
   }
 

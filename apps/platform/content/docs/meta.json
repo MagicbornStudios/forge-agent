@@ -1,28 +1,7 @@
 {
   "title": "Documentation",
   "pages": [
-    "---Platform---",
     "index",
-    "overview",
-    "platform-overview",
-    "why-forge",
-    "platform-features",
-    "getting-started",
-    "use-cases",
-    "workflow-examples",
-    "comparison",
-    "pricing",
-    "developer-program",
-    "ai-workflows",
-    "---Developer---",
-    "components",
-    "developer-guide",
-    "tutorials",
-    "guides",
-    "reference",
-    "ai-system",
-    "api-reference",
-    "ai",
-    "yarn-spinner"
+    "components"
   ]
 }

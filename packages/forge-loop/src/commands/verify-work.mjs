@@ -17,6 +17,7 @@ import {
   runCommand,
 } from '../lib/git.mjs';
 import { askLine } from '../lib/prompting.mjs';
+import { ensureHeadlessEnvReady, shouldRunHeadlessEnvGate } from '../lib/env-preflight.mjs';
 import {
   ensurePhaseDir,
   findPhase,
@@ -169,7 +170,7 @@ export function buildVerificationCommandPlan(config, changedFiles) {
   const commands = [];
   const profile = getVerificationProfile(config);
 
-  if (profile === 'generic') {
+  if (profile === 'forge-loop') {
     if (config?.verification?.tests !== false) {
       commands.push({ command: 'pnpm', args: ['forge-loop:test'] });
     }
@@ -226,6 +227,12 @@ export async function runVerifyWork(phaseNumber, options = {}) {
   }
 
   const config = loadPlanningConfig();
+  if (shouldRunHeadlessEnvGate(config, options)) {
+    ensureHeadlessEnvReady(config, {
+      headless: options.headless === true,
+      nonInteractive: options.nonInteractive === true,
+    });
+  }
   const autoCommit = options.autoCommit ?? getAutoCommitEnabled(config);
   const commitScope = getCommitScope(config);
   const strictMode = isStrictVerificationEnabled(config, options.strict);
@@ -270,9 +277,25 @@ export async function runVerifyWork(phaseNumber, options = {}) {
   }
 
   const evaluation = evaluateVerification(checks, responses);
+  const nextAction = evaluation.status === 'gaps_found'
+    ? `forge-loop plan-phase ${phase.phaseNumber} --gaps`
+    : evaluation.status === 'human_needed'
+      ? `forge-loop verify-work ${phase.phaseNumber}`
+      : 'forge-loop progress';
+
+  const summary = {
+    status: evaluation.status,
+    nextAction,
+    blockingGaps: [
+      ...evaluation.failedChecks.map((check) => check.command),
+      ...evaluation.failedUat.map((item) => item.truth),
+    ],
+    skippedTruths: evaluation.skippedUat.map((item) => item.truth),
+  };
+
   if (strictMode && (evaluation.failedChecks.length > 0 || evaluation.failedUat.length > 0)) {
     throw new Error(
-      `Verification failed in strict mode: ${evaluation.failedChecks.length} automated check(s) failed, ${evaluation.failedUat.length} UAT issue(s) reported.`,
+      `Verification failed in strict mode: ${evaluation.failedChecks.length} automated check(s) failed, ${evaluation.failedUat.length} UAT issue(s) reported. Next: ${nextAction}`,
     );
   }
 
@@ -284,5 +307,7 @@ export async function runVerifyWork(phaseNumber, options = {}) {
     uatPath,
     strictMode,
     status: evaluation.status,
+    summary,
+    nextAction: summary.nextAction,
   };
 }

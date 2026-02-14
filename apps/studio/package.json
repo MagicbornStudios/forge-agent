@@ -19,7 +19,7 @@
     "generate-client": "pnpm run generate-spec && openapi -i ./openapi.json -o ./lib/api-client -c fetch",
     "prebuild": "pnpm run generate-spec && openapi -i ./openapi.json -o ./lib/api-client -c fetch",
     "build:registry": "node scripts/build-registry.mjs",
-    "predev": "pnpm run build:registry"
+    "predev": "pnpm -w run build:showcase-registry"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.25",

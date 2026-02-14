@@ -25,32 +25,9 @@ const showcaseVisibilityPath = path.join(
 );
 
 const aliasMap = new Map([
-  ['editor-shell', 'components/editor-shell'],
-  ['dock-layout', 'components/dock-layout'],
-  ['dock-panel', 'components/dock-panel'],
-  ['editor-toolbar', 'components/editor-toolbar'],
-  ['editor-inspector', 'components/editor-inspector'],
-  ['editor-overlay', 'components/editor-overlay'],
-  ['panel-tabs', 'components/panel-tabs'],
-  ['settings-system', 'components/settings-system'],
-  ['components/editor-shell-complete', 'components/editor-shell'],
-  ['components/dock-layout-complete', 'components/dock-layout'],
-  ['components/dock-panel-complete', 'components/dock-panel'],
-  ['components/editor-toolbar-complete', 'components/editor-toolbar'],
-  ['components/editor-inspector-complete', 'components/editor-inspector'],
-  ['components/editor-overlay-complete', 'components/editor-overlay'],
-  ['components/editor-overlay-surface', 'components/editor-overlay'],
-  ['components/editor-overlay-surface-complete', 'components/editor-overlay'],
-  ['components/editor-status-bar', 'components/editor/editor-status-bar'],
-  ['components/editor-review-bar', 'components/editor/editor-review-bar'],
-  ['components/editor-button', 'components/editor/editor-button'],
-  ['components/editor-menubar', 'components/editor/toolbar-editor-menubar'],
-  ['components/panel-tabs-complete', 'components/panel-tabs'],
-  ['components/settings-system-complete', 'components/settings-system'],
   ['components/00-index', 'components/index'],
   ['developer-guide/00-index', 'developer-guide/index'],
   ['ai-system/00-index', 'ai-system/overview'],
-  ['roadmap', 'roadmap'],
 ]);
 
 function readFilesRecursive(dir, exts) {
@@ -192,79 +169,13 @@ function toKebabCase(value) {
     .toLowerCase();
 }
 
-function normalizeEditorSlug(relativePath) {
-  const normalized = relativePath.replace(/\\/g, '/');
-  if (normalized === 'EditorDockLayout.tsx') return 'dock-layout';
-  if (normalized === 'EditorDockPanel.tsx') return 'dock-panel';
-  return toKebabCase(normalized.replace(/\.tsx$/, '').replace(/\//g, '-'));
-}
-
-function expectedCoverage() {
-  const atoms = fs
-    .readdirSync(path.join(repoRoot, 'packages/ui/src/components/ui'))
-    .filter((name) => name.endsWith('.tsx'))
-    .map((name) => toKebabCase(name.replace(/\.tsx$/, '')))
-    .sort((a, b) => a.localeCompare(b));
-
-  const editor = readFilesRecursive(path.join(repoRoot, 'packages/shared/src/shared/components/editor'), ['.tsx'])
-    .filter((filePath) => !filePath.endsWith('index.tsx'))
-    .map((filePath) => {
-      const rel = path.relative(path.join(repoRoot, 'packages/shared/src/shared/components/editor'), filePath).replace(/\\/g, '/');
-      return normalizeEditorSlug(rel);
-    })
-    .sort((a, b) => a.localeCompare(b));
-
-  const assistant = readFilesRecursive(path.join(repoRoot, 'packages/shared/src/shared/components/assistant-ui'), ['.tsx'])
-    .filter((filePath) => !filePath.endsWith('index.tsx'))
-    .map((filePath) => {
-      const rel = path.relative(path.join(repoRoot, 'packages/shared/src/shared/components/assistant-ui'), filePath).replace(/\\/g, '/');
-      return toKebabCase(rel.replace(/\.tsx$/, '').replace(/\//g, '-'));
-    })
-    .sort((a, b) => a.localeCompare(b));
-
-  const toolUi = fs
-    .readdirSync(path.join(repoRoot, 'packages/shared/src/shared/components/tool-ui'), { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => toKebabCase(entry.name))
-    .sort((a, b) => a.localeCompare(b));
-
-  return { atoms, editor, assistant, toolUi };
-}
-
 function readMetaPages(metaPath) {
   const json = parseJson(metaPath);
   return Array.isArray(json.pages) ? json.pages.filter((entry) => typeof entry === 'string') : [];
 }
 
 function checkCoverage(failures) {
-  const expected = expectedCoverage();
-
-  const checks = [
-    {
-      id: 'atoms',
-      expected: expected.atoms,
-      baseDir: path.join(docsRoot, 'components/atoms'),
-      meta: path.join(docsRoot, 'components/atoms/meta.json'),
-    },
-    {
-      id: 'editor',
-      expected: expected.editor,
-      baseDir: path.join(docsRoot, 'components/editor'),
-      meta: path.join(docsRoot, 'components/editor/meta.json'),
-    },
-    {
-      id: 'assistant-ui',
-      expected: expected.assistant,
-      baseDir: path.join(docsRoot, 'components/assistant-ui'),
-      meta: path.join(docsRoot, 'components/assistant-ui/meta.json'),
-    },
-    {
-      id: 'tool-ui',
-      expected: expected.toolUi,
-      baseDir: path.join(docsRoot, 'components/tool-ui'),
-      meta: path.join(docsRoot, 'components/tool-ui/meta.json'),
-    },
-  ];
+  const checks = [];
 
   for (const check of checks) {
     for (const slug of check.expected) {

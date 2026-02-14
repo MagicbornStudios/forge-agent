@@ -34,7 +34,7 @@ Repair by editing canonical `.planning/*` files, not legacy snapshots.
 
 If legacy artifacts are too noisy for reliable import:
 
-1. run `forge-loop new-project --fresh --profile generic`
+1. run `forge-loop new-project --fresh --profile forge-loop`
 2. manually copy only trusted items into:
    - `.planning/PROJECT.md`
    - `.planning/REQUIREMENTS.md`

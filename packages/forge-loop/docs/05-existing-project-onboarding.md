@@ -9,7 +9,7 @@ Use this decision tree when introducing Forge Loop into an existing repository.
 Use:
 
 ```bash
-forge-loop new-project --fresh --profile generic
+forge-loop new-project --fresh --profile forge-loop
 forge-loop doctor
 forge-loop progress
 ```
@@ -40,4 +40,5 @@ forge-loop progress
 ## Profile guidance
 
 - `--profile forge-agent`: forge-agent command matrix defaults
-- `--profile generic`: generic repository defaults
+- `--profile forge-loop`: forge-loop package defaults
+- `--profile custom`: custom env profile plus forge-loop baseline verification matrix

@@ -7,7 +7,7 @@ import { Input } from '@forge/ui/input';
 import { CharacterList } from './CharacterList';
 import { RelationshipsList } from './RelationshipsList';
 import type { CharacterDoc, RelationshipDoc } from '@/lib/domains/character/types';
-import { PanelTabs, type PanelTabDef } from '@forge/shared/components/editor';
+import { PanelTabs } from '@forge/shared/components/editor';
 import { NodePalette, type NodePaletteItem } from '@/components/graph/NodePalette';
 
 interface Props {
@@ -91,29 +91,32 @@ export function CharacterSidebar({
     />
   );
 
-  const tabs: PanelTabDef[] = [
-    {
-      id: 'characters',
-      label: 'Characters',
-      icon: <Users size={12} />,
-      content: charactersTab,
-      accentColor: 'var(--status-info)',
-    },
-    {
-      id: 'relationships',
-      label: 'Relations',
-      icon: <Link2 size={12} />,
-      content: relationshipsTab,
-      accentColor: 'var(--graph-edge-choice-1)',
-    },
-    {
-      id: 'nodes',
-      label: 'Nodes',
-      icon: <Boxes size={12} />,
-      content: nodesTab,
-      accentColor: 'var(--status-warning)',
-    },
-  ];
-
-  return <PanelTabs tabs={tabs} className="h-full" />;
+  return (
+    <PanelTabs className="h-full">
+      <PanelTabs.Tab
+        id="characters"
+        label="Characters"
+        icon={<Users size={12} />}
+        accentColor="var(--status-info)"
+      >
+        {charactersTab}
+      </PanelTabs.Tab>
+      <PanelTabs.Tab
+        id="relationships"
+        label="Relations"
+        icon={<Link2 size={12} />}
+        accentColor="var(--graph-edge-choice-1)"
+      >
+        {relationshipsTab}
+      </PanelTabs.Tab>
+      <PanelTabs.Tab
+        id="nodes"
+        label="Nodes"
+        icon={<Boxes size={12} />}
+        accentColor="var(--status-warning)"
+      >
+        {nodesTab}
+      </PanelTabs.Tab>
+    </PanelTabs>
+  );
 }

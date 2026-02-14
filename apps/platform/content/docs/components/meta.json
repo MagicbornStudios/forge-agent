@@ -2,17 +2,6 @@
   "title": "Component Reference",
   "pages": [
     "index",
-    "showcase",
-    "editor",
-    "assistant-ui",
-    "tool-ui",
-    "editor-shell",
-    "dock-layout",
-    "dock-panel",
-    "editor-toolbar",
-    "editor-inspector",
-    "editor-overlay",
-    "panel-tabs",
-    "settings-system"
+    "showcase"
   ]
 }

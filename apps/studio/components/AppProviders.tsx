@@ -20,9 +20,14 @@ import {
 } from '@forge/ui/sidebar';
 import { Button } from '@forge/ui/button';
 import { AppSettingsPanelContent } from '@/components/settings/AppSettingsPanelContent';
+import { SETTINGS_SCOPE_COLORS } from '@/lib/app-shell/editor-metadata';
 import { useEditorStore } from '@/lib/app-shell/store';
 import { cn } from '@forge/shared/lib/utils';
 import { X } from 'lucide-react';
+
+function capitalizeTab(tab: string): string {
+  return tab.charAt(0).toUpperCase() + tab.slice(1);
+}
 
 export interface AppProvidersProps {
   children: React.ReactNode;
@@ -53,6 +58,7 @@ export function AppProviders({ children }: AppProvidersProps) {
   const activeWorkspaceId = useEditorStore((s) => s.route.activeWorkspaceId);
   const activeProjectId = useEditorStore((s) => s.activeProjectId);
   const settingsViewportId = useEditorStore((s) => s.settingsViewportId);
+  const settingsActiveTab = useEditorStore((s) => s.settingsActiveTab);
 
   React.useEffect(() => {
     if (!requestOpenSettings) return;
@@ -103,11 +109,26 @@ export function AppProviders({ children }: AppProvidersProps) {
                           collapsible="offcanvas"
                           className="border-l border-sidebar-border"
                         >
-                          <SidebarHeader className="border-b border-sidebar-border p-[var(--panel-padding)]">
+                          <SidebarHeader
+                            className="border-b border-sidebar-border p-[var(--panel-padding)]"
+                            style={
+                              settingsActiveTab &&
+                              SETTINGS_SCOPE_COLORS[settingsActiveTab]
+                                ? {
+                                    borderLeftWidth: 4,
+                                    borderLeftStyle: 'solid',
+                                    borderLeftColor:
+                                      SETTINGS_SCOPE_COLORS[settingsActiveTab],
+                                  }
+                                : undefined
+                            }
+                          >
                             <div className="flex items-start justify-between gap-[var(--control-gap)]">
                               <div>
                                 <h2 className="text-sm font-semibold text-sidebar-foreground">
-                                  Settings
+                                  {settingsActiveTab
+                                    ? `Settings - ${capitalizeTab(settingsActiveTab)}`
+                                    : 'Settings'}
                                 </h2>
                                 <p className="text-xs text-muted-foreground mt-0.5">
                                   App and editor defaults; viewport settings when in context.

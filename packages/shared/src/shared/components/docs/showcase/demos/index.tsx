@@ -1,27 +1,24 @@
 'use client';
 
 import type { ComponentType } from 'react';
-import { ATOM_SHOWCASE_DEMOS } from './atoms';
-import { MOLECULE_SHOWCASE_DEMOS } from './molecules';
-import { ORGANISM_SHOWCASE_DEMOS } from './organisms';
+import { SHOWCASE_REGISTRY } from './registry.generated';
 
 export type ShowcaseDemoRenderer = ComponentType;
 
-export const SHOWCASE_DEMOS: Record<string, ShowcaseDemoRenderer> = {
-  ...ATOM_SHOWCASE_DEMOS,
-  ...MOLECULE_SHOWCASE_DEMOS,
-  ...ORGANISM_SHOWCASE_DEMOS,
-};
+export const SHOWCASE_DEMOS: Record<string, ShowcaseDemoRenderer> = SHOWCASE_REGISTRY as Record<
+  string,
+  ShowcaseDemoRenderer
+>;
 
 export function hasShowcaseDemo(demoId: string): boolean {
-  return Boolean(SHOWCASE_DEMOS[demoId]);
+  return Boolean(SHOWCASE_REGISTRY[demoId]);
 }
 
 export function getShowcaseDemo(demoId: string): ShowcaseDemoRenderer {
-  const demo = SHOWCASE_DEMOS[demoId];
+  const demo = SHOWCASE_REGISTRY[demoId];
   if (!demo) {
     throw new Error(`Missing shared showcase demo renderer for "${demoId}".`);
   }
-  return demo;
+  return demo as ShowcaseDemoRenderer;
 }
 

@@ -84,17 +84,17 @@ function NodeRow({
 
   if (node.kind === 'file') {
     return (
-      <li>
+      <li className="list-none">
         <button
           type="button"
           onClick={() => onSelect(node.path)}
           className={cn(
-            'flex w-full items-center gap-2 rounded-sm px-2 py-1 text-left text-xs transition-colors',
+            'flex w-full items-center gap-2 rounded-sm px-2 py-1 text-left text-xs outline-none transition-colors',
             activePath === node.path
               ? 'bg-muted text-foreground'
               : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
           )}
-          style={{ paddingLeft: `${depth * 0.75 + 0.5}rem` }}
+          style={{ paddingLeft: depth === 0 ? 0 : `${depth}px` }}
           data-slot="block-view-file"
           data-active={activePath === node.path ? 'true' : 'false'}
         >
@@ -106,12 +106,12 @@ function NodeRow({
   }
 
   return (
-    <li>
+    <li className="list-none">
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
-        className="flex w-full items-center gap-2 rounded-sm px-2 py-1 text-left text-xs font-medium text-foreground/90 transition-colors hover:bg-muted/60"
-        style={{ paddingLeft: `${depth * 0.75 + 0.5}rem` }}
+        className="flex w-full items-center gap-2 rounded-sm px-2 py-1 text-left text-xs font-medium text-foreground/90 outline-none transition-colors hover:bg-muted/60"
+        style={{ paddingLeft: depth === 0 ? 0 : `${depth}px` }}
         data-slot="block-view-folder"
         data-open={open ? 'true' : 'false'}
       >
@@ -119,7 +119,7 @@ function NodeRow({
         <span className="truncate">{node.name}</span>
       </button>
       {open && hasChildren ? (
-        <ul className="space-y-0.5">
+        <ul className="m-0 list-none space-y-0.5 pl-0">
           {node.children?.map((child) => (
             <NodeRow key={child.path} node={child} depth={depth + 1} activePath={activePath} onSelect={onSelect} />
           ))}
@@ -149,14 +149,14 @@ export function BlockViewFileTree({
         Files
       </div>
       <ScrollArea className="h-[calc(100%-2.5rem)]">
-        <ul className="space-y-0.5 p-2">
+        <ul className="m-0 list-none space-y-0.5 p-2">
           {isSingleFile ? (
-            <li>
+            <li className="list-none">
               <button
                 type="button"
                 onClick={() => onSelect(files[0].path)}
                 className={cn(
-                  'flex w-full items-center gap-2 rounded-sm px-2 py-1 text-left text-xs transition-colors',
+                  'flex w-full items-center gap-2 rounded-sm px-2 py-1 text-left text-xs outline-none transition-colors',
                   activePath === files[0].path
                     ? 'bg-muted text-foreground'
                     : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',

@@ -20,14 +20,17 @@ Use this contract for any coding agent.
 ## Operating contract
 
 - Runtime is prompt-pack only (`config.runtime = prompt-pack`).
-- No provider/API calls are required by Forge Loop.
+- Forge Loop does not embed provider SDK/API execution.
 - Agent should use generated prompts under `.planning/prompts/`.
 - Keep writes in planning artifacts and implementation files referenced by plans.
 - Auto-commit scope defaults to `.planning/**` and `docs/agent-artifacts/core/**`.
+- For headless runs, pass env gate first: `pnpm forge-env:doctor -- --mode headless --strict`.
+- For interactive remediation, launch RepoStudio Env workspace: `pnpm forge-repo-studio open --view env --mode headless`.
 
 ## Recommended command cadence
 
 ```bash
+pnpm forge-env:doctor -- --mode headless --strict
 pnpm forge-loop:progress
 pnpm forge-loop:discuss-phase -- <phase>
 pnpm forge-loop:plan-phase -- <phase>

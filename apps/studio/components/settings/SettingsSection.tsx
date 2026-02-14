@@ -10,6 +10,7 @@ import {
 import { ItemGroup, ItemSeparator } from '@forge/ui/item';
 import { useSettingsRegistration } from '@/lib/editor-registry/SettingsRegistrationContext';
 import { useSettingsRegistryStore } from '@/lib/editor-registry/settings-registry';
+import { SETTINGS_SCOPE_COLORS } from '@/lib/app-shell/editor-metadata';
 import type { SettingsSection as SettingsSectionType, SettingsField as SettingsFieldType } from './types';
 import { SettingsField } from './SettingsField';
 
@@ -73,14 +74,30 @@ export function SettingsSection({
     return () => unregisterSection(scope, scopeId, sectionId);
   }, [scope, scopeId, section, sectionId, registerSection, unregisterSection]);
 
+  const scopeLabel =
+    scope === 'app'
+      ? 'App'
+      : scope === 'project'
+        ? 'Project'
+        : scope === 'editor'
+          ? 'Editor'
+          : scope === 'viewport'
+            ? 'Viewport'
+            : scope;
+  const scopeColor =
+    scope in SETTINGS_SCOPE_COLORS
+      ? SETTINGS_SCOPE_COLORS[scope as keyof typeof SETTINGS_SCOPE_COLORS]
+      : undefined;
+  const borderColor = accentBorderColor ?? scopeColor;
+
   const childArray = React.Children.toArray(children);
 
   return (
     <Card
       className="p-4 space-y-4"
       style={
-        accentBorderColor
-          ? { borderLeftWidth: 3, borderLeftStyle: 'solid', borderLeftColor: accentBorderColor }
+        borderColor
+          ? { borderLeftWidth: 3, borderLeftStyle: 'solid', borderLeftColor: borderColor }
           : undefined
       }
     >
@@ -91,7 +108,7 @@ export function SettingsSection({
               {icon}
             </span>
           )}
-          {title}
+          {title} - {scopeLabel}
         </FieldLegend>
         {description != null && description !== '' && (
           <p className="text-xs text-muted-foreground -mt-2">{description}</p>

@@ -4,7 +4,7 @@ title: Environment variables
 
 # Environment variables
 
-All environment variables are defined in `scripts/env/manifest.mjs`. The manifest is the **source of truth**. Use `pnpm env:portal` to open the env portal UI, `pnpm env:sync:examples` to refresh `.env.example` files from the manifest.
+Environment configuration is managed by `@forge/forge-env` profiles. For forge-agent defaults, see `packages/forge-env/src/lib/forge-agent-manifest.mjs`. Use `pnpm forge-repo-studio open --view env` (or `pnpm env:portal`) for GUI workflows, `pnpm env:sync:examples` to refresh `.env.example` files, and `pnpm forge-env:doctor -- --mode headless --strict` to validate headless readiness.
 
 ## Bootstrap flow
 

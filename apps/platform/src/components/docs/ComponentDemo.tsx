@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { Loader2 } from 'lucide-react';
 import {
   AppProviders,
   BlockView,
@@ -76,9 +77,17 @@ export function ComponentDemo({ id, className }: { id: string; className?: strin
           openInV0Url={showcaseEntry.openInV0Url}
           className={className}
           preview={
-            <AppProviders>
-              <Demo />
-            </AppProviders>
+            <React.Suspense
+              fallback={
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              }
+            >
+              <AppProviders>
+                <Demo />
+              </AppProviders>
+            </React.Suspense>
           }
         />
       </DemoErrorBoundary>

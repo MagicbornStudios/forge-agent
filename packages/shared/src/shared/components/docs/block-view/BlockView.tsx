@@ -1,10 +1,11 @@
 'use client';
 
 import * as React from 'react';
+import { X } from 'lucide-react';
 import { cn } from '@forge/ui/lib/utils';
+import { EditorDockPanel, EditorButton } from '../../editor';
 import { BlockViewCodePanel } from './BlockViewCodePanel';
 import { BlockViewPreviewPanel } from './BlockViewPreviewPanel';
-import { BlockViewToolbar } from './BlockViewToolbar';
 import type { BlockViewMode, BlockViewProps } from './types';
 
 function toCssHeight(height: number): string {
@@ -15,6 +16,8 @@ function toCssHeight(height: number): string {
 }
 
 export function BlockView({
+  id,
+  title,
   preview,
   files,
   className,
@@ -22,6 +25,7 @@ export function BlockView({
   defaultMode = 'preview',
   defaultViewport = 'desktop',
   onCopied,
+  onClose,
 }: BlockViewProps) {
   const [mode, setMode] = React.useState<BlockViewMode>(defaultMode);
   const [viewport, setViewport] = React.useState(defaultViewport);
@@ -42,6 +46,7 @@ export function BlockView({
   }, [files, activeFilePath]);
 
   const cssHeight = toCssHeight(previewHeight);
+  const hasHeader = Boolean(title || onClose);
 
   return (
     <section
@@ -52,24 +57,46 @@ export function BlockView({
       )}
       style={{ '--height': cssHeight } as React.CSSProperties}
     >
-      <BlockViewToolbar
-        mode={mode}
-        onModeChange={setMode}
-      />
-
-      <BlockViewPreviewPanel
-        preview={preview}
-        viewport={viewport}
-        refreshKey={refreshKey}
-        visible={mode === 'preview'}
-      />
-      <BlockViewCodePanel
-        files={files}
-        activeFile={activeFile}
-        onSelectFile={setActiveFilePath}
-        onCopied={onCopied}
-        visible={mode === 'code'}
-      />
+      <EditorDockPanel
+        panelId={`block-view-${id}`}
+        title={title}
+        hideTitleBar={!hasHeader}
+        headerActions={
+          onClose ? (
+            <EditorButton
+              size="sm"
+              variant="ghost"
+              onClick={onClose}
+              aria-label="Close"
+            >
+              <X className="size-3.5" />
+            </EditorButton>
+          ) : undefined
+        }
+        scrollable={false}
+        defaultTabId={defaultMode}
+        activeTabId={mode}
+        onTabChange={(next) => setMode(next as BlockViewMode)}
+        className="flex-1 min-h-[var(--height,640px)]"
+      >
+        <EditorDockPanel.Tab id="preview" label="Preview">
+          <BlockViewPreviewPanel
+            preview={preview}
+            viewport={viewport}
+            refreshKey={refreshKey}
+            visible={true}
+          />
+        </EditorDockPanel.Tab>
+        <EditorDockPanel.Tab id="code" label="Code">
+          <BlockViewCodePanel
+            files={files}
+            activeFile={activeFile}
+            onSelectFile={setActiveFilePath}
+            onCopied={onCopied}
+            visible={true}
+          />
+        </EditorDockPanel.Tab>
+      </EditorDockPanel>
     </section>
   );
 }

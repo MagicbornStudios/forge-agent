@@ -1,87 +1,85 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import type { ComponentType } from 'react';
-import { DOCS_ARTICLE_CLASS } from '@forge/shared';
+import { DOCS_ARTICLE_CLASS } from '@/components/docs/doc-content';
+import { withAudienceQuery, normalizeDocsAudience } from '@/lib/docs/audience';
+import { resolveDocsAlias } from '@/lib/docs/aliases';
 import { source } from '@/lib/source';
-import type { Node, Root } from 'fumadocs-core/page-tree';
-import { findNeighbour } from 'fumadocs-core/page-tree';
-import { toPlainText, toTitleFromHref } from '@forge/shared';
-import { createMdxComponents } from '../mdx-components';
 import { DocsShell } from '../DocsShell';
-import { PrevNext } from '@/components/docs';
 
-const BASE_URL = '/docs';
-
-// Avoid static generation: fumadocs serializePageTree uses legacy renderToString (incompatible with React 19)
 export const dynamic = 'force-dynamic';
 
 export function generateStaticParams() {
   return source.generateParams();
 }
 
+function redirectToDoc(slugs: string[], audience: 'developer' | 'developer-internal') {
+  const joined = slugs.join('/');
+  const pathname = joined.length > 0 ? `/docs/${joined}` : '/docs';
+  redirect(withAudienceQuery(pathname, audience));
+}
+
+const COMPONENT_DOC_CATEGORIES = ['editor'] as const;
+
+function resolveComponentCategoryAlias(slugs: string[]): string[] | null {
+  if (slugs.length !== 2 || slugs[0] !== 'components') return null;
+  if (source.getPage(slugs)) return null;
+
+  const componentSlug = slugs[1];
+  if (!componentSlug || componentSlug === 'index') return null;
+
+  const matches: string[][] = [];
+  for (const category of COMPONENT_DOC_CATEGORIES) {
+    const candidate = ['components', category, componentSlug];
+    if (source.getPage(candidate)) {
+      matches.push(candidate);
+    }
+  }
+
+  return matches[0] ?? null;
+}
+
 export default async function DocPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug?: string[] }>;
+  searchParams: Promise<{ audience?: string | string[] }>;
 }) {
-  const { slug: slugSegments } = await params;
-  // /docs -> index; fumadocs root index may be [] or ['00-docs-index'] depending on meta
-  const slugs = slugSegments?.length ? slugSegments : [];
-  const page = source.getPage(slugs) ?? (slugs.length === 0 ? source.getPage(['00-docs-index']) : undefined);
+  const [{ slug: slugSegments }, rawSearchParams] = await Promise.all([params, searchParams]);
+
+  const audience = normalizeDocsAudience(rawSearchParams.audience);
+  const originalSlugs = slugSegments?.length ? slugSegments : [];
+  const aliased = resolveDocsAlias(originalSlugs);
+  const componentAliased = aliased ? null : resolveComponentCategoryAlias(originalSlugs);
+  const resolvedAlias = aliased ?? componentAliased;
+
+  if (resolvedAlias) {
+    const normalizedOriginal = originalSlugs.join('/').replace(/\.(md|mdx)$/i, '').replace(/\/index$/i, '');
+    const normalizedTarget = resolvedAlias.join('/');
+    if (normalizedOriginal !== normalizedTarget) {
+      redirectToDoc(resolvedAlias, audience);
+    }
+  }
+
+  const slugs = resolvedAlias ?? originalSlugs;
+  const page = source.getPage(slugs) ?? (slugs.length === 0 ? source.getPage(['index']) : undefined);
   if (!page) notFound();
 
-  const tree = source.getPageTree() as Root;
-  const serializedTree = await source.serializePageTree(tree);
+  const serializedTree = await source.serializePageTree(source.getPageTree());
   const toc = (page.data as { toc?: { title: string; url: string; depth: number }[] }).toc ?? [];
   const body = (page.data as unknown as { body?: React.ReactNode }).body;
   const title = (page.data as { title?: string }).title ?? 'Documentation';
   const description = (page.data as { description?: string }).description;
-
-  const validSlugs = new Set<string>();
-  const addSlugFromUrl = (url: string) => {
-    if (url === BASE_URL || url === `${BASE_URL}/`) {
-      validSlugs.add('00-docs-index');
-      return;
-    }
-    if (url.startsWith(`${BASE_URL}/`)) {
-      validSlugs.add(url.slice(`${BASE_URL}/`.length));
-    }
-  };
-  const collectSlugs = (nodes: Node[]) => {
-    for (const node of nodes) {
-      if (node.type === 'page') {
-        addSlugFromUrl(node.url);
-      } else if (node.type === 'folder') {
-        if (node.index?.url) addSlugFromUrl(node.index.url);
-        collectSlugs(node.children);
-      }
-    }
-  };
-  collectSlugs(tree.children);
-  validSlugs.add('00-docs-index');
-
-  const currentUrl = slugs.length === 0 ? BASE_URL : `${BASE_URL}/${slugs.join('/')}`;
-  const neighbours = findNeighbour(tree, currentUrl);
-  const prevNext = {
-    prev: neighbours.prev
-      ? { href: neighbours.prev.url, label: toPlainText(neighbours.prev.name, toTitleFromHref(neighbours.prev.url, 'Previous')) }
-      : undefined,
-    next: neighbours.next
-      ? { href: neighbours.next.url, label: toPlainText(neighbours.next.name, toTitleFromHref(neighbours.next.url, 'Next')) }
-      : undefined,
-  };
-
-  const mdxComponents = createMdxComponents(validSlugs);
   const MdxBody = (typeof body === 'function' ? body : null) as ComponentType<{
-    components: typeof mdxComponents;
+    components?: Record<string, unknown>;
   }> | null;
 
   return (
-    <DocsShell serializedTree={serializedTree} toc={toc} baseUrl={BASE_URL}>
+    <DocsShell serializedTree={serializedTree} toc={toc} baseUrl="/docs" audience={audience}>
       <article className={DOCS_ARTICLE_CLASS}>
         <h1>{title}</h1>
         {description ? <p>{description}</p> : null}
-        {MdxBody ? <MdxBody components={mdxComponents} /> : body ?? null}
-        <PrevNext prev={prevNext.prev} next={prevNext.next} />
+        {MdxBody ? <MdxBody components={{}} /> : body ?? null}
       </article>
     </DocsShell>
   );

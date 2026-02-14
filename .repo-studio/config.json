@@ -1,0 +1,74 @@
+{
+  "runtime": {
+    "defaultMode": "auto",
+    "reuseByDefault": true,
+    "defaultPort": 3864
+  },
+  "commandPolicy": {
+    "mode": "allowlist",
+    "sources": [
+      "root-scripts",
+      "workspace-scripts",
+      "forge-builtins"
+    ],
+    "defaultSources": [
+      "forge-builtins",
+      "root-scripts"
+    ],
+    "requireConfirm": true,
+    "denyPatterns": [
+      "rm -rf",
+      "git reset --hard"
+    ],
+    "disabledCommandIds": [],
+    "allowTerminal": true,
+    "terminalAllowlistedOnly": true
+  },
+  "views": {
+    "order": [
+      "planning",
+      "env",
+      "commands",
+      "docs",
+      "assistant"
+    ],
+    "hidden": [],
+    "defaultView": "planning"
+  },
+  "ui": {
+    "defaultTheme": "dark",
+    "defaultView": "planning",
+    "defaultDensity": "compact"
+  },
+  "assistant": {
+    "enabled": true,
+    "routeMode": "codex",
+    "routePath": "/api/assistant-chat",
+    "defaultModel": "gpt-5",
+    "attachContextMaxFiles": 6,
+    "attachContextMaxChars": 16000,
+    "codex": {
+      "enabled": true,
+      "cliCommand": "codex",
+      "authPolicy": "chatgpt-strict",
+      "mode": "exec",
+      "appServerUrl": "ws://127.0.0.1:3789",
+      "defaultModel": "gpt-5",
+      "approvalMode": "on-request",
+      "sandboxMode": "workspace-write"
+    }
+  },
+  "docs": {
+    "paths": {
+      "forgeLoop": "packages/forge-loop/docs",
+      "forgeEnv": "packages/forge-env/docs",
+      "repoStudio": "packages/repo-studio/docs"
+    }
+  },
+  "loop": {
+    "paths": {
+      "planningRoot": ".planning",
+      "phasesDir": ".planning/phases"
+    }
+  }
+}

@@ -76,6 +76,7 @@ export function EditorOverlaySurface({
       <DialogContent
         className={cn(
           sizeClasses[spec.size ?? 'md'],
+          'max-h-[90vh] overflow-y-auto',
           '[&>button]:right-[var(--panel-padding)] [&>button]:top-[var(--panel-padding)]',
           className,
         )}

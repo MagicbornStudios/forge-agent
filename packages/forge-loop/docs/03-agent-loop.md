@@ -28,6 +28,7 @@ forge-loop progress
 
 - treat `.planning/` as source of truth
 - use prompt artifacts in `.planning/prompts/`
+- run `forge-env doctor --mode headless --strict` before headless execution paths
 - do not bypass plan frontmatter contracts
 - do not mark unresolved UAT issues as passed
 - if verification fails, generate gap plans and continue same phase

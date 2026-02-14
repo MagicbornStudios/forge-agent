@@ -287,6 +287,20 @@ function ForgeGraphPanel({
     });
   }, [setSetting, showMiniMap, scope]);
 
+  const handleNodeClick = useCallback(
+    (_event: React.MouseEvent, node: { id: string }) => {
+      onSelectionChange([node.id], []);
+    },
+    [onSelectionChange]
+  );
+
+  const handleEdgeClick = useCallback(
+    (_event: React.MouseEvent, edge: { id: string }) => {
+      onSelectionChange([], [edge.id]);
+    },
+    [onSelectionChange]
+  );
+
   return (
     <div
       className={cn(
@@ -319,6 +333,9 @@ function ForgeGraphPanel({
             onViewportReady={onViewportReady}
             onRequestCreateNode={onRequestCreateNode}
             onDropCreateNode={onDropCreateNode}
+            onPaneClick={onFocus}
+            onNodeClick={handleNodeClick}
+            onEdgeClick={handleEdgeClick}
             nodesDraggable={nodesDraggable}
           >
             <GraphLeftToolbar
@@ -1098,12 +1115,14 @@ export function DialogueEditor() {
     { label: 'API', href: '/api-doc', icon: <Code size={14} /> },
   ];
 
-  const sidebarTabs: PanelTabDef[] = [
-    {
-      id: 'narratives',
-      label: 'Narratives',
-      icon: <BookOpen size={12} />,
-      content: (
+  const leftPanel = showLeftPanel === false ? undefined : (
+    <EditorDockPanel panelId="dialogue-left" title="Library" hideTitleBar className="h-full">
+      <EditorDockPanel.Tab
+        id="narratives"
+        label="Narratives"
+        icon={<BookOpen size={12} />}
+        accentColor={GRAPH_META.narrative.accent}
+      >
         <ForgeGraphList
           label="Narrative"
           icon={<BookOpen size={12} />}
@@ -1113,14 +1132,13 @@ export function DialogueEditor() {
           onCreate={() => handleCreateGraph('narrative')}
           focusedEditor={activeScope === 'narrative' ? 'narrative' : null}
         />
-      ),
-      accentColor: GRAPH_META.narrative.accent,
-    },
-    {
-      id: 'storylets',
-      label: 'Storylets',
-      icon: <Layers size={12} />,
-      content: (
+      </EditorDockPanel.Tab>
+      <EditorDockPanel.Tab
+        id="storylets"
+        label="Storylets"
+        icon={<Layers size={12} />}
+        accentColor={GRAPH_META.storylet.accent}
+      >
         <ForgeGraphList
           label="Storylet"
           icon={<Layers size={12} />}
@@ -1130,14 +1148,13 @@ export function DialogueEditor() {
           onCreate={() => handleCreateGraph('storylet')}
           focusedEditor={activeScope === 'storylet' ? 'storylet' : null}
         />
-      ),
-      accentColor: GRAPH_META.storylet.accent,
-    },
-    {
-      id: 'nodes',
-      label: 'Nodes',
-      icon: <Boxes size={12} />,
-      content: (
+      </EditorDockPanel.Tab>
+      <EditorDockPanel.Tab
+        id="nodes"
+        label="Nodes"
+        icon={<Boxes size={12} />}
+        accentColor="var(--status-warning)"
+      >
         <NodePalette
           items={nodePaletteItems}
           className="h-full"
@@ -1147,13 +1164,8 @@ export function DialogueEditor() {
             openOverlay(CREATE_NODE_OVERLAY_ID, { nodeType: item.dragType });
           }}
         />
-      ),
-      accentColor: 'var(--status-warning)',
-    },
-  ];
-
-  const leftPanel = showLeftPanel === false ? undefined : (
-    <EditorDockPanel panelId="dialogue-left" title="Library" tabs={sidebarTabs} hideTitleBar className="h-full" />
+      </EditorDockPanel.Tab>
+    </EditorDockPanel>
   );
 
   const mainContent = (
@@ -1329,9 +1341,7 @@ export function DialogueEditor() {
             onPanelClosed={handlePanelClosed}
           >
             <EditorDockLayout.Left>
-              <EditorDockLayout.Panel id="left" title="Library" icon={<BookOpen size={14} />}>
-                {leftPanel}
-              </EditorDockLayout.Panel>
+              {leftPanel}
             </EditorDockLayout.Left>
             <EditorDockLayout.Main>
               <EditorDockLayout.Panel id="main" title="Dialogue Graphs" icon={<LayoutDashboard size={14} />}>

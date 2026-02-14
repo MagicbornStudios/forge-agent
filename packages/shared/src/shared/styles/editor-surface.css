@@ -1,0 +1,7 @@
+/* Shared editor-surface base imports for Dockview-backed editors. */
+@import "dockview/dist/styles/dockview.css";
+@import "./dockview-overrides.css";
+@import "./themes.css";
+@import "./contexts.css";
+@import "./scrollbar.css";
+

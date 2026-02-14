@@ -75,7 +75,7 @@ Foundational editor components (`@forge/shared`, `@forge/ui`) will be open sourc
 We now run a `.planning`-first lifecycle with the internal `forge-loop` CLI.
 
 **Loop in one sentence:** `new-project -> discuss-phase -> plan-phase -> execute-phase -> verify-work -> progress -> sync-legacy`
-**Runtime policy:** prompt-pack only, no provider SDK/API coupling required.
+**Runtime policy:** prompt-pack only, no provider SDK/API execution embedded in forge-loop itself.
 **Package:** `@forge/forge-loop` (bin: `forge-loop`).
 
 ### Command chain
@@ -91,6 +91,12 @@ pnpm forge-loop:progress
 pnpm forge-loop:sync-legacy
 ```
 
+For headless runs, gate on env readiness first:
+
+```bash
+pnpm forge-env:doctor -- --mode headless --strict
+```
+
 ### Source of truth and continuity
 
 - Source of truth: `.planning/*` (PROJECT, REQUIREMENTS, ROADMAP, STATE, DECISIONS, ERRORS, TASK-REGISTRY).
@@ -104,6 +110,9 @@ pnpm forge-loop:sync-legacy
 **Agent usage:** [docs/how-to/forge-loop-agent-usage.mdx](docs/how-to/forge-loop-agent-usage.mdx)
 **Package runbooks:** [packages/forge-loop/docs/01-quickstart.md](packages/forge-loop/docs/01-quickstart.md)
 **Package entrypoint:** `npx @forge/forge-loop --help` (after publish)
+**Env package:** `@forge/forge-env` (`pnpm forge-env --help`, `npx @forge/forge-env --help` after publish)
+**RepoStudio package:** `@forge/repo-studio` (`pnpm forge-repo-studio open --view forge-loop`, `npx @forge/repo-studio open`)
+**RepoStudio runbooks:** `packages/repo-studio/docs/01-quickstart.md` ... `packages/repo-studio/docs/05-assistant.md`
 
 ---
 
@@ -125,13 +134,16 @@ pnpm forge-loop:sync-legacy
 | Command | When to run |
 |--------|-------------|
 | `pnpm dev` | Start Studio (default from repo root). Portal opens if keys missing. |
+| `pnpm dev:repo-studio` | Start internal RepoStudio app shell (port 3010). |
 | `pnpm dev:platform` | Start Platform (customer app, landing, docs). |
 | `pnpm build` | Build Studio (e.g. before deploy or to verify). |
 | `pnpm test` | Run tests (Studio). |
 | `pnpm payload:types` | After changing Payload collections. |
-| `pnpm env:portal` | Web UI for env setup and Vercel sync. |
-| `pnpm env:setup` | CLI env setup (manifest-driven). |
+| `pnpm env:portal` | Launch Env workspace (RepoStudio-first, legacy portal fallback). |
+| `pnpm env:setup` | CLI env reconcile/setup (profile-driven). |
 | `pnpm env:doctor` | Check env drift. |
+| `pnpm forge-env:doctor` | Direct env package doctor (`@forge/forge-env`). |
+| `pnpm forge-repo-studio open --view forge-loop` | Open RepoStudio loop console (Env/Commands/Docs/Assistant included). |
 | `pnpm forge-loop:progress` | Show lifecycle status and next action from `.planning`. |
 | `pnpm forge-loop:doctor` | Validate planning config/artifacts/git scope/legacy markers. |
 | `pnpm forge-loop:package:test` | Run package tests for `@forge/forge-loop`. |

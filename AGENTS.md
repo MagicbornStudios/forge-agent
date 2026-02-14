@@ -11,7 +11,7 @@ updated: 2026-02-07
 
 **Agent artifact index:** See [docs/18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx) for the full list of agent-only docs (agent-artifacts/core: STATUS, decisions, errors-and-attempts, tool-usage, compacting, standard-practices; all AGENTS.md). **Strategy and conventions:** [docs/19-coding-agent-strategy.mdx](docs/19-coding-agent-strategy.mdx). For **current state** and **failures**, read docs/agent-artifacts (index + core); for **granular "what can I do next?"** (small tasks by tier), see [task-registry](docs/agent-artifacts/core/task-registry.md) and [task-breakdown-system](docs/agent-artifacts/core/task-breakdown-system.md); for **known product/editor issues** (e.g. what's broken or locked), see [ISSUES.md](ISSUES.md); for **technical debt and refactors**, see [technical-debt-roadmap](docs/agent-artifacts/core/technical-debt-roadmap.md); for **area rules**, read this file and the relevant per-package AGENTS.md. Prefer **rg**/list_dir/Read to search and confirm - see [docs/agent-artifacts/core/tool-usage.md](docs/agent-artifacts/core/tool-usage.md). **Capabilities:** [SKILLS.md](SKILLS.md). **Human workflow and DoD:** [CONTRIBUTING.md](CONTRIBUTING.md) and [.github/pull_request_template.md](.github/pull_request_template.md).
 
-**Forge Loop lifecycle:** `.planning/` is the source of truth. Use `forge-loop` (`new-project`, `discuss-phase`, `plan-phase`, `execute-phase`, `verify-work`, `doctor`, `progress`, `sync-legacy`). Runtime is prompt-pack only (no provider SDK/API path required). Legacy files under `docs/agent-artifacts/core/*` are snapshot outputs, not primary planning storage.
+**Forge Loop lifecycle:** `.planning/` is the source of truth. Use `forge-loop` (`new-project`, `discuss-phase`, `plan-phase`, `execute-phase`, `verify-work`, `doctor`, `progress`, `sync-legacy`). Runtime is prompt-pack only (no provider SDK/API path required). Legacy files under `docs/agent-artifacts/core/*` are snapshot outputs, not primary planning storage. For GUI operations, prefer `forge-repo-studio` (`open`, `doctor`, `run`).
 
 ## Scoped edits / .tmp
 
@@ -21,7 +21,7 @@ The `.tmp/` directory (and any path listed in .gitignore as agent-download/refer
 
 Owns **packages/shared/src/shared**: editor components, shared styles, and editor/selection/overlay/toolbar types (internal `shared/workspace`; consumed via `@forge/shared`).
 
-- **Loop**: Follow `forge-loop` lifecycle from `.planning` artifacts, run `forge-loop doctor` before major phase runs, then run `forge-loop sync-legacy` to update snapshot sections in `docs/agent-artifacts/core/*`.
+- **Loop**: Follow `forge-loop` lifecycle from `.planning` artifacts, run `forge-loop doctor` before major phase runs, then run `forge-loop sync-legacy` to update snapshot sections in `docs/agent-artifacts/core/*`. Use RepoStudio Env workspace for guided headless/env remediation when interactive.
 - **Naming**: Use **EditorShell** for the declarative root (layout + slots). Do not introduce a separate "container" name for the same concept.
 - No imperative toolbar API; timeline is optional; no cross-domain imports in shared. Capabilities live in `packages/shared/src/shared/workspace/capabilities.ts` (contracts only).
 
@@ -91,4 +91,4 @@ When touching editors (Dialogue, Character, Video, Strategy): use the shared she
 ## Code quality (constants and DRY)
 
 - **Constants:** Editor ids, API paths, and query keys must use constants, not magic strings. See [docs/agent-artifacts/core/standard-practices.md](docs/agent-artifacts/core/standard-practices.md) § Constants, enums, and DRY.
-- **Env keys:** When adding a new env variable, (1) add the entry to `scripts/env/manifest.mjs`, (2) run `pnpm env:sync:examples`. The portal and `.env.example` are derived from the manifest; do not hand-edit them.
+- **Env keys:** When adding a new env variable, update the active `forge-env` profile (`.forge-env/config.json` and `packages/forge-env/src/lib/forge-agent-manifest.mjs` for forge-agent defaults), then run `pnpm forge-env:reconcile -- --write --sync-examples`. Validate with `pnpm forge-env:doctor -- --mode headless --strict`, and use `pnpm forge-repo-studio open --view env` for GUI inspection. Do not hand-edit generated `.env.example` outputs.

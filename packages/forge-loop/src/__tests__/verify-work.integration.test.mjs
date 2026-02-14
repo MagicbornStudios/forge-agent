@@ -33,11 +33,11 @@ test('buildVerificationCommandPlan selects matrix commands by changed paths', ()
   assert.ok(rendered.includes('pnpm forge-loop:test'));
 });
 
-test('buildVerificationCommandPlan supports generic profile', () => {
+test('buildVerificationCommandPlan supports forge-loop profile', () => {
   const commands = buildVerificationCommandPlan(
     {
       verification: {
-        profile: 'generic',
+        profile: 'forge-loop',
         tests: true,
         genericCommands: ['echo custom-check'],
       },

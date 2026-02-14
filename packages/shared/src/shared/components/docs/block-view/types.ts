@@ -27,4 +27,6 @@ export interface BlockViewProps {
   openInV0Url?: string;
   onRefreshPreview?: () => void;
   onCopied?: () => void;
+  /** When provided, shows a close button in the panel header. */
+  onClose?: () => void;
 }

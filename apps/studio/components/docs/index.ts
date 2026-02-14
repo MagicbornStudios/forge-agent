@@ -1,4 +1,8 @@
-export { DocsLayoutShell, DocsSidebar, RightToc, type TableOfContents } from '@forge/shared';
+export { DocsLayoutShell, type DocsLayoutShellProps } from './DocsLayoutShell';
+export { DocsSidebar, type DocsSidebarProps } from './DocsSidebar';
+export { RightToc, type TableOfContents } from './RightToc';
+export { DOCS_ARTICLE_CLASS } from './doc-content';
+export { ComponentDemo } from './ComponentDemo';
 export { ComponentPreview } from './ComponentPreview';
 export { QuickNav, type QuickNavProps, type QuickNavItem } from './QuickNav';
 export { ShowcaseLink, type ShowcaseLinkProps } from './ShowcaseLink';

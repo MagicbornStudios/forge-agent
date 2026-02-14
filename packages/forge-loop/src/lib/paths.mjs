@@ -2,10 +2,13 @@ import path from 'node:path';
 
 export const REPO_ROOT = process.cwd();
 
-export const PLANNING_DIR = '.planning';
+export const ROOT_PLANNING_DIR = '.planning';
+export const ACTIVE_LOOP_ID = process.env.FORGE_LOOP_LOOP_ID || 'default';
+export const PLANNING_DIR = process.env.FORGE_LOOP_PLANNING_DIR || ROOT_PLANNING_DIR;
 export const PLANNING_PATH = path.join(REPO_ROOT, PLANNING_DIR);
 export const PLANNING_PHASES_DIR = path.join(PLANNING_PATH, 'phases');
 export const PLANNING_PROMPTS_DIR = path.join(PLANNING_PATH, 'prompts');
+export const LOOPS_INDEX_PATH = path.join(REPO_ROOT, ROOT_PLANNING_DIR, 'LOOPS.json');
 
 export const LEGACY_CORE_DIR = path.join('docs', 'agent-artifacts', 'core');
 export const LEGACY_STATUS_PATH = path.join(LEGACY_CORE_DIR, 'STATUS.md');
@@ -43,6 +46,15 @@ export const DEFAULT_CONFIG = {
     tests: true,
     profile: 'forge-agent',
     strictDefault: true,
+  },
+  env: {
+    enabled: true,
+    profile: 'forge-agent',
+    runner: 'codex',
+    enforceHeadless: true,
+    autoLaunchPortal: true,
+    command: 'forge-env',
+    profileFallback: 'accept-satisfied',
   },
   legacySync: {
     enabled: true,

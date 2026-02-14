@@ -4,14 +4,35 @@
   "scope": "monorepo",
   "git": {
     "autoCommit": true,
-    "commitPrefix": "forge-loop"
+    "commitPrefix": "forge-loop",
+    "commitScope": [
+      ".planning/**",
+      "docs/agent-artifacts/core/**"
+    ]
   },
   "verification": {
     "docs": true,
     "build": true,
-    "tests": true
+    "tests": true,
+    "profile": "forge-agent",
+    "strictDefault": true
+  },
+  "env": {
+    "enabled": true,
+    "profile": "forge-agent",
+    "runner": "codex",
+    "enforceHeadless": true,
+    "autoLaunchPortal": true,
+    "command": "forge-env",
+    "profileFallback": "accept-satisfied"
   },
   "legacySync": {
-    "enabled": true
+    "enabled": true,
+    "targets": [
+      "docs/agent-artifacts/core/STATUS.md",
+      "docs/agent-artifacts/core/task-registry.md",
+      "docs/agent-artifacts/core/decisions.md",
+      "docs/agent-artifacts/core/errors-and-attempts.md"
+    ]
   }
 }

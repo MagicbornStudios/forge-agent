@@ -1,0 +1,619 @@
+The toolbar bar component for editors. Provides menubar, buttons, separators, and left/center/right sections.
+
+## Overview
+
+`EditorToolbar` is the **command bar** at the top of editors. It replaces `WorkspaceToolbar` with:
+
+- **Compound component API** (`.Left`, `.Right`, `.Center`, `.Group`, `.Button`, `.Menubar`)
+- **Data-driven rendering** via `groups` prop (optional)
+- **Feature gating** integration for entitlement-based UI
+- **Responsive layouts** with flex alignment
+
+## Installation
+
+```bash
+npm install @forge/dev-kit
+```
+
+Import:
+
+```tsx
+```
+
+## Basic Usage
+
+```tsx
+<EditorToolbar className="bg-sidebar border-b">
+  <EditorToolbar.Left>
+    <span className="text-xs font-medium">My Editor</span>
+  </EditorToolbar.Left>
+  <EditorToolbar.Right>
+    <EditorToolbar.Button onClick={onSave}>Save</EditorToolbar.Button>
+  </EditorToolbar.Right>
+</EditorToolbar>
+```
+
+## Props API
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `React.ReactNode` | - | Slot components (`.Left`, `.Right`, `.Center`, etc.). Recommended approach. |
+| `groups` | `ToolbarGroup[]` | - | Data-driven rendering. When provided, renders from config instead of slots. |
+| `className` | `string` | - | Additional classes for toolbar root. |
+
+## Slot-Based Composition (Recommended)
+
+### Left / Right / Center Sections
+
+```tsx
+<EditorToolbar>
+  <EditorToolbar.Left>
+    <EditorToolbar.Menubar menus={menus} />
+    <EditorToolbar.Separator />
+    <span className="text-xs text-muted-foreground">{status}</span>
+  </EditorToolbar.Left>
+
+  <EditorToolbar.Center>
+    <Badge variant="secondary">Agent: {agentName}</Badge>
+  </EditorToolbar.Center>
+
+  <EditorToolbar.Right>
+    <EditorToolbar.Button onClick={onUndo} disabled={!canUndo}>
+      <Undo size={14} />
+    </EditorToolbar.Button>
+    <EditorToolbar.Button onClick={onRedo} disabled={!canRedo}>
+      <Redo size={14} />
+    </EditorToolbar.Button>
+    <EditorToolbar.Separator />
+    <EditorToolbar.Button onClick={onSave} variant="default">
+      Save
+    </EditorToolbar.Button>
+  </EditorToolbar.Right>
+</EditorToolbar>
+```
+
+### Grouping with `.Group`
+
+```tsx
+<EditorToolbar>
+  <EditorToolbar.Left>
+    <EditorToolbar.Group className="gap-[var(--control-gap)]">
+      <EditorToolbar.Button onClick={onNew}>
+        <Plus size={14} />
+      </EditorToolbar.Button>
+      <EditorToolbar.Button onClick={onOpen}>
+        <FolderOpen size={14} />
+      </EditorToolbar.Button>
+      <EditorToolbar.Button onClick={onSave}>
+        <Save size={14} />
+      </EditorToolbar.Button>
+    </EditorToolbar.Group>
+    <EditorToolbar.Separator />
+    <EditorToolbar.Group>
+      <EditorToolbar.Button onClick={onZoomIn}>
+        <ZoomIn size={14} />
+      </EditorToolbar.Button>
+      <EditorToolbar.Button onClick={onZoomOut}>
+        <ZoomOut size={14} />
+      </EditorToolbar.Button>
+    </EditorToolbar.Group>
+  </EditorToolbar.Left>
+</EditorToolbar>
+```
+
+## Sub-Components
+
+### `.Left` / `.Right` / `.Center`
+
+Alignment sections:
+
+```tsx
+<EditorToolbar.Left>
+  {/* Flex-start alignment */}
+</EditorToolbar.Left>
+
+<EditorToolbar.Center>
+  {/* Center alignment */}
+</EditorToolbar.Center>
+
+<EditorToolbar.Right>
+  {/* Flex-end alignment */}
+</EditorToolbar.Right>
+```
+
+### `.Button`
+
+Toolbar button with tooltip support:
+
+```tsx
+<EditorToolbar.Button
+  variant="outline"        // 'default' | 'outline' | 'ghost'
+  size="sm"                // 'sm' | 'md'
+  onClick={handleClick}
+  disabled={isDisabled}
+  tooltip="Save document" // Optional tooltip
+  tooltipDisabled={false}  // Disable tooltip
+>
+  <Save size={14} />
+  Save
+</EditorToolbar.Button>
+```
+
+### `.Separator`
+
+Vertical separator:
+
+```tsx
+<EditorToolbar.Separator />
+```
+
+Renders as:
+```html
+<div class="h-[var(--control-height-sm)] w-px bg-border"></div>
+```
+
+### `.Group`
+
+Logical grouping of buttons:
+
+```tsx
+<EditorToolbar.Group className="gap-2">
+  <EditorToolbar.Button onClick={onUndo}>Undo</EditorToolbar.Button>
+  <EditorToolbar.Button onClick={onRedo}>Redo</EditorToolbar.Button>
+</EditorToolbar.Group>
+```
+
+### `.Menubar`
+
+Menu bar for File/Edit/View menus:
+
+```tsx
+const menus = createEditorMenubarMenus({
+  file: [
+    { id: 'new', label: 'New', icon: <FilePlus />, onSelect: onNew },
+    { id: 'open', label: 'Open', icon: <FolderOpen />, onSelect: onOpen },
+    { id: 'sep-1', type: 'separator' },
+    { id: 'save', label: 'Save', icon: <Save />, onSelect: onSave, shortcut: 'Ctrl+S' },
+  ],
+  edit: [
+    { id: 'undo', label: 'Undo', icon: <Undo />, onSelect: onUndo, disabled: !canUndo },
+    { id: 'redo', label: 'Redo', icon: <Redo />, onSelect: onRedo, disabled: !canRedo },
+  ],
+  view: [
+    { id: 'zoom-in', label: 'Zoom In', icon: <ZoomIn />, onSelect: onZoomIn },
+    { id: 'zoom-out', label: 'Zoom Out', icon: <ZoomOut />, onSelect: onZoomOut },
+  ],
+});
+
+<EditorToolbar>
+  <EditorToolbar.Left>
+    <EditorToolbar.Menubar menus={menus} />
+  </EditorToolbar.Left>
+</EditorToolbar>
+```
+
+### `.FileMenu`
+
+Standalone file menu (legacy):
+
+```tsx
+<EditorToolbar.FileMenu
+  items={[
+    { id: 'new', label: 'New', onSelect: onNew },
+    { id: 'open', label: 'Open', onSelect: onOpen },
+  ]}
+/>
+```
+
+### `.ProjectSelect`
+
+Project switcher:
+
+```tsx
+<EditorToolbar.ProjectSelect
+  projects={projects}
+  activeProjectId={activeProjectId}
+  onSelect={setActiveProjectId}
+/>
+```
+
+## Real-World Example: CharacterEditor
+
+From `apps/studio/components/editors/CharacterEditor.tsx`:
+
+```tsx
+<EditorToolbar className="bg-sidebar border-b border-sidebar-border">
+  <EditorToolbar.Left>
+    <EditorToolbar.Group className="gap-[var(--control-gap)]">
+      {/* Empty group — placeholder for future actions */}
+    </EditorToolbar.Group>
+    <span className="text-xs text-muted-foreground">
+      {characters.length} character{characters.length !== 1 ? 's' : ''} &middot;{' '}
+      {relationships.length} relationship{relationships.length !== 1 ? 's' : ''}
+    </span>
+  </EditorToolbar.Left>
+
+  <EditorToolbar.Right>
+    {showAgentName !== false && (
+      <Badge variant="secondary" className="text-xs">
+        Agent: {agentName ?? 'Default'}
+      </Badge>
+    )}
+    <EditorToolbar.Separator />
+    <EditorToolbar.Button
+      onClick={() => openOverlay('create-character')}
+      variant="outline"
+      size="sm"
+    >
+      Add Character
+    </EditorToolbar.Button>
+  </EditorToolbar.Right>
+</EditorToolbar>
+```
+
+## Real-World Example: DialogueEditor
+
+From `apps/studio/components/editors/DialogueEditor.tsx`:
+
+```tsx
+const fileMenuItems = useMemo(
+  () => [
+    {
+      id: 'new-narrative',
+      label: 'New narrative',
+      icon: <FilePlus2 size={16} />,
+      onSelect: () => handleCreateGraph('narrative'),
+    },
+    {
+      id: 'new-storylet',
+      label: 'New storylet',
+      icon: <FilePlus2 size={16} />,
+      onSelect: () => handleCreateGraph('storylet'),
+    },
+    { id: 'separator-1', type: 'separator' as const },
+    {
+      id: 'save',
+      label: 'Save',
+      icon: <Save size={16} />,
+      disabled: !activeDirty,
+      onSelect: () => saveActiveGraph(),
+      shortcut: 'Ctrl+S',
+    },
+  ],
+  [handleCreateGraph, activeDirty, saveActiveGraph]
+);
+
+const viewMenuItems = useMemo(
+  () => [
+    {
+      id: 'layout',
+      label: 'Layout',
+      icon: <LayoutPanelTop size={16} />,
+      submenu: [
+        {
+          id: 'show-left',
+          label: showLeft ? 'Hide Left' : 'Show Left',
+          icon: <PanelLeft size={16} />,
+          onSelect: () => setShowLeft(!showLeft),
+        },
+        {
+          id: 'show-right',
+          label: showRight ? 'Hide Right' : 'Show Right',
+          icon: <PanelRight size={16} />,
+          onSelect: () => setShowRight(!showRight),
+        },
+        { id: 'sep-1', type: 'separator' as const },
+        {
+          id: 'reset-layout',
+          label: 'Reset Layout',
+          icon: <LayoutPanelTop size={16} />,
+          onSelect: () => layoutRef.current?.resetLayout(),
+        },
+      ],
+    },
+  ],
+  [showLeft, showRight]
+);
+
+const menubarMenus = useMemo(
+  () => createEditorMenubarMenus({
+    file: fileMenuItems,
+    view: viewMenuItems,
+  }),
+  [fileMenuItems, viewMenuItems]
+);
+
+<EditorToolbar className="bg-sidebar border-b border-sidebar-border">
+  <EditorToolbar.Left>
+    <EditorToolbar.Group className="gap-[var(--control-gap)]">
+      <EditorToolbar.Menubar menus={menubarMenus} />
+      <EditorToolbar.Separator />
+      <span className="text-xs text-muted-foreground">{toolbarCounts}</span>
+    </EditorToolbar.Group>
+  </EditorToolbar.Left>
+
+  <EditorToolbar.Right>
+    {headerLinks.map((link) => (
+      <EditorToolbar.Button
+        key={link.label}
+        variant="outline"
+        size="sm"
+        onClick={() => window.open(link.href, '_blank')}
+      >
+        {link.icon}
+        <span className="ml-1.5 text-[11px]">{link.label}</span>
+      </EditorToolbar.Button>
+    ))}
+    {showAgentName !== false && (
+      <Badge variant="secondary" className="text-xs">
+        Agent: {agentName ?? 'Default'}
+      </Badge>
+    )}
+    <EditorToolbar.Separator />
+    {dirtyByScope.narrative && (
+      <Badge variant="outline" className="text-xs text-amber-500 border-amber-500/50">
+        Narrative unsaved
+      </Badge>
+    )}
+    {dirtyByScope.storylet && (
+      <Badge variant="outline" className="text-xs text-amber-500 border-amber-500/50">
+        Storylet unsaved
+      </Badge>
+    )}
+  </EditorToolbar.Right>
+</EditorToolbar>
+```
+
+## Data-Driven Rendering (Alternative)
+
+For dynamic toolbars, use `groups` prop:
+
+```tsx
+const toolbarGroups: ToolbarGroup[] = [
+  {
+    id: 'left',
+    align: 'start',
+    items: [
+      {
+        id: 'save',
+        type: 'button',
+        label: 'Save',
+        icon: <Save size={14} />,
+        variant: 'outline',
+        size: 'sm',
+        onClick: onSave,
+        disabled: !isDirty,
+        tooltip: 'Save document',
+      },
+      {
+        id: 'undo',
+        type: 'button',
+        icon: <Undo size={14} />,
+        variant: 'ghost',
+        size: 'sm',
+        onClick: onUndo,
+        disabled: !canUndo,
+        tooltip: 'Undo',
+      },
+    ],
+  },
+  {
+    id: 'right',
+    align: 'end',
+    items: [
+      {
+        id: 'theme-toggle',
+        type: 'toggle',
+        icon: <Moon size={14} />,
+        pressed: theme === 'dark',
+        onToggle: setTheme,
+        tooltip: 'Toggle theme',
+      },
+    ],
+  },
+];
+
+<EditorToolbar groups={toolbarGroups} />
+```
+
+## TypeScript Interfaces
+
+```tsx
+export interface EditorToolbarProps {
+  children?: React.ReactNode;
+  groups?: ToolbarGroup[];
+  className?: string;
+}
+
+export interface ToolbarGroup {
+  id: string;
+  align?: 'start' | 'center' | 'end';
+  items: ToolbarItem[];
+}
+
+export type ToolbarItem = ToolbarButtonItem | ToolbarToggleItem | ToolbarCustomItem | ToolbarMenubarItem;
+
+export interface ToolbarButtonItem {
+  id: string;
+  type: 'button';
+  label?: string;
+  icon?: React.ReactNode;
+  variant?: 'default' | 'outline' | 'ghost';
+  size?: 'sm' | 'md';
+  onClick: () => void;
+  disabled?: boolean;
+  tooltip?: string;
+  tooltipDisabled?: boolean;
+  capability?: string;
+  gateMode?: 'disable' | 'hide' | 'replace';
+}
+
+export interface ToolbarToggleItem {
+  id: string;
+  type: 'toggle';
+  label?: string;
+  icon?: React.ReactNode;
+  pressed: boolean;
+  onToggle: (pressed: boolean) => void;
+  tooltip?: string;
+  tooltipDisabled?: boolean;
+  capability?: string;
+}
+
+export interface ToolbarCustomItem {
+  id: string;
+  type: 'custom';
+  render: () => React.ReactNode;
+}
+```
+
+## Feature Gating
+
+Buttons can be gated by entitlement:
+
+```tsx
+<EditorToolbar.Button
+  onClick={onExport}
+  capability="STUDIO_EXPORT"
+  gateMode="disable"
+  gateReason="Export requires Pro plan"
+>
+  Export
+</EditorToolbar.Button>
+```
+
+When user lacks capability:
+- `gateMode="disable"` — Button disabled with tooltip
+- `gateMode="hide"` — Button hidden
+- `gateMode="replace"` — Replaced with upgrade prompt
+
+## Styling
+
+### CSS Variables
+
+```css
+.toolbar {
+  min-height: var(--toolbar-height);
+  padding: 0 var(--panel-padding);
+  gap: var(--control-gap);
+}
+
+.toolbar-button {
+  padding: var(--control-padding-y) var(--control-padding-x);
+  height: var(--control-height-sm);
+}
+```
+
+### Custom Classes
+
+```tsx
+<EditorToolbar className="bg-gradient-to-r from-blue-500 to-purple-500">
+  {/* Custom gradient toolbar */}
+</EditorToolbar>
+```
+
+### Icon Sizing
+
+```tsx
+<EditorToolbar.Button>
+  <Save size={14} /> {/* Icons typically 14px */}
+  Save
+</EditorToolbar.Button>
+```
+
+## Accessibility
+
+- **Keyboard navigation** — Tab through buttons
+- **Tooltips** — Hover for descriptions
+- **Disabled states** — Clear visual feedback
+- **ARIA labels** — Automatic for icon-only buttons
+
+## Common Patterns
+
+### Pattern: File/Edit/View Menubar
+
+```tsx
+const menus = createEditorMenubarMenus({
+  file: [
+    { id: 'new', label: 'New', icon: <FilePlus />, onSelect: onNew },
+    { id: 'open', label: 'Open', icon: <FolderOpen />, onSelect: onOpen },
+    { id: 'sep-1', type: 'separator' },
+    { id: 'save', label: 'Save', icon: <Save />, onSelect: onSave, shortcut: 'Ctrl+S' },
+  ],
+  edit: [
+    { id: 'undo', label: 'Undo', icon: <Undo />, onSelect: onUndo, disabled: !canUndo },
+    { id: 'redo', label: 'Redo', icon: <Redo />, onSelect: onRedo, disabled: !canRedo },
+  ],
+  view: [
+    { id: 'layout', label: 'Layout', submenu: viewSubmenu },
+  ],
+});
+
+<EditorToolbar>
+  <EditorToolbar.Left>
+    <EditorToolbar.Menubar menus={menus} />
+  </EditorToolbar.Left>
+</EditorToolbar>
+```
+
+### Pattern: Status Display
+
+```tsx
+<EditorToolbar>
+  <EditorToolbar.Left>
+    <span className="text-xs text-muted-foreground">
+      {nodes.length} nodes &middot; {edges.length} edges
+    </span>
+  </EditorToolbar.Left>
+</EditorToolbar>
+```
+
+### Pattern: Undo/Redo
+
+```tsx
+<EditorToolbar.Group>
+  <EditorToolbar.Button onClick={onUndo} disabled={!canUndo} tooltip="Undo">
+    <Undo size={14} />
+  </EditorToolbar.Button>
+  <EditorToolbar.Button onClick={onRedo} disabled={!canRedo} tooltip="Redo">
+    <Redo size={14} />
+  </EditorToolbar.Button>
+</EditorToolbar.Group>
+```
+
+### Pattern: Zoom Controls
+
+```tsx
+<EditorToolbar.Group>
+  <EditorToolbar.Button onClick={onZoomOut} tooltip="Zoom Out">
+    <ZoomOut size={14} />
+  </EditorToolbar.Button>
+  <span className="text-xs text-muted-foreground">{zoom}%</span>
+  <EditorToolbar.Button onClick={onZoomIn} tooltip="Zoom In">
+    <ZoomIn size={14} />
+  </EditorToolbar.Button>
+  <EditorToolbar.Button onClick={onFitView} tooltip="Fit View">
+    <Maximize size={14} />
+  </EditorToolbar.Button>
+</EditorToolbar.Group>
+```
+
+## Related Components
+
+- [EditorShell](./editor-shell) — Root container
+- [EditorMenubar](./editor-menubar.mdx) — Menu bar component
+- [EditorButton](./editor-button.mdx) — Button with tooltip
+
+## Source Code
+
+Location: `packages/shared/src/shared/components/editor/EditorToolbar.tsx`
+
+## Best Practices
+
+1. **Use `.Left` / `.Right` sections** — Clearer than manual flex
+2. **Group related buttons with `.Group`** — Visual separation
+3. **Add separators between groups** — Improves scannability
+4. **Use icons + text for primary actions** — Better affordance
+5. **Icon-only for secondary actions** — Space efficiency
+6. **Add tooltips to icon-only buttons** — Accessibility
+7. **Disable vs hide** — Disable when action unavailable, hide when irrelevant

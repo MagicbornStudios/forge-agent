@@ -60,12 +60,36 @@ test('new-project on existing .planning reports guidance and does not overwrite'
   assert.match(content, /SENTINEL_KEEP_THIS_LINE/);
 });
 
-test('new-project supports generic profile', () => {
-  const tempDir = mkTempRepo('forge-loop-new-project-generic-');
-  const result = runCli(tempDir, ['new-project', '--fresh', '--profile', 'generic']);
+test('new-project supports forge-loop profile', () => {
+  const tempDir = mkTempRepo('forge-loop-new-project-forge-loop-');
+  const result = runCli(tempDir, ['new-project', '--fresh', '--profile', 'forge-loop']);
   assert.equal(result.status, 0, result.stderr || result.stdout);
 
   const configPath = path.join(tempDir, '.planning', 'config.json');
   const config = JSON.parse(readFile(configPath));
-  assert.equal(config.verification.profile, 'generic');
+  assert.equal(config.verification.profile, 'forge-loop');
+  assert.equal(config.env.profile, 'forge-loop');
+});
+
+test('new-project accepts generic as deprecated alias for forge-loop', () => {
+  const tempDir = mkTempRepo('forge-loop-new-project-generic-alias-');
+  const result = runCli(tempDir, ['new-project', '--fresh', '--profile', 'generic']);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.match(result.stdout, /deprecated/i);
+
+  const configPath = path.join(tempDir, '.planning', 'config.json');
+  const config = JSON.parse(readFile(configPath));
+  assert.equal(config.verification.profile, 'forge-loop');
+  assert.equal(config.env.profile, 'forge-loop');
+});
+
+test('new-project supports custom profile with forge-loop verification baseline', () => {
+  const tempDir = mkTempRepo('forge-loop-new-project-custom-');
+  const result = runCli(tempDir, ['new-project', '--fresh', '--profile', 'custom']);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+
+  const configPath = path.join(tempDir, '.planning', 'config.json');
+  const config = JSON.parse(readFile(configPath));
+  assert.equal(config.verification.profile, 'forge-loop');
+  assert.equal(config.env.profile, 'custom');
 });

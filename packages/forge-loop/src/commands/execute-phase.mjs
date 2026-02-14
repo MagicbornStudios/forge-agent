@@ -10,6 +10,7 @@ import {
   formatTaskCommitMessage,
 } from '../lib/git.mjs';
 import { askYesNo } from '../lib/prompting.mjs';
+import { ensureHeadlessEnvReady, shouldRunHeadlessEnvGate } from '../lib/env-preflight.mjs';
 import {
   ensurePhaseDir,
   findPhase,
@@ -118,6 +119,12 @@ export async function runExecutePhase(phaseNumber, options = {}) {
   }
 
   const config = loadPlanningConfig();
+  if (shouldRunHeadlessEnvGate(config, options)) {
+    ensureHeadlessEnvReady(config, {
+      headless: options.headless === true,
+      nonInteractive: options.nonInteractive === true,
+    });
+  }
   const autoCommit = options.autoCommit ?? getAutoCommitEnabled(config);
   const commitScope = getCommitScope(config);
   const completedPlans = [];
@@ -200,10 +207,30 @@ export async function runExecutePhase(phaseNumber, options = {}) {
     assertCommitResult(commitResult, `execute-phase ${phase.phaseNumber} prompt`);
   }
 
+  const normalizedExecution = {
+    planCount: executionState.planCount,
+    summaryCount: executionState.summaryCount,
+    complete: executionState.complete,
+    incompletePlans: executionState.incompletePlans.map((item) => path.basename(item)),
+  };
+
+  const nextAction = normalizedExecution.complete
+    ? `forge-loop verify-work ${phase.phaseNumber}`
+    : `forge-loop execute-phase ${phase.phaseNumber}`;
+
+  const summary = {
+    status: normalizedExecution.complete ? 'ready_for_verify' : 'pending_execution',
+    nextAction,
+    blockingGaps: normalizedExecution.complete ? [] : [...normalizedExecution.incompletePlans],
+  };
+
   return {
     phase,
     completedPlans,
-    executionState,
+    executionState: normalizedExecution,
     promptPath,
+    summary,
+    status: summary.status,
+    nextAction: summary.nextAction,
   };
 }

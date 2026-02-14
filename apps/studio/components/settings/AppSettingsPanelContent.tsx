@@ -33,7 +33,11 @@ import { ViewportSettingsProvider } from './ViewportSettingsProvider';
 import { GraphViewportSettings } from './GraphViewportSettings';
 import { toast } from 'sonner';
 import { SettingsService } from '@/lib/api-client';
-import { VIEWPORT_ACCENT_COLORS } from '@/lib/app-shell/editor-metadata';
+import {
+  SETTINGS_SCOPE_COLORS,
+  VIEWPORT_ACCENT_COLORS,
+} from '@/lib/app-shell/editor-metadata';
+import { useEditorStore } from '@/lib/app-shell/store';
 import type { SettingsSection } from './types';
 
 export interface AppSettingsPanelContentProps {
@@ -151,8 +155,26 @@ export function AppSettingsPanelContent({
   controlledCategory,
 }: AppSettingsPanelContentProps) {
   const getOverridesForScope = useSettingsStore((s) => s.getOverridesForScope);
+  const settingsSidebarOpen = useEditorStore((s) => s.settingsSidebarOpen);
+  const setSettingsActiveTab = useEditorStore((s) => s.setSettingsActiveTab);
   const [activeTab, setActiveTab] = React.useState<TabId>('app');
   const [saving, setSaving] = React.useState(false);
+
+  const handleTabChange = React.useCallback(
+    (v: string) => {
+      const tab = v as TabId;
+      setActiveTab(tab);
+      setSettingsActiveTab(tab);
+    },
+    [setSettingsActiveTab]
+  );
+
+  React.useEffect(() => {
+    if (settingsSidebarOpen) {
+      setSettingsActiveTab(activeTab);
+    }
+    return () => setSettingsActiveTab(null);
+  }, [activeTab, setSettingsActiveTab, settingsSidebarOpen]);
 
   const handleSave = React.useCallback(async () => {
     const { scope, scopeId } = getScopeAndId(
@@ -285,9 +307,11 @@ export function AppSettingsPanelContent({
       <SettingsTabs
         tabs={topLevelTabs}
         value={activeTab}
-        onValueChange={(v) => setActiveTab(v as TabId)}
+        onValueChange={handleTabChange}
         className="flex-1 min-h-0"
         tabsListClassName="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5"
+        iconOnly
+        tabAccentColors={SETTINGS_SCOPE_COLORS}
       />
       <div className="mt-4 pt-4 border-t flex justify-end shrink-0">
         <Button onClick={handleSave} disabled={saving}>

@@ -7,7 +7,6 @@ import { Textarea } from "@forge/ui/textarea";
 import {
   Field,
   FieldContent,
-  FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldLegend,
@@ -208,15 +207,25 @@ export function SettingsPanel({
 
                   return (
                     <React.Fragment key={field.key}>
-                      <Item variant="outline" size="sm" className="bg-background/60">
-                        <ItemContent className="gap-3">
+                      <Item
+                        variant="outline"
+                        size="sm"
+                        className={cn('bg-background/60', isToggle && 'py-1')}
+                      >
+                        <ItemContent className={cn(isToggle ? 'gap-1.5' : 'gap-3')}>
                           {isToggle ? (
                             <div
-                              className="flex items-center justify-between gap-3 w-full cursor-pointer text-left rounded-md"
+                              className="flex items-center justify-between gap-2 w-full cursor-pointer text-left rounded-md py-1"
                               onClick={() => setSetting(scope, field.key, !Boolean(value), ids)}
                             >
-                              <div className="space-y-1 min-w-0">
-                                <FieldLabel htmlFor={inputId} className="flex items-center gap-[var(--control-gap)]">
+                              <div
+                                className="space-y-0.5 min-w-0 min-h-0"
+                                title={field.description ?? undefined}
+                              >
+                                <FieldLabel
+                                  htmlFor={inputId}
+                                  className="flex items-center gap-[var(--control-gap)] text-xs"
+                                >
                                   {fieldIcons?.[field.key] != null && (
                                     <span className="flex shrink-0 size-[var(--icon-size)] [&>svg]:size-[var(--icon-size)] text-muted-foreground">
                                       {fieldIcons[field.key]}
@@ -224,9 +233,6 @@ export function SettingsPanel({
                                   )}
                                   <FieldTitle>{field.label}</FieldTitle>
                                 </FieldLabel>
-                                {field.description && (
-                                  <FieldDescription>{field.description}</FieldDescription>
-                                )}
                               </div>
                               <div
                                 className="flex items-center gap-[var(--control-gap)] shrink-0 min-w-[var(--control-height)]"
@@ -258,6 +264,7 @@ export function SettingsPanel({
                                     id={inputId}
                                     checked={Boolean(value)}
                                     onCheckedChange={(checked) => setSetting(scope, field.key, checked, ids)}
+                                    className="scale-[0.85]"
                                   />
                                 </div>
                               </div>
@@ -265,7 +272,10 @@ export function SettingsPanel({
                           ) : (
                             <Field orientation="vertical">
                               <div className="flex items-start justify-between gap-3">
-                                <div className="space-y-1">
+                                <div
+                                  className="space-y-1"
+                                  title={field.description ?? undefined}
+                                >
                                   <FieldLabel htmlFor={inputId} className="flex items-center gap-[var(--control-gap)]">
                                     {fieldIcons?.[field.key] != null && (
                                       <span className="flex shrink-0 size-[var(--icon-size)] [&>svg]:size-[var(--icon-size)] text-muted-foreground">
@@ -274,9 +284,6 @@ export function SettingsPanel({
                                     )}
                                     <FieldTitle>{field.label}</FieldTitle>
                                   </FieldLabel>
-                                  {field.description && (
-                                    <FieldDescription>{field.description}</FieldDescription>
-                                  )}
                                 </div>
                                 <ItemActions className="items-start pt-1">
                                   {inheritedLabel && <SourceBadge label={inheritedLabel} />}

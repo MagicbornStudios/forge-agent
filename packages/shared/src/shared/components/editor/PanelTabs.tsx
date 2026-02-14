@@ -4,6 +4,8 @@ import * as React from 'react';
 import { useMemo, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@forge/ui/tabs';
 import { cn } from '@forge/shared/lib/utils';
+import { X } from 'lucide-react';
+import { EditorButton } from './EditorButton';
 
 export interface PanelTabDef {
   /** Unique tab identifier. */
@@ -20,15 +22,56 @@ export interface PanelTabDef {
   closable?: boolean;
 }
 
+export interface PanelTabProps {
+  id: string;
+  label: string;
+  icon?: React.ReactNode;
+  accentColor?: string;
+  closable?: boolean;
+  children?: React.ReactNode;
+}
+
+function PanelTab(_props: PanelTabProps) {
+  return null;
+}
+PanelTab.displayName = 'PanelTabs.Tab';
+
+function isPanelTabChild(
+  child: React.ReactNode
+): child is React.ReactElement<PanelTabProps & { children?: React.ReactNode }> {
+  return React.isValidElement(child) && child.type === PanelTab;
+}
+
+function collectTabsFromChildren(children: React.ReactNode): PanelTabDef[] {
+  const tabs: PanelTabDef[] = [];
+  React.Children.forEach(children, (child) => {
+    if (!isPanelTabChild(child)) return;
+    const { id, label, icon, accentColor, closable } = child.props;
+    tabs.push({
+      id,
+      label,
+      icon,
+      accentColor,
+      closable,
+      content: child.props.children ?? null,
+    });
+  });
+  return tabs;
+}
+
 export interface PanelTabsProps {
-  /** Tab definitions. At least one required. */
-  tabs: PanelTabDef[];
+  /** Tab definitions. When provided, used instead of declarative Tab children. */
+  tabs?: PanelTabDef[];
+  /** Declarative tab definitions. Use PanelTabs.Tab as children. Ignored when tabs prop is provided. */
+  children?: React.ReactNode;
   /** Which tab to show initially when uncontrolled. Defaults to first tab. */
   defaultTabId?: string;
   /** Controlled active tab. Overrides internal state when provided. */
   activeTabId?: string;
   /** Called when a tab is activated. */
   onTabChange?: (id: string) => void;
+  /** Called when a closable tab's close button is clicked. Parent must handle removal. */
+  onTabClose?: (id: string) => void;
   className?: string;
 }
 
@@ -55,12 +98,24 @@ export interface PanelTabsProps {
  */
 export function PanelTabs({
   tabs,
+  children,
   defaultTabId,
   activeTabId,
   onTabChange,
+  onTabClose,
   className,
 }: PanelTabsProps) {
-  const initialTab = useMemo(() => defaultTabId ?? tabs[0]?.id, [defaultTabId, tabs]);
+  const tabDefs = useMemo(() => {
+    if (tabs != null && tabs.length > 0) return tabs;
+    const collected = collectTabsFromChildren(children);
+    if (collected.length === 0) {
+      throw new Error(
+        'PanelTabs requires at least one tab via tabs prop or PanelTabs.Tab children.'
+      );
+    }
+    return collected;
+  }, [tabs, children]);
+  const initialTab = useMemo(() => defaultTabId ?? tabDefs[0]?.id, [defaultTabId, tabDefs]);
   const [internalTab, setInternalTab] = useState(initialTab);
   const currentTab = activeTabId ?? internalTab;
 
@@ -83,7 +138,7 @@ export function PanelTabs({
           'min-w-0 overflow-hidden border-b border-border shrink-0',
         )}
       >
-        {tabs.map((tab) => {
+        {tabDefs.map((tab) => {
           const isActive = tab.id === currentTab;
           const accent = tab.accentColor ?? 'var(--context-accent, hsl(var(--primary)))';
 
@@ -116,13 +171,27 @@ export function PanelTabs({
                 </span>
               )}
               <span className="truncate">{tab.label}</span>
+              {tab.closable && onTabClose && (
+                <EditorButton
+                  size="icon"
+                  variant="ghost"
+                  className="ml-0.5 shrink-0 h-5 w-5 rounded-sm opacity-70 hover:opacity-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onTabClose(tab.id);
+                  }}
+                  aria-label={`Close ${tab.label}`}
+                >
+                  <X className="size-3" />
+                </EditorButton>
+              )}
             </TabsTrigger>
           );
         })}
       </TabsList>
 
       {/* Tab content panels */}
-      {tabs.map((tab) => (
+      {tabDefs.map((tab) => (
         <TabsContent
           key={tab.id}
           value={tab.id}
@@ -135,3 +204,4 @@ export function PanelTabs({
     </Tabs>
   );
 }
+PanelTabs.Tab = PanelTab;

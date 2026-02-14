@@ -1,7 +1,6 @@
 @import "fumadocs-ui/style.css";
 
-/* Bridge Fumadocs semantic tokens to existing Studio/shadcn tokens. */
-#nd-docs-layout {
+#platform-docs-layout {
   --color-fd-background: var(--background);
   --color-fd-foreground: var(--foreground);
   --color-fd-muted: var(--muted);
@@ -21,12 +20,12 @@
   font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
   min-height: 100svh;
   background:
-    radial-gradient(80rem 34rem at 12% -12%, color-mix(in oklab, var(--primary) 16%, transparent), transparent 72%),
-    radial-gradient(60rem 24rem at 88% -18%, color-mix(in oklab, var(--accent) 14%, transparent), transparent 76%),
+    radial-gradient(78rem 34rem at 12% -14%, color-mix(in oklab, var(--primary) 15%, transparent), transparent 72%),
+    radial-gradient(60rem 24rem at 88% -20%, color-mix(in oklab, var(--accent) 12%, transparent), transparent 76%),
     var(--background);
 }
 
-#nd-docs-layout #nd-sidebar {
+#platform-docs-layout #platform-docs-sidebar {
   --color-fd-card: var(--sidebar);
   --color-fd-card-foreground: var(--sidebar-foreground);
   --color-fd-muted: var(--sidebar-accent);
@@ -35,7 +34,7 @@
   background: color-mix(in oklab, var(--sidebar) 92%, var(--background));
 }
 
-#nd-docs-layout .forge-docs-header {
+#platform-docs-layout .platform-docs-header {
   background:
     linear-gradient(
       to right,
@@ -45,26 +44,26 @@
   box-shadow: 0 1px 0 color-mix(in oklab, var(--border) 85%, transparent);
 }
 
-#nd-docs-layout #nd-sidebar [data-slot='sidebar-header'] {
+#platform-docs-layout #platform-docs-sidebar [data-slot='sidebar-header'] {
   padding-inline: 0.65rem;
   padding-top: 0.75rem;
 }
 
-#nd-docs-layout #nd-sidebar [data-slot='sidebar-content'] {
+#platform-docs-layout #platform-docs-sidebar [data-slot='sidebar-content'] {
   padding-inline: 0.35rem;
   padding-bottom: 0.85rem;
 }
 
-#nd-docs-layout #nd-sidebar [data-sidebar='content'] > div:first-child {
+#platform-docs-layout #platform-docs-sidebar [data-sidebar='content'] > div:first-child {
   scrollbar-width: none;
 }
 
-#nd-docs-layout #nd-sidebar [data-sidebar='content'] > div:first-child::-webkit-scrollbar {
+#platform-docs-layout #platform-docs-sidebar [data-sidebar='content'] > div:first-child::-webkit-scrollbar {
   width: 0;
   height: 0;
 }
 
-#nd-docs-layout #nd-sidebar [data-sidebar='content'] > div:nth-child(2) {
+#platform-docs-layout #platform-docs-sidebar [data-sidebar='content'] > div:nth-child(2) {
   width: 4px !important;
   border: 0 !important;
   padding: 0 !important;
@@ -72,38 +71,32 @@
   transition: opacity 160ms ease;
 }
 
-#nd-docs-layout #nd-sidebar [data-sidebar='content']:hover > div:nth-child(2) {
+#platform-docs-layout #platform-docs-sidebar [data-sidebar='content']:hover > div:nth-child(2) {
   opacity: 0.72;
 }
 
-#nd-docs-layout #nd-sidebar [data-sidebar='content'] > div:nth-child(2) > div {
+#platform-docs-layout #platform-docs-sidebar [data-sidebar='content'] > div:nth-child(2) > div {
   border-radius: 999px;
   background: color-mix(in oklab, var(--foreground) 42%, transparent);
 }
 
-#nd-docs-layout .doc-content {
+#platform-docs-layout .doc-content {
   text-wrap: pretty;
 }
 
-#nd-docs-layout .doc-content > :where(h1, h2, h3, h4) {
+#platform-docs-layout .doc-content > :where(h1, h2, h3, h4) {
   letter-spacing: -0.015em;
 }
 
-#nd-docs-layout .forge-docs-toc {
+#platform-docs-layout .platform-docs-toc {
   width: 17.5rem;
 }
 
-#nd-docs-layout .forge-docs-toc-inner {
+#platform-docs-layout .platform-docs-toc-inner {
   padding: 1.5rem 1.125rem 1.75rem;
-  scrollbar-width: none;
 }
 
-#nd-docs-layout .forge-docs-toc-inner::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
-#nd-docs-layout .forge-docs-toc-nav {
+#platform-docs-layout .platform-docs-toc-nav {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -114,7 +107,7 @@
   background: color-mix(in oklab, var(--background) 88%, var(--muted) 12%);
 }
 
-#nd-docs-layout .forge-docs-toc-nav::before {
+#platform-docs-layout .platform-docs-toc-nav::before {
   content: '';
   position: absolute;
   left: 0.95rem;
@@ -124,39 +117,39 @@
   background: color-mix(in oklab, var(--border) 88%, transparent);
 }
 
-#nd-docs-layout .forge-docs-toc-title {
+#platform-docs-layout .platform-docs-toc-title {
   margin-bottom: 0.5rem;
   padding-left: 0.2rem;
 }
 
-#nd-docs-layout .forge-docs-toc-thumb {
-  left: 0.9rem;
-  width: 2px;
-}
-
-#nd-docs-layout .forge-docs-toc-link {
+#platform-docs-layout .platform-docs-toc-link {
   border-radius: 0.4rem;
   padding: 0.36rem 0.55rem 0.36rem 0.6rem;
 }
 
-#nd-docs-layout .forge-docs-toc-link:hover {
+#platform-docs-layout .platform-docs-toc-link:hover {
   background: color-mix(in oklab, var(--muted) 62%, transparent);
 }
 
-/* Keep docs rails visible at desktop breakpoints even if utility variants regress. */
 @media (min-width: 48rem) {
-  /* In-flow sidebar (collapsible="none"): no padding; sidebar and content sit side-by-side. */
-  #nd-docs-layout [data-sidebar='sidebar-provider']:has(#nd-sidebar[data-slot='sidebar']) {
-    padding-left: 0 !important;
+  #platform-docs-layout [data-sidebar='sidebar-provider'] {
+    padding-left: var(--sidebar-width) !important;
   }
 
-  #nd-docs-layout .forge-docs-tabs {
+  #platform-docs-layout #platform-docs-sidebar[data-slot='sidebar-container'] {
+    top: var(--docs-header-height) !important;
+    bottom: auto !important;
+    height: calc(100svh - var(--docs-header-height)) !important;
+    display: flex !important;
+  }
+
+  #platform-docs-layout .platform-docs-tabs {
     display: flex !important;
   }
 }
 
 @media (min-width: 64rem) {
-  #nd-docs-layout .forge-docs-toc {
+  #platform-docs-layout .platform-docs-toc {
     display: block !important;
   }
 }

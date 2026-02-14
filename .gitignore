@@ -86,6 +86,11 @@ nul
 # Agents use .tmp to pull entire repos or component trees for reference.
 .tmp/
 
+# RepoStudio local state
+.repo-studio/local.overrides.json
+.repo-studio/runtime.json
+.repo-studio/runs/
+
 # Misc
 *.pem
 .cache/

@@ -33,16 +33,39 @@ function legacyFilesAvailable() {
 }
 
 function normalizeProfile(profile) {
-  return String(profile || '').trim() === 'generic' ? 'generic' : 'forge-agent';
+  const raw = String(profile || '').trim().toLowerCase();
+  if (raw === 'generic') {
+    return {
+      profile: 'forge-loop',
+      deprecatedAliasUsed: true,
+    };
+  }
+  if (raw === 'forge-loop') {
+    return {
+      profile: 'forge-loop',
+      deprecatedAliasUsed: false,
+    };
+  }
+  if (raw === 'custom') {
+    return {
+      profile: 'custom',
+      deprecatedAliasUsed: false,
+    };
+  }
+  return {
+    profile: 'forge-agent',
+    deprecatedAliasUsed: false,
+  };
 }
 
 function createFreshPlanning(profile = 'forge-agent') {
-  const normalizedProfile = normalizeProfile(profile);
-  const projectName = normalizedProfile === 'generic' ? 'Project' : 'Forge Agent';
-  const phaseTitle = normalizedProfile === 'generic' ? 'Initial product baseline' : 'Forge Loop bootstrap';
-  const phaseGoal = normalizedProfile === 'generic'
-    ? 'Establish lifecycle command baseline and first shippable phase.'
-    : 'Establish lifecycle command baseline';
+  const profileInfo = normalizeProfile(profile);
+  const normalizedProfile = profileInfo.profile;
+  const projectName = normalizedProfile === 'forge-agent' ? 'Forge Agent' : 'Project';
+  const phaseTitle = normalizedProfile === 'forge-agent' ? 'Forge Loop bootstrap' : 'Initial product baseline';
+  const phaseGoal = normalizedProfile === 'forge-agent'
+    ? 'Establish lifecycle command baseline'
+    : 'Establish lifecycle command baseline and first shippable phase.';
 
   ensureDir(PLANNING_PATH);
   ensureDir(PLANNING_PHASES_DIR);
@@ -99,6 +122,10 @@ Use this temporary queue while migrating into Forge Loop.
     ...DEFAULT_CONFIG,
     verification: {
       ...DEFAULT_CONFIG.verification,
+      profile: normalizedProfile === 'forge-agent' ? 'forge-agent' : 'forge-loop',
+    },
+    env: {
+      ...DEFAULT_CONFIG.env,
       profile: normalizedProfile,
     },
   };
@@ -112,7 +139,10 @@ Use this temporary queue while migrating into Forge Loop.
     sources: {},
   });
 
-  return REQUIRED_PLANNING_FILES.concat([PLANNING_FILES.migrationReport, path.join(PLANNING_PROMPTS_DIR, 'README.md')]);
+  return {
+    profileInfo,
+    written: REQUIRED_PLANNING_FILES.concat([PLANNING_FILES.migrationReport, path.join(PLANNING_PROMPTS_DIR, 'README.md')]),
+  };
 }
 
 function validatePlanningTree() {
@@ -125,6 +155,7 @@ function validatePlanningTree() {
 
 export async function runNewProject(options = {}) {
   const { fresh = false, autoCommit = true, profile = 'forge-agent' } = options;
+  const profileInfo = normalizeProfile(profile);
 
   if (fileExists(PLANNING_PATH)) {
     const validation = validatePlanningTree();
@@ -145,7 +176,8 @@ export async function runNewProject(options = {}) {
     written = migration.written;
     migrationReport = migration.report;
   } else {
-    written = createFreshPlanning(profile);
+    const freshResult = createFreshPlanning(profileInfo.profile);
+    written = freshResult.written;
   }
 
   if (autoCommit) {
@@ -166,9 +198,12 @@ export async function runNewProject(options = {}) {
   return {
     alreadyExists: false,
     fresh,
-    profile: normalizeProfile(profile),
+    profile: profileInfo.profile,
     usedMigration: !fresh && legacyFilesAvailable(),
     written,
     migrationReport,
+    message: profileInfo.deprecatedAliasUsed
+      ? 'Profile alias "generic" is deprecated; using "forge-loop".'
+      : undefined,
   };
 }

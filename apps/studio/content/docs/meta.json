@@ -1,0 +1,16 @@
+{
+  "title": "Documentation",
+  "pages": [
+    "index",
+    "components",
+    "developer-guide",
+    "developer-internal",
+    "tutorials",
+    "guides",
+    "reference",
+    "ai-system",
+    "api-reference",
+    "ai",
+    "yarn-spinner"
+  ]
+}

@@ -4,7 +4,6 @@ import * as React from 'react';
 import {
   Field,
   FieldContent,
-  FieldDescription,
   FieldLabel,
   FieldTitle,
 } from '@forge/ui/field';
@@ -135,6 +134,10 @@ export function SettingsField({
                 checked: Boolean(value),
                 onCheckedChange: onChange,
                 id: inputId,
+                className: cn(
+                  (child.props as { className?: string }).className,
+                  'scale-[0.85]'
+                ),
               } as Record<string, unknown>);
             }
             if (type === 'select') {
@@ -154,24 +157,33 @@ export function SettingsField({
         : null;
 
   return (
-    <Item variant="outline" size="sm" className="bg-background/60">
-      <ItemContent className="gap-3">
+    <Item
+      variant="outline"
+      size="sm"
+      className={cn('bg-background/60', isToggle && 'py-1')}
+    >
+      <ItemContent className={cn(isToggle ? 'gap-1.5' : 'gap-3')}>
         {isToggle ? (
           <div
-            className="flex flex-col items-stretch gap-3 w-full cursor-pointer text-left rounded-md"
+            className="flex flex-col items-stretch gap-1.5 w-full cursor-pointer text-left rounded-md py-1"
             onClick={() => onChange(!Boolean(value))}
           >
-            <div className="flex items-center justify-between gap-3 w-full">
-              <div className="space-y-1 min-w-0">
-                <FieldLabel htmlFor={inputId} className="flex items-center gap-[var(--control-gap)]">
+            <div className="flex items-center justify-between gap-2 w-full">
+              <div
+                className="space-y-0.5 min-w-0 min-h-0"
+                title={description ?? undefined}
+              >
+                <FieldLabel
+                  htmlFor={inputId}
+                  className="flex items-center gap-[var(--control-gap)] text-xs"
+                >
                   {icon != null && (
                     <span className="flex shrink-0 size-[var(--icon-size)] [&>svg]:size-[var(--icon-size)] text-muted-foreground">
                       {icon}
                     </span>
                   )}
-                  <FieldTitle>{label}</FieldTitle>
+                  <FieldTitle className="text-xs">{label}</FieldTitle>
                 </FieldLabel>
-                {description && <FieldDescription>{description}</FieldDescription>}
               </div>
               <div
                 className="flex items-center gap-[var(--control-gap)] shrink-0 min-w-[var(--control-height)]"
@@ -203,7 +215,10 @@ export function SettingsField({
         ) : (
           <Field orientation="vertical">
             <div className="flex items-start justify-between gap-3">
-              <div className="space-y-1">
+              <div
+                className="space-y-1"
+                title={description ?? undefined}
+              >
                 <FieldLabel htmlFor={inputId} className="flex items-center gap-[var(--control-gap)]">
                   {icon != null && (
                     <span className="flex shrink-0 size-[var(--icon-size)] [&>svg]:size-[var(--icon-size)] text-muted-foreground">
@@ -212,7 +227,6 @@ export function SettingsField({
                   )}
                   <FieldTitle>{label}</FieldTitle>
                 </FieldLabel>
-                {description && <FieldDescription>{description}</FieldDescription>}
               </div>
               <ItemActions className="items-start pt-1">
                 {inheritedLabel && <SourceBadge label={inheritedLabel} />}

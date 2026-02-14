@@ -38,7 +38,7 @@ export { EditorDockPanel, DockPanel } from './EditorDockPanel';
 export type { DockPanelProps } from './EditorDockPanel';
 
 export { PanelTabs } from './PanelTabs';
-export type { PanelTabDef, PanelTabsProps } from './PanelTabs';
+export type { PanelTabDef, PanelTabProps, PanelTabsProps } from './PanelTabs';
 
 export { SettingsTabs } from './SettingsTabs';
 export type { SettingsTabDef, SettingsTabsProps } from './SettingsTabs';

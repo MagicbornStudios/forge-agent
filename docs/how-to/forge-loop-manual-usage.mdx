@@ -12,7 +12,7 @@ Use this when a human is driving the loop directly without autonomous agent exec
 
 1. Initialize once:
 ```bash
-pnpm forge-loop:new-project -- --profile generic
+pnpm forge-loop:new-project -- --profile forge-loop
 ```
 
 2. Pick phase and lock boundary:
@@ -33,6 +33,12 @@ pnpm forge-loop:execute-phase -- 1
 5. Verify outcomes:
 ```bash
 pnpm forge-loop:verify-work -- 1 --strict
+```
+
+If you run headless automation, gate env first:
+```bash
+pnpm forge-env:doctor -- --mode headless --strict
+pnpm forge-repo-studio open --view env --mode headless
 ```
 
 6. Check routing:

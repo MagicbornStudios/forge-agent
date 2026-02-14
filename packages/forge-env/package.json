@@ -1,0 +1,20 @@
+{
+  "name": "@forge/forge-env",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "bin": {
+    "forge-env": "./src/cli.mjs"
+  },
+  "files": [
+    "src",
+    "docs",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "node -e \"console.log('forge-env: no build step (source-distributed mjs)')\"",
+    "test": "node --test \"src/__tests__/*.test.mjs\"",
+    "publish": "npm publish"
+  }
+}
+

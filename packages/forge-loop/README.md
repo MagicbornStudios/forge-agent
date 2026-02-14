@@ -10,7 +10,7 @@ Forge Loop treats `.planning/` as canonical state and helps you run:
 ### New repository
 
 ```bash
-forge-loop new-project --fresh --profile generic
+forge-loop new-project --fresh --profile forge-loop
 forge-loop discuss-phase 1
 forge-loop plan-phase 1
 forge-loop execute-phase 1 --non-interactive
@@ -21,7 +21,7 @@ forge-loop progress
 ### Existing repository (no legacy Ralph artifacts)
 
 ```bash
-forge-loop new-project --fresh --profile generic
+forge-loop new-project --fresh --profile forge-loop
 forge-loop doctor
 forge-loop progress
 ```
@@ -52,7 +52,7 @@ npx @forge/forge-loop --help
 
 | Command | Purpose |
 |---|---|
-| `forge-loop new-project [--fresh] [--profile forge-agent\|generic]` | Initialize `.planning/` or auto-migrate legacy artifacts. |
+| `forge-loop new-project [--fresh] [--profile forge-agent\|forge-loop\|custom]` | Initialize `.planning/` or auto-migrate legacy artifacts. |
 | `forge-loop migrate-legacy` | Run one-time import from legacy docs into `.planning/`. |
 | `forge-loop discuss-phase <phase>` | Capture phase boundary decisions and context. |
 | `forge-loop plan-phase <phase> [--skip-research] [--gaps]` | Generate/refresh plan files and optional gap plans. |
@@ -75,6 +75,9 @@ npx @forge/forge-loop --help
 - Manual human flow: `docs/02-manual-loop.md`
 - Coding-agent flow: `docs/03-agent-loop.md`
 - Headless runner convention (external agent runner): `docs/04-headless-runbook.md`
+- Env readiness gate for headless runs: `pnpm forge-env:doctor -- --mode headless --strict`
+- Optional explicit runner: `pnpm forge-env:doctor -- --mode headless --runner <runner> --strict`
+- GUI remediation path: `pnpm forge-repo-studio open --view env --mode headless`
 
 ## Package runbooks
 

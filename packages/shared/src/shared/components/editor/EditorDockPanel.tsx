@@ -6,6 +6,14 @@ import { LockedOverlay, type LockedOverlayProps } from '@forge/ui/locked-overlay
 import { ScrollArea } from '@forge/ui/scroll-area';
 import { PanelTabs, type PanelTabDef } from './PanelTabs';
 
+function hasTabChildren(children: React.ReactNode): boolean {
+  let hasTab = false;
+  React.Children.forEach(children, (child) => {
+    if (React.isValidElement(child) && child.type === PanelTabs.Tab) hasTab = true;
+  });
+  return hasTab;
+}
+
 export interface DockPanelProps {
   /** Unique panel identifier. Used for settings scoping and persistence. */
   panelId: string;
@@ -93,11 +101,12 @@ export function EditorDockPanel({
   className,
 }: DockPanelProps) {
   const hasHeader = !hideTitleBar && (title || icon || headerActions);
-  const hasTabs = tabs && tabs.length > 0;
+  const hasTabs = (tabs != null && tabs.length > 0) || hasTabChildren(children);
 
   const body = hasTabs ? (
     <PanelTabs
       tabs={tabs}
+      children={hasTabChildren(children) ? children : undefined}
       defaultTabId={defaultTabId}
       activeTabId={activeTabId}
       onTabChange={onTabChange}
@@ -143,6 +152,8 @@ export function EditorDockPanel({
     </div>
   );
 }
+
+EditorDockPanel.Tab = PanelTabs.Tab;
 
 /** @deprecated Use EditorDockPanel. Kept for backward compatibility. */
 export const DockPanel = EditorDockPanel;

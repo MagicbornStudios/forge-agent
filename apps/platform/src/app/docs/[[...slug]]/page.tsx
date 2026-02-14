@@ -12,13 +12,13 @@ export function generateStaticParams() {
   return source.generateParams();
 }
 
-function redirectToDoc(slugs: string[], audience: 'platform' | 'developer') {
+function redirectToDoc(slugs: string[], audience: 'developer') {
   const joined = slugs.join('/');
   const pathname = joined.length > 0 ? `/docs/${joined}` : '/docs';
   redirect(withAudienceQuery(pathname, audience));
 }
 
-const COMPONENT_DOC_CATEGORIES = ['atoms', 'editor', 'assistant-ui', 'tool-ui'] as const;
+const COMPONENT_DOC_CATEGORIES = [] as const;
 
 function resolveComponentCategoryAlias(slugs: string[]): string[] | null {
   if (slugs.length !== 2 || slugs[0] !== 'components') return null;

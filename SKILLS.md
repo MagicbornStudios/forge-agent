@@ -1,4 +1,4 @@
-# SKILLS — Capabilities contract
+# SKILLS - Capabilities contract
 
 Defines what agents and contributors may safely assume about this repository.
 
@@ -33,6 +33,8 @@ See root [AGENTS.md](AGENTS.md) § Persistence and data layer
 - Studio uses Jest
 - Run `pnpm test` before claiming work complete
 - Run `pnpm forge-loop:test` when touching loop lifecycle code
+- Run `pnpm forge-env:test` when touching env onboarding/headless gating code
+- Run `pnpm forge-repo-studio:test` when touching RepoStudio command center code
 - Run `pnpm forge-loop:doctor` before/after large loop refactors
 - `"N/A"` only allowed for docs/config/build-only changes (state reason in PR)
 
