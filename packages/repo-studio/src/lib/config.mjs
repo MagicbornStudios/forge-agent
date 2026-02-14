@@ -23,7 +23,7 @@ export const DEFAULT_REPO_STUDIO_CONFIG = {
     terminalAllowlistedOnly: true,
   },
   views: {
-    order: ['planning', 'env', 'commands', 'docs', 'loop-assistant', 'codex-assistant', 'diff'],
+    order: ['planning', 'env', 'commands', 'story', 'docs', 'git', 'loop-assistant', 'codex-assistant', 'diff', 'code', 'review-queue'],
     hidden: [],
     defaultView: 'planning',
   },
@@ -38,6 +38,17 @@ export const DEFAULT_REPO_STUDIO_CONFIG = {
     editors: ['loop-assistant', 'codex-assistant'],
     routeMode: 'codex',
     routePath: '/api/assistant-chat',
+    routes: {
+      loop: {
+        mode: 'shared-runtime',
+        routePath: '/api/assistant-chat',
+      },
+      codex: {
+        mode: 'codex',
+        transport: 'app-server',
+        execFallbackAllowed: false,
+      },
+    },
     defaultModel: 'gpt-5',
     attachContextMaxFiles: 6,
     attachContextMaxChars: 16000,
@@ -46,10 +57,27 @@ export const DEFAULT_REPO_STUDIO_CONFIG = {
       cliCommand: 'codex',
       authPolicy: 'chatgpt-strict',
       mode: 'app-server',
+      transport: 'app-server',
+      execFallbackAllowed: false,
       appServerUrl: 'ws://127.0.0.1:3789',
       defaultModel: 'gpt-5',
       approvalMode: 'on-request',
       sandboxMode: 'workspace-write',
+    },
+    applyPolicy: {
+      mode: 'review-queue',
+      allowPlanningWrites: true,
+      requireApproval: true,
+    },
+  },
+  domains: {
+    story: {
+      roots: ['content/story'],
+      scopePolicy: 'hard-with-override',
+      naming: {
+        parseMode: 'dual',
+        canonicalCreate: 'act-01/chapter-01/page-001.md',
+      },
     },
   },
   docs: {
@@ -88,6 +116,19 @@ export const DEFAULT_REPO_STUDIO_LOCAL_OVERRIDES = {
   },
   loops: {
     activeLoopId: 'default',
+  },
+  reviewQueue: {
+    collapsed: false,
+    selectedProposalId: null,
+  },
+  story: {
+    activePath: '',
+    reader: {
+      lastPagePath: '',
+    },
+    scopeOverride: {
+      lastTokenId: '',
+    },
   },
 };
 
@@ -154,6 +195,56 @@ function normalizeConfigShape(config) {
   if (!normalized.ui.defaultView) {
     normalized.ui.defaultView = normalized.views.defaultView;
   }
+
+  const assistant = normalized.assistant || {};
+  const codex = assistant.codex || {};
+  const routes = assistant.routes || {};
+  assistant.codex = {
+    ...DEFAULT_REPO_STUDIO_CONFIG.assistant.codex,
+    ...codex,
+    transport: codex.transport === 'exec' ? 'exec' : 'app-server',
+    execFallbackAllowed: codex.execFallbackAllowed === true,
+  };
+  assistant.routes = {
+    loop: {
+      ...DEFAULT_REPO_STUDIO_CONFIG.assistant.routes.loop,
+      ...(routes.loop || {}),
+    },
+    codex: {
+      ...DEFAULT_REPO_STUDIO_CONFIG.assistant.routes.codex,
+      ...(routes.codex || {}),
+      transport: String(routes.codex?.transport || assistant.codex.transport || 'app-server') === 'exec'
+        ? 'exec'
+        : 'app-server',
+      execFallbackAllowed: routes.codex?.execFallbackAllowed === true || assistant.codex.execFallbackAllowed === true,
+    },
+  };
+  assistant.applyPolicy = {
+    ...DEFAULT_REPO_STUDIO_CONFIG.assistant.applyPolicy,
+    ...(assistant.applyPolicy || {}),
+    mode: 'review-queue',
+    requireApproval: true,
+    allowPlanningWrites: assistant.applyPolicy?.allowPlanningWrites !== false,
+  };
+  normalized.assistant = assistant;
+
+  const domains = normalized.domains || {};
+  normalized.domains = {
+    ...DEFAULT_REPO_STUDIO_CONFIG.domains,
+    ...domains,
+    story: {
+      ...DEFAULT_REPO_STUDIO_CONFIG.domains.story,
+      ...(domains.story || {}),
+      roots: Array.isArray(domains.story?.roots) && domains.story.roots.length > 0
+        ? [...domains.story.roots]
+        : [...DEFAULT_REPO_STUDIO_CONFIG.domains.story.roots],
+      scopePolicy: String(domains.story?.scopePolicy || DEFAULT_REPO_STUDIO_CONFIG.domains.story.scopePolicy),
+      naming: {
+        ...DEFAULT_REPO_STUDIO_CONFIG.domains.story.naming,
+        ...(domains.story?.naming || {}),
+      },
+    },
+  };
 
   return normalized;
 }

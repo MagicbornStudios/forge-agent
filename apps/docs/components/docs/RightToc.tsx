@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { List } from 'lucide-react';
-import { cn } from '@forge/ui/lib/utils';
+import { cn } from '@/lib/utils';
 
 export type TableOfContents = Array<{ title: string; url: string; depth: number }>;
 

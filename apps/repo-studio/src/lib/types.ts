@@ -2,10 +2,14 @@ export const REPO_WORKSPACE_IDS = [
   'planning',
   'env',
   'commands',
+  'story',
   'docs',
+  'git',
   'loop-assistant',
   'codex-assistant',
   'diff',
+  'code',
+  'review-queue',
 ] as const;
 export type RepoWorkspaceId = (typeof REPO_WORKSPACE_IDS)[number];
 
@@ -26,4 +30,9 @@ export type RepoCommandView = {
 export type RepoRunRef = {
   id: string;
   stopPath: string;
+};
+
+export type RepoReviewQueueState = {
+  collapsed: boolean;
+  selectedProposalId: string | null;
 };

@@ -215,11 +215,18 @@ export function getStagedFiles(cwd) {
 }
 
 export function runCommand(cwd, command, args = []) {
-  const result = spawnSync(command, args, {
-    cwd,
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-  });
+  const needsShell = process.platform === 'win32' && /^(pnpm|npm|npx)$/i.test(String(command || '').trim());
+  const result = needsShell
+    ? spawnSync('cmd.exe', ['/d', '/s', '/c', buildWindowsCommand(command, args)], {
+      cwd,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    : spawnSync(resolveCommandExecutable(command), args, {
+      cwd,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
   const spawnError = result.error instanceof Error ? result.error.message : '';
   const stderr = [result.stderr?.trim() ?? '', spawnError].filter(Boolean).join('\n');
 
@@ -230,4 +237,23 @@ export function runCommand(cwd, command, args = []) {
     stdout: result.stdout?.trim() ?? '',
     stderr,
   };
+}
+
+function resolveCommandExecutable(command) {
+  const normalized = String(command || '').trim();
+  if (process.platform !== 'win32') return normalized;
+  if (!normalized || /\.[a-z0-9]+$/i.test(normalized)) return normalized;
+  return normalized;
+}
+
+function quoteWindowsCommandArg(value) {
+  const raw = String(value ?? '');
+  if (!/[\s"]/g.test(raw)) return raw;
+  return `"${raw.replace(/"/g, '\\"')}"`;
+}
+
+function buildWindowsCommand(command, args) {
+  return [String(command || '').trim(), ...(Array.isArray(args) ? args : []).map(quoteWindowsCommandArg)]
+    .filter(Boolean)
+    .join(' ');
 }

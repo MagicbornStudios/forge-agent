@@ -1,62 +1,29 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import { NextResponse } from 'next/server';
+import { createUIMessageStream, createUIMessageStreamResponse } from 'ai';
+
 import { runRepoStudioCli } from '@/lib/cli-runner';
+import { runLocalLoopAssistant } from '@/lib/loop-assistant-chat';
+import { resolveLoopAssistantEndpoint } from '@/lib/loop-assistant-runtime';
+import {
+  readRepoStudioConfig,
+  resolveCodexAssistantRoute,
+  type RepoStudioConfig,
+} from '@/lib/repo-studio-config';
+import {
+  getCodexSessionStatus,
+  snapshotTurnEvents,
+  startCodexTurn,
+  subscribeTurnEvents,
+  type CodexTurnStreamEvent,
+} from '@/lib/codex-session';
+import { resolveScopeGuardContext } from '@/lib/scope-guard';
 
-type RepoStudioConfig = {
-  assistant?: {
-    enabled?: boolean;
-    defaultEditor?: 'loop-assistant' | 'codex-assistant' | string;
-    routeMode?: 'codex' | 'local' | 'proxy' | 'openrouter' | string;
-    routePath?: string;
-    codex?: {
-      mode?: 'exec' | 'app-server' | string;
-    };
-  };
-};
-
-const ENV_PROXY_KEYS = [
-  'REPOSTUDIO_ASSISTANT_PROXY_URL',
-  'ASSISTANT_CHAT_PROXY_URL',
-  'OPENROUTER_ASSISTANT_PROXY_URL',
-];
-
-function resolveRepoRoot() {
-  return path.resolve(process.cwd(), '..', '..');
-}
-
-async function readRepoStudioConfig(): Promise<RepoStudioConfig> {
-  const configPath = path.join(resolveRepoRoot(), '.repo-studio', 'config.json');
+function parseBody(rawBody: string) {
   try {
-    const raw = await fs.readFile(configPath, 'utf8');
-    return JSON.parse(raw) as RepoStudioConfig;
+    return rawBody ? JSON.parse(rawBody) : {};
   } catch {
     return {};
   }
-}
-
-function firstEnvProxyUrl() {
-  for (const key of ENV_PROXY_KEYS) {
-    const value = process.env[key]?.trim();
-    if (value) return value;
-  }
-  return '';
-}
-
-function resolveProxyUrl(config: RepoStudioConfig) {
-  const assistant = config.assistant || {};
-  const routePath = String(assistant.routePath || '').trim();
-  const routeMode = String(assistant.routeMode || 'local');
-  const envFallback = firstEnvProxyUrl();
-
-  if (routeMode === 'proxy' || routeMode === 'openrouter') {
-    if (/^https?:\/\//i.test(routePath)) return routePath;
-    if (envFallback) return envFallback;
-    return '';
-  }
-
-  if (/^https?:\/\//i.test(routePath)) return routePath;
-  return envFallback;
 }
 
 function extractPrompt(body: any) {
@@ -80,50 +47,26 @@ function extractPrompt(body: any) {
   return '';
 }
 
-function parseBody(rawBody: string) {
-  try {
-    return rawBody ? JSON.parse(rawBody) : {};
-  } catch {
-    return {};
-  }
-}
-
 function editorFromRequest(url: URL, body: any, config: RepoStudioConfig) {
-  const queryEditor = String(url.searchParams.get('editor') || '').trim().toLowerCase();
+  const queryEditorTarget = String(url.searchParams.get('editorTarget') || '').trim().toLowerCase();
+  const queryEditorLegacy = String(url.searchParams.get('editor') || '').trim().toLowerCase();
   const bodyEditor = String(body?.editorTarget || '').trim().toLowerCase();
   const configEditor = String(config.assistant?.defaultEditor || 'loop-assistant').trim().toLowerCase();
-  const editor = queryEditor || bodyEditor || configEditor;
+  const editor = queryEditorTarget || queryEditorLegacy || bodyEditor || configEditor;
   if (editor === 'codex-assistant') return 'codex-assistant';
   return 'loop-assistant';
 }
 
-function allowExecFallback(url: URL, body: any) {
+function codexTransport(config: RepoStudioConfig) {
+  const route = resolveCodexAssistantRoute(config);
+  return route.transport;
+}
+
+function allowExecFallback(url: URL, body: any, config: RepoStudioConfig) {
   if (String(url.searchParams.get('allowExecFallback') || '').toLowerCase() === 'true') return true;
-  return body?.allowExecFallback === true;
-}
-
-function codexMode(config: RepoStudioConfig) {
-  const mode = String(config.assistant?.codex?.mode || 'exec').trim().toLowerCase();
-  return mode === 'app-server' ? 'app-server' : 'exec';
-}
-
-function codexStatus() {
-  const status = runRepoStudioCli(['codex-status', '--json']);
-  const payload = status.payload || {};
-  return {
-    ok: status.ok && payload.ok !== false,
-    payload,
-    stderr: status.stderr,
-  };
-}
-
-function codexStart() {
-  const started = runRepoStudioCli(['codex-start', '--reuse', '--json']);
-  return {
-    ok: started.ok && (started.payload?.ok !== false),
-    payload: started.payload || {},
-    stderr: started.stderr,
-  };
+  if (body?.allowExecFallback === true) return true;
+  const route = resolveCodexAssistantRoute(config);
+  return route.execFallbackAllowed === true;
 }
 
 function codexExec(prompt: string) {
@@ -134,6 +77,195 @@ function codexExec(prompt: string) {
     payload,
     stderr: exec.stderr,
   };
+}
+
+function streamFromCodexTurn(turnId: string, editorTarget: string) {
+  const partId = `codex-${turnId}`;
+
+  return createUIMessageStream({
+    execute: async ({ writer }) => {
+      writer.write({
+        type: 'start',
+        messageMetadata: {
+          editorTarget,
+          turnId,
+        },
+      });
+      writer.write({ type: 'text-start', id: partId });
+
+      let finished = false;
+      let finishReason: 'stop' | 'error' = 'stop';
+
+      const forward = (event: CodexTurnStreamEvent) => {
+        if (event.type === 'text-delta') {
+          writer.write({
+            type: 'text-delta',
+            id: partId,
+            delta: event.delta,
+          });
+          return;
+        }
+
+        if (event.type === 'approval-request') {
+          writer.write({
+            type: 'data-repo-proposal',
+            data: {
+              turnId: event.turnId,
+              proposal: event.proposal,
+              approvalToken: event.approvalToken,
+            },
+            transient: true,
+          });
+          return;
+        }
+
+        if (event.type === 'finished') {
+          finished = true;
+          finishReason = event.status === 'failed' ? 'error' : 'stop';
+        }
+      };
+
+      for (const existing of snapshotTurnEvents(turnId)) {
+        forward(existing);
+      }
+
+      if (!finished) {
+        await new Promise<void>((resolve) => {
+          const unsubscribe = subscribeTurnEvents(turnId, (event) => {
+            forward(event);
+            if (event.type === 'finished') {
+              unsubscribe?.();
+              resolve();
+            }
+          });
+          if (!unsubscribe) resolve();
+        });
+      }
+
+      writer.write({ type: 'text-end', id: partId });
+      writer.write({
+        type: 'finish',
+        finishReason,
+        messageMetadata: {
+          editorTarget,
+          turnId,
+        },
+      });
+    },
+  });
+}
+
+function streamFromExecResult(input: {
+  message: string;
+  editorTarget: string;
+  mode: string;
+  usedExecFallback: boolean;
+}) {
+  const partId = `codex-exec-${Date.now()}`;
+  return createUIMessageStream({
+    execute: ({ writer }) => {
+      writer.write({
+        type: 'start',
+        messageMetadata: {
+          editorTarget: input.editorTarget,
+          mode: input.mode,
+          usedExecFallback: input.usedExecFallback,
+        },
+      });
+      writer.write({ type: 'text-start', id: partId });
+      writer.write({
+        type: 'text-delta',
+        id: partId,
+        delta: input.message,
+      });
+      writer.write({ type: 'text-end', id: partId });
+      writer.write({
+        type: 'finish',
+        finishReason: 'stop',
+        messageMetadata: {
+          editorTarget: input.editorTarget,
+          mode: input.mode,
+          usedExecFallback: input.usedExecFallback,
+        },
+      });
+    },
+  });
+}
+
+async function runCodexPath(input: {
+  config: RepoStudioConfig;
+  url: URL;
+  body: any;
+  editorTarget: string;
+}) {
+  const prompt = extractPrompt(input.body);
+  if (!prompt) {
+    return NextResponse.json({ error: 'No user prompt found for Codex execution.' }, { status: 400 });
+  }
+
+  const transport = codexTransport(input.config);
+  const execFallback = allowExecFallback(input.url, input.body, input.config);
+
+  if (transport === 'app-server') {
+    const status = await getCodexSessionStatus();
+    if (status.ok !== true) {
+      return NextResponse.json(
+        {
+          error: 'Codex is not ready. Run `codex login` and `forge-repo-studio codex-status`.',
+          readiness: status.readiness,
+        },
+        { status: 503 },
+      );
+    }
+
+    const turn = await startCodexTurn({
+      prompt,
+      messages: input.body?.messages,
+      loopId: String(input.body?.loopId || 'default'),
+      editorTarget: input.editorTarget,
+      domain: String(input.body?.domain || '').trim().toLowerCase(),
+      scopeOverrideToken: String(input.body?.scopeOverrideToken || '').trim(),
+      scopeRoots: (await resolveScopeGuardContext({
+        domain: String(input.body?.domain || '').trim().toLowerCase(),
+        loopId: String(input.body?.loopId || 'default'),
+        overrideToken: String(input.body?.scopeOverrideToken || '').trim(),
+      })).allowedRoots,
+    });
+
+    if (turn.ok) {
+      const stream = streamFromCodexTurn(String(turn.turnId), input.editorTarget);
+      return createUIMessageStreamResponse({ stream });
+    }
+
+    if (!execFallback) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: turn.message || 'Failed to start Codex app-server turn.',
+          remediation: 'Enable exec fallback for this request or fix Codex app-server session.',
+        },
+        { status: 503 },
+      );
+    }
+  }
+
+  const exec = codexExec(prompt);
+  if (!exec.ok) {
+    return NextResponse.json(
+      {
+        error: exec.payload?.message || exec.payload?.stderr || exec.stderr || 'Codex execution failed.',
+      },
+      { status: 500 },
+    );
+  }
+
+  const stream = streamFromExecResult({
+    message: String(exec.payload?.message || 'Codex completed.'),
+    editorTarget: input.editorTarget,
+    mode: transport,
+    usedExecFallback: true,
+  });
+  return createUIMessageStreamResponse({ stream });
 }
 
 export async function POST(request: Request) {
@@ -147,95 +279,38 @@ export async function POST(request: Request) {
   }
 
   const url = new URL(request.url);
-  const routeMode = String(config.assistant?.routeMode || 'local').trim().toLowerCase();
   const rawBody = await request.text();
   const parsedBody = parseBody(rawBody);
   const editorTarget = editorFromRequest(url, parsedBody, config);
-  const execFallback = allowExecFallback(url, parsedBody);
-
-  const runCodexPath = () => {
-    const status = codexStatus();
-    const readiness = status.payload?.readiness || {};
-    if (!status.ok || readiness.ok !== true) {
-      return NextResponse.json(
-        { error: status.payload?.message || 'Codex is not ready. Run `codex login`.' },
-        { status: 503 },
-      );
-    }
-
-    const mode = codexMode(config);
-    if (mode === 'app-server') {
-      const running = status.payload?.running === true;
-      if (!running) {
-        const started = codexStart();
-        if (!started.ok) {
-          return NextResponse.json(
-            {
-              error: started.payload?.message || 'Failed to start Codex app-server.',
-              remediation: 'Run `forge-repo-studio codex-start --reuse` and retry.',
-            },
-            { status: 503 },
-          );
-        }
-      }
-
-      if (!execFallback) {
-        return NextResponse.json(
-          {
-            ok: false,
-            message: 'Codex app-server is ready. Enable exec fallback to run CLI execution for this request.',
-            remediation: 'Set allowExecFallback=true in request (or toggle in Codex Assistant panel).',
-          },
-          { status: 428 },
-        );
-      }
-    }
-
-    const prompt = extractPrompt(parsedBody);
-    if (!prompt) {
-      return NextResponse.json(
-        { error: 'No user prompt found for Codex execution.' },
-        { status: 400 },
-      );
-    }
-
-    const exec = codexExec(prompt);
-    if (!exec.ok) {
-      return NextResponse.json(
-        { error: exec.payload?.message || exec.payload?.stderr || exec.stderr || 'Codex execution failed.' },
-        { status: 500 },
-      );
-    }
-
-    return NextResponse.json({
-      ok: true,
-      editorTarget,
-      message: exec.payload?.message || 'Codex completed.',
-      output: exec.payload?.message || '',
-      mode,
-      usedExecFallback: true,
-    });
-  };
 
   if (editorTarget === 'codex-assistant') {
-    return runCodexPath();
+    return runCodexPath({
+      config,
+      url,
+      body: parsedBody,
+      editorTarget: 'codex-assistant',
+    });
   }
 
-  if (routeMode === 'codex') {
-    return runCodexPath();
-  }
-
-  const proxyUrl = resolveProxyUrl(config);
-  if (!proxyUrl) {
+  const loopRoute = resolveLoopAssistantEndpoint(config);
+  if (!loopRoute.ok) {
     return NextResponse.json(
       {
-        error: `Assistant route is not configured. Set assistant.routePath (absolute URL) or one of ${ENV_PROXY_KEYS.join(', ')}.`,
+        error: loopRoute.message,
+        routeMode: loopRoute.mode,
       },
       { status: 501 },
     );
   }
 
-  const upstream = await fetch(proxyUrl, {
+  if (loopRoute.local === true || !loopRoute.endpoint) {
+    return runLocalLoopAssistant({
+      body: parsedBody,
+      editorTarget: 'loop-assistant',
+    });
+  }
+
+  const upstream = await fetch(loopRoute.endpoint, {
     method: 'POST',
     headers: {
       'content-type': request.headers.get('content-type') || 'application/json',
@@ -251,4 +326,3 @@ export async function POST(request: Request) {
     },
   });
 }
-

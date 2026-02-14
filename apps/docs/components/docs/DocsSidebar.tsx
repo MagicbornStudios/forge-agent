@@ -15,8 +15,8 @@ import {
   Search,
   icons,
 } from 'lucide-react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@forge/ui/collapsible';
-import { Input } from '@forge/ui/input';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Input } from '@/components/ui/input';
 import {
   Sidebar,
   SidebarContent,
@@ -26,8 +26,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from '@forge/ui/sidebar';
-import { cn } from '@forge/ui/lib/utils';
+} from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
 import {
   isSlugVisibleForAudience,
   shouldShowSeparator,
@@ -52,11 +52,41 @@ function isSeparator(node: Node): node is Separator {
 
 function getNodeLabel(node: Item | Folder): string {
   const fallback = isItem(node) ? toTitleFromHref(node.url, 'Doc') : 'Section';
-  return toPlainText(node.name, fallback);
+  const rawLabel = toPlainText(node.name, fallback);
+  return stripDuplicatedLeadingIconLabel(rawLabel, node);
 }
 
 function getSeparatorLabel(node: Separator): string {
   return toPlainText(node.name, 'Section');
+}
+
+function getDepthIndent(depth: number): number {
+  if (depth <= 0) return 0;
+  return Math.min(36, depth * 12);
+}
+
+function stripDuplicatedLeadingIconLabel(label: string, node: Item | Folder): string {
+  if (!('icon' in node) || typeof node.icon !== 'string') return label;
+
+  const iconToken = node.icon
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/[-_]+/g, ' ')
+    .trim();
+
+  if (!iconToken) return label;
+
+  const compactLabel = label.replace(/\s+/g, '').toLowerCase();
+  const compactIcon = iconToken.replace(/\s+/g, '').toLowerCase();
+  const hasDuplicatedPrefix = compactLabel.startsWith(`${compactIcon}${compactIcon}`);
+
+  if (!hasDuplicatedPrefix) return label;
+
+  const normalized = label.trim();
+  if (normalized.toLowerCase().startsWith(iconToken.toLowerCase())) {
+    return normalized.slice(iconToken.length).trimStart();
+  }
+
+  return label;
 }
 
 function resolveFolderUrl(folder: Folder): string | null {
@@ -77,9 +107,52 @@ function getFallbackIcon(rootSlug: string, audience: DocsAudience) {
   return <Icon className="size-3.5 shrink-0 text-muted-foreground" />;
 }
 
+function renderNamedIcon(name: string): React.ReactNode | null {
+  const normalized = name.trim();
+  if (!normalized) return null;
+
+  const directIcon = icons[normalized as keyof typeof icons];
+  if (directIcon) {
+    const Icon = directIcon;
+    return <Icon className="size-3.5 shrink-0 text-muted-foreground" />;
+  }
+
+  const compact = normalized.replace(/[^a-zA-Z0-9]/g, '');
+  if (!compact) return null;
+
+  const pascalCase = compact.charAt(0).toUpperCase() + compact.slice(1);
+  const compactIcon = icons[pascalCase as keyof typeof icons];
+  if (compactIcon) {
+    const Icon = compactIcon;
+    return <Icon className="size-3.5 shrink-0 text-muted-foreground" />;
+  }
+
+  return null;
+}
+
 function renderNodeIcon(node: Node, audience: DocsAudience): React.ReactNode {
   if ('icon' in node && node.icon) {
-    return <span className="inline-flex size-3.5 shrink-0 items-center justify-center text-muted-foreground">{node.icon}</span>;
+    if (typeof node.icon === 'string') {
+      const declaredIcon = renderNamedIcon(node.icon);
+      if (declaredIcon) return declaredIcon;
+    }
+
+    if (React.isValidElement(node.icon)) {
+      const inlineText = toPlainText(node.icon, '').trim();
+      if (inlineText.length > 0) {
+        const declaredIcon = renderNamedIcon(inlineText);
+        if (declaredIcon) return declaredIcon;
+        return null;
+      }
+
+      const nodeProps = (node.icon.props ?? {}) as { className?: string };
+      return React.cloneElement(
+        node.icon as React.ReactElement<{ className?: string }>,
+        {
+          className: cn('size-3.5 shrink-0 text-muted-foreground', nodeProps.className),
+        },
+      );
+    }
   }
 
   if (isItem(node)) {
@@ -187,11 +260,12 @@ function NavNodes({
 
         if (isSeparator(node)) {
           const label = getSeparatorLabel(node);
+          const indent = getDepthIndent(depth);
           return (
             <div
               key={node.$id ?? `separator-${index}`}
               className="px-2 pt-3 pb-1 text-[10px] font-semibold tracking-[0.08em] text-muted-foreground/80 uppercase"
-              style={{ marginLeft: depth > 0 ? `${Math.min(42, depth * 12)}px` : undefined }}
+              style={{ paddingLeft: indent > 0 ? `${indent + 8}px` : undefined }}
             >
               {label}
             </div>
@@ -202,15 +276,16 @@ function NavNodes({
           const label = getNodeLabel(node);
           const href = withAudienceQuery(node.url, audience);
           const active = pathname === node.url || (node.url !== '/docs' && pathname.startsWith(`${node.url}/`));
+          const indent = getDepthIndent(depth);
           return (
-            <SidebarMenuItem key={node.$id ?? `${node.url}-${index}`}>
+            <SidebarMenuItem key={node.$id ?? `${node.url}-${index}`} className="min-w-0">
               <SidebarMenuButton
                 asChild
                 isActive={active}
-                className={cn('h-8 text-[13px]', depth > 0 && 'pl-2')}
-                style={{ marginLeft: depth > 0 ? `${Math.min(42, depth * 12)}px` : undefined }}
+                className="h-8 min-w-0 text-[13px]"
+                style={{ paddingLeft: indent > 0 ? `${indent + 8}px` : undefined }}
               >
-                <Link href={href} className="min-w-0">
+                <Link href={href} className="flex min-w-0 items-center gap-2">
                   {renderNodeIcon(node, audience)}
                   <span className="truncate" title={label}>
                     {label}
@@ -227,37 +302,38 @@ function NavNodes({
           const label = getNodeLabel(node);
           const FolderIcon = isOpen ? FolderOpen : FolderClosed;
           const url = resolveFolderUrl(node);
-          const href = withAudienceQuery(url ?? '#', audience);
+          const indent = getDepthIndent(depth);
           return (
-            <SidebarGroup key={folderKey} className="px-0 py-0.5">
+            <SidebarGroup key={folderKey} className="min-w-0 px-0 py-0.5">
               <Collapsible open={isOpen} onOpenChange={(next) => onToggleFolder(folderKey, next)}>
-                <SidebarMenuItem>
-                  <div
-                    className="flex items-center gap-1"
-                    style={{ marginLeft: depth > 0 ? `${Math.min(42, depth * 12)}px` : undefined }}
-                  >
-                    <CollapsibleTrigger asChild>
-                      <button
-                        type="button"
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
-                        aria-label={`Toggle ${label}`}
-                      >
-                        <ChevronRight className={cn('size-3.5 transition-transform', isOpen && 'rotate-90')} />
-                      </button>
-                    </CollapsibleTrigger>
-                    <SidebarMenuButton asChild className="h-8 min-w-0 text-[13px]">
-                      <Link href={href} className="min-w-0">
-                        {url ? <FolderIcon className="size-3.5 shrink-0 text-muted-foreground" /> : renderNodeIcon(node, audience)}
-                        <span className="truncate" title={label}>
-                          {label}
-                        </span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </div>
+                <SidebarMenuItem className="min-w-0">
+                  <CollapsibleTrigger asChild>
+                    <button
+                      type="button"
+                      className="inline-flex h-8 w-full min-w-0 items-center gap-2 overflow-hidden rounded-md px-2 text-left text-[13px] text-sidebar-foreground transition-colors hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
+                      style={{ paddingLeft: indent > 0 ? `${indent + 8}px` : undefined }}
+                      aria-label={`Toggle ${label}`}
+                    >
+                      <ChevronRight
+                        className={cn(
+                          'size-3.5 shrink-0 text-muted-foreground transition-transform',
+                          isOpen && 'rotate-90',
+                        )}
+                      />
+                      {url ? (
+                        <FolderIcon className="size-3.5 shrink-0 text-muted-foreground" />
+                      ) : (
+                        renderNodeIcon(node, audience)
+                      )}
+                      <span className="min-w-0 flex-1 truncate" title={label}>
+                        {label}
+                      </span>
+                    </button>
+                  </CollapsibleTrigger>
                 </SidebarMenuItem>
                 <CollapsibleContent>
-                  <SidebarGroupContent className="ml-4 border-l border-border/70 pl-2">
-                    <SidebarMenu className="gap-0.5">
+                  <SidebarGroupContent className="min-w-0 pl-4">
+                    <SidebarMenu className="min-w-0 gap-0.5 overflow-x-hidden border-l border-border/70 pl-2">
                       <NavNodes
                         nodes={node.children}
                         query={query}
@@ -312,7 +388,7 @@ export function DocsSidebar({
     <Sidebar
       id="platform-docs-sidebar"
       collapsible="none"
-      className="platform-docs-sidebar border-r border-border/70 md:top-[var(--docs-header-height)] md:bottom-auto md:h-[calc(100svh-var(--docs-header-height))]"
+      className="platform-docs-sidebar overflow-hidden border-r border-border/70 md:top-[var(--docs-header-height)] md:bottom-auto md:h-[calc(100svh-var(--docs-header-height))]"
     >
       <SidebarHeader className="border-b border-border/70">
         <SidebarMenu>
@@ -335,10 +411,10 @@ export function DocsSidebar({
           />
         </div>
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup className="px-1 py-1">
+      <SidebarContent className="overflow-x-hidden overflow-y-auto">
+        <SidebarGroup className="min-w-0 px-1 py-1">
           <SidebarGroupContent>
-            <SidebarMenu className="gap-0.5 px-1.5">
+            <SidebarMenu className="min-w-0 gap-0.5 px-1.5 overflow-x-hidden">
               <NavNodes
                 nodes={audienceNodes}
                 query={normalizedQuery}

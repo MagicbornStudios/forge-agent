@@ -17,15 +17,23 @@ export async function POST(request: Request) {
     profile,
     '--mode',
     mode,
+    '--json',
   ]);
 
+  const payload = (() => {
+    try {
+      return JSON.parse(String(result.stdout || '{}'));
+    } catch {
+      return null;
+    }
+  })();
+
   return NextResponse.json({
-    ok: result.ok,
-    report: result.stdout || '',
+    ok: payload?.ok ?? result.ok,
+    report: payload?.report || result.stdout || '',
     stderr: result.stderr || '',
-    payload: null,
+    payload,
     attempts: result.attempts || [],
     resolvedAttempt: result.resolvedAttempt || null,
-  }, { status: result.ok ? 200 : 500 });
+  }, { status: payload?.ok === false || !result.ok ? 500 : 200 });
 }
-

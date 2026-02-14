@@ -31,7 +31,7 @@ const INITIAL_ACTIVE_OVERLAY: NonNullable<
 export function EditorOverlayDemo() {
   const [activeOverlay, setActiveOverlay] =
     React.useState<React.ComponentProps<typeof EditorOverlaySurface>['activeOverlay']>(
-      INITIAL_ACTIVE_OVERLAY,
+      null,
     );
 
   const dismissOverlay = React.useCallback(() => {

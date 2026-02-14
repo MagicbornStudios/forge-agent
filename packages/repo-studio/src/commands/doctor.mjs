@@ -17,6 +17,15 @@ async function exists(filePath) {
   }
 }
 
+async function readJson(filePath, fallback = null) {
+  try {
+    const raw = await fs.readFile(filePath, 'utf8');
+    return JSON.parse(raw);
+  } catch {
+    return fallback;
+  }
+}
+
 export async function runDoctor() {
   const config = await loadRepoStudioConfig();
   const commands = await buildAllowedCommands(config);
@@ -25,11 +34,17 @@ export async function runDoctor() {
   const codex = await getCodexStatus(config);
   const configExists = await exists(REPO_STUDIO_CONFIG_PATH);
   const runtime = await loadActiveRuntimeState({ cleanupStale: true });
+  const codexSession = await readJson(path.join(process.cwd(), '.repo-studio', 'codex-session.json'), null);
   const deps = getDependencyHealth(process.cwd());
 
   const rootPackage = await exists(path.join(process.cwd(), 'package.json'));
   const depsOk = deps.dockviewPackageResolved && deps.dockviewCssResolved && deps.sharedStylesResolved;
-  const ok = rootPackage && commands.length > 0 && codex.readiness.ok && depsOk;
+  const protocolInitialized = codexSession?.protocolInitialized === true;
+  const activeThreadCount = Number(codexSession?.activeThreadCount || 0);
+  const activeTurnCount = Number(codexSession?.activeTurnCount || 0);
+  const execFallbackEnabled = codexSession?.execFallbackEnabled === true;
+  const appServerReachable = codex.running === true || protocolInitialized;
+  const ok = rootPackage && commands.length > 0 && codex.readiness.ok && depsOk && (appServerReachable || codex.readiness.ok);
 
   const lines = [
     '# RepoStudio Doctor',
@@ -48,6 +63,11 @@ export async function runDoctor() {
     `codex cli: ${codex.readiness.cli.installed ? `yes (${codex.readiness.cli.version || 'unknown'})` : 'missing'}`,
     `codex login: ${codex.readiness.login?.loggedIn ? codex.readiness.login.authType : 'not-logged-in'}`,
     codex.running && codex.runtime?.wsUrl ? `codex server: ${codex.runtime.wsUrl} pid=${codex.runtime.pid}` : 'codex server: stopped',
+    `codex app-server reachable: ${appServerReachable ? 'yes' : 'no'}`,
+    `codex protocol initialized: ${protocolInitialized ? 'yes' : 'no'}`,
+    `codex active threads: ${activeThreadCount}`,
+    `codex active turns: ${activeTurnCount}`,
+    `codex exec fallback enabled: ${execFallbackEnabled ? 'yes' : 'no'}`,
     runtime.running && runtime.state
       ? `runtime: running (${runtime.state.mode}) ${runtimeUrlFor(runtime.state)} pid=${runtime.state.pid}`
       : 'runtime: stopped',
@@ -74,6 +94,13 @@ export async function runDoctor() {
     docsCount: docs.length,
     deps,
     codex,
+    codexProtocol: {
+      appServerReachable,
+      protocolInitialized,
+      activeThreadCount,
+      activeTurnCount,
+      execFallbackEnabled,
+    },
     loop,
     runtime: runtime.running ? runtime.state : null,
     report: `${lines.join('\n')}\n`,

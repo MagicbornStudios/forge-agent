@@ -6,7 +6,28 @@ import { Badge } from '@forge/ui/badge';
 import { Button } from '@forge/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@forge/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@forge/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@forge/ui/table';
 import type { DependencyHealth } from '@/lib/dependency-health';
+
+type EnvDoctorPayload = {
+  ok?: boolean;
+  profile?: string;
+  mode?: string;
+  missing?: Array<{ targetId?: string; key?: string }>;
+  conflicts?: Array<{ targetId?: string; key?: string; values?: string[] }>;
+  warnings?: string[];
+  runner?: string | null;
+  runnerSatisfied?: boolean | null;
+  codexCliInstalled?: boolean | null;
+  codexLoginChatgpt?: boolean | null;
+  discovery?: {
+    manifestCount?: number;
+    discoveredCount?: number;
+    mergedCount?: number;
+    selectedCount?: number;
+    discoveredWithoutManifest?: string[];
+  };
+};
 
 export interface EnvWorkspaceProps {
   profile: string;
@@ -14,6 +35,7 @@ export interface EnvWorkspaceProps {
   onProfileChange: (value: string) => void;
   onModeChange: (value: 'local' | 'preview' | 'production' | 'headless') => void;
   envOutput: string;
+  envDoctorPayload: EnvDoctorPayload | null;
   dependencyHealth: DependencyHealth | null;
   onRunDoctor: () => void;
   onRunReconcile: () => void;
@@ -27,6 +49,7 @@ export function EnvWorkspace({
   onProfileChange,
   onModeChange,
   envOutput,
+  envDoctorPayload,
   dependencyHealth,
   onRunDoctor,
   onRunReconcile,
@@ -38,6 +61,10 @@ export function EnvWorkspace({
       && dependencyHealth.dockviewCssResolved
       && dependencyHealth.sharedStylesResolved
     : null;
+  const missing = Array.isArray(envDoctorPayload?.missing) ? envDoctorPayload!.missing! : [];
+  const conflicts = Array.isArray(envDoctorPayload?.conflicts) ? envDoctorPayload!.conflicts! : [];
+  const warnings = Array.isArray(envDoctorPayload?.warnings) ? envDoctorPayload!.warnings! : [];
+  const discovery = envDoctorPayload?.discovery || null;
 
   return (
     <div className="h-full min-h-0 space-y-3 overflow-auto p-2">
@@ -78,6 +105,82 @@ export function EnvWorkspace({
         </CardContent>
       </Card>
 
+      {envDoctorPayload ? (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Doctor Snapshot</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-xs">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant={missing.length === 0 && conflicts.length === 0 ? 'default' : 'secondary'}>
+                {missing.length === 0 && conflicts.length === 0 ? 'ready' : 'action needed'}
+              </Badge>
+              <Badge variant="outline">missing: {missing.length}</Badge>
+              <Badge variant="outline">conflicts: {conflicts.length}</Badge>
+              <Badge variant="outline">warnings: {warnings.length}</Badge>
+              {envDoctorPayload.runner ? (
+                <Badge variant="outline">
+                  runner {envDoctorPayload.runner}: {envDoctorPayload.runnerSatisfied === true ? 'ok' : 'blocked'}
+                </Badge>
+              ) : null}
+            </div>
+
+            {discovery ? (
+              <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+                <div className="rounded border border-border p-2">
+                  <div className="text-muted-foreground">manifest</div>
+                  <div className="text-sm font-semibold">{discovery.manifestCount || 0}</div>
+                </div>
+                <div className="rounded border border-border p-2">
+                  <div className="text-muted-foreground">discovered</div>
+                  <div className="text-sm font-semibold">{discovery.discoveredCount || 0}</div>
+                </div>
+                <div className="rounded border border-border p-2">
+                  <div className="text-muted-foreground">merged</div>
+                  <div className="text-sm font-semibold">{discovery.mergedCount || 0}</div>
+                </div>
+                <div className="rounded border border-border p-2">
+                  <div className="text-muted-foreground">selected</div>
+                  <div className="text-sm font-semibold">{discovery.selectedCount || 0}</div>
+                </div>
+              </div>
+            ) : null}
+
+            {missing.length > 0 ? (
+              <div className="max-h-44 overflow-auto rounded-md border border-border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Missing target</TableHead>
+                      <TableHead>Key</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {missing.map((row, index) => (
+                      <TableRow key={`${row.targetId || 'target'}-${row.key || 'key'}-${index}`}>
+                        <TableCell>{row.targetId || '-'}</TableCell>
+                        <TableCell>{row.key || '-'}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : null}
+
+            {warnings.length > 0 ? (
+              <ul className="space-y-1">
+                {warnings.map((warning) => (
+                  <li key={warning} className="flex items-start gap-2">
+                    <AlertTriangle className="mt-0.5 size-3.5 text-amber-500" />
+                    <span>{warning}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </CardContent>
+        </Card>
+      ) : null}
+
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm">Runtime Dependency Health</CardTitle>
@@ -116,4 +219,3 @@ export function EnvWorkspace({
     </div>
   );
 }
-

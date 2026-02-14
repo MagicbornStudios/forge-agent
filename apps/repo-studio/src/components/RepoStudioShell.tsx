@@ -35,6 +35,10 @@ import { TerminalWorkspace } from '@/components/features/commands/TerminalWorksp
 import { DocsWorkspace } from '@/components/features/docs/DocsWorkspace';
 import { AssistantWorkspace } from '@/components/features/assistant/AssistantWorkspace';
 import { DiffWorkspace } from '@/components/features/diff/DiffWorkspace';
+import { CodeWorkspace } from '@/components/features/code/CodeWorkspace';
+import { StoryWorkspace } from '@/components/features/story/StoryWorkspace';
+import { GitWorkspace } from '@/components/features/git/GitWorkspace';
+import { ReviewQueueWorkspace } from '@/components/features/review-queue/ReviewQueueWorkspace';
 import { RepoSettingsPanelContent } from '@/components/settings/RepoSettingsPanelContent';
 
 function copyText(text: string) {
@@ -55,6 +59,7 @@ export function RepoStudioShell({
   const [profile, setProfile] = React.useState('forge-agent');
   const [mode, setMode] = React.useState<'local' | 'preview' | 'production' | 'headless'>('local');
   const [envOutput, setEnvOutput] = React.useState('Run "Doctor" to check environment readiness.');
+  const [envDoctorPayload, setEnvDoctorPayload] = React.useState<any | null>(null);
   const [dependencyHealth, setDependencyHealth] = React.useState<DependencyHealth | null>(null);
   const [planningSnapshot, setPlanningSnapshot] = React.useState(planning);
   const [loopSnapshot, setLoopSnapshot] = React.useState(loops);
@@ -239,6 +244,7 @@ export function RepoStudioShell({
       body: JSON.stringify({ profile, mode }),
     });
     const payload = await response.json().catch(() => ({ ok: false, message: 'Invalid response.' }));
+    setEnvDoctorPayload(payload.payload || null);
     const lines = [
       payload.report || '',
       payload.stderr || '',
@@ -261,8 +267,9 @@ export function RepoStudioShell({
       payload.resolvedAttempt ? `resolved: ${payload.resolvedAttempt}` : '',
     ].filter(Boolean);
     setEnvOutput(lines.join('\n\n') || 'No env output.');
+    await runEnvDoctor();
     await refreshDependencyHealth();
-  }, [mode, profile, refreshDependencyHealth]);
+  }, [mode, profile, refreshDependencyHealth, runEnvDoctor]);
 
   const resetDockLayout = React.useCallback(() => {
     clearDockLayout(REPO_STUDIO_LAYOUT_ID);
@@ -413,6 +420,16 @@ export function RepoStudioShell({
                     />
                   </EditorDockLayout.Panel>
                 ) : null}
+
+                {visibility['panel.visible.repo-story'] !== false ? (
+                  <EditorDockLayout.Panel id="story" title="Story" icon={<BookOpen size={14} />}>
+                    <StoryWorkspace
+                      activeLoopId={activeLoopId}
+                      onAttachToAssistant={attachDiffToAssistant}
+                      onCopyText={copyText}
+                    />
+                  </EditorDockLayout.Panel>
+                ) : null}
               </EditorDockLayout.Main>
 
               <EditorDockLayout.Right>
@@ -424,6 +441,7 @@ export function RepoStudioShell({
                       onProfileChange={setProfile}
                       onModeChange={setMode}
                       envOutput={envOutput}
+                      envDoctorPayload={envDoctorPayload}
                       dependencyHealth={dependencyHealth}
                       onRunDoctor={runEnvDoctor}
                       onRunReconcile={runEnvReconcile}
@@ -483,6 +501,34 @@ export function RepoStudioShell({
                 {visibility['panel.visible.repo-diff'] !== false ? (
                   <EditorDockLayout.Panel id="diff" title="Diff" icon={<GitCompareArrows size={14} />}>
                     <DiffWorkspace
+                      onAttachToAssistant={attachDiffToAssistant}
+                      onCopyText={copyText}
+                    />
+                  </EditorDockLayout.Panel>
+                ) : null}
+
+                {visibility['panel.visible.repo-git'] !== false ? (
+                  <EditorDockLayout.Panel id="git" title="Git" icon={<GitCompareArrows size={14} />}>
+                    <GitWorkspace
+                      onAttachToAssistant={attachDiffToAssistant}
+                      onCopyText={copyText}
+                    />
+                  </EditorDockLayout.Panel>
+                ) : null}
+
+                {visibility['panel.visible.repo-code'] !== false ? (
+                  <EditorDockLayout.Panel id="code" title="Code" icon={<TerminalSquare size={14} />}>
+                    <CodeWorkspace
+                      activeLoopId={activeLoopId}
+                      onAttachToAssistant={attachDiffToAssistant}
+                      onCopyText={copyText}
+                    />
+                  </EditorDockLayout.Panel>
+                ) : null}
+
+                {visibility['panel.visible.repo-review-queue'] !== false ? (
+                  <EditorDockLayout.Panel id="review-queue" title="Review Queue" icon={<ShieldCheck size={14} />}>
+                    <ReviewQueueWorkspace
                       onAttachToAssistant={attachDiffToAssistant}
                       onCopyText={copyText}
                     />

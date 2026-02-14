@@ -14,6 +14,7 @@ const REQUIRED_DOCS = [
   '03-headless-env-flow.md',
   '04-forge-loop-console.md',
   '05-assistant.md',
+  '06-story-domain.md',
 ];
 
 test('repo-studio runbooks are present for package consumers', () => {

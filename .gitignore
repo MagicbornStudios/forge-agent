@@ -89,6 +89,8 @@ nul
 # RepoStudio local state
 .repo-studio/local.overrides.json
 .repo-studio/runtime.json
+.repo-studio/codex-session.json
+.repo-studio/proposals.json
 .repo-studio/runs/
 
 # Misc

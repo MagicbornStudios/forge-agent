@@ -11,7 +11,7 @@ import {
 import { buildAllowedCommands, resolveAllowedCommand } from '../lib/policy.mjs';
 import { runCommand } from '../lib/process.mjs';
 import { runToolCommand } from '../lib/command-resolver.mjs';
-import { getCodexStatus, runCodexExec } from '../lib/codex.mjs';
+import { getCodexStatus, runCodexExec, startCodexServer, stopCodexServer } from '../lib/codex.mjs';
 import {
   ensureRunLogsDir,
   loadActiveRuntimeState,
@@ -30,6 +30,7 @@ import { renderLegacyStudioHtml, renderStudioHtml } from './ui.mjs';
 
 const HOST = '127.0.0.1';
 const DEFAULT_PORT = 3864;
+const codexTurnStore = new Map();
 
 async function readBody(req) {
   let body = '';
@@ -52,7 +53,7 @@ function json(res, statusCode, payload) {
 function normalizeView(view) {
   const normalized = String(view || 'env').toLowerCase();
   if (normalized === 'forge-loop') return 'planning';
-  if (['planning', 'env', 'commands', 'docs', 'loop-assistant', 'codex-assistant', 'diff'].includes(normalized)) {
+  if (['planning', 'env', 'commands', 'story', 'docs', 'git', 'loop-assistant', 'codex-assistant', 'diff', 'code', 'review-queue'].includes(normalized)) {
     return normalized;
   }
   return 'env';
@@ -60,6 +61,99 @@ function normalizeView(view) {
 
 function nowIso() {
   return new Date().toISOString();
+}
+
+async function readCodexSessionMetadata() {
+  const filePath = path.join(process.cwd(), '.repo-studio', 'codex-session.json');
+  try {
+    const raw = await fs.readFile(filePath, 'utf8');
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function normalizeRepoPath(input) {
+  return String(input || '').replace(/\\/g, '/').replace(/^\.\/+/, '').trim();
+}
+
+function isSafeRepoPath(filePath) {
+  const normalized = normalizeRepoPath(filePath);
+  if (!normalized) return false;
+  if (normalized.startsWith('/') || /^[a-zA-Z]:\//.test(normalized)) return false;
+  if (normalized.includes('../') || normalized.includes('..\\')) return false;
+  return /^[a-zA-Z0-9._/@\-]+(?:\/[a-zA-Z0-9._@\-]+)*$/.test(normalized);
+}
+
+function resolveSafeRepoAbsolute(repoRelativePath) {
+  const normalized = normalizeRepoPath(repoRelativePath);
+  if (!isSafeRepoPath(normalized)) {
+    throw new Error(`Invalid path: ${repoRelativePath}`);
+  }
+  const absolute = path.resolve(process.cwd(), normalized);
+  const root = path.resolve(process.cwd());
+  if (!(absolute === root || absolute.startsWith(`${root}${path.sep}`))) {
+    throw new Error(`Path escapes repository root: ${repoRelativePath}`);
+  }
+  return absolute;
+}
+
+async function listRepoTree(maxItems = 1500) {
+  const files = [];
+  const queue = ['.'];
+  while (queue.length > 0 && files.length < maxItems) {
+    const rel = queue.shift();
+    if (!rel) break;
+    const absolute = resolveSafeRepoAbsolute(rel);
+    let entries = [];
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      entries = await fs.readdir(absolute, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    entries.sort((a, b) => a.name.localeCompare(b.name));
+    for (const entry of entries) {
+      if (entry.name === '.git' || entry.name === 'node_modules' || entry.name === '.next') continue;
+      const childRel = normalizeRepoPath(path.join(rel, entry.name));
+      if (!childRel) continue;
+      if (entry.isDirectory()) {
+        queue.push(childRel);
+      } else if (entry.isFile()) {
+        files.push(childRel);
+        if (files.length >= maxItems) break;
+      }
+    }
+  }
+  return {
+    files,
+    truncated: files.length >= maxItems,
+  };
+}
+
+async function readRepoFile(repoRelativePath) {
+  const absolute = resolveSafeRepoAbsolute(repoRelativePath);
+  const content = await fs.readFile(absolute, 'utf8');
+  return {
+    path: normalizeRepoPath(repoRelativePath),
+    content,
+  };
+}
+
+async function writeRepoFile(repoRelativePath, content, createIfMissing = false) {
+  const absolute = resolveSafeRepoAbsolute(repoRelativePath);
+  await fs.mkdir(path.dirname(absolute), { recursive: true });
+  if (!createIfMissing) {
+    try {
+      await fs.access(absolute);
+    } catch {
+      throw new Error(`File does not exist: ${repoRelativePath}`);
+    }
+  }
+  await fs.writeFile(absolute, String(content || ''), 'utf8');
+  return {
+    path: normalizeRepoPath(repoRelativePath),
+  };
 }
 
 function appendRecentRun(localOverrides, run) {
@@ -379,6 +473,181 @@ export async function runRepoStudioServer(options = {}) {
         ok: true,
         assistant,
       });
+      return;
+    }
+
+    if (req.method === 'GET' && url.pathname === '/api/repo/codex/session/status') {
+      const codex = await getCodexStatus(config);
+      const session = await readCodexSessionMetadata();
+      json(res, codex.ok ? 200 : 503, {
+        ok: codex.ok,
+        codex: {
+          appServerReachable: codex.running === true || session?.protocolInitialized === true,
+          protocolInitialized: session?.protocolInitialized === true,
+          activeThreadCount: Number(session?.activeThreadCount || 0),
+          activeTurnCount: Number(session?.activeTurnCount || 0),
+          execFallbackEnabled: session?.execFallbackEnabled === true,
+          threadId: session?.threadId || null,
+          runtime: codex.runtime || null,
+          readiness: codex.readiness || null,
+        },
+        message: codex.message,
+      });
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/repo/codex/session/start') {
+      const body = await readBody(req);
+      const started = await startCodexServer(config, {
+        reuse: body?.reuse !== false,
+        wsPort: body?.wsPort,
+      });
+      json(res, started.ok ? 200 : 503, {
+        ok: started.ok,
+        message: started.message || (started.ok ? 'Codex server started.' : 'Failed to start Codex server.'),
+        runtime: started.runtime || null,
+      });
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/repo/codex/session/stop') {
+      const stopped = await stopCodexServer();
+      json(res, stopped.ok ? 200 : 500, {
+        ok: stopped.ok,
+        message: stopped.message || (stopped.ok ? 'Codex server stopped.' : 'Failed to stop Codex server.'),
+      });
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/repo/codex/turn/start') {
+      const body = await readBody(req);
+      const turnId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      const result = await runCodexExec(config, {
+        messages: body.messages,
+        input: body.input,
+        prompt: body.prompt,
+      });
+      const event = {
+        type: result.ok ? 'completed' : 'failed',
+        turnId,
+        ts: nowIso(),
+        message: result.message || '',
+      };
+      codexTurnStore.set(turnId, {
+        id: turnId,
+        status: result.ok ? 'completed' : 'failed',
+        createdAt: nowIso(),
+        events: [event],
+      });
+      json(res, result.ok ? 200 : 500, {
+        ok: result.ok,
+        turnId,
+        streamPath: `/api/repo/codex/turn/stream?turnId=${encodeURIComponent(turnId)}`,
+        message: result.message || (result.ok ? 'Codex turn completed.' : 'Codex turn failed.'),
+      });
+      return;
+    }
+
+    if (req.method === 'GET' && url.pathname === '/api/repo/codex/turn/stream') {
+      const turnId = String(url.searchParams.get('turnId') || '').trim();
+      const turn = codexTurnStore.get(turnId);
+      if (!turn) {
+        json(res, 404, { ok: false, message: `Unknown turnId: ${turnId}` });
+        return;
+      }
+
+      res.writeHead(200, {
+        'content-type': 'text/event-stream',
+        'cache-control': 'no-cache, no-transform',
+        connection: 'keep-alive',
+      });
+      for (const event of turn.events || []) {
+        res.write(`data: ${JSON.stringify(event)}\n\n`);
+      }
+      res.end();
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/repo/codex/approval') {
+      json(res, 501, {
+        ok: false,
+        message: 'Approval responses are available in RepoStudio app runtime. Package runtime currently supports exec-only codex turns.',
+      });
+      return;
+    }
+
+    if (req.method === 'GET' && url.pathname === '/api/repo/proposals/list') {
+      json(res, 200, {
+        ok: true,
+        proposals: [],
+        pendingCount: 0,
+      });
+      return;
+    }
+
+    if (req.method === 'POST' && (url.pathname === '/api/repo/proposals/apply' || url.pathname === '/api/repo/proposals/reject')) {
+      json(res, 501, {
+        ok: false,
+        message: 'Proposal apply/reject is available in RepoStudio app runtime only.',
+      });
+      return;
+    }
+
+    if (req.method === 'GET' && url.pathname === '/api/repo/files/tree') {
+      try {
+        const maxItems = Number(url.searchParams.get('maxItems') || 1500);
+        const tree = await listRepoTree(Number.isFinite(maxItems) ? maxItems : 1500);
+        json(res, 200, {
+          ok: true,
+          scope: String(url.searchParams.get('scope') || 'workspace'),
+          loopId: String(url.searchParams.get('loopId') || '') || null,
+          ...tree,
+        });
+      } catch (error) {
+        json(res, 400, {
+          ok: false,
+          message: String(error?.message || error),
+        });
+      }
+      return;
+    }
+
+    if (req.method === 'GET' && url.pathname === '/api/repo/files/read') {
+      const filePath = String(url.searchParams.get('path') || '').trim();
+      if (!filePath) {
+        json(res, 400, { ok: false, message: 'path is required.' });
+        return;
+      }
+      try {
+        const file = await readRepoFile(filePath);
+        json(res, 200, { ok: true, ...file });
+      } catch (error) {
+        json(res, 400, { ok: false, message: String(error?.message || error) });
+      }
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/repo/files/write') {
+      const body = await readBody(req);
+      const filePath = String(body.path || '').trim();
+      if (!filePath) {
+        json(res, 400, { ok: false, message: 'path is required.' });
+        return;
+      }
+      if (body.approved !== true) {
+        json(res, 403, { ok: false, message: 'Manual write requires approved=true.' });
+        return;
+      }
+      try {
+        const writeResult = await writeRepoFile(filePath, body.content || '', body.createIfMissing === true);
+        json(res, 200, {
+          ok: true,
+          ...writeResult,
+          message: `Wrote ${writeResult.path}.`,
+        });
+      } catch (error) {
+        json(res, 400, { ok: false, message: String(error?.message || error) });
+      }
       return;
     }
 

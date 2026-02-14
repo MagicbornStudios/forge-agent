@@ -49,6 +49,17 @@ class DemoErrorBoundary extends React.Component<
   }
 }
 
+function MissingDemoCard({ id, message }: { id: string; message: string }) {
+  return (
+    <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-4">
+      <p className="text-sm font-medium text-destructive">{message}</p>
+      <code className="mt-3 block rounded bg-background px-2 py-1 text-xs text-muted-foreground">
+        {id}
+      </code>
+    </div>
+  );
+}
+
 export function ComponentDemo({ id, className }: { id: string; className?: string }) {
   if (isShowcaseEntryId(id)) {
     if (isInternalOnlyShowcaseId(id)) {
@@ -57,7 +68,12 @@ export function ComponentDemo({ id, className }: { id: string; className?: strin
 
     const showcaseEntry = getShowcaseEntry(id);
     if (!showcaseEntry) {
-      throw new Error(`Missing showcase entry metadata for id "${id}".`);
+      return (
+        <MissingDemoCard
+          id={id}
+          message="Missing showcase entry metadata."
+        />
+      );
     }
 
     const Demo = getShowcaseDemo(showcaseEntry.demoId);
@@ -91,5 +107,10 @@ export function ComponentDemo({ id, className }: { id: string; className?: strin
     );
   }
 
-  throw new Error(`Missing showcase entry id "${id}".`);
+  return (
+    <MissingDemoCard
+      id={id}
+      message="Missing showcase entry id."
+    />
+  );
 }

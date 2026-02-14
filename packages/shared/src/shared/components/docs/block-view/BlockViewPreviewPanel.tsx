@@ -29,10 +29,21 @@ export function BlockViewPreviewPanel({
 
   return (
     <div
-      className={cn('overflow-hidden rounded-xl border', visible ? 'block' : 'hidden', className)}
+      className={cn('overflow-auto rounded-xl border bg-card/40', visible ? 'block' : 'hidden', className)}
       data-slot="block-view-preview"
     >
-      {preview}
+      <div className="flex min-h-[var(--height)] w-full items-center justify-center p-6">
+        <div
+          key={refreshKey}
+          className="min-w-0"
+          style={{
+            width: viewportWidth,
+            maxWidth: '100%',
+          }}
+        >
+          {preview}
+        </div>
+      </div>
     </div>
   );
 }

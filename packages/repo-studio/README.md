@@ -37,7 +37,7 @@ npx @forge/repo-studio open --view planning --mode headless
 
 ## Commands
 
-- `forge-repo-studio open [--profile ...] [--mode ...] [--view planning|env|commands|docs|loop-assistant|codex-assistant|diff] [--port ...] [--app-runtime|--package-runtime] [--reuse|--no-reuse] [--detach|--foreground] [--legacy-ui]`
+- `forge-repo-studio open [--profile ...] [--mode ...] [--view planning|env|commands|story|docs|git|loop-assistant|codex-assistant|diff|code|review-queue] [--port ...] [--app-runtime|--package-runtime] [--reuse|--no-reuse] [--detach|--foreground] [--legacy-ui]`
 - `forge-repo-studio doctor`
 - `forge-repo-studio commands-list`
 - `forge-repo-studio commands-toggle <command-id> [--enable|--disable]`
@@ -84,6 +84,7 @@ Multi-loop helpers:
 
 - Uses the same assistant route contract defined in `.repo-studio/config.json`.
 - Manual planning-context attach is supported from the Planning workspace.
+- Assistant-generated file/planning changes are routed through the Review Queue (approval-gated apply/reject).
 - `routeMode: codex|local|proxy|openrouter` is supported.
 - `codex` mode enforces `chatgpt-strict` readiness by default (`codex login status` must report ChatGPT auth).
 
@@ -110,6 +111,8 @@ Codex-first assistant example:
       "cliCommand": "codex",
       "authPolicy": "chatgpt-strict",
       "mode": "app-server",
+      "transport": "app-server",
+      "execFallbackAllowed": false,
       "appServerUrl": "ws://127.0.0.1:3789",
       "defaultModel": "gpt-5",
       "approvalMode": "on-request",
@@ -126,3 +129,4 @@ Runbooks:
 - `docs/03-headless-env-flow.md`
 - `docs/04-forge-loop-console.md`
 - `docs/05-assistant.md`
+- `docs/06-story-domain.md`

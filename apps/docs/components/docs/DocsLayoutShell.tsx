@@ -5,9 +5,9 @@ import { useMemo } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import type { SerializedPageTree } from 'fumadocs-core/source/client';
 import { BookOpenText, Github } from 'lucide-react';
-import { Button } from '@forge/ui/button';
-import { SidebarInset, SidebarProvider, SidebarTrigger } from '@forge/ui/sidebar';
-import { cn } from '@forge/ui/lib/utils';
+import { Button } from '@/components/ui/button';
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
 import {
   getAudienceTabs,
   inferAudienceFromPath,

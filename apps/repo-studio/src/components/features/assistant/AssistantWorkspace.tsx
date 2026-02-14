@@ -30,7 +30,7 @@ export function AssistantWorkspace({
   const [allowExecFallback, setAllowExecFallback] = React.useState(false);
   const apiUrl = React.useMemo(() => {
     const params = new URLSearchParams();
-    params.set('editor', editorTarget);
+    params.set('editorTarget', editorTarget);
     if (allowExecFallback) params.set('allowExecFallback', 'true');
     return `/api/assistant-chat?${params.toString()}`;
   }, [allowExecFallback, editorTarget]);
@@ -51,7 +51,7 @@ export function AssistantWorkspace({
                   checked={allowExecFallback}
                   onChange={(event) => setAllowExecFallback(event.target.checked)}
                 />
-                Allow exec fallback
+                Allow exec fallback (app-server stays primary)
               </label>
             ) : null}
           </div>

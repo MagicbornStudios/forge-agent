@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { X } from 'lucide-react';
+import { Code2, Eye, X } from 'lucide-react';
 import { cn } from '@forge/ui/lib/utils';
 import { EditorDockPanel, EditorButton } from '../../editor';
 import { BlockViewCodePanel } from './BlockViewCodePanel';
@@ -46,7 +46,6 @@ export function BlockView({
   }, [files, activeFilePath]);
 
   const cssHeight = toCssHeight(previewHeight);
-  const hasHeader = Boolean(title || onClose);
 
   return (
     <section
@@ -60,7 +59,7 @@ export function BlockView({
       <EditorDockPanel
         panelId={`block-view-${id}`}
         title={title}
-        hideTitleBar={!hasHeader}
+        hideTitleBar={true}
         headerActions={
           onClose ? (
             <EditorButton
@@ -79,7 +78,7 @@ export function BlockView({
         onTabChange={(next) => setMode(next as BlockViewMode)}
         className="flex-1 min-h-[var(--height,640px)]"
       >
-        <EditorDockPanel.Tab id="preview" label="Preview">
+        <EditorDockPanel.Tab id="preview" label="Preview" icon={<Eye className="size-3.5" />}>
           <BlockViewPreviewPanel
             preview={preview}
             viewport={viewport}
@@ -87,7 +86,7 @@ export function BlockView({
             visible={true}
           />
         </EditorDockPanel.Tab>
-        <EditorDockPanel.Tab id="code" label="Code">
+        <EditorDockPanel.Tab id="code" label="Code" icon={<Code2 className="size-3.5" />}>
           <BlockViewCodePanel
             files={files}
             activeFile={activeFile}

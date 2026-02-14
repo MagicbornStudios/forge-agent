@@ -18,3 +18,10 @@
 - [x] Forge Loop multi-loop model is hybrid index + loop dirs (`.planning/LOOPS.json` + `.planning/loops/<loop-id>`), with lifecycle loop selection via `--loop`.
 - [x] RepoStudio assistant model is dual-editor (`loop-assistant`, `codex-assistant`) with editor-targeted routing and codex app-server-first readiness checks.
 - [x] RepoStudio diff tooling is read-first (Monaco diff + attach-to-assistant context) with write/apply still approval-gated and CLI-led.
+- [x] RepoStudio codex assistant route now streams AI SDK UI message events and maps codex approval requests into a persisted review queue (`.repo-studio/proposals.json`) before any apply action.
+- [x] RepoStudio code editing path stays manual-write by default with explicit approval flag (`approved=true`) and separate assistant proposal apply/reject actions.
+- [x] Package runtime exposes codex session/turn/proposal/file contract endpoints for compatibility, while app runtime remains the full-parity primary path.
+- [x] Loop assistant and Codex assistant are hard-separated by `editorTarget`; loop assistant never auto-falls into codex mode.
+- [x] RepoStudio now provides a local shared-runtime loop-assistant fallback for repo-only operation when no external proxy endpoint is configured.
+- [x] Story domain defaults are locked to `content/story` with hard scope policy and explicit TTL scope override tokens.
+- [x] Story and Git workflows are first-class dock panels in RepoStudio and remain approval-gated for assistant-generated writes.

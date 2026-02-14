@@ -297,6 +297,21 @@ This removes the local prebuild dependency on `packages/shared/dist/styles/edito
 
 ---
 
+## Repo Studio UI load: troubleshooting when "hasn't loaded due to errors"
+
+**Context**: User reports Repo Studio UI has not loaded for a while due to errors.
+
+**Investigation steps**:
+1. **Build**: `pnpm --filter @forge/repo-studio-app build` — if it passes, compile is fine.
+2. **Port**: `pnpm dev:repo-studio` uses 3010; `EADDRINUSE` means another process has it. Stop conflicting process or use different port.
+3. **Browser console**: If page loads but breaks, capture console errors (hydration, dockview, missing provider).
+4. **Dockview CSS**: Repo Studio uses Dockview; ensure `dockview.css` and overrides load. See Studio CSS import failure entry for pattern.
+5. **Bootstrap**: `forge-repo-studio run` or `open` may need to be running; config in `.repo-studio/`.
+
+**Gap**: Root cause TBD. Document findings in repo_studio_analysis GAPS § UI Load / Runtime and here when identified.
+
+---
+
 ## Platform `@forge/ui` adapter pitfall: root import can break Next server build
 
 **Problem**: Replacing platform local atom files with direct re-exports from `@forge/ui` root (for example `export { Button } from '@forge/ui'`) caused `next build` failures in platform with errors like:

@@ -29,10 +29,14 @@
       "planning",
       "env",
       "commands",
+      "story",
       "docs",
+      "git",
       "loop-assistant",
       "codex-assistant",
-      "diff"
+      "diff",
+      "code",
+      "review-queue"
     ],
     "hidden": [],
     "defaultView": "planning"
@@ -51,6 +55,17 @@
     ],
     "routeMode": "codex",
     "routePath": "/api/assistant-chat",
+    "routes": {
+      "loop": {
+        "mode": "shared-runtime",
+        "routePath": "/api/assistant-chat"
+      },
+      "codex": {
+        "mode": "codex",
+        "transport": "app-server",
+        "execFallbackAllowed": false
+      }
+    },
     "defaultModel": "gpt-5",
     "attachContextMaxFiles": 6,
     "attachContextMaxChars": 16000,
@@ -59,10 +74,29 @@
       "cliCommand": "codex",
       "authPolicy": "chatgpt-strict",
       "mode": "app-server",
+      "transport": "app-server",
+      "execFallbackAllowed": false,
       "appServerUrl": "ws://127.0.0.1:3789",
       "defaultModel": "gpt-5",
       "approvalMode": "on-request",
       "sandboxMode": "workspace-write"
+    },
+    "applyPolicy": {
+      "mode": "review-queue",
+      "allowPlanningWrites": true,
+      "requireApproval": true
+    }
+  },
+  "domains": {
+    "story": {
+      "roots": [
+        "content/story"
+      ],
+      "scopePolicy": "hard-with-override",
+      "naming": {
+        "parseMode": "dual",
+        "canonicalCreate": "act-01/chapter-01/page-001.md"
+      }
     }
   },
   "docs": {

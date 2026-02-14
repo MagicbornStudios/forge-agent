@@ -25,6 +25,18 @@ export const REPO_EDITOR_PANEL_SPECS: RepoEditorPanelSpec[] = [
     rail: 'main',
   },
   {
+    id: 'story',
+    label: 'Story',
+    key: 'panel.visible.repo-story',
+    rail: 'main',
+  },
+  {
+    id: 'code',
+    label: 'Code',
+    key: 'panel.visible.repo-code',
+    rail: 'main',
+  },
+  {
     id: 'env',
     label: 'Env',
     key: 'panel.visible.repo-env',
@@ -58,6 +70,18 @@ export const REPO_EDITOR_PANEL_SPECS: RepoEditorPanelSpec[] = [
     id: 'diff',
     label: 'Diff',
     key: 'panel.visible.repo-diff',
+    rail: 'bottom',
+  },
+  {
+    id: 'git',
+    label: 'Git',
+    key: 'panel.visible.repo-git',
+    rail: 'bottom',
+  },
+  {
+    id: 'review-queue',
+    label: 'Review Queue',
+    key: 'panel.visible.repo-review-queue',
     rail: 'bottom',
   },
 ];

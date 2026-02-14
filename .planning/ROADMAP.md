@@ -8,7 +8,8 @@ Operational roadmap for Forge Loop lifecycle delivery, RepoStudio control-plane 
 
 - [x] **Phase 01: Forge Loop bootstrap** - Establish lifecycle command baseline
 - [x] **Phase 02: RepoStudio command center** - Build reusable RepoOps shell + env/assistant/verification command center
-- [ ] **Phase 03: Multi-loop orchestration and dual-assistant editors** - Run many loop tracks from one Studio-grade RepoStudio surface
+- [x] **Phase 03: Multi-loop orchestration and dual-assistant editors** - Run many loop tracks from one Studio-grade RepoStudio surface
+- [ ] **Phase 04: Story domain Codex writer** - Deliver story-scoped authoring/editor workflows with strict domain guardrails and Git-integrated review loops
 
 ## Phase Details
 
@@ -41,12 +42,25 @@ Plans:
 **Goal:** Make RepoStudio loop-first for many package/project loops with explicit Loop Assistant and Codex Assistant surfaces plus read-first diff tooling.
 **Depends on:** Phase 02
 **Requirements:** [REQ-10, REQ-11, REQ-12]
-**Plans:** 3 plans
+**Plans:** 4 plans
 
 Plans:
-- [ ] 03-01: Multi-loop artifact model + CLI loop selection + RepoStudio loop switch APIs
-- [ ] 03-02: Dual assistant editor routing with Codex app-server primary and explicit fallback controls
-- [ ] 03-03: Monaco diff read-first panel, assistant attach flow, and release-hardening docs/tests
+- [x] 03-01: Multi-loop artifact model + CLI loop selection + RepoStudio loop switch APIs
+- [x] 03-02: Dual assistant editor routing with Codex app-server primary and explicit fallback controls
+- [x] 03-03: Monaco diff read-first panel, assistant attach flow, and release-hardening docs/tests
+- [x] 03-04: Codex IDE parity hardening (event mapping, review queue fidelity, package runtime parity checks)
+
+### Phase 04: Story domain Codex writer
+**Goal:** Build story-domain focused editing flows (outline/page/reader/diff/git) with codex scope controls and loop-safe approvals.
+**Depends on:** Phase 03
+**Requirements:** [REQ-13, REQ-14, REQ-15, REQ-16]
+**Plans:** 4 plans
+
+Plans:
+- [ ] 04-01: Story parser + canonical create hardening and editor baseline
+- [ ] 04-02: Hard scope guard + override lifecycle for story-domain codex operations
+- [ ] 04-03: Story/Git/Diff dock-panel parity and reusable scoped diff flow
+- [ ] 04-04: Story-domain runbooks and regression tests
 
 ## Progress
 
@@ -54,5 +68,5 @@ Plans:
 |---|---|---|---|
 | 01. Forge Loop bootstrap | 2/2 | Complete | 2026-02-13 |
 | 02. RepoStudio command center | 7/7 | Complete | 2026-02-14 |
-| 03. Multi-loop orchestration and dual-assistant editors | 0/3 | In progress | - |
-
+| 03. Multi-loop orchestration and dual-assistant editors | 4/4 | Complete | 2026-02-14 |
+| 04. Story domain Codex writer | 0/4 | In progress | - |

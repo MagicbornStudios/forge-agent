@@ -2,7 +2,12 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { RepoCommandView, RepoRunRef, RepoWorkspaceId } from '@/lib/types';
+import type {
+  RepoCommandView,
+  RepoReviewQueueState,
+  RepoRunRef,
+  RepoWorkspaceId,
+} from '@/lib/types';
 
 export const REPO_STUDIO_LAYOUT_ID = 'repo-studio-main';
 
@@ -27,6 +32,7 @@ type RepoStudioShellState = {
   commandView: RepoCommandView;
   attachedPlanningDocIds: string[];
   activeLoopId: string;
+  reviewQueue: RepoReviewQueueState;
   activeRunId: string | null;
   activeRun: RepoRunRef | null;
 
@@ -48,13 +54,26 @@ type RepoStudioShellState = {
   attachPlanningDocId: (docId: string) => void;
   detachPlanningDocId: (docId: string) => void;
   setActiveLoopId: (loopId: string) => void;
+  setReviewQueueState: (next: Partial<RepoReviewQueueState>) => void;
 
   setActiveRun: (run: RepoRunRef | null) => void;
 };
 
 const DEFAULT_ROUTE: RepoStudioRouteState = {
   activeWorkspaceId: 'planning',
-  openWorkspaceIds: ['planning', 'env', 'commands', 'docs', 'loop-assistant', 'codex-assistant', 'diff'],
+  openWorkspaceIds: [
+    'planning',
+    'env',
+    'commands',
+    'story',
+    'docs',
+    'git',
+    'loop-assistant',
+    'codex-assistant',
+    'diff',
+    'code',
+    'review-queue',
+  ],
 };
 
 export const useRepoStudioShellStore = create<RepoStudioShellState>()(
@@ -67,6 +86,10 @@ export const useRepoStudioShellStore = create<RepoStudioShellState>()(
       commandView: DEFAULT_COMMAND_VIEW,
       attachedPlanningDocIds: [],
       activeLoopId: 'default',
+      reviewQueue: {
+        collapsed: false,
+        selectedProposalId: null,
+      },
       activeRunId: null,
       activeRun: null,
 
@@ -164,6 +187,14 @@ export const useRepoStudioShellStore = create<RepoStudioShellState>()(
         set({ activeLoopId: normalized });
       },
 
+      setReviewQueueState: (next) =>
+        set((state) => ({
+          reviewQueue: {
+            ...state.reviewQueue,
+            ...next,
+          },
+        })),
+
       setActiveRun: (run) =>
         set({
           activeRun: run,
@@ -180,6 +211,7 @@ export const useRepoStudioShellStore = create<RepoStudioShellState>()(
         commandView: state.commandView,
         attachedPlanningDocIds: state.attachedPlanningDocIds,
         activeLoopId: state.activeLoopId,
+        reviewQueue: state.reviewQueue,
       }),
     },
   ),

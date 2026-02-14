@@ -31,7 +31,8 @@
   --color-fd-muted: var(--sidebar-accent);
   --color-fd-muted-foreground: var(--sidebar-accent-foreground);
   --color-fd-border: var(--sidebar-border);
-  background: color-mix(in oklab, var(--sidebar) 92%, var(--background));
+  background: var(--sidebar);
+  isolation: isolate;
 }
 
 #platform-docs-layout .platform-docs-header {
@@ -52,32 +53,33 @@
 #platform-docs-layout #platform-docs-sidebar [data-slot='sidebar-content'] {
   padding-inline: 0.35rem;
   padding-bottom: 0.85rem;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
-#platform-docs-layout #platform-docs-sidebar [data-sidebar='content'] > div:first-child {
-  scrollbar-width: none;
+#platform-docs-layout #platform-docs-sidebar [data-sidebar='content'],
+#platform-docs-layout #platform-docs-sidebar [data-sidebar='group'],
+#platform-docs-layout #platform-docs-sidebar [data-sidebar='group-content'],
+#platform-docs-layout #platform-docs-sidebar [data-sidebar='menu'],
+#platform-docs-layout #platform-docs-sidebar [data-sidebar='menu-item'],
+#platform-docs-layout #platform-docs-sidebar [data-sidebar='menu-button'] {
+  min-width: 0;
+  width: 100%;
 }
 
-#platform-docs-layout #platform-docs-sidebar [data-sidebar='content'] > div:first-child::-webkit-scrollbar {
-  width: 0;
+#platform-docs-layout #platform-docs-sidebar [data-sidebar='content'] {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--foreground) 34%, transparent) transparent;
+}
+
+#platform-docs-layout #platform-docs-sidebar [data-sidebar='content']::-webkit-scrollbar {
+  width: 8px;
   height: 0;
 }
 
-#platform-docs-layout #platform-docs-sidebar [data-sidebar='content'] > div:nth-child(2) {
-  width: 4px !important;
-  border: 0 !important;
-  padding: 0 !important;
-  opacity: 0;
-  transition: opacity 160ms ease;
-}
-
-#platform-docs-layout #platform-docs-sidebar [data-sidebar='content']:hover > div:nth-child(2) {
-  opacity: 0.72;
-}
-
-#platform-docs-layout #platform-docs-sidebar [data-sidebar='content'] > div:nth-child(2) > div {
+#platform-docs-layout #platform-docs-sidebar [data-sidebar='content']::-webkit-scrollbar-thumb {
   border-radius: 999px;
-  background: color-mix(in oklab, var(--foreground) 42%, transparent);
+  background: color-mix(in oklab, var(--foreground) 28%, transparent);
 }
 
 #platform-docs-layout .doc-content {
@@ -136,6 +138,7 @@
     padding-left: var(--sidebar-width) !important;
   }
 
+  #platform-docs-layout #platform-docs-sidebar[data-slot='sidebar'],
   #platform-docs-layout #platform-docs-sidebar[data-slot='sidebar-container'] {
     top: var(--docs-header-height) !important;
     bottom: auto !important;
