@@ -32,6 +32,8 @@ export const SHOWCASE_REGISTRY: Record<string, React.LazyExoticComponent<React.C
   'plan-demo': React.lazy(() => import('../registry/molecules/plan-demo/PlanDemo').then((m: any) => ({ default: m.PlanDemo ?? m.default }))),
   'settings-panel-demo': React.lazy(() => import('../registry/molecules/settings-panel-demo/SettingsPanelDemo').then((m: any) => ({ default: m.SettingsPanelDemo ?? m.default }))),
   'settings-system-demo': React.lazy(() => import('../registry/molecules/settings-system-demo/SettingsSystemDemo').then((m: any) => ({ default: m.SettingsSystemDemo ?? m.default }))),
+  'studio-menubar-contribution-demo': React.lazy(() => import('../registry/molecules/studio-menubar-contribution-demo/StudioMenubarContributionDemo').then((m: any) => ({ default: m.StudioMenubarContributionDemo ?? m.default }))),
   'toolbar-editor-settings-menu-demo': React.lazy(() => import('../registry/molecules/toolbar-editor-settings-menu-demo/ToolbarEditorSettingsMenuDemo').then((m: any) => ({ default: m.ToolbarEditorSettingsMenuDemo ?? m.default }))),
-  'codebase-agent-strategy-editor': React.lazy(() => import('../registry/organisms/codebase-agent-strategy-editor/CodebaseAgentStrategyEditorDemo').then((m: any) => ({ default: m.CodebaseAgentStrategyEditorDemo ?? m.default })))
+  'codebase-agent-strategy-editor': React.lazy(() => import('../registry/organisms/codebase-agent-strategy-editor/CodebaseAgentStrategyEditorDemo').then((m: any) => ({ default: m.CodebaseAgentStrategyEditorDemo ?? m.default }))),
+  'studio-workbench-demo': React.lazy(() => import('../registry/organisms/studio-workbench-demo/StudioWorkbenchDemo').then((m: any) => ({ default: m.StudioWorkbenchDemo ?? m.default })))
 };

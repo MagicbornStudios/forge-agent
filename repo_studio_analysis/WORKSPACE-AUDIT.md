@@ -19,6 +19,7 @@ Cross-workspace comparison of features. Used to identify gaps—especially for E
 | Diff | bottom | Git diff; Monaco diff |
 | Git | bottom | Status; branches; log; commit |
 | Review Queue | bottom | Proposals; apply/reject |
+| Observability | main | Codex turn metrics: tools, searches, paths, latency, tokens, cost (agent_observability_analysis) |
 
 ## Feature Matrix
 

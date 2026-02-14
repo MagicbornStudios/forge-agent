@@ -18,7 +18,8 @@
   --color-fd-accent-foreground: var(--accent-foreground);
   --color-fd-ring: var(--ring);
   font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
-  min-height: 100svh;
+  min-height: 100dvh;
+  height: 100dvh;
   background:
     radial-gradient(78rem 34rem at 12% -14%, color-mix(in oklab, var(--primary) 15%, transparent), transparent 72%),
     radial-gradient(60rem 24rem at 88% -20%, color-mix(in oklab, var(--accent) 12%, transparent), transparent 76%),
@@ -136,14 +137,22 @@
 @media (min-width: 48rem) {
   #platform-docs-layout [data-sidebar='sidebar-provider'] {
     padding-left: var(--sidebar-width) !important;
+    min-height: 100dvh !important;
+    height: 100dvh !important;
   }
 
   #platform-docs-layout #platform-docs-sidebar[data-slot='sidebar'],
   #platform-docs-layout #platform-docs-sidebar[data-slot='sidebar-container'] {
     top: var(--docs-header-height) !important;
     bottom: auto !important;
-    height: calc(100svh - var(--docs-header-height)) !important;
+    height: calc(100dvh - var(--docs-header-height)) !important;
+    min-height: calc(100dvh - var(--docs-header-height)) !important;
     display: flex !important;
+  }
+
+  #platform-docs-layout #platform-docs-sidebar [data-slot='sidebar-inner'],
+  #platform-docs-layout #platform-docs-sidebar [data-slot='sidebar-content'] {
+    height: 100% !important;
   }
 
   #platform-docs-layout .platform-docs-tabs {

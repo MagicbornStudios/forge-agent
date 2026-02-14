@@ -56,6 +56,19 @@ User wants to "rebuild as much of them" as feasible:
 |-------|-------|--------------|
 | **A** | Env workspace feature parity | Per-key editing; copy-paste; scoping; mode per target; vendor in discovery |
 
+## API Contract (Phase A)
+
+See [API-CONTRACT.md](API-CONTRACT.md).
+
+- **Read**: `GET /api/env/target/:targetId` — all keys (including empty), provenance, scoped to mode.
+- **Write**: `POST /api/env/target/:targetId` — values for mode; validate after; return readiness.
+- Single target per request; mode determines file (.env.local, .env.development.local, .env.production.local).
+- Plain text (no masking).
+
+## UI Layout (Phase A)
+
+TBD: tabs vs cards vs accordion for targets. Default: tabs for now; can refine.
+
 ## Dependencies
 
 - forge-env CLI (packages/forge-env)

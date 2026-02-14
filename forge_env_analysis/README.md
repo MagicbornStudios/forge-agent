@@ -13,6 +13,7 @@ Standalone analysis and planning for forge-env. No execution; no sync to main Fo
 | Document | Purpose |
 |----------|---------|
 | [PRD.md](PRD.md) | Product requirements; vision; scope; features |
+| [API-CONTRACT.md](API-CONTRACT.md) | Read/write API spec; single target; mode-scoped |
 | [DECISIONS.md](DECISIONS.md) | Key decisions |
 | [FINDINGS.md](FINDINGS.md) | Current state; gaps; recommendations |
 | [GAPS.md](GAPS.md) | Identified gaps |

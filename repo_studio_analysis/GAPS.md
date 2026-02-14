@@ -67,12 +67,22 @@ See [WORKSPACE-AUDIT.md](WORKSPACE-AUDIT.md) for full feature matrix and Env gap
 | React Query | Not used in repo-studio-app | Add for server state; avoid performance issues |
 | Per-workspace menus/shortcuts | Hardcoded | Workspace registration |
 | Per-workspace settings sections | Minimal RepoSettingsPanelContent | Each workspace contributes; centralized registry |
-| Navigator panel | None | Generic Navigator; Code workspace first |
+| Navigator panel | None | Generic Navigator; Code workspace first; server-side search; no default exclude (ide_navigation_analysis IN-01–IN-04) |
 | Review Queue diff UX | Table/list view | Click file → Monaco with diff; one file at a time |
 | Proposal storage | In-memory? | SQLite |
 | Panel behavior props | Ad-hoc | Attach/copy/refresh modular; hide when no data |
 | Story/Docs as sibling workspaces | Story exists; Docs is panel | Story + Docs each full workspace |
 | Loops for planning | Planning artifacts | PRD/plan iteration; loop creation |
+| Trust scope | None | **Global only**: auto-approve all vs require approval |
+| @ mentions UX | None | Paste data; display as tag (like Cursor); remove @ removes from chat |
+| Loop context cache | None | Invalidate on file change or manual refresh |
+| Proposal attribution | None | agentId + agentType in requestApproval |
+| Queue views | Single | Separate per-agent + aggregate views |
+| Orchestrator | None | Repo Studio process for planning + execution loops |
+| Codex observability | None | Dedicated Observability workspace; real-time; tools, searches, paths, latency, tokens, cost (agent_observability_analysis) |
+| Loop Assistant context | Minimal | Active loop id + loop files by default |
+| Review Queue Monaco UX | Table + raw diff | File list left, Monaco diff right; unified view with highlighting; parse diff per-file |
+| Docs workspace | Panel only | Own workspace; doc content; markdown; aspirational MDX |
 
 ## Ambiguity Resolved
 

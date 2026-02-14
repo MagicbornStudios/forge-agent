@@ -22,3 +22,8 @@ Env workspace must provide full env management. Legacy portal is not used or emb
 ## Resolved
 
 - **Canonical UI**: Repo Studio Env workspace only. No standalone portal to maintain; no embed of legacy.
+- **API contract**: Single target; read all keys + provenance; write by mode; validate after. See API-CONTRACT.md.
+
+## UI Layout (TBD)
+
+- Tabs vs cards vs accordion for targets. Default: tabs for Phase A.

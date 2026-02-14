@@ -22,11 +22,20 @@ Repo Studio as an agent-centric IDE shell where users navigate the project like 
 
 ## Scopes
 
-| Scope | Include | Exclude (default) |
-|-------|---------|-------------------|
-| Workspace | Repo root | `.tmp`, `plans/*`, `node_modules`, `.git` |
-| Loop | Loop dir (e.g. `.planning/phases/X`) | — |
-| Code workspace | `apps`, `packages`, `docs` | per user config |
+| Scope | Include | Exclude |
+|-------|---------|---------|
+| Workspace | Repo root | **None by default**; user configures when desired |
+| Loop | Loop dir (e.g. `.planning/phases/X`) | User-configurable |
+| Code workspace | All visible | User opts to exclude |
+
+**Decision (IN-04)**: No default exclude. Show all files; user excludes when they want.
+
+## Decisions (see DECISIONS.md)
+
+- IN-01: Navigator—generic panel; Code workspace first (DS-08)
+- IN-02: Server-side search API
+- IN-03: Electron-first for file watchers
+- IN-04: No default exclude
 
 ## Non-Scope (Initial)
 
@@ -37,7 +46,6 @@ Repo Studio as an agent-centric IDE shell where users navigate the project like 
 ## Alignment with Repo Studio Decisions
 
 - **Navigator**: Generic panel for any workspace; shows in Code workspace first (DS-08).
-- **Include/exclude**: Align with AGENTS.md (`.tmp`, `plans/*` excluded from agent search).
 
 ## Research Targets
 

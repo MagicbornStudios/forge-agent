@@ -55,6 +55,7 @@ export function BlockViewCodePanel({
                 <CodeBlockCode
                   code={activeFile.code}
                   language={activeFile.language ?? 'tsx'}
+                  showLineNumbers
                   className="min-h-full min-w-0 [&>pre]:!min-h-full [&>pre]:!min-w-0 [&>pre]:!border-0 [&>pre]:!shadow-none [&>pre]:!outline-none [&>pre>code]:!border-0"
                 />
               </CodeBlock>

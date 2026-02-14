@@ -53,7 +53,8 @@ function isSeparator(node: Node): node is Separator {
 function getNodeLabel(node: Item | Folder): string {
   const fallback = isItem(node) ? toTitleFromHref(node.url, 'Doc') : 'Section';
   const rawLabel = toPlainText(node.name, fallback);
-  return stripDuplicatedLeadingIconLabel(rawLabel, node);
+  const deduped = stripDuplicatedLeadingIconLabel(rawLabel, node);
+  return stripLeadingLabelNoise(deduped, fallback);
 }
 
 function getSeparatorLabel(node: Separator): string {
@@ -87,6 +88,18 @@ function stripDuplicatedLeadingIconLabel(label: string, node: Item | Folder): st
   }
 
   return label;
+}
+
+function stripLeadingLabelNoise(label: string, fallback: string): string {
+  const normalized = label.replace(/[\u200B-\u200D\u2060\uFEFF]/g, '').replace(/\s+/g, ' ').trim();
+  if (!normalized) return fallback;
+
+  const titleStart = normalized.search(/[A-Z][a-z]/);
+  if (titleStart > 0 && titleStart <= 8) {
+    return normalized.slice(titleStart).trimStart();
+  }
+
+  return normalized;
 }
 
 function resolveFolderUrl(folder: Folder): string | null {
@@ -135,23 +148,6 @@ function renderNodeIcon(node: Node, audience: DocsAudience): React.ReactNode {
     if (typeof node.icon === 'string') {
       const declaredIcon = renderNamedIcon(node.icon);
       if (declaredIcon) return declaredIcon;
-    }
-
-    if (React.isValidElement(node.icon)) {
-      const inlineText = toPlainText(node.icon, '').trim();
-      if (inlineText.length > 0) {
-        const declaredIcon = renderNamedIcon(inlineText);
-        if (declaredIcon) return declaredIcon;
-        return null;
-      }
-
-      const nodeProps = (node.icon.props ?? {}) as { className?: string };
-      return React.cloneElement(
-        node.icon as React.ReactElement<{ className?: string }>,
-        {
-          className: cn('size-3.5 shrink-0 text-muted-foreground', nodeProps.className),
-        },
-      );
     }
   }
 
@@ -285,9 +281,9 @@ function NavNodes({
                 className="h-8 min-w-0 text-[13px]"
                 style={{ paddingLeft: indent > 0 ? `${indent + 8}px` : undefined }}
               >
-                <Link href={href} className="flex min-w-0 items-center gap-2">
+                <Link href={href} className="flex w-full min-w-0 items-center gap-2 overflow-hidden">
                   {renderNodeIcon(node, audience)}
-                  <span className="truncate" title={label}>
+                  <span className="min-w-0 flex-1 truncate" title={label}>
                     {label}
                   </span>
                 </Link>
@@ -332,7 +328,7 @@ function NavNodes({
                   </CollapsibleTrigger>
                 </SidebarMenuItem>
                 <CollapsibleContent>
-                  <SidebarGroupContent className="min-w-0 pl-4">
+                  <SidebarGroupContent className="min-w-0 pl-0">
                     <SidebarMenu className="min-w-0 gap-0.5 overflow-x-hidden border-l border-border/70 pl-2">
                       <NavNodes
                         nodes={node.children}
@@ -388,7 +384,7 @@ export function DocsSidebar({
     <Sidebar
       id="platform-docs-sidebar"
       collapsible="none"
-      className="platform-docs-sidebar overflow-hidden border-r border-border/70 md:top-[var(--docs-header-height)] md:bottom-auto md:h-[calc(100svh-var(--docs-header-height))]"
+      className="platform-docs-sidebar h-full min-h-0 overflow-hidden border-r border-border/70 md:sticky md:top-[var(--docs-header-height)] md:h-[calc(100dvh-var(--docs-header-height))] md:min-h-[calc(100dvh-var(--docs-header-height))]"
     >
       <SidebarHeader className="border-b border-border/70">
         <SidebarMenu>
@@ -401,14 +397,17 @@ export function DocsSidebar({
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        <div className="relative px-2 pt-1">
-          <Search className="pointer-events-none absolute top-1/2 left-4 size-3.5 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search documentation..."
-            className="h-9 pl-9 text-xs"
-          />
+        <div className="px-2 pt-1">
+          <label className="relative block">
+            <Search className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-muted-foreground/80" />
+            <Input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search documentation..."
+              aria-label="Search documentation"
+              className="h-9 pr-2 pl-8 text-xs"
+            />
+          </label>
         </div>
       </SidebarHeader>
       <SidebarContent className="overflow-x-hidden overflow-y-auto">

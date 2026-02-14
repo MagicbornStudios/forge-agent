@@ -12,7 +12,7 @@ Standalone analysis and planning for Repo Studio. No execution; no sync to main 
 |----------|---------|
 | [PRD.md](PRD.md) | Product requirements; vision; scope; features; phasing |
 | [WORKSPACE-AUDIT.md](WORKSPACE-AUDIT.md) | Workspace feature matrix; Env gaps vs other workspaces |
-| [DECISIONS.md](DECISIONS.md) | Key decisions (DS-01 through DS-06) |
+| [DECISIONS.md](DECISIONS.md) | Key decisions (DS-01 through DS-14) |
 | [FINDINGS.md](FINDINGS.md) | Current state; gaps; recommendations |
 | [GAPS.md](GAPS.md) | Identified gaps by priority; workspace maturity |
 | [DECISIONS-WORKSPACE-PANELS.md](DECISIONS-WORKSPACE-PANELS.md) | Menus, panels, layout, Loop Assistant, Review Queue (from planning session) |

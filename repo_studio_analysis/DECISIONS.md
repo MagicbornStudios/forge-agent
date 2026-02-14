@@ -65,3 +65,37 @@ Decisions made during the analysis loop. No implementation yet.
 **Decision**: Review Queue: click file → Monaco with diff, one file at a time. Same for planning docs. Proposals stored in SQLite. One queue with metadata for sub-agents. Sub-agents work independently; Ralph Wiggum loops.
 
 **Rationale**: Clear review flow; persistence; multi-agent support.
+
+## DS-11: Trust Scope (Auto-Approve Override)
+
+**Decision**: **Global setting only.** Auto-approve all vs require approval. No per-loop, per-domain, per-agent scopes.
+
+**Rationale**: Match Cursor "full access" mode; enable unattended Ralph Wiggum loops. Reviewing hundreds manually is too hard; granular trust adds complexity without benefit.
+
+**Config**: `.repo-studio` or settings. Two values: auto-approve all / require approval.
+
+## DS-12: Loop Assistant Default Context
+
+**Decision**: Loop Assistant receives active loop id + files for that loop by default. Use loop id to fetch files so assistant can talk about the loop.
+
+**Rationale**: User wants to discuss the loop with the assistant; context must include loop artifacts.
+
+## DS-13: Review Queue Layout and Diff Display
+
+**Decision**: File list left; Monaco diff right. Click file → load diff. Parse unified diff to extract per-file. Prefer unified view with line highlighting; not side-by-side original/modified.
+
+**Rationale**: Clear review flow; unified diff format preferred.
+
+## DS-14: Story vs Planning Same Layout; Docs Own Workspace
+
+**Decision**: Story and Planning use identical layout; different contexts only (story files vs .planning). Docs is its own workspace; main content = doc viewed; markdown fully rendered. Aspirational: MDX, docs as part of app.
+
+**Rationale**: Same UX pattern; different data sources.
+
+## DS-15: Planning → Execution Loop (GSD + Repomirror)
+
+**Decision**: Planning phase = GSD-style (orchestrator, specialized agents for research/planning/verification). Execution phase = Repomirror-style Ralph loops—many parallel loops, each single agent until done. Repo Studio orchestrates.
+
+**Rationale**: GSD for "before coding"; Repomirror for execution. Flow: Planning → Execution (many agents) → Planning → …
+
+**Detail**: See [PLANNING-EXECUTION-LOOP.md](PLANNING-EXECUTION-LOOP.md).

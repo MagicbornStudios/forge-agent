@@ -312,6 +312,16 @@ This removes the local prebuild dependency on `packages/shared/dist/styles/edito
 
 ---
 
+## Repo Studio layout defaults: declarative code IS the default — do not ask
+
+**Rule**: The declarative code in the codebase (e.g. `PlanningWorkspace`, `EditorDockLayout` children) **is** the default layout. There is no separate config or manifest that defines "the default." Reset layout restores what's in code. Codegen may produce artifacts from that code (e.g. for reset), but the source of truth is the code.
+
+**Do not**: Ask "should default layout be in code or config?" or "code vs manifest for layout defaults." The answer is always: code. The code the user sees is the default.
+
+**Reference**: repo_studio_analysis DECISIONS-WORKSPACE-PANELS § Layout and Flexibility.
+
+---
+
 ## Platform `@forge/ui` adapter pitfall: root import can break Next server build
 
 **Problem**: Replacing platform local atom files with direct re-exports from `@forge/ui` root (for example `export { Button } from '@forge/ui'`) caused `next build` failures in platform with errors like:

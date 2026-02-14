@@ -37,6 +37,26 @@ Repo Studio is a new IDE centered on using coding agents for code and repo work.
 - **Review Queue**: Click file → Monaco with diff; one file at a time. SQLite for proposals. One queue with metadata for sub-agents (DS-10).
 - **Sub-agents**: Work independently; Ralph Wiggum loops while sleeping. Single queue, metadata per proposal.
 
+## Trust Scope (Approval Override)
+
+**Decision**: **Global setting only.** Auto-approve all vs require approval. No per-loop, per-domain, per-agent scopes.
+
+**Rationale**: Reviewing hundreds of proposals manually is too hard; granular trust adds complexity without benefit.
+
+**Enables**: Ralph Wiggum loops, overnight sub-agents when global trust on.
+
+## Planning → Execution Loop
+
+- **Planning**: GSD-style (specialized agents: research, planner, verifier). Before coding.
+- **Execution**: Repomirror-style. Many parallel Ralph loops; each single agent until done. Engineering-team scale.
+- **Flow**: Planning → Execution → Planning → …
+
+See [repo_studio_analysis/PLANNING-EXECUTION-LOOP.md](../repo_studio_analysis/PLANNING-EXECUTION-LOOP.md).
+
+## Observability
+
+Full Codex observability: tool counts, searches, paths, latency, tokens, cost (estimate OK). Dedicated Observability workspace; real-time. See [agent_observability_analysis/](../agent_observability_analysis/) DECISIONS.md.
+
 ## Research Targets
 
 - Inngest: event → function model; how it frames "orchestration"

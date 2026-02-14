@@ -15,6 +15,12 @@
 @source "../../../packages/shared/src/**/*.{ts,tsx,jsx,mdx}";
 
 @layer base {
+  html,
+  body {
+    min-height: 100dvh;
+    height: 100%;
+  }
+
   body {
     @apply bg-background text-foreground;
   }

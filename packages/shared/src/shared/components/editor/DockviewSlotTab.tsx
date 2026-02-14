@@ -15,7 +15,8 @@ export function DockviewSlotTab(
 ) {
   const { api, containerApi, params, className, ...rest } = props;
   const slotId = (params?.slotId as string) ?? 'main';
-  const icon = params?.icon as React.ReactNode | undefined;
+  const iconCandidate = params?.icon as unknown;
+  const icon = React.isValidElement(iconCandidate) ? iconCandidate : null;
   const titleOverride = params?.title as string | undefined;
   const displayTitle = titleOverride ?? api.title ?? slotId;
   const isActive = api.isGroupActive;
@@ -47,7 +48,7 @@ export function DockviewSlotTab(
       {...rest}
     >
       <span className="shrink-0 text-muted-foreground" aria-hidden>
-        {icon != null ? icon : <LayoutDashboard className="size-[var(--icon-size)]" />}
+        {icon ?? <LayoutDashboard className="size-[var(--icon-size)]" />}
       </span>
       <Label className="font-semibold text-foreground truncate flex-1">{displayTitle}</Label>
       <Button variant="ghost" size="icon" onClick={handleClose} aria-label="Close panel" className="shrink-0 rounded p-[var(--control-padding-y)] text-muted-foreground hover:text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded-sm border-none">

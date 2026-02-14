@@ -86,14 +86,38 @@ export type CodeBlockCodeProps = {
   theme?: string | typeof SHADCN_THEME;
   /** Format code with Prettier before highlighting. Default: true */
   format?: boolean;
+  /** Show line numbers in the left gutter. Default: false */
+  showLineNumbers?: boolean;
   className?: string;
 } & React.HTMLProps<HTMLDivElement>;
+
+function injectLineNumbers(html: string): string {
+  return html.replace(/(<code[^>]*>)([\s\S]*?)(<\/code>)/, (_match, open: string, content: string, close: string) => {
+    const lines = content.split('\n');
+    if (lines.length > 1 && lines[lines.length - 1] === '') {
+      lines.pop();
+    }
+
+    const numbered = lines
+      .map((line: string, index: number) => {
+        const safeLine = line.length > 0 ? line : '&#8203;';
+        return `<span class="code-line" style="display:grid;grid-template-columns:2.75rem minmax(0,1fr);column-gap:0.75rem;">
+  <span class="line-number" style="user-select:none;text-align:right;color:var(--text-tertiary,#7a7a85);font-size:11px;line-height:1.5;padding-right:0.25rem;">${index + 1}</span>
+  <span class="line-content" style="display:block;min-width:0;">${safeLine}</span>
+</span>`;
+      })
+      .join('\n');
+
+    return `${open}${numbered}${close}`;
+  });
+}
 
 function CodeBlockCode({
   code,
   language = "tsx",
   theme: themeProp,
   format = true,
+  showLineNumbers = false,
   className,
   ...props
 }: CodeBlockCodeProps) {
@@ -118,10 +142,10 @@ function CodeBlockCode({
         }
       }
       const html = await codeToHtml(codeToHighlight, { lang: language, theme });
-      setHighlightedHtml(html);
+      setHighlightedHtml(showLineNumbers ? injectLineNumbers(html) : html);
     }
     highlight();
-  }, [code, language, theme, format]);
+  }, [code, language, theme, format, showLineNumbers]);
 
   const classNames = cn(
     "w-full overflow-x-auto text-[13px] [&>pre]:px-4 [&>pre]:py-4",

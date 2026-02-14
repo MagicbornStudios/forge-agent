@@ -69,8 +69,16 @@ export function DocsLayoutShell({
   };
 
   return (
-    <div id="platform-docs-layout" className="platform-docs-shell h-screen">
-      <SidebarProvider defaultOpen className="h-full [--docs-header-height:4rem] md:pl-[var(--sidebar-width)]">
+    <div id="platform-docs-layout" className="platform-docs-shell h-[100dvh] min-h-[100dvh]">
+      <SidebarProvider defaultOpen className="h-[100dvh] min-h-[100dvh] [--docs-header-height:4rem] md:pl-[var(--sidebar-width)]">
+        <div className="platform-docs-corner-brand fixed top-0 left-0 z-30 hidden h-[var(--docs-header-height)] w-[var(--sidebar-width)] items-center border-r border-b border-border/60 bg-background/90 px-4 backdrop-blur-xl md:flex">
+          <Link href={baseUrl} className="inline-flex min-w-0 items-center gap-2 text-sm font-semibold tracking-wide text-foreground">
+            <span className="inline-flex size-6 items-center justify-center rounded-md border border-primary/35 bg-primary/15 text-[11px] font-bold text-primary">
+              FG
+            </span>
+            <span className="truncate">Forge Docs</span>
+          </Link>
+        </div>
         <DocsSidebar
           serializedTree={serializedTree}
           pathname={pathname}

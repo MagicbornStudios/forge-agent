@@ -42,6 +42,7 @@ export const SHOWCASE_CATALOG_DATA = {
         { id: 'assistant-panel-demo', title: 'Assistant Panel', summary: 'Live assistant thread rendering with a local mocked runtime adapter.', demoId: 'assistant-panel-demo', previewHeight: 640, code: { files: [PLACEHOLDER_CODE] } },
         { id: 'plan-card-demo', title: 'Plan Card', summary: 'Structured plan response card used for AI-generated stepwise workflows.', demoId: 'plan-card-demo', code: { files: [PLACEHOLDER_CODE] } },
         { id: 'toolbar-editor-settings-menu-demo', title: 'Toolbar Editor Settings Menu', summary: 'Settings menu items (Open Settings, Account) for the editor menubar.', demoId: 'toolbar-editor-settings-menu-demo', code: { files: [PLACEHOLDER_CODE] } },
+        { id: 'studio-menubar-contribution-demo', title: 'Studio Menubar Contribution', summary: 'App-tab menubar that merges shared menus with active-editor menu contributions.', demoId: 'studio-menubar-contribution-demo', previewHeight: 420, code: { files: [PLACEHOLDER_CODE] } },
         { id: 'dock-sidebar-demo', title: 'Dock Sidebar', summary: 'Grid-embedded sidebar for dock layout panels with menu and header.', demoId: 'dock-sidebar-demo', code: { files: [PLACEHOLDER_CODE] } },
         { id: 'plan-demo', title: 'Plan', summary: 'Tool-ui plan component for stepwise todo lists from AI workflows.', demoId: 'plan-demo', code: { files: [PLACEHOLDER_CODE] } },
       ],
@@ -54,6 +55,7 @@ export const SHOWCASE_CATALOG_DATA = {
       entries: [
         { id: 'editor-shell-demo', title: 'EditorShell', summary: 'Declarative root for editor header, toolbar, layout, overlays, and status bar.', demoId: 'editor-shell-demo', previewHeight: 660, installCommand: 'pnpm --filter @forge/studio dev', code: { files: [PLACEHOLDER_CODE] } },
         { id: 'settings-system-demo', title: 'Settings System', summary: 'Data-driven settings with inheritance, scopes, and code generation.', demoId: 'settings-system-demo', previewHeight: 520, code: { files: [PLACEHOLDER_CODE] } },
+        { id: 'studio-workbench-demo', title: 'Studio Workbench (Mock)', summary: 'Studio-like shell with two editors, editor-scoped menu contributions, and settings contributions using static mock data.', demoId: 'studio-workbench-demo', previewHeight: 860, code: { files: [PLACEHOLDER_CODE] } },
         { id: 'codebase-agent-strategy-editor', title: 'Codebase Agent Strategy Editor', summary: 'End-to-end strategy editor surface with assistant-aware planning interactions.', demoId: 'codebase-agent-strategy-editor', previewHeight: 780, code: { files: [PLACEHOLDER_CODE] } },
       ],
     },

@@ -17,3 +17,19 @@
 **Decision**: Support pasting .env content (KEY=VALUE lines) into Env workspace to populate target/mode inputs.
 
 **Rationale**: User should be able to copy .env and paste into inputs for whatever scope (local/dev/prod) and target.
+
+## DE-04: API Read Returns All Keys (Including Empty)
+
+**Decision**: Read API returns all keys—manifest + discovered—including keys with no value. Enables .env.example setup and filling in missing values.
+
+**Rationale**: User needs to see and edit keys that lack values; scope to mode (local); provenance included.
+
+## DE-05: Write Scoped by Mode; Validate After
+
+**Decision**: Write updates the file for the given mode (.env.local, .env.development.local, .env.production.local). API validates after write and returns readiness.
+
+**Rationale**: Safer; single target per request; client gets immediate feedback.
+
+## DE-06: Secrets Plain Text; Single Target
+
+**Decision**: No masking/redaction for now. Single target per request (not batch). Validate after write returns readiness (ok, missing, conflicts).

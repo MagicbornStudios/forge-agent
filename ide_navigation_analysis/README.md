@@ -17,9 +17,9 @@ Repo Studio should feel like VSCode/Cursor when navigating the project: search (
 | Document | Purpose |
 |----------|---------|
 | [PRD.md](PRD.md) | Vision; features; scopes |
+| [DECISIONS.md](DECISIONS.md) | IN-01–IN-04: Navigator, server-side search, Electron-first, no default exclude |
 | [GAPS.md](GAPS.md) | Current vs target |
-| [DECISIONS.md](DECISIONS.md) | Key choices |
-| [FINDINGS.md](FINDINGS.md) | Research; comparable UIs |
+| [FINDINGS.md](FINDINGS.md) | Current state; comparable UIs |
 
 ## Config
 
