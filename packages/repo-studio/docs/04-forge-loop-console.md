@@ -16,11 +16,23 @@ RepoStudio mirrors Forge Loop cadence so humans and coding agents can resume wor
 
 - show current phase/plan status from `forge-loop progress --json`
 - show next command and reason
+- show active loop + available loop switch targets from `.planning/LOOPS.json`
 - show planning health chips:
   - summaries
   - verifications
   - open decisions/errors/tasks
 - provide one-click copy for next command
+- expose Loop Assistant and Codex Assistant as separate workspaces
+- expose read-first Diff workspace for attach-to-assistant context
+
+## Multi-loop controls
+
+Use CLI + UI together:
+
+1. `forge-loop loop:new <loop-id> --scope <paths>`
+2. `forge-loop loop:use <loop-id>`
+3. Switch loops in the Planning workspace selector as needed.
+4. Verify loop routing: `forge-loop progress --loop <loop-id> --json`
 
 ## Operator pattern
 

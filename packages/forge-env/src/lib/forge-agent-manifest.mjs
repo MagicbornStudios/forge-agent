@@ -61,6 +61,10 @@ export const SECTION_META = {
       title: 'Cross-origin platform auth',
       description: 'Allowed origins for Platform -> Studio credentialed requests.',
     },
+    docs: {
+      title: 'Docs links',
+      description: 'Canonical docs app URL used for outbound docs links.',
+    },
   },
   platform: {
     runtime: {
@@ -432,6 +436,14 @@ export const ENV_MANIFEST = [
     exampleDefault: 'http://localhost:3001',
   },
   {
+    app: 'studio',
+    key: 'NEXT_PUBLIC_DOCS_APP_URL',
+    section: 'docs',
+    description: 'Canonical docs app URL used by Studio outbound docs links.',
+    exampleDefault: 'http://localhost:3002/docs',
+    requiredIn: ['preview', 'production'],
+  },
+  {
     app: 'platform',
     key: 'NEXT_PUBLIC_STUDIO_APP_URL',
     section: 'runtime',
@@ -452,6 +464,14 @@ export const ENV_MANIFEST = [
     section: 'analytics',
     description: 'PostHog host URL.',
     exampleDefault: 'https://us.i.posthog.com',
+  },
+  {
+    app: 'platform',
+    key: 'NEXT_PUBLIC_DOCS_APP_URL',
+    section: 'docs',
+    description: 'Canonical docs app URL used by Platform outbound docs links.',
+    exampleDefault: 'http://localhost:3002/docs',
+    requiredIn: ['preview', 'production'],
   },
   {
     app: 'platform',

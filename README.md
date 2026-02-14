@@ -27,7 +27,7 @@ If env keys are missing, the **env portal** opens in your browser. Fill required
 ## What to expect
 
 - **Studio UI:** Project switcher, Dialogue/Character editors, right-rail Inspector + Chat
-- **In-app docs:** [http://localhost:3000/docs](http://localhost:3000/docs) — how-tos, architecture, AI
+- **Docs app:** [http://localhost:3002/docs](http://localhost:3002/docs) - showcase docs with Developer + Developer (internal) in local dev
 - **Payload types:** Run `pnpm payload:types` after collection changes
 
 ---
@@ -125,7 +125,7 @@ pnpm forge-env:doctor -- --mode headless --strict
 | **Architecture** | [architecture/00-index.mdx](docs/architecture/00-index.mdx) |
 | **AI architecture** | [ai/00-index.mdx](docs/ai/00-index.mdx) |
 | **Agent artifacts** | [18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx) |
-| **In-app** | [Docs](/docs) in Studio sidebar or http://localhost:3000/docs |
+| **Docs app** | http://localhost:3002/docs |
 
 ---
 
@@ -133,9 +133,10 @@ pnpm forge-env:doctor -- --mode headless --strict
 
 | Command | When to run |
 |--------|-------------|
-| `pnpm dev` | Start Studio (default from repo root). Portal opens if keys missing. |
+| `pnpm dev` | Start Studio + Docs app from repo root. Portal opens if keys missing. |
+| `pnpm dev:docs` | Start dedicated Docs app (port 3002). |
 | `pnpm dev:repo-studio` | Start internal RepoStudio app shell (port 3010). |
-| `pnpm dev:platform` | Start Platform (customer app, landing, docs). |
+| `pnpm dev:platform` | Start Platform customer app (landing, catalog, billing). |
 | `pnpm build` | Build Studio (e.g. before deploy or to verify). |
 | `pnpm test` | Run tests (Studio). |
 | `pnpm payload:types` | After changing Payload collections. |
@@ -184,4 +185,5 @@ pnpm --filter @forge/consumer-example dev
 ```
 
 See `examples/consumer/README.md` for environment setup.
+
 

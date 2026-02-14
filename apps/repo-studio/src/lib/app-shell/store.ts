@@ -26,6 +26,7 @@ type RepoStudioShellState = {
   hiddenPanelIds: string[];
   commandView: RepoCommandView;
   attachedPlanningDocIds: string[];
+  activeLoopId: string;
   activeRunId: string | null;
   activeRun: RepoRunRef | null;
 
@@ -46,13 +47,14 @@ type RepoStudioShellState = {
   setAttachedPlanningDocIds: (docIds: string[]) => void;
   attachPlanningDocId: (docId: string) => void;
   detachPlanningDocId: (docId: string) => void;
+  setActiveLoopId: (loopId: string) => void;
 
   setActiveRun: (run: RepoRunRef | null) => void;
 };
 
 const DEFAULT_ROUTE: RepoStudioRouteState = {
   activeWorkspaceId: 'planning',
-  openWorkspaceIds: ['planning', 'env', 'commands', 'docs', 'assistant'],
+  openWorkspaceIds: ['planning', 'env', 'commands', 'docs', 'loop-assistant', 'codex-assistant', 'diff'],
 };
 
 export const useRepoStudioShellStore = create<RepoStudioShellState>()(
@@ -64,6 +66,7 @@ export const useRepoStudioShellStore = create<RepoStudioShellState>()(
       hiddenPanelIds: [],
       commandView: DEFAULT_COMMAND_VIEW,
       attachedPlanningDocIds: [],
+      activeLoopId: 'default',
       activeRunId: null,
       activeRun: null,
 
@@ -155,6 +158,12 @@ export const useRepoStudioShellStore = create<RepoStudioShellState>()(
         }));
       },
 
+      setActiveLoopId: (loopId) => {
+        const normalized = String(loopId || '').trim().toLowerCase();
+        if (!normalized) return;
+        set({ activeLoopId: normalized });
+      },
+
       setActiveRun: (run) =>
         set({
           activeRun: run,
@@ -163,15 +172,15 @@ export const useRepoStudioShellStore = create<RepoStudioShellState>()(
     }),
     {
       name: 'forge:repo-studio-shell:v1',
-      version: 1,
+      version: 2,
       partialize: (state) => ({
         route: state.route,
         dockLayouts: state.dockLayouts,
         hiddenPanelIds: state.hiddenPanelIds,
         commandView: state.commandView,
         attachedPlanningDocIds: state.attachedPlanningDocIds,
+        activeLoopId: state.activeLoopId,
       }),
     },
   ),
 );
-

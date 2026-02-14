@@ -23,3 +23,6 @@
 - [x] RepoStudio app builds emitted Dockview dependency warnings (`Can't resolve dockview CSS` in drifted installs and bundler warning around dynamic resolver usage).
   - Attempt: ad-hoc `createRequire` resolution in app route.
   - Resolution: added deterministic filesystem-based dependency health checks, exposed `/api/repo/runtime/deps`, extended `forge-repo-studio doctor`, and centralized editor style imports via `packages/shared/src/shared/styles/editor-surface.css`.
+- [x] RepoStudio app failed with `Can't resolve 'tw-animate-css'` from `apps/repo-studio/app/globals.css`.
+  - Attempt: rely on workspace hoisting from other apps.
+  - Resolution: added app-local dependency declarations (`tw-animate-css`, `tailwindcss-animate`) plus app-local `tailwindcss` dev dependency in `apps/repo-studio/package.json`, then revalidated `pnpm --filter @forge/repo-studio-app build`.

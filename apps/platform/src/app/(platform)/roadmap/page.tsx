@@ -1,6 +1,6 @@
-import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { resolveDocsAppUrl } from '@/lib/env';
 import {
   ROADMAP_CATEGORIES,
   ROADMAP_ITEMS,
@@ -16,6 +16,7 @@ function statusVariant(status: RoadmapStatus): 'default' | 'secondary' | 'outlin
 }
 
 export default function RoadmapPage() {
+  const docsHref = resolveDocsAppUrl();
   const byCategory = ROADMAP_CATEGORIES.map((category) => ({
     ...category,
     items: ROADMAP_ITEMS.filter((item) => item.status === category.key),
@@ -27,9 +28,9 @@ export default function RoadmapPage() {
         <h1 className="text-3xl font-semibold tracking-tight">Product roadmap</h1>
         <p className="text-muted-foreground">
           Platform direction for docs, catalog, editor tooling, and creator commerce. See{' '}
-          <Link href="/docs" className="text-primary hover:underline">
+          <a href={docsHref} target="_blank" rel="noreferrer" className="text-primary hover:underline">
             documentation
-          </Link>{' '}
+          </a>{' '}
           for implementation details.
         </p>
         <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 text-left text-sm text-muted-foreground">

@@ -1,6 +1,6 @@
-import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CHANGELOG_ENTRIES } from '@/lib/changelog-data';
+import { resolveDocsAppUrl } from '@/lib/env';
 
 function formatDate(iso: string): string {
   const date = new Date(`${iso}T00:00:00`);
@@ -12,15 +12,17 @@ function formatDate(iso: string): string {
 }
 
 export default function ChangelogPage() {
+  const docsHref = resolveDocsAppUrl();
+
   return (
     <div className="space-y-10 py-4">
       <div className="mx-auto max-w-3xl space-y-4 text-center">
         <h1 className="text-3xl font-semibold tracking-tight">Changelog</h1>
         <p className="text-muted-foreground">
           Release history and highlights. See{' '}
-          <Link href="/docs" className="text-primary hover:underline">
+          <a href={docsHref} target="_blank" rel="noreferrer" className="text-primary hover:underline">
             docs
-          </Link>{' '}
+          </a>{' '}
           for implementation notes.
         </p>
       </div>

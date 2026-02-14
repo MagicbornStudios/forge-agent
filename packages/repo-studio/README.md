@@ -37,7 +37,7 @@ npx @forge/repo-studio open --view planning --mode headless
 
 ## Commands
 
-- `forge-repo-studio open [--profile ...] [--mode ...] [--view planning|env|commands|docs|assistant] [--port ...] [--app-runtime|--package-runtime] [--reuse|--no-reuse] [--detach|--foreground] [--legacy-ui]`
+- `forge-repo-studio open [--profile ...] [--mode ...] [--view planning|env|commands|docs|loop-assistant|codex-assistant|diff] [--port ...] [--app-runtime|--package-runtime] [--reuse|--no-reuse] [--detach|--foreground] [--legacy-ui]`
 - `forge-repo-studio doctor`
 - `forge-repo-studio commands-list`
 - `forge-repo-studio commands-toggle <command-id> [--enable|--disable]`
@@ -65,6 +65,12 @@ RepoStudio follows the same mandatory cadence as Forge Loop:
 5. `forge-loop verify-work <phase> --strict`
 6. `forge-loop progress`
 7. `forge-loop sync-legacy`
+
+Multi-loop helpers:
+
+- `forge-loop loop:list`
+- `forge-loop loop:new <loop-id> --scope <paths>`
+- `forge-loop loop:use <loop-id>`
 
 ## Policy Defaults
 
@@ -103,7 +109,7 @@ Codex-first assistant example:
       "enabled": true,
       "cliCommand": "codex",
       "authPolicy": "chatgpt-strict",
-      "mode": "exec",
+      "mode": "app-server",
       "appServerUrl": "ws://127.0.0.1:3789",
       "defaultModel": "gpt-5",
       "approvalMode": "on-request",

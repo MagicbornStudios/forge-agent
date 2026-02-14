@@ -7,8 +7,7 @@ import { SHOWCASE_CATALOG_DATA } from '../packages/shared/src/shared/components/
 import visibility from '../packages/shared/src/shared/components/docs/showcase/_showcase-visibility.json' with { type: 'json' };
 
 const repoRoot = process.cwd();
-const studioShowcaseDir = path.join(repoRoot, 'docs/components/showcase');
-const platformShowcaseDir = path.join(repoRoot, 'apps/platform/content/docs/components/showcase');
+const docsShowcaseDir = path.join(repoRoot, 'apps/docs/content/docs/components/showcase');
 const internalOnlySet = new Set(Array.isArray(visibility.internalOnly) ? visibility.internalOnly : []);
 
 function ensureDir(dir) {
@@ -31,52 +30,26 @@ function toAnchor(value) {
     .replace(/^-+|-+$/g, '');
 }
 
-function renderSectionEntries(entries, rendererTag, includeInternalBadge) {
+function renderSectionEntries(entries) {
   if (entries.length === 0) {
-    return 'No entries are published for this audience in this section.';
+    return 'No entries are published for this section.';
   }
 
   return entries
-    .map((entry) => {
-      const internalMarker = includeInternalBadge && internalOnlySet.has(entry.id)
-        ? '\n\n> Internal-only showcase entry.'
-        : '';
-      return `## ${entry.title} [#${toAnchor(entry.title)}]
+    .map((entry) => `## ${entry.title} [#${toAnchor(entry.title)}]
 
-${entry.summary}${internalMarker}
+${entry.summary}
 
-<${rendererTag} ${rendererTag === 'ComponentPreview' ? 'name' : 'id'}="${entry.id}" />`;
-    })
+<ComponentDemo id="${entry.id}" />`)
     .join('\n\n');
 }
 
-function sectionHeader(section, countLabel) {
-  return `> ${countLabel}: **${section.entries.length}**`;
+function sectionHeader(section) {
+  return `> Entries: **${section.entries.length}**`;
 }
 
-function generateStudioPages() {
-  ensureDir(studioShowcaseDir);
-  for (const section of SHOWCASE_CATALOG_DATA.sections) {
-    const body = `---
-title: ${section.title}
-description: ${section.description}
----
-
-${sectionHeader(section, 'Studio entries')}
-
-${renderSectionEntries(section.entries, 'ComponentPreview', true)}
-`;
-    writeText(path.join(studioShowcaseDir, `${section.id}.mdx`), body);
-  }
-
-  writeJson(path.join(studioShowcaseDir, 'meta.json'), {
-    title: 'Showcase',
-    pages: SHOWCASE_CATALOG_DATA.sections.map((section) => section.id),
-  });
-}
-
-function generatePlatformPages() {
-  ensureDir(platformShowcaseDir);
+function generateDocsPages() {
+  ensureDir(docsShowcaseDir);
   for (const section of SHOWCASE_CATALOG_DATA.sections) {
     const visibleEntries = section.entries.filter((entry) => !internalOnlySet.has(entry.id));
     const body = `---
@@ -86,23 +59,21 @@ description: ${section.description}
 
 import { ComponentDemo } from '@/components/docs/ComponentDemo';
 
-${sectionHeader({ ...section, entries: visibleEntries }, 'Platform entries')}
+${sectionHeader({ ...section, entries: visibleEntries })}
 
-${renderSectionEntries(visibleEntries, 'ComponentDemo', false)}
+${renderSectionEntries(visibleEntries)}
 `;
-    writeText(path.join(platformShowcaseDir, `${section.id}.mdx`), body);
+    writeText(path.join(docsShowcaseDir, `${section.id}.mdx`), body);
   }
 
-  writeJson(path.join(platformShowcaseDir, 'meta.json'), {
+  writeJson(path.join(docsShowcaseDir, 'meta.json'), {
     title: 'Showcase',
     pages: SHOWCASE_CATALOG_DATA.sections.map((section) => section.id),
   });
 }
 
 function main() {
-  generateStudioPages();
-  generatePlatformPages();
-
+  generateDocsPages();
   process.stdout.write(
     `[generate-shared-showcase-docs] generated sections=${SHOWCASE_CATALOG_DATA.sections.length}\n`,
   );

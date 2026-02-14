@@ -52,7 +52,9 @@ function json(res, statusCode, payload) {
 function normalizeView(view) {
   const normalized = String(view || 'env').toLowerCase();
   if (normalized === 'forge-loop') return 'planning';
-  if (['planning', 'env', 'commands', 'docs', 'assistant'].includes(normalized)) return normalized;
+  if (['planning', 'env', 'commands', 'docs', 'loop-assistant', 'codex-assistant', 'diff'].includes(normalized)) {
+    return normalized;
+  }
   return 'env';
 }
 

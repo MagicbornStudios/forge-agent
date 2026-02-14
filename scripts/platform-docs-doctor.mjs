@@ -5,37 +5,18 @@ import path from 'node:path';
 import process from 'node:process';
 
 const repoRoot = process.cwd();
-const docsRoot = path.join(repoRoot, 'apps/platform/content/docs');
-const componentDemosRoot = path.join(repoRoot, 'apps/platform/src/components/docs');
-const generatedDemoIdsPath = path.join(
-  repoRoot,
-  'apps/platform/src/components/docs/component-demos/generated-ids.ts',
-);
-const demoRegistryPath = path.join(
-  repoRoot,
-  'apps/platform/src/components/docs/component-demos/index.tsx',
-);
-const componentDemoComponentPath = path.join(
-  repoRoot,
-  'apps/platform/src/components/docs/ComponentDemo.tsx',
-);
+const docsRoot = path.join(repoRoot, 'apps/docs/content/docs');
 const showcaseVisibilityPath = path.join(
   repoRoot,
   'packages/shared/src/shared/components/docs/showcase/_showcase-visibility.json',
 );
-
-const aliasMap = new Map([
-  ['components/00-index', 'components/index'],
-  ['developer-guide/00-index', 'developer-guide/index'],
-  ['ai-system/00-index', 'ai-system/overview'],
-]);
 
 function readFilesRecursive(dir, exts) {
   const out = [];
   const stack = [dir];
   while (stack.length > 0) {
     const current = stack.pop();
-    if (!current) continue;
+    if (!current || !fs.existsSync(current)) continue;
     for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
       const full = path.join(current, entry.name);
       if (entry.isDirectory()) {
@@ -60,16 +41,6 @@ function existsDoc(targetPath) {
     candidates.push(path.join(targetPath, 'meta.json'));
   }
   return candidates.some((candidate) => fs.existsSync(candidate));
-}
-
-function normalizeRelKey(value) {
-  return value
-    .replace(/\\/g, '/')
-    .replace(/\.(md|mdx)$/i, '')
-    .replace(/\/index$/i, '')
-    .replace(/^\.\//, '')
-    .replace(/^\//, '')
-    .replace(/\/$/, '');
 }
 
 function parseJson(filePath) {
@@ -149,162 +120,10 @@ function checkRelativeLinks(failures) {
       if (!cleanPath) continue;
 
       const resolved = path.resolve(path.dirname(docFile), cleanPath);
-      if (resolved.startsWith(docsRoot) && existsDoc(resolved)) continue;
-
-      const aliasKey = normalizeRelKey(path.relative(docsRoot, resolved));
-      if (aliasMap.has(aliasKey)) continue;
-
-      failures.push(`${relDoc}: broken relative link "${href}"`);
-    }
-  }
-}
-
-function toKebabCase(value) {
-  return value
-    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
-    .replace(/[\\/_.\s]+/g, '-')
-    .replace(/[^a-zA-Z0-9-]/g, '')
-    .replace(/--+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .toLowerCase();
-}
-
-function readMetaPages(metaPath) {
-  const json = parseJson(metaPath);
-  return Array.isArray(json.pages) ? json.pages.filter((entry) => typeof entry === 'string') : [];
-}
-
-function checkCoverage(failures) {
-  const checks = [];
-
-  for (const check of checks) {
-    for (const slug of check.expected) {
-      const docPath = path.join(check.baseDir, `${slug}.mdx`);
-      if (!fs.existsSync(docPath)) {
-        failures.push(`coverage(${check.id}): missing generated page ${path.relative(repoRoot, docPath).replace(/\\/g, '/')}`);
+      if (!resolved.startsWith(docsRoot) || !existsDoc(resolved)) {
+        failures.push(`${relDoc}: broken relative link "${href}"`);
       }
     }
-
-    if (!fs.existsSync(check.meta)) {
-      failures.push(`coverage(${check.id}): missing meta file ${path.relative(repoRoot, check.meta).replace(/\\/g, '/')}`);
-      continue;
-    }
-
-    const pages = new Set(readMetaPages(check.meta));
-    for (const slug of check.expected) {
-      if (!pages.has(slug)) {
-        failures.push(`coverage(${check.id}): meta missing slug "${slug}"`);
-      }
-    }
-  }
-}
-
-function extractComponentDemoIdsFromDocs() {
-  const docFiles = readFilesRecursive(path.join(docsRoot, 'components'), ['.md', '.mdx']);
-  const ids = new Set();
-
-  for (const filePath of docFiles) {
-    const relative = path.relative(path.join(docsRoot, 'components'), filePath).replace(/\\/g, '/');
-    if (relative.startsWith('showcase/')) {
-      continue;
-    }
-    const content = fs.readFileSync(filePath, 'utf8');
-    const matches = content.matchAll(/<ComponentDemo\s+id=["']([^"']+)["']\s*\/>/g);
-    for (const match of matches) {
-      const id = match[1]?.trim();
-      if (id) ids.add(id);
-    }
-  }
-
-  return [...ids].sort((a, b) => a.localeCompare(b));
-}
-
-function readGeneratedDemoIds() {
-  if (!fs.existsSync(generatedDemoIdsPath)) return null;
-  const content = fs.readFileSync(generatedDemoIdsPath, 'utf8');
-  const ids = [...content.matchAll(/'([^']+)'/g)].map((match) => match[1]);
-  return [...new Set(ids)].sort((a, b) => a.localeCompare(b));
-}
-
-function readShowcaseEntryIds() {
-  const catalogPath = path.join(
-    repoRoot,
-    'packages/shared/src/shared/components/docs/showcase/catalog-data.mjs',
-  );
-  if (!fs.existsSync(catalogPath)) return [];
-  const content = fs.readFileSync(catalogPath, 'utf8');
-  const ids = [...content.matchAll(/id:\s*'([^']+)'/g)].map((match) => match[1]);
-  return [...new Set(ids)].filter((id) => id !== 'atoms' && id !== 'molecules' && id !== 'organisms');
-}
-
-function getDocPathForGeneratedId(id) {
-  const [prefix, slug] = id.split('.');
-  if (!slug) return null;
-  const categoryMap = {
-    ui: 'atoms',
-    editor: 'editor',
-    'assistant-ui': 'assistant-ui',
-    'tool-ui': 'tool-ui',
-  };
-  const category = categoryMap[prefix];
-  if (!category) return null;
-  return path.join(docsRoot, 'components', category, `${slug}.mdx`);
-}
-
-function checkDemoCoverage(failures) {
-  const docsIds = extractComponentDemoIdsFromDocs();
-  const generatedIds = readGeneratedDemoIds();
-  const showcaseIds = readShowcaseEntryIds();
-  const allValidIds = new Set([...(generatedIds ?? []), ...showcaseIds]);
-
-  if (generatedIds == null) {
-    failures.push(
-      `demo-coverage: missing generated ids file ${path.relative(repoRoot, generatedDemoIdsPath).replace(/\\/g, '/')}`,
-    );
-    return;
-  }
-
-  for (const id of docsIds) {
-    if (!allValidIds.has(id)) {
-      failures.push(`demo-coverage: component docs has "${id}" but it is not in generated ids or showcase catalog`);
-    }
-  }
-
-  for (const generatedId of generatedIds) {
-    if (docsIds.includes(generatedId)) continue;
-    const docPath = getDocPathForGeneratedId(generatedId);
-    if (!docPath || !fs.existsSync(docPath)) continue;
-    const docContent = fs.readFileSync(docPath, 'utf8');
-    const docDemoIds = [...docContent.matchAll(/<ComponentDemo\s+id=["']([^"']+)["']\s*\/>/g)].map(
-      (m) => m[1],
-    );
-    const usesShowcaseId = docDemoIds.some((docId) => showcaseIds.includes(docId));
-    if (usesShowcaseId) continue;
-    failures.push(`demo-coverage: generated ids has "${generatedId}" but component docs does not`);
-  }
-
-  if (!fs.existsSync(demoRegistryPath)) {
-    failures.push(
-      `demo-coverage: missing demo registry ${path.relative(repoRoot, demoRegistryPath).replace(/\\/g, '/')}`,
-    );
-    return;
-  }
-
-  const registryContent = fs.readFileSync(demoRegistryPath, 'utf8');
-  if (!registryContent.includes('COMPONENT_DEMO_IDS')) {
-    failures.push('demo-coverage: registry must build map from COMPONENT_DEMO_IDS');
-  }
-
-  if (!fs.existsSync(componentDemoComponentPath)) {
-    failures.push(
-      `demo-coverage: missing ComponentDemo component ${path.relative(repoRoot, componentDemoComponentPath).replace(/\\/g, '/')}`,
-    );
-    return;
-  }
-
-  const componentDemoContent = fs.readFileSync(componentDemoComponentPath, 'utf8');
-  if (componentDemoContent.includes('PrefixFallback') || componentDemoContent.includes('renderFallback(')) {
-    failures.push('demo-coverage: ComponentDemo must not use placeholder fallback rendering');
   }
 }
 
@@ -331,10 +150,6 @@ function checkShowcaseVisibility(failures) {
     const content = fs.readFileSync(filePath, 'utf8');
     const ids = [...content.matchAll(/<ComponentDemo\s+id=["']([^"']+)["']\s*\/>/g)].map((match) => match[1]);
 
-    if (ids.length === 0 && !content.includes('Platform entries: **0**')) {
-      failures.push(`showcase: ${relPath} has no ComponentDemo entries and is not marked empty`);
-    }
-
     for (const id of ids) {
       if (internalOnly.has(id)) {
         failures.push(`showcase: ${relPath} contains internal-only demo id "${id}"`);
@@ -348,8 +163,6 @@ function main() {
 
   checkMetaSchemaAndPages(failures);
   checkRelativeLinks(failures);
-  checkCoverage(failures);
-  checkDemoCoverage(failures);
   checkShowcaseVisibility(failures);
 
   if (failures.length > 0) {

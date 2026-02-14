@@ -1,6 +1,7 @@
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1']);
 const DEFAULT_OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 const DEFAULT_OPENROUTER_TIMEOUT_MS = 60000;
+const LOCAL_DOCS_FALLBACK_URL = 'http://localhost:3002/docs';
 
 function parsePositiveInt(value: string | undefined, fallback: number): number {
   if (!value) return fallback;
@@ -109,4 +110,19 @@ export function getLocalDevAutoAdminCredentials() {
     email: process.env.NEXT_PUBLIC_LOCAL_DEV_AUTO_ADMIN_EMAIL ?? 'admin@forge.local',
     password: process.env.NEXT_PUBLIC_LOCAL_DEV_AUTO_ADMIN_PASSWORD ?? 'admin12345',
   };
+}
+
+export function resolveDocsAppUrl(): string {
+  const configured = process.env.NEXT_PUBLIC_DOCS_APP_URL?.trim();
+  if (configured && configured.length > 0) {
+    return configured.replace(/\/+$/, '');
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
+    return LOCAL_DOCS_FALLBACK_URL;
+  }
+
+  throw new Error(
+    'NEXT_PUBLIC_DOCS_APP_URL is required outside local development runtime contexts. Run `pnpm env:setup --app studio`.',
+  );
 }

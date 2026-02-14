@@ -1,4 +1,5 @@
 const LOCAL_STUDIO_FALLBACK_URL = 'http://localhost:3000';
+const LOCAL_DOCS_FALLBACK_URL = 'http://localhost:3002/docs';
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1']);
 
 function trimTrailingSlash(url: string): string {
@@ -45,3 +46,17 @@ export function resolveStudioAppUrl(): string {
   );
 }
 
+export function resolveDocsAppUrl(): string {
+  const configured = process.env.NEXT_PUBLIC_DOCS_APP_URL?.trim();
+  if (configured && configured.length > 0) {
+    return trimTrailingSlash(configured);
+  }
+
+  if (isLocalRuntimeFallbackAllowed()) {
+    return LOCAL_DOCS_FALLBACK_URL;
+  }
+
+  throw new Error(
+    'NEXT_PUBLIC_DOCS_APP_URL is required outside local development runtime contexts. Run `pnpm env:setup --app platform`.',
+  );
+}

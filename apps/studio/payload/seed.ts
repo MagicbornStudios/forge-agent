@@ -151,6 +151,7 @@ async function ensurePersonalOrganization(payload: Payload, userId: number, name
 }
 
 const SEED_PROMOTION_TITLE = 'Welcome to Forge';
+const SEED_DOCS_CTA_URL = process.env.NEXT_PUBLIC_DOCS_APP_URL?.trim() || 'http://localhost:3002/docs';
 
 async function ensurePromotion(payload: Payload) {
   const existing = await payload.find({
@@ -164,7 +165,7 @@ async function ensurePromotion(payload: Payload) {
     data: {
       title: SEED_PROMOTION_TITLE,
       active: true,
-      ctaUrl: '/docs',
+      ctaUrl: SEED_DOCS_CTA_URL,
     },
   });
 }

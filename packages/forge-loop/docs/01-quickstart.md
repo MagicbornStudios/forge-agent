@@ -40,6 +40,14 @@ forge-loop doctor
 
 If doctor passes, continue using `forge-loop progress` for next action routing.
 
+## Multi-loop bootstrap (optional)
+
+```bash
+forge-loop loop:new pkg-platform --scope apps/platform --profile forge-agent --runner custom
+forge-loop loop:use pkg-platform
+forge-loop progress --loop pkg-platform --json
+```
+
 For headless runs, validate env readiness first:
 
 ```bash

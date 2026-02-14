@@ -33,7 +33,19 @@ export type PlanningDocEntry = {
   category: 'core' | 'phase';
 };
 
+export type RepoLoopEntry = {
+  id: string;
+  name: string;
+  planningRoot: string;
+  scope: string[];
+  profile: string;
+  runner: string;
+  active: boolean;
+};
+
 export type PlanningSnapshot = {
+  loopId: string;
+  planningRoot: string;
   nextAction: string;
   percent: number;
   rows: PlanningPhaseRow[];
@@ -48,10 +60,19 @@ export type PlanningSnapshot = {
   errorsContent: string;
 };
 
+export type RepoLoopsSnapshot = {
+  indexPath: string;
+  activeLoopId: string;
+  entries: RepoLoopEntry[];
+};
+
 export type RepoStudioSnapshot = {
   commands: RepoCommandEntry[];
   planning: PlanningSnapshot;
+  loops: RepoLoopsSnapshot;
 };
+
+const LOOP_INDEX_RELATIVE_PATH = '.planning/LOOPS.json';
 
 async function readText(filePath: string, fallback = '') {
   try {
@@ -68,6 +89,74 @@ async function readJson<T = unknown>(filePath: string, fallback: T): Promise<T> 
   } catch {
     return fallback;
   }
+}
+
+function normalizeLoopId(loopId: unknown) {
+  return String(loopId || '').trim().toLowerCase();
+}
+
+function planningRootForLoop(loopId: string) {
+  if (loopId === 'default') return '.planning';
+  return `.planning/loops/${loopId}`;
+}
+
+function normalizeLoopEntry(entry: any): RepoLoopEntry | null {
+  const id = normalizeLoopId(entry?.id);
+  if (!id || !/^[a-z0-9][a-z0-9_-]*$/.test(id)) return null;
+  const scope: string[] = Array.isArray(entry?.scope)
+    ? entry.scope.map((item: unknown) => String(item || '').trim()).filter(Boolean)
+    : ['.'];
+  return {
+    id,
+    name: String(entry?.name || id),
+    planningRoot: String(entry?.planningRoot || planningRootForLoop(id)).replace(/\\/g, '/'),
+    scope: scope.length > 0 ? [...new Set(scope)] : ['.'],
+    profile: String(entry?.profile || 'forge-agent'),
+    runner: String(entry?.runner || 'codex'),
+    active: false,
+  };
+}
+
+async function loadLoopIndex(repoRoot: string) {
+  const indexPath = path.join(repoRoot, LOOP_INDEX_RELATIVE_PATH);
+  const onDisk = await readJson<any>(indexPath, null);
+
+  const fallbackDefault: RepoLoopEntry = {
+    id: 'default',
+    name: 'Default Repo Loop',
+    planningRoot: '.planning',
+    scope: ['.'],
+    profile: 'forge-agent',
+    runner: 'codex',
+    active: true,
+  };
+
+  const entriesRaw = Array.isArray(onDisk?.loops) ? onDisk.loops : [];
+  const byId = new Map<string, RepoLoopEntry>();
+  for (const entry of entriesRaw) {
+    const normalized = normalizeLoopEntry(entry);
+    if (!normalized) continue;
+    if (!byId.has(normalized.id)) byId.set(normalized.id, normalized);
+  }
+  if (!byId.has('default')) {
+    byId.set('default', { ...fallbackDefault, active: false });
+  }
+
+  const activeLoopId = normalizeLoopId(onDisk?.activeLoopId) || 'default';
+  const entries = [...byId.values()].sort((a, b) => a.id.localeCompare(b.id));
+  const hasActive = entries.some((entry) => entry.id === activeLoopId);
+  const resolvedActive = hasActive ? activeLoopId : 'default';
+
+  const withActive = entries.map((entry) => ({
+    ...entry,
+    active: entry.id === resolvedActive,
+  }));
+
+  return {
+    indexPath: LOOP_INDEX_RELATIVE_PATH,
+    activeLoopId: resolvedActive,
+    entries: withActive,
+  };
 }
 
 function parseTaskRegistry(content: string): PlanningTaskRow[] {
@@ -136,9 +225,13 @@ function parseProgressPayload(payload: any): { nextAction: string; percent: numb
   };
 }
 
-function runForgeLoopProgressJson(repoRoot: string) {
+function runForgeLoopProgressJson(repoRoot: string, loopId?: string) {
   const cliPath = path.join(repoRoot, 'packages', 'forge-loop', 'src', 'cli.mjs');
-  const result = spawnSync(process.execPath, [cliPath, 'progress', '--json'], {
+  const args = [cliPath, 'progress', '--json'];
+  if (loopId && loopId !== 'default') {
+    args.push('--loop', loopId);
+  }
+  const result = spawnSync(process.execPath, args, {
     cwd: repoRoot,
     encoding: 'utf8',
   });
@@ -152,9 +245,9 @@ function runForgeLoopProgressJson(repoRoot: string) {
   }
 }
 
-async function collectPlanningDocs(repoRoot: string): Promise<PlanningDocEntry[]> {
+async function collectPlanningDocs(repoRoot: string, planningRootRel: string): Promise<PlanningDocEntry[]> {
   const docs: PlanningDocEntry[] = [];
-  const planningRoot = path.join(repoRoot, '.planning');
+  const planningRoot = path.join(repoRoot, planningRootRel);
   const coreFiles = [
     'PROJECT.md',
     'REQUIREMENTS.md',
@@ -198,8 +291,7 @@ async function collectPlanningDocs(repoRoot: string): Promise<PlanningDocEntry[]
     }
 
     for (const file of files) {
-      if (!file.isFile()) continue;
-      if (!file.name.endsWith('.md')) continue;
+      if (!file.isFile() || !file.name.endsWith('.md')) continue;
       const filePath = path.join(phasePath, file.name);
       // eslint-disable-next-line no-await-in-loop
       const content = await readText(filePath, '');
@@ -262,8 +354,7 @@ async function collectWorkspaceScripts(repoRoot: string): Promise<RepoCommandEnt
       continue;
     }
     for (const entry of entries) {
-      if (!entry.isDirectory()) continue;
-      if (entry.name.startsWith('.')) continue;
+      if (!entry.isDirectory() || entry.name.startsWith('.')) continue;
       workspaceDirs.add(path.join(base, entry.name));
     }
   }
@@ -295,8 +386,18 @@ async function collectWorkspaceScripts(repoRoot: string): Promise<RepoCommandEnt
   return [...deduped.values()];
 }
 
-export async function loadRepoStudioSnapshot(repoRoot: string): Promise<RepoStudioSnapshot> {
-  const planningRoot = path.join(repoRoot, '.planning');
+export async function loadRepoStudioSnapshot(
+  repoRoot: string,
+  options: { loopId?: string | null } = {},
+): Promise<RepoStudioSnapshot> {
+  const loops = await loadLoopIndex(repoRoot);
+  const requestedLoopId = normalizeLoopId(options.loopId);
+  const activeLoopId = requestedLoopId && loops.entries.some((entry) => entry.id === requestedLoopId)
+    ? requestedLoopId
+    : loops.activeLoopId;
+  const activeLoop = loops.entries.find((entry) => entry.id === activeLoopId) || loops.entries[0];
+  const planningRootRel = String(activeLoop?.planningRoot || '.planning').replace(/\\/g, '/');
+  const planningRoot = path.join(repoRoot, planningRootRel);
   const phasesRoot = path.join(planningRoot, 'phases');
 
   const [stateContent, decisionsContent, errorsContent, taskRegistryContent, docs, commands] = await Promise.all([
@@ -304,11 +405,11 @@ export async function loadRepoStudioSnapshot(repoRoot: string): Promise<RepoStud
     readText(path.join(planningRoot, 'DECISIONS.md'), ''),
     readText(path.join(planningRoot, 'ERRORS.md'), ''),
     readText(path.join(planningRoot, 'TASK-REGISTRY.md'), ''),
-    collectPlanningDocs(repoRoot),
+    collectPlanningDocs(repoRoot, planningRootRel),
     collectWorkspaceScripts(repoRoot),
   ]);
 
-  const progressPayload = runForgeLoopProgressJson(repoRoot);
+  const progressPayload = runForgeLoopProgressJson(repoRoot, activeLoopId);
   const parsedProgress = parseProgressPayload(progressPayload || {});
 
   const [summaries, verifications] = await Promise.all([
@@ -318,7 +419,17 @@ export async function loadRepoStudioSnapshot(repoRoot: string): Promise<RepoStud
 
   return {
     commands,
+    loops: {
+      ...loops,
+      activeLoopId,
+      entries: loops.entries.map((entry) => ({
+        ...entry,
+        active: entry.id === activeLoopId,
+      })),
+    },
     planning: {
+      loopId: activeLoopId,
+      planningRoot: planningRootRel,
       nextAction: parsedProgress.nextAction,
       percent: parsedProgress.percent,
       rows: parsedProgress.rows,

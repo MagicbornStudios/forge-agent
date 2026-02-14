@@ -31,9 +31,15 @@ export const REPO_EDITOR_PANEL_SPECS: RepoEditorPanelSpec[] = [
     rail: 'right',
   },
   {
-    id: 'assistant',
-    label: 'Assistant',
-    key: 'panel.visible.repo-assistant',
+    id: 'loop-assistant',
+    label: 'Loop Assistant',
+    key: 'panel.visible.repo-loop-assistant',
+    rail: 'right',
+  },
+  {
+    id: 'codex-assistant',
+    label: 'Codex Assistant',
+    key: 'panel.visible.repo-codex-assistant',
     rail: 'right',
   },
   {
@@ -48,6 +54,12 @@ export const REPO_EDITOR_PANEL_SPECS: RepoEditorPanelSpec[] = [
     key: 'panel.visible.repo-terminal',
     rail: 'bottom',
   },
+  {
+    id: 'diff',
+    label: 'Diff',
+    key: 'panel.visible.repo-diff',
+    rail: 'bottom',
+  },
 ];
 
 const PANEL_ID_BY_KEY = new Map(REPO_EDITOR_PANEL_SPECS.map((spec) => [spec.key, spec.id]));
@@ -55,4 +67,3 @@ const PANEL_ID_BY_KEY = new Map(REPO_EDITOR_PANEL_SPECS.map((spec) => [spec.key,
 export function panelIdFromVisibilityKey(key: string) {
   return PANEL_ID_BY_KEY.get(String(key || '').trim()) || null;
 }
-

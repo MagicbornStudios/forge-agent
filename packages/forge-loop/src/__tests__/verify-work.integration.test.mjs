@@ -20,7 +20,7 @@ test('buildVerificationCommandPlan selects matrix commands by changed paths', ()
         tests: true,
       },
     },
-    ['apps/platform/content/docs/index.mdx', 'packages/shared/src/index.ts'],
+    ['apps/docs/content/docs/components/index.mdx', 'packages/shared/src/index.ts'],
   );
 
   const rendered = commands.map((item) => `${item.command} ${item.args.join(' ')}`);
@@ -70,7 +70,7 @@ test('verify-work emits expected check matrix in command output', () => {
   const firstPlanPath = path.join(phaseDir, firstPlan);
   const planContent = readFile(firstPlanPath).replace(
     'files_modified: []',
-    "files_modified: ['apps/platform/content/docs/index.mdx', 'packages/shared/src/index.ts']",
+    "files_modified: ['apps/docs/content/docs/components/index.mdx', 'packages/shared/src/index.ts']",
   );
   fs.writeFileSync(firstPlanPath, planContent, 'utf8');
 

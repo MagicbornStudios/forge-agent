@@ -7,16 +7,17 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { getStudioApiUrl } from '@/lib/api/studio';
-
-const navLinks = [
-  { href: '/docs', label: 'Docs', icon: BookOpen },
-  { href: '/catalog', label: 'Catalog', icon: LayoutDashboard },
-  { href: '/pricing', label: 'Pricing', icon: CreditCard },
-] as const;
+import { resolveDocsAppUrl } from '@/lib/env';
 
 export function PlatformHeader() {
   const pathname = usePathname();
   const { user } = useAuth();
+  const docsHref = resolveDocsAppUrl();
+  const navLinks = [
+    { href: docsHref, label: 'Docs', icon: BookOpen, external: true },
+    { href: '/catalog', label: 'Catalog', icon: LayoutDashboard, external: false },
+    { href: '/pricing', label: 'Pricing', icon: CreditCard, external: false },
+  ] as const;
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/70 bg-background/95 backdrop-blur">
@@ -25,21 +26,37 @@ export function PlatformHeader() {
           Forge Platform
         </Link>
         <nav className="hidden min-w-0 items-center gap-1 md:flex">
-          {navLinks.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                'inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors',
-                pathname?.startsWith(href)
-                  ? 'bg-muted font-medium text-foreground'
-                  : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
-              )}
-            >
-              <Icon className="size-4" />
-              <span>{label}</span>
-            </Link>
-          ))}
+          {navLinks.map(({ href, label, icon: Icon, external }) => {
+            const active = !external && pathname?.startsWith(href);
+            const linkClass = cn(
+              'inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors',
+              active
+                ? 'bg-muted font-medium text-foreground'
+                : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
+            );
+
+            if (external) {
+              return (
+                <a
+                  key={href}
+                  href={href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={linkClass}
+                >
+                  <Icon className="size-4" />
+                  <span>{label}</span>
+                </a>
+              );
+            }
+
+            return (
+              <Link key={href} href={href} className={linkClass}>
+                <Icon className="size-4" />
+                <span>{label}</span>
+              </Link>
+            );
+          })}
         </nav>
         <div className="flex items-center gap-2">
           {user ? (

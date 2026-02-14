@@ -9,6 +9,8 @@ import type { PlanningDocEntry } from '@/lib/repo-data';
 import { RepoAssistantPanel } from '@/components/RepoAssistantPanel';
 
 export interface AssistantWorkspaceProps {
+  title: string;
+  editorTarget: 'loop-assistant' | 'codex-assistant';
   attachedDocs: PlanningDocEntry[];
   assistantContext: string;
   onDetachDoc: (docId: string) => void;
@@ -17,19 +19,42 @@ export interface AssistantWorkspaceProps {
 }
 
 export function AssistantWorkspace({
+  title,
+  editorTarget,
   attachedDocs,
   assistantContext,
   onDetachDoc,
   onCopyText,
   onClearAttachments,
 }: AssistantWorkspaceProps) {
+  const [allowExecFallback, setAllowExecFallback] = React.useState(false);
+  const apiUrl = React.useMemo(() => {
+    const params = new URLSearchParams();
+    params.set('editor', editorTarget);
+    if (allowExecFallback) params.set('allowExecFallback', 'true');
+    return `/api/assistant-chat?${params.toString()}`;
+  }, [allowExecFallback, editorTarget]);
+
   return (
     <div className="h-full min-h-0 space-y-3 p-2">
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Attached Planning Context</CardTitle>
+          <CardTitle className="text-sm">{title} Context</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <span>editor: {editorTarget}</span>
+            {editorTarget === 'codex-assistant' ? (
+              <label className="inline-flex items-center gap-1">
+                <input
+                  type="checkbox"
+                  checked={allowExecFallback}
+                  onChange={(event) => setAllowExecFallback(event.target.checked)}
+                />
+                Allow exec fallback
+              </label>
+            ) : null}
+          </div>
           <div className="flex flex-wrap gap-2">
             {attachedDocs.length === 0 ? (
               <span className="text-xs text-muted-foreground">No planning docs attached.</span>
@@ -64,6 +89,7 @@ export function AssistantWorkspace({
 
       <div className="h-[52vh] min-h-0 rounded-md border border-border bg-background">
         <RepoAssistantPanel
+          apiUrl={apiUrl}
           className="h-full"
           composerLeading={attachedDocs.length > 0 ? (
             <div className="px-2 pt-2 text-xs text-muted-foreground">
@@ -75,4 +101,3 @@ export function AssistantWorkspace({
     </div>
   );
 }
-

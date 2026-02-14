@@ -10,6 +10,7 @@ export default async function Page() {
     <RepoStudioShell
       commands={snapshot.commands}
       planning={snapshot.planning}
+      loops={snapshot.loops}
     />
   );
 }

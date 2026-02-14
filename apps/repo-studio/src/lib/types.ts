@@ -1,4 +1,12 @@
-export const REPO_WORKSPACE_IDS = ['planning', 'env', 'commands', 'docs', 'assistant'] as const;
+export const REPO_WORKSPACE_IDS = [
+  'planning',
+  'env',
+  'commands',
+  'docs',
+  'loop-assistant',
+  'codex-assistant',
+  'diff',
+] as const;
 export type RepoWorkspaceId = (typeof REPO_WORKSPACE_IDS)[number];
 
 export const REPO_COMMAND_VIEW_TABS = ['recommended', 'all', 'blocked'] as const;
@@ -19,4 +27,3 @@ export type RepoRunRef = {
   id: string;
   stopPath: string;
 };
-

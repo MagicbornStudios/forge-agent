@@ -23,7 +23,7 @@ export const DEFAULT_REPO_STUDIO_CONFIG = {
     terminalAllowlistedOnly: true,
   },
   views: {
-    order: ['planning', 'env', 'commands', 'docs', 'assistant'],
+    order: ['planning', 'env', 'commands', 'docs', 'loop-assistant', 'codex-assistant', 'diff'],
     hidden: [],
     defaultView: 'planning',
   },
@@ -34,6 +34,8 @@ export const DEFAULT_REPO_STUDIO_CONFIG = {
   },
   assistant: {
     enabled: true,
+    defaultEditor: 'loop-assistant',
+    editors: ['loop-assistant', 'codex-assistant'],
     routeMode: 'codex',
     routePath: '/api/assistant-chat',
     defaultModel: 'gpt-5',
@@ -43,7 +45,7 @@ export const DEFAULT_REPO_STUDIO_CONFIG = {
       enabled: true,
       cliCommand: 'codex',
       authPolicy: 'chatgpt-strict',
-      mode: 'exec',
+      mode: 'app-server',
       appServerUrl: 'ws://127.0.0.1:3789',
       defaultModel: 'gpt-5',
       approvalMode: 'on-request',
@@ -63,6 +65,10 @@ export const DEFAULT_REPO_STUDIO_CONFIG = {
       phasesDir: '.planning/phases',
     },
   },
+  loops: {
+    defaultLoopId: 'default',
+    indexPath: '.planning/LOOPS.json',
+  },
 };
 
 export const DEFAULT_REPO_STUDIO_LOCAL_OVERRIDES = {
@@ -79,6 +85,9 @@ export const DEFAULT_REPO_STUDIO_LOCAL_OVERRIDES = {
   recentRuns: [],
   runtime: {
     lastView: 'planning',
+  },
+  loops: {
+    activeLoopId: 'default',
   },
 };
 
@@ -122,6 +131,14 @@ function normalizeConfigShape(config) {
         planningRoot: loop.planningRoot || DEFAULT_REPO_STUDIO_CONFIG.loop.paths.planningRoot,
         phasesDir: loop.phasesDir || DEFAULT_REPO_STUDIO_CONFIG.loop.paths.phasesDir,
       },
+    };
+  }
+  if (!normalized.loops || typeof normalized.loops !== 'object') {
+    normalized.loops = { ...DEFAULT_REPO_STUDIO_CONFIG.loops };
+  } else {
+    normalized.loops = {
+      defaultLoopId: String(normalized.loops.defaultLoopId || DEFAULT_REPO_STUDIO_CONFIG.loops.defaultLoopId),
+      indexPath: String(normalized.loops.indexPath || DEFAULT_REPO_STUDIO_CONFIG.loops.indexPath),
     };
   }
 

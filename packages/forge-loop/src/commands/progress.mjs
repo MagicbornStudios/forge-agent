@@ -1,6 +1,6 @@
 import path from 'node:path';
 
-import { PLANNING_FILES, PLANNING_PHASES_DIR } from '../lib/paths.mjs';
+import { ACTIVE_LOOP_ID, PLANNING_DIR, PLANNING_FILES, PLANNING_PHASES_DIR } from '../lib/paths.mjs';
 import { fileExists, readText } from '../lib/fs-utils.mjs';
 import { parseRoadmapPhases, phaseDirName, getPhaseExecutionState } from '../lib/planning.mjs';
 
@@ -17,12 +17,19 @@ export async function runProgress() {
 
   const roadmap = readText(PLANNING_FILES.roadmap, '');
   const phases = parseRoadmapPhases(roadmap);
+  const addLoop = (command) => (
+    ACTIVE_LOOP_ID && ACTIVE_LOOP_ID !== 'default'
+      ? `${command} --loop ${ACTIVE_LOOP_ID}`
+      : command
+  );
 
   if (phases.length === 0) {
     return {
       status: 'empty',
+      loopId: ACTIVE_LOOP_ID,
+      planningRoot: PLANNING_DIR.replace(/\\/g, '/'),
       message: 'No phases found in roadmap.',
-      nextAction: 'forge-loop plan-phase 01',
+      nextAction: addLoop('forge-loop plan-phase 01'),
     };
   }
 
@@ -57,13 +64,13 @@ export async function runProgress() {
 
   for (const row of rows) {
     if (row.status === 'not-started') {
-      nextAction = `forge-loop discuss-phase ${row.phaseNumber}`;
+      nextAction = addLoop(`forge-loop discuss-phase ${row.phaseNumber}`);
       nextReason = `Phase ${row.phaseNumber} has no plans yet.`;
       break;
     }
 
     if (row.status === 'planned' || row.status === 'in-progress') {
-      nextAction = `forge-loop execute-phase ${row.phaseNumber}`;
+      nextAction = addLoop(`forge-loop execute-phase ${row.phaseNumber}`);
       nextReason = `Phase ${row.phaseNumber} has pending plan execution.`;
       break;
     }
@@ -71,7 +78,7 @@ export async function runProgress() {
 
   if (!nextAction) {
     const lastPhase = rows[rows.length - 1].phaseNumber;
-    nextAction = `forge-loop verify-work ${lastPhase}`;
+    nextAction = addLoop(`forge-loop verify-work ${lastPhase}`);
     nextReason = 'All known plans appear complete; verify latest phase outputs.';
   }
 
@@ -90,6 +97,8 @@ export async function runProgress() {
 
   return {
     status: 'ok',
+    loopId: ACTIVE_LOOP_ID,
+    planningRoot: PLANNING_DIR.replace(/\\/g, '/'),
     percent,
     completePhases: completed,
     totalPhases: rows.length,

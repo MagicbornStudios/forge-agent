@@ -6,7 +6,7 @@ import { Button } from '@forge/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@forge/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@forge/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@forge/ui/table';
-import type { PlanningSnapshot } from '@/lib/repo-data';
+import type { PlanningSnapshot, RepoLoopEntry } from '@/lib/repo-data';
 
 function normalizeStatus(status: string) {
   return String(status || '').toLowerCase().replace(/\s+/g, '-');
@@ -14,8 +14,12 @@ function normalizeStatus(status: string) {
 
 export interface PlanningWorkspaceProps {
   planning: PlanningSnapshot;
+  loops: RepoLoopEntry[];
+  activeLoopId: string;
+  switchingLoop?: boolean;
   selectedDocId: string | null;
   onSelectDoc: (docId: string) => void;
+  onSwitchLoop: (loopId: string) => void;
   onAttachSelected: () => void;
   onCopyText: (text: string) => void;
   onOpenAssistant: () => void;
@@ -24,8 +28,12 @@ export interface PlanningWorkspaceProps {
 
 export function PlanningWorkspace({
   planning,
+  loops,
+  activeLoopId,
+  switchingLoop = false,
   selectedDocId,
   onSelectDoc,
+  onSwitchLoop,
   onAttachSelected,
   onCopyText,
   onOpenAssistant,
@@ -35,6 +43,29 @@ export function PlanningWorkspace({
 
   return (
     <div className="h-full min-h-0 space-y-3 overflow-auto p-2">
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm">Loop Selection</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-wrap items-center gap-2 text-xs">
+          <Select value={activeLoopId} onValueChange={onSwitchLoop}>
+            <SelectTrigger className="w-full md:w-[320px]">
+              <SelectValue placeholder="Select active loop" />
+            </SelectTrigger>
+            <SelectContent>
+              {loops.map((loop) => (
+                <SelectItem key={loop.id} value={loop.id}>
+                  {loop.name} ({loop.id})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Badge variant="outline">active: {activeLoopId}</Badge>
+          <Badge variant="secondary">root: {planning.planningRoot}</Badge>
+          {switchingLoop ? <Badge variant="secondary">switching...</Badge> : null}
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
@@ -191,4 +222,3 @@ export function PlanningWorkspace({
     </div>
   );
 }
-

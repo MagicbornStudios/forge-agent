@@ -2,29 +2,34 @@ import Link from 'next/link';
 import { ArrowRight, BookOpen, Boxes, CreditCard, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-const quickLinks = [
-  {
-    title: 'Documentation',
-    description: 'Architecture, guides, and API references.',
-    href: '/docs',
-    icon: BookOpen,
-  },
-  {
-    title: 'Catalog',
-    description: 'Browse projects, templates, and strategy cores.',
-    href: '/catalog',
-    icon: Boxes,
-  },
-  {
-    title: 'Dashboard',
-    description: 'Manage plan, licenses, listings, and creator preferences.',
-    href: '/dashboard/overview',
-    icon: CreditCard,
-  },
-] as const;
+import { resolveDocsAppUrl } from '@/lib/env';
 
 export default function PlatformHomePage() {
+  const docsHref = resolveDocsAppUrl();
+  const quickLinks = [
+    {
+      title: 'Documentation',
+      description: 'Architecture, guides, and API references.',
+      href: docsHref,
+      icon: BookOpen,
+      external: true,
+    },
+    {
+      title: 'Catalog',
+      description: 'Browse projects, templates, and strategy cores.',
+      href: '/catalog',
+      icon: Boxes,
+      external: false,
+    },
+    {
+      title: 'Dashboard',
+      description: 'Manage plan, licenses, listings, and creator preferences.',
+      href: '/dashboard/overview',
+      icon: CreditCard,
+      external: false,
+    },
+  ] as const;
+
   return (
     <div className="space-y-10">
       <section className="relative overflow-hidden rounded-2xl border border-border/70 bg-card p-8 sm:p-10">
@@ -45,10 +50,10 @@ export default function PlatformHomePage() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <Button asChild>
-              <Link href="/docs">
+              <a href={docsHref} target="_blank" rel="noreferrer">
                 Read docs
                 <ArrowRight className="size-4" />
-              </Link>
+              </a>
             </Button>
             <Button asChild variant="outline">
               <Link href="/catalog">Browse catalog</Link>
@@ -69,10 +74,17 @@ export default function PlatformHomePage() {
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">{item.description}</p>
               <Button asChild variant="ghost" className="-ml-2">
-                <Link href={item.href}>
-                  Open
-                  <ArrowRight className="size-4" />
-                </Link>
+                {item.external ? (
+                  <a href={item.href} target="_blank" rel="noreferrer">
+                    Open
+                    <ArrowRight className="size-4" />
+                  </a>
+                ) : (
+                  <Link href={item.href}>
+                    Open
+                    <ArrowRight className="size-4" />
+                  </Link>
+                )}
               </Button>
             </CardContent>
           </Card>

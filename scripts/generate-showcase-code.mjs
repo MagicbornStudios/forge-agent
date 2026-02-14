@@ -22,7 +22,7 @@ const outputPath = path.join(showcaseDir, 'catalog-code.generated.mjs');
 const registryPrefix = 'packages/shared/src/shared/components/docs/showcase/registry/';
 const readmesDir = path.join(showcaseDir, 'readmes');
 
-/** One-off: demoId -> platform MDX path. README content read from readmes/{demoId}.md (populated from MDX once). */
+/** One-off: demoId -> canonical docs MDX path. README content read from readmes/{demoId}.md (populated from MDX once). */
 const README_DEMO_IDS = [
   'editor-shell-demo',
   'dock-layout-demo',
@@ -35,14 +35,14 @@ const README_DEMO_IDS = [
 ];
 
 const MDX_SOURCES = {
-  'editor-shell-demo': 'apps/platform/content/docs/components/editor-shell.mdx',
-  'dock-layout-demo': 'apps/platform/content/docs/components/dock-layout.mdx',
-  'dock-panel-demo': 'apps/platform/content/docs/components/dock-panel.mdx',
-  'editor-toolbar-demo': 'apps/platform/content/docs/components/editor-toolbar.mdx',
-  'editor-inspector-demo': 'apps/platform/content/docs/components/editor-inspector.mdx',
-  'editor-overlay-demo': 'apps/platform/content/docs/components/editor-overlay.mdx',
-  'panel-tabs-demo': 'apps/platform/content/docs/components/panel-tabs.mdx',
-  'settings-system-demo': 'apps/platform/content/docs/components/settings-system.mdx',
+  'editor-shell-demo': 'apps/docs/content/archive/studio-served/components/editor/editor-shell.mdx',
+  'dock-layout-demo': 'apps/docs/content/archive/studio-served/components/editor/dock-layout.mdx',
+  'dock-panel-demo': 'apps/docs/content/archive/studio-served/components/editor/dock-panel.mdx',
+  'editor-toolbar-demo': 'apps/docs/content/archive/studio-served/components/editor/editor-toolbar.mdx',
+  'editor-inspector-demo': 'apps/docs/content/archive/studio-served/components/editor/editor-inspector.mdx',
+  'editor-overlay-demo': 'apps/docs/content/archive/studio-served/components/editor/editor-overlay-surface.mdx',
+  'panel-tabs-demo': 'apps/docs/content/archive/studio-served/components/editor/panel-tabs.mdx',
+  'settings-system-demo': 'apps/docs/content/archive/studio-served/components/editor/settings-tabs.mdx',
 };
 
 function mdxToMarkdown(raw) {

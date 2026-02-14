@@ -30,7 +30,9 @@
       "env",
       "commands",
       "docs",
-      "assistant"
+      "loop-assistant",
+      "codex-assistant",
+      "diff"
     ],
     "hidden": [],
     "defaultView": "planning"
@@ -42,6 +44,11 @@
   },
   "assistant": {
     "enabled": true,
+    "defaultEditor": "loop-assistant",
+    "editors": [
+      "loop-assistant",
+      "codex-assistant"
+    ],
     "routeMode": "codex",
     "routePath": "/api/assistant-chat",
     "defaultModel": "gpt-5",
@@ -51,7 +58,7 @@
       "enabled": true,
       "cliCommand": "codex",
       "authPolicy": "chatgpt-strict",
-      "mode": "exec",
+      "mode": "app-server",
       "appServerUrl": "ws://127.0.0.1:3789",
       "defaultModel": "gpt-5",
       "approvalMode": "on-request",
@@ -70,5 +77,9 @@
       "planningRoot": ".planning",
       "phasesDir": ".planning/phases"
     }
+  },
+  "loops": {
+    "defaultLoopId": "default",
+    "indexPath": ".planning/LOOPS.json"
   }
 }

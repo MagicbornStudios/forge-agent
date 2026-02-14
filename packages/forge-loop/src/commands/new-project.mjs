@@ -14,6 +14,7 @@ import {
 } from '../lib/paths.mjs';
 import { ensureDir, fileExists, writeJson, writeText } from '../lib/fs-utils.mjs';
 import { assertCommitResult, commitPaths, formatArtifactCommitMessage } from '../lib/git.mjs';
+import { ensureLoopIndex, writeLoopIndex } from '../lib/loops.mjs';
 import { runMigrateLegacy } from './migrate-legacy.mjs';
 
 const REQUIRED_PLANNING_FILES = [
@@ -158,6 +159,7 @@ export async function runNewProject(options = {}) {
   const profileInfo = normalizeProfile(profile);
 
   if (fileExists(PLANNING_PATH)) {
+    ensureLoopIndex();
     const validation = validatePlanningTree();
     return {
       alreadyExists: true,
@@ -179,6 +181,24 @@ export async function runNewProject(options = {}) {
     const freshResult = createFreshPlanning(profileInfo.profile);
     written = freshResult.written;
   }
+
+  const createdLoopIndex = ensureLoopIndex();
+  if (createdLoopIndex) {
+    writeLoopIndex({
+      activeLoopId: 'default',
+      loops: [
+        {
+          id: 'default',
+          name: 'Default Repo Loop',
+          planningRoot: '.planning',
+          scope: ['.'],
+          profile: profileInfo.profile,
+          runner: DEFAULT_CONFIG.env.runner,
+        },
+      ],
+    });
+  }
+  written.push(path.join('.planning', 'LOOPS.json'));
 
   if (autoCommit) {
     const commitFiles = written

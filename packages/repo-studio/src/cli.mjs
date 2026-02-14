@@ -24,7 +24,7 @@ Usage:
   forge-repo-studio <command> [options]
 
 Commands:
-  open [--profile forge-agent|forge-loop|custom] [--mode local|preview|production|headless] [--view planning|env|commands|docs|assistant] [--port <n>] [--app-runtime|--package-runtime] [--reuse|--no-reuse] [--detach|--foreground] [--legacy-ui]
+  open [--profile forge-agent|forge-loop|custom] [--mode local|preview|production|headless] [--view planning|env|commands|docs|loop-assistant|codex-assistant|diff] [--port <n>] [--app-runtime|--package-runtime] [--reuse|--no-reuse] [--detach|--foreground] [--legacy-ui]
   doctor
   commands-list
   commands-toggle <command-id> [--enable|--disable]

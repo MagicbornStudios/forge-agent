@@ -140,7 +140,7 @@ async function collectUatResponses(phase, truths, options = {}) {
 
 function shouldRunPlatformBuild(changedFiles) {
   return changedFiles.some(
-    (filePath) => filePath.startsWith('apps/platform/') || filePath.startsWith('apps/platform/content/docs/'),
+    (filePath) => filePath.startsWith('apps/platform/') || filePath.startsWith('apps/docs/'),
   );
 }
 
