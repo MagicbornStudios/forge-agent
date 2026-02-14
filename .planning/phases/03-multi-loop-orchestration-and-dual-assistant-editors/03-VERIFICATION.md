@@ -1,6 +1,6 @@
 ---
 phase: 03-multi-loop-orchestration-and-dual-assistant-editors
-verified: 2026-02-14T18:21:42.114Z
+verified: 2026-02-14T18:23:04.440Z
 status: gaps_found
 score: 0/8
 ---
@@ -14,13 +14,13 @@ score: 0/8
 
 | Check | Status | Details |
 |---|---|---|
-| pnpm docs:platform:doctor | FAIL | spawnSync pnpm ENOENT |
-| pnpm docs:showcase:doctor | FAIL | spawnSync pnpm ENOENT |
-| pnpm docs:runtime:doctor | FAIL | spawnSync pnpm ENOENT |
-| pnpm --filter @forge/platform build | FAIL | spawnSync pnpm ENOENT |
-| pnpm --filter @forge/studio build | FAIL | spawnSync pnpm ENOENT |
-| pnpm --filter @forge/studio test -- --runInBand | FAIL | spawnSync pnpm ENOENT |
-| pnpm forge-loop:test | FAIL | spawnSync pnpm ENOENT |
+| pnpm docs:platform:doctor | FAIL | spawnSync pnpm.cmd EINVAL |
+| pnpm docs:showcase:doctor | FAIL | spawnSync pnpm.cmd EINVAL |
+| pnpm docs:runtime:doctor | FAIL | spawnSync pnpm.cmd EINVAL |
+| pnpm --filter @forge/platform build | FAIL | spawnSync pnpm.cmd EINVAL |
+| pnpm --filter @forge/studio build | FAIL | spawnSync pnpm.cmd EINVAL |
+| pnpm --filter @forge/studio test -- --runInBand | FAIL | spawnSync pnpm.cmd EINVAL |
+| pnpm forge-loop:test | FAIL | spawnSync pnpm.cmd EINVAL |
 
 ## UAT Truths
 
