@@ -5,7 +5,7 @@ import type { EditorMenubarMenu } from '@forge/shared/components/editor';
 
 type AppMenubarContextValue = {
   editorMenus: EditorMenubarMenu[];
-  setEditorMenus: (menus: EditorMenubarMenu[]) => void;
+  setEditorMenus: React.Dispatch<React.SetStateAction<EditorMenubarMenu[]>>;
 };
 
 const AppMenubarContext = createContext<AppMenubarContextValue | null>(null);

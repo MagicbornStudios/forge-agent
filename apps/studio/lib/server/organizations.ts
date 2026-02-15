@@ -103,34 +103,36 @@ async function listMembershipDocs(
 }
 
 function toMembershipSummaries(docs: MembershipDoc[]): OrganizationMembershipSummary[] {
-  return docs
-    .map((doc) => {
-      const organization = doc.organization;
-      const organizationId = asNumericId(organization);
-      if (organizationId == null) return null;
+  const summaries: OrganizationMembershipSummary[] = [];
+  for (const doc of docs) {
+    const organization = doc.organization;
+    const organizationId = asNumericId(organization);
+    if (organizationId == null) continue;
 
-      const hydrated =
-        typeof organization === 'object' && organization != null
-          ? organization
-          : null;
+    const hydrated =
+      typeof organization === 'object' && organization != null
+        ? organization
+        : null;
+    const role: OrganizationMembershipSummary['role'] =
+      doc.role === 'owner' ? 'owner' : 'member';
 
-      return {
-        organizationId,
-        organizationName:
-          hydrated?.name && hydrated.name.trim().length > 0
-            ? hydrated.name
-            : `Organization ${organizationId}`,
-        organizationSlug:
-          hydrated?.slug && hydrated.slug.trim().length > 0
-            ? hydrated.slug
-            : `organization-${organizationId}`,
-        role: doc.role === 'owner' ? 'owner' : 'member',
-        stripeConnectAccountId: hydrated?.stripeConnectAccountId ?? null,
-        stripeConnectOnboardingComplete:
-          hydrated?.stripeConnectOnboardingComplete ?? null,
-      };
-    })
-    .filter((entry): entry is OrganizationMembershipSummary => entry != null);
+    summaries.push({
+      organizationId,
+      organizationName:
+        hydrated?.name && hydrated.name.trim().length > 0
+          ? hydrated.name
+          : `Organization ${organizationId}`,
+      organizationSlug:
+        hydrated?.slug && hydrated.slug.trim().length > 0
+          ? hydrated.slug
+          : `organization-${organizationId}`,
+      role,
+      stripeConnectAccountId: hydrated?.stripeConnectAccountId ?? null,
+      stripeConnectOnboardingComplete:
+        hydrated?.stripeConnectOnboardingComplete ?? null,
+    });
+  }
+  return summaries;
 }
 
 async function createPersonalOrganization(
@@ -139,6 +141,7 @@ async function createPersonalOrganization(
 ): Promise<OrganizationMembershipSummary> {
   const createdOrganization = await payload.create({
     collection: 'organizations',
+    draft: false,
     data: {
       name: buildPersonalOrgName(user),
       slug: buildPersonalOrgSlug(user),
@@ -149,6 +152,7 @@ async function createPersonalOrganization(
 
   await payload.create({
     collection: 'organization-memberships',
+    draft: false,
     data: {
       organization: createdOrganization.id,
       user: user.id,
@@ -159,6 +163,7 @@ async function createPersonalOrganization(
 
   await payload.update({
     collection: 'users',
+    draft: false,
     id: user.id,
     data: {
       defaultOrganization: createdOrganization.id,
@@ -205,6 +210,7 @@ export async function ensureOrganizationContext(
   if (defaultOrganizationId !== activeOrganizationId) {
     await payload.update({
       collection: 'users',
+      draft: false,
       id: user.id,
       data: {
         defaultOrganization: activeOrganizationId,
@@ -235,6 +241,7 @@ export async function resolveOrganizationFromInput(
     if (context.activeOrganizationId !== requestedOrganizationId) {
       await payload.update({
         collection: 'users',
+        draft: false,
         id: user.id,
         data: {
           defaultOrganization: requestedOrganizationId,

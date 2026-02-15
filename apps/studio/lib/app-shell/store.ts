@@ -28,6 +28,8 @@ interface AppShellState {
   lastDialogueProjectId: number | null;
   /** Last opened character project id (legacy/migration). */
   lastCharacterProjectId: number | null;
+  /** Last opened video document id (legacy compatibility). */
+  lastVideoDocId: number | null;
   workspaceThemes: Partial<Record<EditorId, string>>;
   /** Bottom drawer (Assistant/console) open per editor. */
   bottomDrawerOpen: Partial<Record<EditorId, boolean>>;
@@ -47,6 +49,7 @@ interface AppShellState {
   setActiveProjectId: (id: number | null) => void;
   setLastDialogueProjectId: (id: number | null) => void;
   setLastCharacterProjectId: (id: number | null) => void;
+  setLastVideoDocId: (id: number | null) => void;
   setActiveWorkspace: (id: EditorId) => void;
   openWorkspace: (id: EditorId) => void;
   closeWorkspace: (id: EditorId) => void;
@@ -74,6 +77,7 @@ type PersistedAppState = Partial<
     | 'activeProjectId'
     | 'lastDialogueProjectId'
     | 'lastCharacterProjectId'
+    | 'lastVideoDocId'
     | 'dockLayouts'
   >
 > & {
@@ -104,12 +108,14 @@ export const useAppShellStore = create<AppShellState>()(
         activeProjectId: null,
         lastDialogueProjectId: null,
         lastCharacterProjectId: null,
+        lastVideoDocId: null,
         workspaceThemes: {},
         bottomDrawerOpen: {},
         appSettingsSheetOpen: false,
         requestOpenSettings: false,
         settingsViewportId: null,
         settingsSidebarOpen: false,
+        settingsActiveTab: null,
         dockLayouts: {},
 
         setRoute: (route) => {
@@ -136,6 +142,12 @@ export const useAppShellStore = create<AppShellState>()(
         setLastCharacterProjectId: (id) => {
           set((state) => {
             state.lastCharacterProjectId = id;
+          });
+        },
+
+        setLastVideoDocId: (id) => {
+          set((state) => {
+            state.lastVideoDocId = id;
           });
         },
 

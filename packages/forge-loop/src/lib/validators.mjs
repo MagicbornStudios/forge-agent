@@ -134,6 +134,30 @@ function parseListObject(lines, startIndex, indentSize, errors, sectionName) {
   return { values, nextIndex: cursor };
 }
 
+function parseBlockArray(lines, startIndex, indentSize) {
+  const values = [];
+  let cursor = startIndex;
+
+  while (cursor < lines.length) {
+    const line = lines[cursor];
+    const trimmed = line.trim();
+    const indent = lineIndent(line);
+
+    if (!trimmed) {
+      cursor += 1;
+      continue;
+    }
+
+    if (indent < indentSize) break;
+    if (indent !== indentSize || !trimmed.startsWith('- ')) break;
+
+    values.push(parseScalar(trimmed.slice(2)));
+    cursor += 1;
+  }
+
+  return { values, nextIndex: cursor };
+}
+
 export function parsePlanFrontmatterYaml(planMarkdown) {
   const { frontmatter } = extractFrontmatter(planMarkdown);
   const errors = [];
@@ -243,15 +267,25 @@ export function parsePlanFrontmatterYaml(planMarkdown) {
       continue;
     }
 
-    if ((key === 'depends_on' || key === 'files_modified') && rawValue.trim().startsWith('[')) {
-      const list = parseInlineArray(rawValue);
-      if (!list) {
-        errors.push(`Invalid inline array for ${key} at line ${cursor + 1}.`);
-      } else {
-        data[key] = list;
+    if (key === 'depends_on' || key === 'files_modified') {
+      const trimmedValue = rawValue.trim();
+      if (trimmedValue.startsWith('[')) {
+        const list = parseInlineArray(rawValue);
+        if (!list) {
+          errors.push(`Invalid inline array for ${key} at line ${cursor + 1}.`);
+        } else {
+          data[key] = list;
+        }
+        cursor += 1;
+        continue;
       }
-      cursor += 1;
-      continue;
+
+      if (!trimmedValue) {
+        const parsed = parseBlockArray(lines, cursor + 1, 2);
+        data[key] = parsed.values;
+        cursor = parsed.nextIndex;
+        continue;
+      }
     }
 
     data[key] = parseScalar(rawValue);

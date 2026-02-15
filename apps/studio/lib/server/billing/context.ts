@@ -97,7 +97,9 @@ export async function resolveBillingOrganizationContext(
   });
 
   const organizationDocs = new Map<number, Record<string, unknown>>();
-  for (const doc of organizationsResult.docs as Array<Record<string, unknown>>) {
+  for (const rawDoc of organizationsResult.docs as unknown[]) {
+    if (!rawDoc || typeof rawDoc !== 'object') continue;
+    const doc = rawDoc as Record<string, unknown>;
     const id = asNumericId(doc.id);
     if (id != null) {
       organizationDocs.set(id, doc);

@@ -189,6 +189,10 @@ export const RelationshipGraphEditor = forwardRef<CharacterViewportHandle, Props
       onDropCreateCharacter();
     }, [onDropCreateCharacter]);
 
+    const handleToggleMiniMap = useCallback(() => {
+      setShowMiniMap((current) => !current);
+    }, []);
+
     return (
       <div className="w-full h-full">
         <ReactFlow

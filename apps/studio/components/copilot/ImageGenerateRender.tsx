@@ -5,7 +5,11 @@ import type { CopilotActionRenderProps } from '@forge/shared/copilot/types';
 
 /** Renders generated image in chat when app_generateImage action completes. */
 export function ImageGenerateRender({ status, args, result }: CopilotActionRenderProps) {
-  const imageUrl = result?.data?.imageUrl;
+  const resultData =
+    result?.data && typeof result.data === 'object'
+      ? (result.data as Record<string, unknown>)
+      : null;
+  const imageUrl = typeof resultData?.imageUrl === 'string' ? resultData.imageUrl : undefined;
   const prompt = typeof args.prompt === 'string' ? args.prompt : '';
 
   if (status === 'complete' && imageUrl) {

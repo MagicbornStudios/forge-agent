@@ -787,12 +787,19 @@ export function DialogueEditor() {
     [applyActiveOperations, activeScope, narrativeGraph, storyletGraph, onAIHighlight, setPendingFromPlanActive]
   );
 
+  const handleAssistantHighlight = useCallback(
+    (entities: Record<string, string[]>) => {
+      onAIHighlight({ entities });
+    },
+    [onAIHighlight],
+  );
+
   const forgeAssistantContract = useForgeAssistantContract({
     graph: activeGraph,
     selection: activeSelection,
     isDirty: activeDirty,
     applyOperations: applyActiveOperations,
-    onAIHighlight,
+    onAIHighlight: handleAssistantHighlight,
     clearAIHighlights: clearHighlights,
     createPlanApi,
     createStoryBuilderApi,

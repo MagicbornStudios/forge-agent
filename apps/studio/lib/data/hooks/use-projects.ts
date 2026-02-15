@@ -42,6 +42,7 @@ export function useCreateProject() {
           description: body.description,
           domain: body.domain,
           status: 'active',
+          estimatedSizeBytes: 0,
         },
       }),
     onSuccess: (_data, variables) => {

@@ -6,6 +6,5 @@
 // ---------------------------------------------------------------------------
 
 export { DialogueEditor } from './DialogueEditor';
-export { VideoEditor } from './VideoEditor';
 export { CharacterEditor } from './CharacterEditor';
 export { StrategyEditor } from './StrategyEditor';

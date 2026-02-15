@@ -10,7 +10,6 @@ import {
 import { FeatureGate } from '@forge/shared';
 import { CAPABILITIES } from '@forge/shared/entitlements';
 import { CodebaseAgentStrategyEditor } from '@forge/shared/components/assistant-ui';
-import { EDITOR_VIEWPORT_IDS } from '@/lib/app-shell/editor-metadata';
 import { useEditorStore } from '@/lib/app-shell/store';
 import { useEditorPanelVisibility } from '@/lib/app-shell/useEditorPanelVisibility';
 import { useSettingsStore } from '@/lib/settings/store';
@@ -60,7 +59,7 @@ export function StrategyEditor() {
   );
 
   const editorId = 'strategy';
-  const viewportId = EDITOR_VIEWPORT_IDS.strategy;
+  const viewportId = 'strategy-main';
   const setSettingsViewportId = useEditorStore((s) => s.setSettingsViewportId);
   useEffect(() => {
     setSettingsViewportId(viewportId);

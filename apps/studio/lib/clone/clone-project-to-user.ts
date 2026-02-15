@@ -74,7 +74,8 @@ export async function cloneProjectToUser(
   projectId: number,
   targetUserId: number,
   options?: CloneProjectToUserOptions
-): Promise<number> {
+ ): Promise<number> {
+  const payloadUnsafe = payload as any;
   const sourceProject = await payload.findByID({
     collection: 'projects',
     id: projectId,
@@ -166,7 +167,7 @@ export async function cloneProjectToUser(
 
   const blockList = sourceBlocks;
 
-  const newProject = await payload.create({
+  const newProject = await payloadUnsafe.create({
     collection: 'projects',
     data: {
       title: `${sourceProject.title} (Copy)`,
@@ -184,7 +185,7 @@ export async function cloneProjectToUser(
 
   const graphIdMap = new Map<number, number>();
   for (const g of graphList) {
-    const created = await payload.create({
+    const created = await payloadUnsafe.create({
       collection: 'forge-graphs',
       data: {
         project: newProjectId,
@@ -204,7 +205,7 @@ export async function cloneProjectToUser(
         : (sourceProject.forgeGraph as number)
       : null;
   if (sourceForgeGraphId != null && graphIdMap.has(sourceForgeGraphId)) {
-    await payload.update({
+    await payloadUnsafe.update({
       collection: 'projects',
       id: newProjectId,
       data: { forgeGraph: graphIdMap.get(sourceForgeGraphId)! },
@@ -214,7 +215,7 @@ export async function cloneProjectToUser(
 
   const charIdMap = new Map<number, number>();
   for (const c of charList) {
-    const created = await payload.create({
+    const created = await payloadUnsafe.create({
       collection: 'characters',
       data: {
         name: c.name,
@@ -235,7 +236,7 @@ export async function cloneProjectToUser(
     const newSource = charIdMap.get(r.sourceCharacter as number);
     const newTarget = charIdMap.get(r.targetCharacter as number);
     if (newSource == null || newTarget == null) continue;
-    await payload.create({
+    await payloadUnsafe.create({
       collection: 'relationships',
       data: {
         project: newProjectId,
@@ -250,7 +251,7 @@ export async function cloneProjectToUser(
 
   const pageIdMap = new Map<number, number>();
   for (const p of pageList) {
-    const created = await payload.create({
+    const created = await payloadUnsafe.create({
       collection: 'pages',
       data: {
         project: newProjectId,
@@ -273,7 +274,7 @@ export async function cloneProjectToUser(
   for (const b of blockList) {
     const newPageId = pageIdMap.get(b.page);
     if (newPageId == null) continue;
-    const created = await payload.create({
+    const created = await payloadUnsafe.create({
       collection: 'blocks',
       data: {
         page: newPageId,
@@ -296,7 +297,7 @@ export async function cloneProjectToUser(
   for (const { oldId: newBlockId, parentBlockId: oldParentId } of blocksWithParent) {
     const newParentId = blockIdMap.get(oldParentId);
     if (newParentId != null) {
-      await payload.update({
+      await payloadUnsafe.update({
         collection: 'blocks',
         id: newBlockId,
         data: { parent_block: newParentId },

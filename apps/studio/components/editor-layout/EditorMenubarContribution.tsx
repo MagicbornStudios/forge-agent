@@ -39,13 +39,23 @@ export function EditorMenubarContribution({ children }: { children?: React.React
   const unregisterMenu = useMenuRegistryStore((s) => s.unregisterMenu);
 
   const menus = React.useMemo(() => {
-    const options: CreateEditorMenubarMenusOptions = {};
+    const options: CreateEditorMenubarMenusOptions = { file: [] };
     React.Children.forEach(children, (child) => {
       if (isMenuSlotChild(child)) {
         const { id, label, items } = child.props;
         const key = id as keyof CreateEditorMenubarMenusOptions;
-        if (key === 'file' || key === 'view' || key === 'edit' || key === 'state' || key === 'settings' || key === 'help') {
-          (options as Record<string, EditorMenubarItem[]>)[key] = items;
+        if (key === 'file') {
+          options.file = items;
+        } else if (key === 'view') {
+          options.view = items;
+        } else if (key === 'edit') {
+          options.edit = items;
+        } else if (key === 'state') {
+          options.state = items;
+        } else if (key === 'settings') {
+          options.settings = items;
+        } else if (key === 'help') {
+          options.help = items;
         } else if (id && items?.length) {
           (options.extra ??= []).push({ id, label, items });
         }

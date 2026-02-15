@@ -5,6 +5,7 @@ import { useShallow } from 'zustand/shallow';
 import type { SettingsSection } from '@/components/settings/types';
 
 export type SettingsScope = 'app' | 'project' | 'editor' | 'viewport';
+const EMPTY_SECTIONS: SettingsSection[] = [];
 
 function scopeKey(scope: SettingsScope, scopeId: string | null): string {
   return `${scope}:${scopeId ?? ''}`;
