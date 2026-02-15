@@ -15,7 +15,7 @@ import type {
 } from './state';
 
 interface PayloadClient {
-  find(args: Record<string, unknown>): Promise<{ docs: Array<Record<string, unknown>> }>;
+  find(args: Record<string, unknown>): Promise<{ docs: unknown[] }>;
 }
 
 export interface AssistantChatOrchestrator {

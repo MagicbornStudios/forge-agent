@@ -29,6 +29,19 @@ type ListingSummary = {
   playUrl?: string;
 };
 
+function asNumber(value: unknown, fallback = 0): number {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return fallback;
+}
+
+function asString(value: unknown, fallback = ''): string {
+  return typeof value === 'string' ? value : fallback;
+}
+
 export async function GET(req: Request) {
   try {
     const payload = await getPayload({ config });
@@ -99,13 +112,16 @@ export async function GET(req: Request) {
 
     const listingByProjectId = new Map<number, ListingSummary>();
     for (const listing of listingDocs) {
-      if (!listing.project) continue;
+      const listingDoc = (listing && typeof listing === 'object'
+        ? listing
+        : {}) as Record<string, unknown>;
+      if (!listingDoc.project) continue;
 
       let projectId: number | null = null;
       let projectSnapshot: ProjectDoc | null = null;
 
-      if (typeof listing.project === 'object' && listing.project != null && 'id' in listing.project) {
-        const project = listing.project as {
+      if (typeof listingDoc.project === 'object' && listingDoc.project != null && 'id' in listingDoc.project) {
+        const project = listingDoc.project as {
           id: number;
           title: string;
           slug: string;
@@ -125,7 +141,7 @@ export async function GET(req: Request) {
           updatedAt: project.updatedAt,
         };
       } else {
-        const numericProjectId = Number(listing.project);
+        const numericProjectId = Number(listingDoc.project);
         if (!Number.isNaN(numericProjectId) && numericProjectId > 0) {
           projectId = numericProjectId;
         }
@@ -137,14 +153,14 @@ export async function GET(req: Request) {
       }
 
       listingByProjectId.set(projectId, {
-        id: listing.id,
-        slug: listing.slug,
-        title: listing.title,
-        status: listing.status,
-        price: listing.price,
-        currency: listing.currency ?? 'USD',
-        cloneMode: listing.cloneMode ?? 'indefinite',
-        playUrl: listing.playUrl ?? undefined,
+        id: asNumber(listingDoc.id),
+        slug: asString(listingDoc.slug, 'listing'),
+        title: asString(listingDoc.title, 'Untitled listing'),
+        status: asString(listingDoc.status, 'draft'),
+        price: asNumber(listingDoc.price),
+        currency: asString(listingDoc.currency, 'USD'),
+        cloneMode: asString(listingDoc.cloneMode, 'indefinite'),
+        playUrl: typeof listingDoc.playUrl === 'string' ? listingDoc.playUrl : undefined,
       });
     }
 

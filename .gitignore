@@ -44,6 +44,9 @@ coverage/
 media/
 apps/studio/data/
 apps/studio/media/
+# Exception: shared package media components (used by docs, tool-ui)
+!packages/shared/src/shared/components/media/
+!packages/shared/src/shared/components/media/**
 
 # Vercel
 .vercel

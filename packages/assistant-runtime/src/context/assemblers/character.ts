@@ -19,7 +19,7 @@ export interface CharacterContextSnapshot {
 }
 
 interface PayloadClient {
-  find(args: Record<string, unknown>): Promise<{ docs: Array<Record<string, unknown>> }>;
+  find(args: Record<string, unknown>): Promise<{ docs: unknown[] }>;
 }
 
 function asNumber(value: unknown): number | null {
@@ -55,18 +55,24 @@ export async function assembleCharacterContext(input: {
     }),
   ]);
 
-  const characters = charactersResult.docs.map((doc) => ({
-    id: asNumber(doc.id) ?? 0,
-    name: typeof doc.name === 'string' ? doc.name : 'Unnamed',
-    description: typeof doc.description === 'string' ? doc.description : undefined,
-  }));
+  const characters = charactersResult.docs.map((doc) => {
+    const payloadDoc = (doc && typeof doc === 'object' ? doc : {}) as Record<string, unknown>;
+    return {
+      id: asNumber(payloadDoc.id) ?? 0,
+      name: typeof payloadDoc.name === 'string' ? payloadDoc.name : 'Unnamed',
+      description: typeof payloadDoc.description === 'string' ? payloadDoc.description : undefined,
+    };
+  });
 
-  const relationships = relationshipsResult.docs.map((doc) => ({
-    id: asNumber(doc.id) ?? 0,
-    label: typeof doc.label === 'string' ? doc.label : 'related to',
-    sourceCharacterId: asNumber(doc.sourceCharacter),
-    targetCharacterId: asNumber(doc.targetCharacter),
-  }));
+  const relationships = relationshipsResult.docs.map((doc) => {
+    const payloadDoc = (doc && typeof doc === 'object' ? doc : {}) as Record<string, unknown>;
+    return {
+      id: asNumber(payloadDoc.id) ?? 0,
+      label: typeof payloadDoc.label === 'string' ? payloadDoc.label : 'related to',
+      sourceCharacterId: asNumber(payloadDoc.sourceCharacter),
+      targetCharacterId: asNumber(payloadDoc.targetCharacter),
+    };
+  });
 
   return {
     characterCount: characters.length,

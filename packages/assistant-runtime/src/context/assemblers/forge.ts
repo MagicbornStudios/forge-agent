@@ -13,7 +13,7 @@ export interface ForgeContextSnapshot {
 }
 
 interface PayloadClient {
-  find(args: Record<string, unknown>): Promise<{ docs: Array<Record<string, unknown>> }>;
+  find(args: Record<string, unknown>): Promise<{ docs: unknown[] }>;
 }
 
 function getNodeLabels(flow: unknown): string[] {
@@ -51,11 +51,12 @@ export async function assembleForgeContext(input: {
   });
 
   const graphs = result.docs.map((doc) => {
-    const flow = doc.flow as { nodes?: unknown[]; edges?: unknown[] } | undefined;
+    const payloadDoc = (doc && typeof doc === 'object' ? doc : {}) as Record<string, unknown>;
+    const flow = payloadDoc.flow as { nodes?: unknown[]; edges?: unknown[] } | undefined;
     return {
-      id: typeof doc.id === 'number' ? doc.id : Number(doc.id ?? 0),
-      kind: typeof doc.kind === 'string' ? doc.kind : 'UNKNOWN',
-      title: typeof doc.title === 'string' ? doc.title : 'Untitled graph',
+      id: typeof payloadDoc.id === 'number' ? payloadDoc.id : Number(payloadDoc.id ?? 0),
+      kind: typeof payloadDoc.kind === 'string' ? payloadDoc.kind : 'UNKNOWN',
+      title: typeof payloadDoc.title === 'string' ? payloadDoc.title : 'Untitled graph',
       nodeCount: countArray(flow?.nodes),
       edgeCount: countArray(flow?.edges),
       sampleNodeLabels: getNodeLabels(flow),

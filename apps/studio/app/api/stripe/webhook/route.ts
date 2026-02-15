@@ -41,6 +41,7 @@ async function ensureStorageUpgradeApplied(
   session: Stripe.Checkout.Session,
   sessionId: string,
 ) {
+  const defaultStorageAddonBytes = getStorageAddonBytesDefault();
   const orgId = asNumericId(session.metadata?.orgId);
   if (orgId == null) return;
 

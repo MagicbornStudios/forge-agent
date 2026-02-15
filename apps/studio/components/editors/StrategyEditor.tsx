@@ -59,10 +59,6 @@ export function StrategyEditor() {
     [panelSpecs, panelVisibility, setPanelVisible, restoreAllPanels],
   );
 
-  const menubarMenus = useMemo(
-    () => [{ id: 'view', label: 'View', items: viewMenuItems }],
-    [viewMenuItems],
-  );
   const editorId = 'strategy';
   const viewportId = EDITOR_VIEWPORT_IDS.strategy;
   const setSettingsViewportId = useEditorStore((s) => s.setSettingsViewportId);
@@ -122,20 +118,25 @@ export function StrategyEditor() {
         </EditorToolbar.Right>
       </EditorToolbar>
 
-      <FeatureGate
-        capability={CAPABILITIES.STUDIO_STRATEGY_EDITOR}
-        mode="lock-overlay"
-        className="flex-1 min-h-0"
-      >
-        <CodebaseAgentStrategyEditor
-          showThreadList={showThreadList !== false}
-          showToolsPanel={showToolsPanel !== false}
-          composerTrailing={<ModelSwitcher provider="assistantUi" variant="composer" />}
-        />
-      </FeatureGate>
+      <EditorLayoutProvider editorId={editorId} viewportId={viewportId}>
+        <EditorMenubarContribution>
+          <EditorMenubarMenuSlot id="view" label="View" items={viewMenuItems} />
+        </EditorMenubarContribution>
+
+        <FeatureGate
+          capability={CAPABILITIES.STUDIO_STRATEGY_EDITOR}
+          mode="lock-overlay"
+          className="flex-1 min-h-0"
+        >
+          <CodebaseAgentStrategyEditor
+            showThreadList={showThreadList !== false}
+            showToolsPanel={showToolsPanel !== false}
+            composerTrailing={<ModelSwitcher provider="assistantUi" variant="composer" />}
+          />
+        </FeatureGate>
+      </EditorLayoutProvider>
 
       <EditorStatusBar>Strategy assistant ready</EditorStatusBar>
-      </EditorLayoutProvider>
     </EditorShell>
   );
 }

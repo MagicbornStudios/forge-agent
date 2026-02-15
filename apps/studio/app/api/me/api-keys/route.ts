@@ -234,6 +234,7 @@ export async function POST(req: Request) {
     const createdByIp = getClientIpFromHeaders(req.headers);
     const created = (await payload.create({
       collection: 'api-keys',
+      draft: false,
       data: {
         name,
         keyId: material.keyId,
@@ -246,6 +247,10 @@ export async function POST(req: Request) {
         organization: context.activeOrganizationId,
         expiresAt: expiresAt ?? undefined,
         createdByIp: createdByIp ?? undefined,
+        requestCount: 0,
+        inputTokens: 0,
+        outputTokens: 0,
+        totalCostUsd: 0,
       },
       overrideAccess: true,
     })) as ApiKeyDoc;

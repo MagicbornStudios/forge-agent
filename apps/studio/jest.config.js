@@ -6,7 +6,17 @@ const createJestConfig = nextJest({
 
 const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/../../jest.setup.js'],
-  testEnvironment: process.env.SETTINGS_CODEGEN ? 'node' : 'jest-environment-jsdom',
+  testEnvironment: 'node',
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '<rootDir>/.next/',
+  ],
+  modulePathIgnorePatterns: [
+    '<rootDir>/.next/',
+  ],
+  watchPathIgnorePatterns: [
+    '<rootDir>/.next/',
+  ],
   moduleNameMapper: {
     '^canvas$': '<rootDir>/__mocks__/canvas.js',
     '^@/(.*)$': '<rootDir>/$1',

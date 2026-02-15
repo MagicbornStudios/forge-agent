@@ -16,7 +16,7 @@ export interface PagesContextSnapshot {
 }
 
 interface PayloadClient {
-  find(args: Record<string, unknown>): Promise<{ docs: Array<Record<string, unknown>> }>;
+  find(args: Record<string, unknown>): Promise<{ docs: unknown[] }>;
 }
 
 function asNumber(value: unknown): number | null {
@@ -57,15 +57,16 @@ function extractStrings(value: unknown, results: string[] = []): string[] {
   return results;
 }
 
-function pageTitle(page: Record<string, unknown>): string {
-  const direct = typeof page.title === 'string' ? page.title.trim() : '';
+function pageTitle(page: unknown): string {
+  const payloadPage = (page && typeof page === 'object' ? page : {}) as Record<string, unknown>;
+  const direct = typeof payloadPage.title === 'string' ? payloadPage.title.trim() : '';
   if (direct) return direct;
 
-  const properties = page.properties as Record<string, unknown> | undefined;
+  const properties = payloadPage.properties as Record<string, unknown> | undefined;
   const fromProperties = extractStrings(properties).find((value) => value.length > 0);
   if (fromProperties) return fromProperties;
 
-  return `Page ${String(page.id ?? '')}`.trim();
+  return `Page ${String(payloadPage.id ?? '')}`.trim();
 }
 
 export async function assemblePagesContext(input: {
@@ -97,7 +98,8 @@ export async function assemblePagesContext(input: {
   const pages: PageSnippet[] = [];
 
   for (const page of pagesResult.docs) {
-    const pageId = asNumber(page.id);
+    const pageDoc = (page && typeof page === 'object' ? page : {}) as Record<string, unknown>;
+    const pageId = asNumber(pageDoc.id);
     if (pageId == null) continue;
 
     const blockResult = await input.payload.find({
@@ -116,7 +118,10 @@ export async function assemblePagesContext(input: {
     });
 
     const blockText = blockResult.docs
-      .flatMap((block) => extractStrings(block.payload))
+      .flatMap((block) => {
+        const blockDoc = (block && typeof block === 'object' ? block : {}) as Record<string, unknown>;
+        return extractStrings(blockDoc.payload);
+      })
       .join(' ')
       .replace(/\s+/g, ' ')
       .trim()
@@ -124,7 +129,7 @@ export async function assemblePagesContext(input: {
 
     pages.push({
       id: pageId,
-      title: pageTitle(page),
+      title: pageTitle(pageDoc),
       snippet: blockText,
       blockCount: blockResult.docs.length,
     });

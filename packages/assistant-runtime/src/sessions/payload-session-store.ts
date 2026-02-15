@@ -1,12 +1,16 @@
 import type { AssistantSessionRecord, SessionCheckpoint, SessionLocator, SessionStore } from './types';
 import { buildSessionKey, buildThreadId } from './types';
 
-type PayloadDoc = Record<string, unknown> & { id: number };
+type PayloadDoc = Record<string, unknown>;
 
 interface PayloadCollectionClient {
-  find(args: Record<string, unknown>): Promise<{ docs: PayloadDoc[] }>;
-  create(args: Record<string, unknown>): Promise<PayloadDoc>;
-  update(args: Record<string, unknown>): Promise<PayloadDoc>;
+  find(args: Record<string, unknown>): Promise<{ docs: unknown[] }>;
+  create(args: Record<string, unknown>): Promise<unknown>;
+  update(args: Record<string, unknown>): Promise<unknown>;
+}
+
+function asObject(value: unknown): PayloadDoc {
+  return value && typeof value === 'object' ? (value as PayloadDoc) : {};
 }
 
 function asNumber(value: unknown): number | null {
@@ -25,14 +29,15 @@ function asString(value: unknown): string | null {
   return typeof value === 'string' ? value : null;
 }
 
-function parseSession(doc: PayloadDoc): AssistantSessionRecord {
+function parseSession(docInput: unknown): AssistantSessionRecord {
+  const doc = asObject(docInput);
   const user = asNumber(doc.user) ?? 0;
   const project = asNumber(doc.project);
   const domain = (asString(doc.domain) ?? 'app') as AssistantSessionRecord['domain'];
   const editor = (asString(doc.editor) ?? 'app') as AssistantSessionRecord['editor'];
 
   return {
-    id: doc.id,
+    id: asNumber(doc.id) ?? 0,
     sessionKey: asString(doc.sessionKey) ?? '',
     threadId: asString(doc.threadId) ?? '',
     user,
