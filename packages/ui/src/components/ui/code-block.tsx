@@ -101,12 +101,9 @@ function injectLineNumbers(html: string): string {
     const numbered = lines
       .map((line: string, index: number) => {
         const safeLine = line.length > 0 ? line : '&#8203;';
-        return `<span class="code-line" style="display:grid;grid-template-columns:2.75rem minmax(0,1fr);column-gap:0.75rem;">
-  <span class="line-number" style="user-select:none;text-align:right;color:var(--text-tertiary,#7a7a85);font-size:11px;line-height:1.5;padding-right:0.25rem;">${index + 1}</span>
-  <span class="line-content" style="display:block;min-width:0;">${safeLine}</span>
-</span>`;
+        return `<span class="code-line" style="display:grid;grid-template-columns:2.25rem minmax(0,1fr);column-gap:0.5rem;line-height:1.45;"><span class="line-number" style="user-select:none;text-align:right;color:var(--text-tertiary,#7a7a85);font-size:11px;opacity:0.85;padding-right:0.125rem;">${index + 1}</span><span class="line-content" style="display:block;min-width:0;line-height:inherit;">${safeLine}</span></span>`;
       })
-      .join('\n');
+      .join('');
 
     return `${open}${numbered}${close}`;
   });

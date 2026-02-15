@@ -27,3 +27,24 @@
 | FRG-402 | 04 | 04-02 | Planned | Enforce hard scope guard + TTL override lifecycle across codex/file/proposal workflows. |
 | FRG-403 | 04 | 04-03 | Planned | Promote Story/Git/Diff to dock-parity workflows with reusable scoped diff service. |
 | FRG-404 | 04 | 04-04 | Planned | Finalize story-domain runbooks and add regression tests for scope + assistant split behavior. |
+| FRG-405 | 04 | 04-04 | Planned | Fix baseline strict verification blockers in `@forge/studio` (`StrategyEditor.tsx` parse break and local `canvas.node` runtime dependency) and rerun strict verify for phase closeout. |
+| FRG-501 | 05 | 05-01 | Planned | Bootstrap internal Payload+SQLite settings backbone for RepoStudio runtime state. |
+| FRG-502 | 05 | 05-02 | Planned | Migrate RepoStudio settings to Studio-style registry + generated defaults/IDs. |
+| FRG-503 | 05 | 05-03 | Planned | Implement env target read/write APIs with mode-scoped writes and post-write readiness validation. |
+| FRG-504 | 05 | 05-04 | Planned | Deliver env workspace per-key editing + paste import + target scope filtering (`package|app|vendor|root`). |
+| FRG-601 | 06 | 06-01 | Planned | Add per-workspace menu contribution registry and workspace-scoped menubar behavior. |
+| FRG-602 | 06 | 06-02 | Planned | Ship generic Navigator panel reusable across workspaces (Code-first rollout). |
+| FRG-603 | 06 | 06-03 | Planned | Add server-side repository search API (`q|regex|include|exclude|scope`) with safe path handling. |
+| FRG-604 | 06 | 06-04 | Planned | Add git status decorations in tree/open-files and align publish script parity for RepoStudio packages. |
+| FRG-701 | 07 | 07-01 | Planned | Build planning parser utility with frontmatter + section extraction for structured analytics. |
+| FRG-702 | 07 | 07-02 | Planned | Implement story markdown-to-blocks transformer for page publish flow. |
+| FRG-703 | 07 | 07-03 | Planned | Add story publish API (`story file -> page + blocks`) with deterministic mapping. |
+| FRG-704 | 07 | 07-04 | Planned | Integrate publish previews into review/diff workflows before apply. |
+| FRG-801 | 08 | 08-01 | Planned | Add Electron runtime shell/startup contracts for RepoStudio desktop mode. |
+| FRG-802 | 08 | 08-02 | Planned | Implement SQLite path strategy for web dev and desktop bundled/userData runtime. |
+| FRG-803 | 08 | 08-03 | Planned | Add native watcher integrations for tree/search/git refresh in desktop runtime. |
+| FRG-804 | 08 | 08-04 | Planned | Add desktop packaging/release scripts and operator runbooks. |
+| FRG-901 | 09 | 09-01 | Planned | Extend server auth scopes for `repo-studio|desktop` and enforce access checks. |
+| FRG-902 | 09 | 09-02 | Planned | Implement desktop token lifecycle and secure credential storage strategy. |
+| FRG-903 | 09 | 09-03 | Planned | Add desktop connection status + remediation UX in RepoStudio. |
+| FRG-904 | 09 | 09-04 | Planned | Harden security/runbooks for desktop auth + platform connection flow. |

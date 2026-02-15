@@ -25,3 +25,10 @@
 - [x] RepoStudio now provides a local shared-runtime loop-assistant fallback for repo-only operation when no external proxy endpoint is configured.
 - [x] Story domain defaults are locked to `content/story` with hard scope policy and explicit TTL scope override tokens.
 - [x] Story and Git workflows are first-class dock panels in RepoStudio and remain approval-gated for assistant-generated writes.
+
+## 2026-02-15
+
+- [x] Analysis ingestion is now a first-class planning input, with source traceability captured in `.planning/ANALYSIS-REFERENCES.md` instead of copying full analysis content into `.planning`.
+- [x] Roadmap history remains intact; future direction is appended as new phases 05-09 (A-E mapping) after Phase 04.
+- [x] Phase 04 is an execution gate: no Phase 05 implementation begins until 04-01 through 04-04 are complete and strict verification closes.
+- [x] Strict verification policy remains unchanged; baseline failures are fixed at source (`@forge/studio` build/test blockers) rather than bypassed.

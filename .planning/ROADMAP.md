@@ -2,7 +2,13 @@
 
 ## Overview
 
-Operational roadmap for Forge Loop lifecycle delivery, RepoStudio control-plane parity, and multi-loop repository operations.
+Operational roadmap for Forge Loop lifecycle delivery in RepoStudio, aligned to analysis outputs in:
+
+- `repo_studio_analysis/`
+- `forge_env_analysis/`
+- `ide_navigation_analysis/`
+
+Phase 04 remains the execution gate. Phases 05-09 are appended future direction and do not start until Phase 04 is complete.
 
 ## Phases
 
@@ -10,6 +16,11 @@ Operational roadmap for Forge Loop lifecycle delivery, RepoStudio control-plane 
 - [x] **Phase 02: RepoStudio command center** - Build reusable RepoOps shell + env/assistant/verification command center
 - [x] **Phase 03: Multi-loop orchestration and dual-assistant editors** - Run many loop tracks from one Studio-grade RepoStudio surface
 - [ ] **Phase 04: Story domain Codex writer** - Deliver story-scoped authoring/editor workflows with strict domain guardrails and Git-integrated review loops
+- [ ] **Phase 05: Settings foundation and canonical env UX** - Move RepoStudio settings to internal Payload+SQLite patterns and complete env target editing parity
+- [ ] **Phase 06: Workspace contributions and IDE navigation core** - Add per-workspace menus/settings, Navigator/search baseline, and publishability parity
+- [ ] **Phase 07: Structured parsers and story publish pipeline** - Convert planning/story content into structured models and publish story files into pages/blocks
+- [ ] **Phase 08: Electron desktop runtime** - Deliver packaged desktop runtime with bundled SQLite and watcher-first behavior
+- [ ] **Phase 09: Desktop auth and platform connection** - Add secure desktop connection/auth scope and credential flow
 
 ## Phase Details
 
@@ -60,7 +71,71 @@ Plans:
 - [ ] 04-01: Story parser + canonical create hardening and editor baseline
 - [ ] 04-02: Hard scope guard + override lifecycle for story-domain codex operations
 - [ ] 04-03: Story/Git/Diff dock-panel parity and reusable scoped diff flow
-- [ ] 04-04: Story-domain runbooks and regression tests
+- [ ] 04-04: Story-domain runbooks and regression tests + strict verification closeout
+
+Phase 04 strict gate:
+- Fix baseline strict blockers in `@forge/studio` (StrategyEditor parse break and local `canvas.node` test runtime issue).
+- Re-run `forge-loop verify-work 04 --strict` and close summaries before Phase 05 starts.
+
+### Phase 05: Settings foundation and canonical env UX
+**Goal:** Move RepoStudio settings to internal Payload+SQLite patterns and complete env target read/write parity.
+**Depends on:** Phase 04
+**Requirements:** [REQ-17, REQ-18]
+**Plans:** 4 plans
+
+Plans:
+- [ ] 05-01: Internal Payload bootstrap for RepoStudio settings state
+- [ ] 05-02: Settings registry migration (section/field/codegen parity with Studio)
+- [ ] 05-03: Env target read/write APIs (single target, mode-scoped, validate-after-write)
+- [ ] 05-04: Env workspace per-key editing + copy-paste + scope filter (`package|app|vendor|root`)
+
+### Phase 06: Workspace contributions and IDE navigation core
+**Goal:** Add workspace-contributed menus/settings and IDE-like Navigator/search baseline with publishability parity.
+**Depends on:** Phase 05
+**Requirements:** [REQ-19, REQ-20]
+**Plans:** 4 plans
+
+Plans:
+- [ ] 06-01: Per-workspace menu contribution registry
+- [ ] 06-02: Generic Navigator panel (code-first, reusable in other workspaces)
+- [ ] 06-03: Server-side search API (`plain|regex|include|exclude|scope`)
+- [ ] 06-04: Git status decorations in tree/open files + publish script parity
+
+### Phase 07: Structured parsers and story publish pipeline
+**Goal:** Parse planning/story artifacts structurally and publish story markdown into page/block models.
+**Depends on:** Phase 06
+**Requirements:** [REQ-21]
+**Plans:** 4 plans
+
+Plans:
+- [ ] 07-01: Planning parser utility (frontmatter + section extraction)
+- [ ] 07-02: Story markdown to blocks transformer
+- [ ] 07-03: Story publish API (`story file -> page + blocks`)
+- [ ] 07-04: Review/diff integration for publish previews
+
+### Phase 08: Electron desktop runtime
+**Goal:** Provide Electron runtime with bundled SQLite and native watcher-first repository refresh behavior.
+**Depends on:** Phase 07
+**Requirements:** [REQ-22]
+**Plans:** 4 plans
+
+Plans:
+- [ ] 08-01: Electron runtime shell and startup contracts
+- [ ] 08-02: SQLite path strategy (web dev vs desktop bundled/userData)
+- [ ] 08-03: Native watcher integration for tree/search/git refresh
+- [ ] 08-04: Packaging and release scripts/docs
+
+### Phase 09: Desktop auth and platform connection
+**Goal:** Secure desktop connection to platform APIs with scoped auth and local credential lifecycle.
+**Depends on:** Phase 08
+**Requirements:** [REQ-23]
+**Plans:** 4 plans
+
+Plans:
+- [ ] 09-01: Server scope additions (`repo-studio|desktop`) and auth checks
+- [ ] 09-02: Desktop token lifecycle and secure storage strategy
+- [ ] 09-03: Connection status/remediation UX in RepoStudio
+- [ ] 09-04: Security/runbook hardening for desktop auth flow
 
 ## Progress
 
@@ -70,3 +145,8 @@ Plans:
 | 02. RepoStudio command center | 7/7 | Complete | 2026-02-14 |
 | 03. Multi-loop orchestration and dual-assistant editors | 4/4 | Complete | 2026-02-14 |
 | 04. Story domain Codex writer | 0/4 | In progress | - |
+| 05. Settings foundation and canonical env UX | 0/4 | Planned | - |
+| 06. Workspace contributions and IDE navigation core | 0/4 | Planned | - |
+| 07. Structured parsers and story publish pipeline | 0/4 | Planned | - |
+| 08. Electron desktop runtime | 0/4 | Planned | - |
+| 09. Desktop auth and platform connection | 0/4 | Planned | - |
