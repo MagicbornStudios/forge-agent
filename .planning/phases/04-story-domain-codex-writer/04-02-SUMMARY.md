@@ -4,3 +4,4 @@
 
 ## Tasks
 - [x] 01. Harden scope override lifecycle
+- [x] 02. Apply scope guard to codex and proposal paths
