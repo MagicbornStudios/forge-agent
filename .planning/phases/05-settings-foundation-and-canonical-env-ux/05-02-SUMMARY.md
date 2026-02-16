@@ -4,3 +4,4 @@
 
 ## Tasks
 - [x] 01. Add RepoStudio settings registry and provider abstractions
+- [x] 02. Validate generated defaults determinism
