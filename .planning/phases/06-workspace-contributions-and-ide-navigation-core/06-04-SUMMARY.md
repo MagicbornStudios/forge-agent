@@ -5,3 +5,4 @@
 ## Tasks
 - [x] 01. Add git status decorations to navigator and code file surfaces
 - [x] 02. Add warning-only direct fetch guard and publish parity docs
+- [x] 03. Update loop artifacts and close phase
