@@ -8,7 +8,7 @@ Operational roadmap for Forge Loop lifecycle delivery in RepoStudio, aligned to 
 - `forge_env_analysis/`
 - `ide_navigation_analysis/`
 
-Phase 04 remains the execution gate. Phases 05-09 are appended future direction and do not start until Phase 04 is complete.
+Phase 04 is closed. Phase 05 is now the active execution gate before phases 06-09.
 
 ## Phases
 
@@ -16,7 +16,7 @@ Phase 04 remains the execution gate. Phases 05-09 are appended future direction 
 - [x] **Phase 02: RepoStudio command center** - Build reusable RepoOps shell + env/assistant/verification command center
 - [x] **Phase 03: Multi-loop orchestration and dual-assistant editors** - Run many loop tracks from one Studio-grade RepoStudio surface
 - [x] **Phase 04: Story domain Codex writer** - Deliver story-scoped authoring/editor workflows with strict domain guardrails and Git-integrated review loops
-- [ ] **Phase 05: Settings foundation and canonical env UX** - Move RepoStudio settings to internal Payload+SQLite patterns and complete env target editing parity
+- [x] **Phase 05: Settings foundation and canonical env UX** - Move RepoStudio settings to internal Payload+SQLite patterns and complete env target editing parity
 - [ ] **Phase 06: Workspace contributions and IDE navigation core** - Add per-workspace menus/settings, Navigator/search baseline, and publishability parity
 - [ ] **Phase 07: Structured parsers and story publish pipeline** - Convert planning/story content into structured models and publish story files into pages/blocks
 - [ ] **Phase 08: Electron desktop runtime** - Deliver packaged desktop runtime with bundled SQLite and watcher-first behavior
@@ -68,14 +68,12 @@ Plans:
 **Plans:** 4 plans
 
 Plans:
-- [ ] 04-01: Story parser + canonical create hardening and editor baseline
-- [ ] 04-02: Hard scope guard + override lifecycle for story-domain codex operations
-- [ ] 04-03: Story/Git/Diff dock-panel parity and reusable scoped diff flow
-- [ ] 04-04: Story-domain runbooks and regression tests + strict verification closeout
+- [x] 04-01: Story parser + canonical create hardening and editor baseline
+- [x] 04-02: Hard scope guard + override lifecycle for story-domain codex operations
+- [x] 04-03: Story/Git/Diff dock-panel parity and reusable scoped diff flow
+- [x] 04-04: Story-domain runbooks and regression tests + strict verification closeout
 
-Phase 04 strict gate:
-- Fix baseline strict blockers in `@forge/studio` (StrategyEditor parse break and local `canvas.node` test runtime issue).
-- Re-run `forge-loop verify-work 04 --strict` and close summaries before Phase 05 starts.
+Phase 04 strict gate: completed on 2026-02-16 (`forge-loop verify-work 04 --strict` pass).
 
 ### Phase 05: Settings foundation and canonical env UX
 **Goal:** Move RepoStudio settings to internal Payload+SQLite patterns and complete env target read/write parity.
@@ -144,7 +142,7 @@ Plans:
 | 01. Forge Loop bootstrap | 2/2 | Complete | 2026-02-13 |
 | 02. RepoStudio command center | 7/7 | Complete | 2026-02-14 |
 | 03. Multi-loop orchestration and dual-assistant editors | 4/4 | Complete | 2026-02-14 |
-| 04. Story domain Codex writer | 0/4 | In progress | - |
+| 04. Story domain Codex writer | 4/4 | Complete | 2026-02-16 |
 | 05. Settings foundation and canonical env UX | 0/4 | Planned | - |
 | 06. Workspace contributions and IDE navigation core | 0/4 | Planned | - |
 | 07. Structured parsers and story publish pipeline | 0/4 | Planned | - |
