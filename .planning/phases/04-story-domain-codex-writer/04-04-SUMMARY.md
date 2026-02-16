@@ -4,3 +4,4 @@
 
 ## Tasks
 - [x] 01. Document story-domain codex workflows
+- [x] 02. Expand automated coverage
