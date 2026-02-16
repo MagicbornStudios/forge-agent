@@ -4,3 +4,4 @@
 
 ## Tasks
 - [x] 01. Finish story parser contracts
+- [x] 02. Story editor UX hardening
