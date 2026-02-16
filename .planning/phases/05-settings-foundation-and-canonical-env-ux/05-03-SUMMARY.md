@@ -5,3 +5,4 @@
 ## Tasks
 - [x] 01. Build shared forge-env target service
 - [x] 02. Integrate RepoStudio env target route
+- [x] 03. Add regression tests for mode mapping and headless block
