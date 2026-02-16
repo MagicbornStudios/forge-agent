@@ -6,3 +6,4 @@
 - [x] 01. Create typed RepoStudio app client foundation
 - [x] 02. Migrate shell/hook fetch calls to services
 - [x] 03. Add workspace menu contribution registry
+- [x] 04. Update loop artifacts and traceability
