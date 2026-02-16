@@ -1,6 +1,6 @@
 # Phase 07: Structured parsers and story publish pipeline - Context
 
-**Gathered:** 2026-02-16T20:30:50.918Z
+**Gathered:** 2026-02-16T20:31:45.359Z
 **Status:** Ready for planning
 
 ## Phase Boundary
