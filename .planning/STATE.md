@@ -3,12 +3,12 @@
 ## Current Position
 
 Phase: 05
-Plan: 05-03
+Plan: 05-04
 Status: In progress
-Last activity: 2026-02-16T18:56:09.079Z - Add regression tests for mode mapping and headless block
+Last activity: 2026-02-16T18:56:09.637Z - Refactor Env workspace to structured editor-first flow
 
 ## Execution
 
 - Active phase: Settings foundation and canonical env UX
-- Active plan: 05-03
-- Active task: Add regression tests for mode mapping and headless block
+- Active plan: 05-04
+- Active task: Refactor Env workspace to structured editor-first flow
