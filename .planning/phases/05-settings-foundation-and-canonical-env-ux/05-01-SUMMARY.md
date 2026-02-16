@@ -5,3 +5,4 @@
 ## Tasks
 - [x] 01. Create settings persistence backbone
 - [x] 02. Wire app runtime APIs and command policy to settings snapshot
+- [x] 03. Record loop traceability
