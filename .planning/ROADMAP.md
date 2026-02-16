@@ -8,7 +8,7 @@ Operational roadmap for Forge Loop lifecycle delivery in RepoStudio, aligned to 
 - `forge_env_analysis/`
 - `ide_navigation_analysis/`
 
-Phase 05 is closed. Phase 06 is now the active execution gate before phases 07-09.
+Phase 06 is closed. Phase 07 is now the active execution gate before phases 08-09.
 
 ## Phases
 
@@ -18,7 +18,7 @@ Phase 05 is closed. Phase 06 is now the active execution gate before phases 07-0
 - [x] **Phase 04: Story domain Codex writer** - Deliver story-scoped authoring/editor workflows with strict domain guardrails and Git-integrated review loops
 - [x] **Phase 05: Settings foundation and canonical env UX** - Move RepoStudio settings to internal Payload+SQLite patterns and complete env target editing parity
 - [x] **Phase 06: Workspace contributions and IDE navigation core** - Add per-workspace menus/settings, Navigator/search baseline, and publishability parity
-- [ ] **Phase 07: Structured parsers and story publish pipeline** - Convert planning/story content into structured models and publish story files into pages/blocks
+- [x] **Phase 07: Structured parsers and story publish pipeline** - Convert planning/story content into structured models and publish story files into pages/blocks
 - [ ] **Phase 08: Electron desktop runtime** - Deliver packaged desktop runtime with bundled SQLite and watcher-first behavior
 - [ ] **Phase 09: Desktop auth and platform connection** - Add secure desktop connection/auth scope and credential flow
 
@@ -94,10 +94,10 @@ Plans:
 **Plans:** 4 plans
 
 Plans:
-- [ ] 06-01: Per-workspace menu contribution registry
-- [ ] 06-02: Generic Navigator panel (code-first, reusable in other workspaces)
-- [ ] 06-03: Server-side search API (`plain|regex|include|exclude|scope`)
-- [ ] 06-04: Git status decorations in tree/open files + publish script parity
+- [x] 06-01: Per-workspace menu contribution registry
+- [x] 06-02: Generic Navigator panel (code-first, reusable in other workspaces)
+- [x] 06-03: Server-side search API (`plain|regex|include|exclude|scope`)
+- [x] 06-04: Git status decorations in tree/open files + publish script parity
 
 ### Phase 07: Structured parsers and story publish pipeline
 **Goal:** Parse planning/story artifacts structurally and publish story markdown into page/block models.
@@ -144,7 +144,7 @@ Plans:
 | 03. Multi-loop orchestration and dual-assistant editors | 4/4 | Complete | 2026-02-14 |
 | 04. Story domain Codex writer | 4/4 | Complete | 2026-02-16 |
 | 05. Settings foundation and canonical env UX | 4/4 | Complete | 2026-02-16 |
-| 06. Workspace contributions and IDE navigation core | 0/4 | Planned | - |
+| 06. Workspace contributions and IDE navigation core | 4/4 | Complete | 2026-02-16 |
 | 07. Structured parsers and story publish pipeline | 0/4 | Planned | - |
 | 08. Electron desktop runtime | 0/4 | Planned | - |
 | 09. Desktop auth and platform connection | 0/4 | Planned | - |
