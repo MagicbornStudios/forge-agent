@@ -4,3 +4,4 @@
 
 ## Tasks
 - [x] 01. Promote story and git to first-class dock panels
+- [x] 02. Unify diff workflows for story and planning
