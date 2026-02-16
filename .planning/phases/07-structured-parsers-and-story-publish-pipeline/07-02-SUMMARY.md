@@ -4,3 +4,4 @@
 
 ## Tasks
 - [x] 01. Implement Story markdown to blocks transformer
+- [x] 02. Update loop artifacts and traceability
