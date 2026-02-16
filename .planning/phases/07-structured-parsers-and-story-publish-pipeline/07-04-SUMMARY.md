@@ -4,3 +4,4 @@
 
 ## Tasks
 - [x] 01. Implement Publish preview review integration
+- [x] 02. Update loop artifacts and traceability
