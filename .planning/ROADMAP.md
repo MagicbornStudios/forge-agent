@@ -15,7 +15,7 @@ Phase 04 remains the execution gate. Phases 05-09 are appended future direction 
 - [x] **Phase 01: Forge Loop bootstrap** - Establish lifecycle command baseline
 - [x] **Phase 02: RepoStudio command center** - Build reusable RepoOps shell + env/assistant/verification command center
 - [x] **Phase 03: Multi-loop orchestration and dual-assistant editors** - Run many loop tracks from one Studio-grade RepoStudio surface
-- [ ] **Phase 04: Story domain Codex writer** - Deliver story-scoped authoring/editor workflows with strict domain guardrails and Git-integrated review loops
+- [x] **Phase 04: Story domain Codex writer** - Deliver story-scoped authoring/editor workflows with strict domain guardrails and Git-integrated review loops
 - [ ] **Phase 05: Settings foundation and canonical env UX** - Move RepoStudio settings to internal Payload+SQLite patterns and complete env target editing parity
 - [ ] **Phase 06: Workspace contributions and IDE navigation core** - Add per-workspace menus/settings, Navigator/search baseline, and publishability parity
 - [ ] **Phase 07: Structured parsers and story publish pipeline** - Convert planning/story content into structured models and publish story files into pages/blocks
