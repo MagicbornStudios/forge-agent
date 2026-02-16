@@ -1,6 +1,6 @@
 ---
 phase: 07-structured-parsers-and-story-publish-pipeline
-verified: 2026-02-16T20:58:04.146Z
+verified: 2026-02-16T21:07:09.741Z
 status: human_needed
 score: 0/8
 ---
@@ -26,7 +26,7 @@ score: 0/8
 > node scripts/docs-runtime-doctor.mjs
 
 [docs-runtime-doctor] PASS: docs runtime guardrails satisfied |
-| pnpm --filter @forge/studio build | PASS | ⚠ Compiled with warnings in 41s
+| pnpm --filter @forge/studio build | PASS | ⚠ Compiled with warnings in 33.4s
 
 ../../node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/typescript.js
 Critical dependency: the request of a dependency is an expression
@@ -35,9 +35,9 @@ Import trace for requested module:
 ../../node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/lib/typescript.js
 ../../node_modules/.pnpm/@payloadcms+drizzle@3.74.0_@libsql+client@0.14.0_@opentelemetry+api@1.9.0_@types+pg@8.10.2_pa_msw3xvwd3gkad3fahmgh3o6s24/node_modules/@payloadcms/drizzle/dist/utilities/blocksToJsonMigrator.js
 ../../node_modules/.pnpm/@payloadcms+drizzle@3.74.0_@libsql+client@0.14.0_@opentelemetry+api@1.9.0_@types+pg@8.10.2_pa_msw3xvwd3gkad3fahmgh3o6s24/node_modules/@payloadcms/drizzle/dist/index.js
-../../node_modules/.pnpm/@payloadcms+db-sqlite@3.74.0_@opentelemetry+api@1.9.0_@types+pg@8.10.2_payload@3.74.0_graphql_vqyuzmnzyil5xgrfsstma2bt5e/node_modules/@payloadcms/db-sqlite/dist/index.js
+../../node_modules/.pnpm/@payloadcms+db-postgres@3.74.0_@libsql+client@0.14.0_@opentelemetry+api@1.9.0_payload@3.74.0__2bwhaqxnwmcpjvhaz3tkkximse/node_modules/@payloadcms/db-postgres/dist/index.js
 ./payload.config.ts
-./app/(payload)/api/graphql/route.ts
+./app/(payload)/api/graphql-playground/route.ts
 
 Failed to load undo-redo state from localStorage: ReferenceError: localStorage is not defined
     at aq (C:\Users\benja\Documents\forge-agent\apps\studio\.next\server\chunks\1170.js:3:96152)
@@ -610,7 +610,7 @@ PASS __tests__/model-router/selection.test.ts
 Test Suites: 6 passed, 6 total
 Tests:       19 passed, 19 total
 Snapshots:   0 total
-Time:        2.954 s, estimated 3 s
+Time:        2.816 s, estimated 3 s
 Ran all test suites. |
 | pnpm forge-loop:test | PASS | > forge-agent@ forge-loop:test C:\Users\benja\Documents\forge-agent
 > pnpm --filter @forge/forge-loop test
@@ -619,44 +619,44 @@ Ran all test suites. |
 > @forge/forge-loop@0.1.0 test C:\Users\benja\Documents\forge-agent\packages\forge-loop
 > node --test "src/__tests__/*.test.mjs"
 
-✔ required package runbooks exist (3.7962ms)
-✔ package.json includes docs and readme in published files (1.0801ms)
-✔ package docs and generated prompt templates are agent-agnostic (11.8834ms)
-✔ doctor validates planning artifacts and reports next action (573.2628ms)
-✔ headless env gate runs only when headless flag is set (2.0933ms)
-✔ headless env gate respects env enabled and enforce flags (0.364ms)
-✔ execute-phase summary upserts tasks and remains idempotent on rerun (1954.9146ms)
-✔ commit message formatters follow contract (2.331ms)
-✔ commitPaths skips when repository is not git (96.3405ms)
-✔ commitPaths skips when no tracked changes are present (703.1778ms)
-✔ isInCommitScope matches allowed glob patterns (0.8104ms)
-✔ commitPaths blocks out-of-scope files when commitScope is set (270.5735ms)
-✔ commitPaths blocks staged files outside commit scope (408.0021ms)
-✔ assertCommitResult throws on failed commit result (0.9526ms)
-✔ parseStatusSections returns expected heading sections (2.482ms)
-✔ parseRalphDoneItems returns only done bullet lines (1.7977ms)
-✔ parseNextItems parses bold and non-bold numbered lines (0.7105ms)
-✔ parseTaskRegistryInitiatives parses markdown table rows (0.6402ms)
-✔ buildMigrationWarnings reports missing key inputs (0.5754ms)
-✔ loop:new creates loop scaffold and loop:use + --loop drive progress routing (980.4001ms)
-✔ updateGeneratedBlock injects generated section when markers are missing (6.7529ms)
-✔ updateGeneratedBlock only replaces marker section and is idempotent (1.8363ms)
-✔ new-project migrates legacy docs into .planning tree (349.6749ms)
-✔ new-project on existing .planning reports guidance and does not overwrite (358.9722ms)
-✔ new-project supports forge-loop profile (191.0169ms)
-✔ new-project accepts generic as deprecated alias for forge-loop (171.6068ms)
-✔ new-project supports custom profile with forge-loop verification baseline (176.4117ms)
-✔ plan-phase creates plan files with required frontmatter fields (511.2823ms)
-✔ sync-legacy respects legacySync.enabled flag (444.418ms)
-✔ validatePlanFrontmatter accepts required schema (4.6725ms)
-✔ validatePlanFrontmatter fails missing required schema fields (0.7291ms)
-✔ parsePlanFrontmatterYaml returns typed values (0.5223ms)
-✔ validateWaveOrdering checks dependency graph and wave ordering (0.9334ms)
-✔ parsePlanWave reads wave from frontmatter (0.4968ms)
-✔ buildVerificationCommandPlan selects matrix commands by changed paths (1.8706ms)
-✔ buildVerificationCommandPlan supports forge-loop profile (1.8295ms)
-✔ verify-work emits expected check matrix in command output (3964.2425ms)
-✔ verify-work --strict exits non-zero when checks fail (2284.8046ms)
+✔ required package runbooks exist (4.9022ms)
+✔ package.json includes docs and readme in published files (0.7771ms)
+✔ package docs and generated prompt templates are agent-agnostic (17.1533ms)
+✔ doctor validates planning artifacts and reports next action (595.1621ms)
+✔ headless env gate runs only when headless flag is set (1.9149ms)
+✔ headless env gate respects env enabled and enforce flags (0.3819ms)
+✔ execute-phase summary upserts tasks and remains idempotent on rerun (1959.5294ms)
+✔ commit message formatters follow contract (2.0141ms)
+✔ commitPaths skips when repository is not git (100.6361ms)
+✔ commitPaths skips when no tracked changes are present (711.2901ms)
+✔ isInCommitScope matches allowed glob patterns (0.7435ms)
+✔ commitPaths blocks out-of-scope files when commitScope is set (261.9817ms)
+✔ commitPaths blocks staged files outside commit scope (389.3292ms)
+✔ assertCommitResult throws on failed commit result (0.9562ms)
+✔ parseStatusSections returns expected heading sections (2.8601ms)
+✔ parseRalphDoneItems returns only done bullet lines (3.4451ms)
+✔ parseNextItems parses bold and non-bold numbered lines (1.0437ms)
+✔ parseTaskRegistryInitiatives parses markdown table rows (1.3849ms)
+✔ buildMigrationWarnings reports missing key inputs (0.6203ms)
+✔ loop:new creates loop scaffold and loop:use + --loop drive progress routing (1044.8382ms)
+✔ updateGeneratedBlock injects generated section when markers are missing (2.3723ms)
+✔ updateGeneratedBlock only replaces marker section and is idempotent (1.6711ms)
+✔ new-project migrates legacy docs into .planning tree (333.0756ms)
+✔ new-project on existing .planning reports guidance and does not overwrite (412.8564ms)
+✔ new-project supports forge-loop profile (194.4642ms)
+✔ new-project accepts generic as deprecated alias for forge-loop (176.5271ms)
+✔ new-project supports custom profile with forge-loop verification baseline (176.4239ms)
+✔ plan-phase creates plan files with required frontmatter fields (633.0514ms)
+✔ sync-legacy respects legacySync.enabled flag (488.5028ms)
+✔ validatePlanFrontmatter accepts required schema (4.8656ms)
+✔ validatePlanFrontmatter fails missing required schema fields (0.6527ms)
+✔ parsePlanFrontmatterYaml returns typed values (0.4392ms)
+✔ validateWaveOrdering checks dependency graph and wave ordering (0.6861ms)
+✔ parsePlanWave reads wave from frontmatter (0.4799ms)
+✔ buildVerificationCommandPlan selects matrix commands by changed paths (2.1515ms)
+✔ buildVerificationCommandPlan supports forge-loop profile (1.7286ms)
+✔ verify-work emits expected check matrix in command output (3941.5954ms)
+✔ verify-work --strict exits non-zero when checks fail (2287.3274ms)
 ℹ tests 38
 ℹ suites 0
 ℹ pass 38
@@ -664,7 +664,7 @@ Ran all test suites. |
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 6699.9736 |
+ℹ duration_ms 6615.4611 |
 
 ## UAT Truths
 
