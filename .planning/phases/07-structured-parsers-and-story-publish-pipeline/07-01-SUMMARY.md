@@ -4,3 +4,4 @@
 
 ## Tasks
 - [x] 01. Implement Planning parser utility
+- [x] 02. Update loop artifacts and traceability
