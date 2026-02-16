@@ -5,3 +5,4 @@
 ## Tasks
 - [x] 01. Refactor Env workspace to structured editor-first flow
 - [x] 02. Align settings panel integration with registry-driven controls
+- [x] 03. Finalize phase docs/tests traceability
