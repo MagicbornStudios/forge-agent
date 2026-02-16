@@ -5,3 +5,4 @@
 ## Tasks
 - [x] 01. Add Navigator panel model and shared selection state
 - [x] 02. Refactor feature workspaces to service clients
+- [x] 03. Update loop artifacts and traceability
