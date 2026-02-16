@@ -4,3 +4,4 @@
 
 ## Tasks
 - [x] 01. Implement Story publish API
+- [x] 02. Update loop artifacts and traceability
