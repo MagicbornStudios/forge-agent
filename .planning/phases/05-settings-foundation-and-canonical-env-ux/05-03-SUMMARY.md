@@ -4,3 +4,4 @@
 
 ## Tasks
 - [x] 01. Build shared forge-env target service
+- [x] 02. Integrate RepoStudio env target route
