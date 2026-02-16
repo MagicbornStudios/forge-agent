@@ -8,7 +8,7 @@ Operational roadmap for Forge Loop lifecycle delivery in RepoStudio, aligned to 
 - `forge_env_analysis/`
 - `ide_navigation_analysis/`
 
-Phase 04 is closed. Phase 05 is now the active execution gate before phases 06-09.
+Phase 05 is closed. Phase 06 is now the active execution gate before phases 07-09.
 
 ## Phases
 
@@ -17,7 +17,7 @@ Phase 04 is closed. Phase 05 is now the active execution gate before phases 06-0
 - [x] **Phase 03: Multi-loop orchestration and dual-assistant editors** - Run many loop tracks from one Studio-grade RepoStudio surface
 - [x] **Phase 04: Story domain Codex writer** - Deliver story-scoped authoring/editor workflows with strict domain guardrails and Git-integrated review loops
 - [x] **Phase 05: Settings foundation and canonical env UX** - Move RepoStudio settings to internal Payload+SQLite patterns and complete env target editing parity
-- [ ] **Phase 06: Workspace contributions and IDE navigation core** - Add per-workspace menus/settings, Navigator/search baseline, and publishability parity
+- [x] **Phase 06: Workspace contributions and IDE navigation core** - Add per-workspace menus/settings, Navigator/search baseline, and publishability parity
 - [ ] **Phase 07: Structured parsers and story publish pipeline** - Convert planning/story content into structured models and publish story files into pages/blocks
 - [ ] **Phase 08: Electron desktop runtime** - Deliver packaged desktop runtime with bundled SQLite and watcher-first behavior
 - [ ] **Phase 09: Desktop auth and platform connection** - Add secure desktop connection/auth scope and credential flow
@@ -82,10 +82,10 @@ Phase 04 strict gate: completed on 2026-02-16 (`forge-loop verify-work 04 --stri
 **Plans:** 4 plans
 
 Plans:
-- [ ] 05-01: Internal Payload bootstrap for RepoStudio settings state
-- [ ] 05-02: Settings registry migration (section/field/codegen parity with Studio)
-- [ ] 05-03: Env target read/write APIs (single target, mode-scoped, validate-after-write)
-- [ ] 05-04: Env workspace per-key editing + copy-paste + scope filter (`package|app|vendor|root`)
+- [x] 05-01: Internal Payload bootstrap for RepoStudio settings state
+- [x] 05-02: Settings registry migration (section/field/codegen parity with Studio)
+- [x] 05-03: Env target read/write APIs (single target, mode-scoped, validate-after-write)
+- [x] 05-04: Env workspace per-key editing + copy-paste + scope filter (`package|app|vendor|root`)
 
 ### Phase 06: Workspace contributions and IDE navigation core
 **Goal:** Add workspace-contributed menus/settings and IDE-like Navigator/search baseline with publishability parity.
@@ -143,7 +143,7 @@ Plans:
 | 02. RepoStudio command center | 7/7 | Complete | 2026-02-14 |
 | 03. Multi-loop orchestration and dual-assistant editors | 4/4 | Complete | 2026-02-14 |
 | 04. Story domain Codex writer | 4/4 | Complete | 2026-02-16 |
-| 05. Settings foundation and canonical env UX | 0/4 | Planned | - |
+| 05. Settings foundation and canonical env UX | 4/4 | Complete | 2026-02-16 |
 | 06. Workspace contributions and IDE navigation core | 0/4 | Planned | - |
 | 07. Structured parsers and story publish pipeline | 0/4 | Planned | - |
 | 08. Electron desktop runtime | 0/4 | Planned | - |
