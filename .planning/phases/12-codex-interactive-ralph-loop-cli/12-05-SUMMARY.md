@@ -4,3 +4,4 @@
 
 ## Tasks
 - [x] 01. Update docs and add codex-specific runbook
+- [x] 02. Add regression tests and close phase artifacts
