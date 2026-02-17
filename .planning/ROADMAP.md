@@ -8,7 +8,7 @@ Operational roadmap for Forge Loop lifecycle delivery in RepoStudio, aligned to 
 - `forge_env_analysis/`
 - `ide_navigation_analysis/`
 
-Phase 08 is closed. Phase 09 is now the active execution gate.
+Phase 09 is closed. Phase 10 is now the active execution gate.
 
 ## Phases
 
@@ -21,6 +21,7 @@ Phase 08 is closed. Phase 09 is now the active execution gate.
 - [x] **Phase 07: Structured parsers and story publish pipeline** - Convert planning/story content into structured models and publish story files into pages/blocks
 - [x] **Phase 08: Electron desktop runtime** - Deliver packaged desktop runtime with bundled SQLite and watcher-first behavior
 - [x] **Phase 09: Desktop auth and platform connection** - Add secure desktop connection/auth scope and credential flow
+- [x] **Phase 10: RepoStudio build and runtime guardrails** - Prevent CSS/dependency regressions with verify-work, doctor, dev prechecks, and CI gates
 
 ## Phase Details
 
@@ -130,10 +131,22 @@ Plans:
 **Plans:** 4 plans
 
 Plans:
-- [ ] 09-01: Studio scope additions (`repo-studio.*|connect|read|write`) and desktop connection validation endpoint
-- [ ] 09-02: Desktop token lifecycle with keytar + safeStorage fallback and IPC bridge auth controls
-- [ ] 09-03: Settings-registry connection status/remediation UX and typed client integration
-- [ ] 09-04: Desktop auth diagnostics, security tests, and runbook hardening
+- [x] 09-01: Studio scope additions (`repo-studio.*|connect|read|write`) and desktop connection validation endpoint
+- [x] 09-02: Desktop token lifecycle with keytar + safeStorage fallback and IPC bridge auth controls
+- [x] 09-03: Settings-registry connection status/remediation UX and typed client integration
+- [x] 09-04: Desktop auth diagnostics, security tests, and runbook hardening
+
+### Phase 10: RepoStudio build and runtime guardrails
+**Goal:** Catch RepoStudio CSS/dependency regressions early through verify-work gating, doctor diagnostics, dev prechecks, and CI.
+**Depends on:** Phase 09
+**Requirements:** [REQ-24]
+**Plans:** 4 plans
+
+Plans:
+- [ ] 10-01: Add path-based RepoStudio build gate to Forge Loop verify-work
+- [ ] 10-02: Extend RepoStudio dependency doctor with CSS package checks (`tw-animate-css`, `tailwindcss-animate`)
+- [ ] 10-03: Add `predev:repo-studio` fail-fast doctor precheck
+- [ ] 10-04: Add minimal CI workflow and document CSS import/dependency rules for agents
 
 ## Progress
 
@@ -147,4 +160,5 @@ Plans:
 | 06. Workspace contributions and IDE navigation core | 4/4 | Complete | 2026-02-16 |
 | 07. Structured parsers and story publish pipeline | 4/4 | Complete | 2026-02-16 |
 | 08. Electron desktop runtime | 4/4 | Complete | 2026-02-17 |
-| 09. Desktop auth and platform connection | 0/4 | Planned | - |
+| 09. Desktop auth and platform connection | 4/4 | Complete | 2026-02-17 |
+| 10. RepoStudio build and runtime guardrails | 0/4 | In Progress | - |
