@@ -5,3 +5,4 @@
 ## Tasks
 - [x] 01. Build secure credential manager with fallback provider chain
 - [x] 02. Wire desktop IPC bridge for auth actions
+- [x] 03. Add app auth route baseline for parity and dev-mode memory flow
