@@ -4,3 +4,4 @@
 
 ## Tasks
 - [x] 01. Integrate runtime resolver into stage commands
+- [x] 02. Extend doctor runtime diagnostics
