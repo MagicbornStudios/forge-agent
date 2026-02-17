@@ -8,7 +8,7 @@ Operational roadmap for Forge Loop lifecycle delivery in RepoStudio, aligned to 
 - `forge_env_analysis/`
 - `ide_navigation_analysis/`
 
-Phase 09 is closed. Phase 10 is now the active execution gate.
+Phase 11 is active and focused on Review Queue persistence/diff UX hardening.
 
 ## Phases
 
@@ -22,6 +22,7 @@ Phase 09 is closed. Phase 10 is now the active execution gate.
 - [x] **Phase 08: Electron desktop runtime** - Deliver packaged desktop runtime with bundled SQLite and watcher-first behavior
 - [x] **Phase 09: Desktop auth and platform connection** - Add secure desktop connection/auth scope and credential flow
 - [x] **Phase 10: RepoStudio build and runtime guardrails** - Prevent CSS/dependency regressions with verify-work, doctor, dev prechecks, and CI gates
+- [x] **Phase 11: Review Queue persistence and diff UX** - Move proposals to SQLite source-of-truth, add one-file Monaco diff review, and enforce scope-safe global trust-mode auto-apply
 
 ## Phase Details
 
@@ -143,10 +144,22 @@ Plans:
 **Plans:** 4 plans
 
 Plans:
-- [ ] 10-01: Add path-based RepoStudio build gate to Forge Loop verify-work
-- [ ] 10-02: Extend RepoStudio dependency doctor with CSS package checks (`tw-animate-css`, `tailwindcss-animate`)
-- [ ] 10-03: Add `predev:repo-studio` fail-fast doctor precheck
-- [ ] 10-04: Add minimal CI workflow and document CSS import/dependency rules for agents
+- [x] 10-01: Add path-based RepoStudio build gate to Forge Loop verify-work
+- [x] 10-02: Extend RepoStudio dependency doctor with CSS package checks (`tw-animate-css`, `tailwindcss-animate`)
+- [x] 10-03: Add `predev:repo-studio` fail-fast doctor precheck
+- [x] 10-04: Add minimal CI workflow and document CSS import/dependency rules for agents
+
+### Phase 11: Review Queue persistence and diff UX
+**Goal:** Make Review Queue production-grade with SQLite-backed proposals, one-file-at-a-time Monaco diff UX, and scope-safe trust-mode auto-apply.
+**Depends on:** Phase 10
+**Requirements:** [REQ-25]
+**Plans:** 4 plans
+
+Plans:
+- [ ] 11-01: Proposal store repository refactor + SQLite canonical persistence + one-time JSON import
+- [ ] 11-02: Proposal diff parsing service + diff-files/diff-file API contracts + typed client support
+- [ ] 11-03: Review Queue one-file Monaco UX + settings trust-mode wiring + auto-apply behavior
+- [ ] 11-04: Docs/tests/verification closeout + phase summaries and artifact trace updates
 
 ## Progress
 
@@ -161,4 +174,5 @@ Plans:
 | 07. Structured parsers and story publish pipeline | 4/4 | Complete | 2026-02-16 |
 | 08. Electron desktop runtime | 4/4 | Complete | 2026-02-17 |
 | 09. Desktop auth and platform connection | 4/4 | Complete | 2026-02-17 |
-| 10. RepoStudio build and runtime guardrails | 0/4 | In Progress | - |
+| 10. RepoStudio build and runtime guardrails | 4/4 | Complete | 2026-02-17 |
+| 11. Review Queue persistence and diff UX | 0/4 | In Progress | - |
