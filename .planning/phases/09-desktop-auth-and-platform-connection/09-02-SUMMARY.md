@@ -4,3 +4,4 @@
 
 ## Tasks
 - [x] 01. Build secure credential manager with fallback provider chain
+- [x] 02. Wire desktop IPC bridge for auth actions
