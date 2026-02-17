@@ -8,12 +8,20 @@
   },
   "files": [
     "src",
+    "dist",
     "docs",
     "README.md"
   ],
   "scripts": {
-    "build": "node -e \"console.log('forge-loop: no build step (source-distributed mjs)')\"",
+    "build": "tsup --config tsup.config.ts",
     "test": "node --test \"src/__tests__/*.test.mjs\"",
     "publish": "npm publish"
+  },
+  "dependencies": {
+    "ink": "^5.2.1",
+    "react": "^19.2.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0"
   }
 }

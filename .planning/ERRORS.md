@@ -107,3 +107,6 @@
 - [x] Phase 12 initially created plan files under mismatched phase directory slug (`12-codex-interactive-cli`), so `forge-loop progress` reported no plans.
   - Root cause: phase directory naming must match roadmap phase title slug (`12-codex-interactive-ralph-loop-cli`).
   - Resolution: renamed phase folder, updated frontmatter references, and revalidated progress (`plans: 5`, `nextAction: execute-phase 12`).
+- [x] Phase 12 plan files were initially emitted with invalid frontmatter framing for validator contract.
+  - Root cause: initial plan file generation omitted proper YAML closing marker and used CRLF formatting that failed strict frontmatter extraction (`extractFrontmatter` expects LF markers).
+  - Resolution: normalized plan files to valid `--- ... ---` blocks with LF line endings and revalidated using interactive plan mode execution.

@@ -58,6 +58,6 @@
 | FRG-1104 | 11 | 11-04 | Complete | Closed docs/tests/verification for Phase 11 and published summaries + decision/error trace updates. |
 | FRG-1201 | 12 | 12-01 | Complete | Runtime provider abstraction and config normalization (`runtime.mode|runtime.codex.*`) with compatibility for legacy string runtime values. |
 | FRG-1202 | 12 | 12-02 | Complete | Codex app-server runner core with structured event capture into `.planning/runs/*.jsonl`. |
-| FRG-1203 | 12 | 12-03 | In progress | Add `forge-loop interactive` Ink TUI command for single-loop sequential Ralph flow execution. |
-| FRG-1204 | 12 | 12-04 | Planned | Wire stage commands to runner resolver and codex task-result semantics while preserving prompt-pack behavior. |
+| FRG-1203 | 12 | 12-03 | Complete | Add `forge-loop interactive` Ink TUI command for single-loop sequential Ralph flow execution. |
+| FRG-1204 | 12 | 12-04 | In progress | Wire stage commands to runner resolver and codex task-result semantics while preserving prompt-pack behavior. |
 | FRG-1205 | 12 | 12-05 | Planned | Docs/tests/verification closeout and Phase 12 summary artifacts. |
