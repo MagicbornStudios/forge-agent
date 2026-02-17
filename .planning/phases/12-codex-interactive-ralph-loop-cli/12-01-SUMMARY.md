@@ -23,3 +23,4 @@ Plan 12-01 completed runtime abstraction scaffolding for Forge Loop without remo
 - Wire runtime resolver into stage commands (`discuss|plan|execute`) in Plan 12-04.
 - Extend doctor runtime diagnostics with codex readiness fields in Plan 12-04.
 - [x] 01. Create runtime provider modules
+- [x] 02. Normalize runtime config shape with backward compatibility
