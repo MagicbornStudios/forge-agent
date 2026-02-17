@@ -5,3 +5,4 @@
 ## Tasks
 - [x] 01. Add proposal unified-diff parser
 - [x] 02. Add proposal diff APIs
+- [x] 03. Extend typed client contracts
