@@ -8,7 +8,7 @@ Operational roadmap for Forge Loop lifecycle delivery in RepoStudio, aligned to 
 - `forge_env_analysis/`
 - `ide_navigation_analysis/`
 
-Phase 07 is closed. Phase 08 is now the active execution gate before phase 09.
+Phase 08 is closed. Phase 09 is now the active execution gate.
 
 ## Phases
 
@@ -20,7 +20,7 @@ Phase 07 is closed. Phase 08 is now the active execution gate before phase 09.
 - [x] **Phase 06: Workspace contributions and IDE navigation core** - Add per-workspace menus/settings, Navigator/search baseline, and publishability parity
 - [x] **Phase 07: Structured parsers and story publish pipeline** - Convert planning/story content into structured models and publish story files into pages/blocks
 - [x] **Phase 08: Electron desktop runtime** - Deliver packaged desktop runtime with bundled SQLite and watcher-first behavior
-- [ ] **Phase 09: Desktop auth and platform connection** - Add secure desktop connection/auth scope and credential flow
+- [x] **Phase 09: Desktop auth and platform connection** - Add secure desktop connection/auth scope and credential flow
 
 ## Phase Details
 
@@ -118,10 +118,10 @@ Plans:
 **Plans:** 4 plans
 
 Plans:
-- [ ] 08-01: Electron runtime shell and startup contracts
-- [ ] 08-02: SQLite path strategy (web dev vs desktop bundled/userData)
-- [ ] 08-03: Native watcher integration for tree/search/git refresh
-- [ ] 08-04: Packaging and release scripts/docs
+- [x] 08-01: Electron runtime shell and startup contracts
+- [x] 08-02: SQLite path strategy (web dev vs desktop bundled/userData)
+- [x] 08-03: Native watcher integration for tree/search/git refresh
+- [x] 08-04: Packaging and release scripts/docs
 
 ### Phase 09: Desktop auth and platform connection
 **Goal:** Secure desktop connection to platform APIs with scoped auth and local credential lifecycle.
@@ -130,10 +130,10 @@ Plans:
 **Plans:** 4 plans
 
 Plans:
-- [ ] 09-01: Server scope additions (`repo-studio|desktop`) and auth checks
-- [ ] 09-02: Desktop token lifecycle and secure storage strategy
-- [ ] 09-03: Connection status/remediation UX in RepoStudio
-- [ ] 09-04: Security/runbook hardening for desktop auth flow
+- [ ] 09-01: Studio scope additions (`repo-studio.*|connect|read|write`) and desktop connection validation endpoint
+- [ ] 09-02: Desktop token lifecycle with keytar + safeStorage fallback and IPC bridge auth controls
+- [ ] 09-03: Settings-registry connection status/remediation UX and typed client integration
+- [ ] 09-04: Desktop auth diagnostics, security tests, and runbook hardening
 
 ## Progress
 
@@ -146,5 +146,5 @@ Plans:
 | 05. Settings foundation and canonical env UX | 4/4 | Complete | 2026-02-16 |
 | 06. Workspace contributions and IDE navigation core | 4/4 | Complete | 2026-02-16 |
 | 07. Structured parsers and story publish pipeline | 4/4 | Complete | 2026-02-16 |
-| 08. Electron desktop runtime | 0/4 | Planned | - |
+| 08. Electron desktop runtime | 4/4 | Complete | 2026-02-17 |
 | 09. Desktop auth and platform connection | 0/4 | Planned | - |
