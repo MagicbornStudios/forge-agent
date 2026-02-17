@@ -23,3 +23,4 @@ Plan 12-02 completed codex app-server runner core modules for Forge Loop with st
 - Add interactive TUI command and execution shell in Plan 12-03.
 - Integrate provider resolver with stage commands and doctor reporting in Plan 12-04.
 - [x] 01. Implement codex readiness and lifecycle modules
+- [x] 02. Implement protocol + turn mapping + event logging
