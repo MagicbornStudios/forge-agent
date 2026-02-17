@@ -19,6 +19,8 @@ import {
   parsePlanFrontmatter,
   parsePlanTasks,
 } from '../lib/planning.mjs';
+import { enrichStageResult } from '../lib/runtime/results.mjs';
+import { createStageRunnerContext, finalizeStageRunnerContext } from '../lib/runtime/stage-runner.mjs';
 
 function sortPlanPaths(planPaths) {
   return [...planPaths].sort((a, b) => {
@@ -90,7 +92,22 @@ function upsertSummaryTask(summaryPath, index, taskName, completed) {
     })
     .replace(/\n{3,}/g, '\n\n');
 
-  writeText(summaryPath, duplicateCount > 0 ? updated.trimEnd() + '\n' : updated);
+  writeText(summaryPath, duplicateCount > 0 ? `${updated.trimEnd()}\n` : updated);
+}
+
+function buildTaskPrompt({ phase, planName, taskNumber, taskName }) {
+  return [
+    `Phase ${phase.phaseNumber}: ${phase.name}`,
+    `Plan: ${planName}`,
+    `Task ${taskNumber}: ${taskName}`,
+    'Implement this task and summarize the concrete outcome and changed files.',
+    'If blocked, explain the blocking reason clearly.',
+  ].join('\n');
+}
+
+function toStatusFromTurn(turn, shouldMarkDone) {
+  if (turn) return turn.ok ? 'completed' : 'blocked';
+  return shouldMarkDone ? 'completed' : 'skipped';
 }
 
 export async function runExecutePhase(phaseNumber, options = {}) {
@@ -103,6 +120,15 @@ export async function runExecutePhase(phaseNumber, options = {}) {
   if (!phase) {
     throw new Error(`Phase ${phaseNumber} not found in .planning/ROADMAP.md`);
   }
+
+  const config = loadPlanningConfig();
+  const runtime = createStageRunnerContext({
+    config,
+    requestedRunner: options.runner,
+    phaseNumber: phase.phaseNumber,
+    stage: 'execute',
+    keepSession: options.keepRuntimeSession === true,
+  });
 
   const phaseDir = ensurePhaseDir(phase.phaseNumber, phase.name);
   const allPlans = sortPlanPaths(listPhasePlanFiles(phaseDir.fullPath));
@@ -118,16 +144,18 @@ export async function runExecutePhase(phaseNumber, options = {}) {
     throw new Error(`No matching plans found for phase ${phase.phaseNumber}.`);
   }
 
-  const config = loadPlanningConfig();
   if (shouldRunHeadlessEnvGate(config, options)) {
     ensureHeadlessEnvReady(config, {
       headless: options.headless === true,
       nonInteractive: options.nonInteractive === true,
     });
   }
+
   const autoCommit = options.autoCommit ?? getAutoCommitEnabled(config);
   const commitScope = getCommitScope(config);
   const completedPlans = [];
+  const taskResults = [];
+  const artifactSet = new Set();
 
   for (const planPath of planPaths) {
     const planName = path.basename(planPath).replace('-PLAN.md', '');
@@ -138,18 +166,56 @@ export async function runExecutePhase(phaseNumber, options = {}) {
     const summaryPath = path.join(phaseDir.fullPath, `${planName}-SUMMARY.md`);
     if (!fileExists(summaryPath)) {
       writeText(summaryPath, `${summaryHeader(phase, planId)}\n`);
+      artifactSet.add(summaryPath);
     }
 
     for (let index = 0; index < taskNames.length; index += 1) {
       const taskName = taskNames[index];
       const taskNumber = String(index + 1).padStart(2, '0');
+      let shouldMarkDone = false;
+      let taskTurn = null;
 
-      const shouldMarkDone = options.nonInteractive
-        ? true
-        : await askYesNo(`Mark task ${taskNumber} for ${planName} as completed? (${taskName})`, true);
+      if (runtime.runnerSelected === 'prompt-pack') {
+        shouldMarkDone = options.nonInteractive
+          ? true
+          : await askYesNo(`Mark task ${taskNumber} for ${planName} as completed? (${taskName})`, true);
+      } else {
+        taskTurn = await runtime.provider.runTask({
+          prompt: buildTaskPrompt({ phase, planName, taskNumber, taskName }),
+          metadata: {
+            phase: phase.phaseNumber,
+            plan: planName,
+            taskNumber,
+            taskName,
+            stage: 'execute',
+          },
+          writer: runtime.writer,
+        });
+        shouldMarkDone = taskTurn.ok === true;
+      }
 
       upsertSummaryTask(summaryPath, index + 1, taskName, shouldMarkDone);
       updateState(phase, planName, taskName);
+      artifactSet.add(summaryPath);
+      artifactSet.add(PLANNING_FILES.state);
+
+      const status = toStatusFromTurn(taskTurn, shouldMarkDone);
+      const reason = taskTurn?.reason || (status === 'completed' ? null : 'Task remains open.');
+      const filesTouched = Array.isArray(taskTurn?.filesTouched) ? taskTurn.filesTouched : [];
+      taskResults.push({
+        taskId: `${planName}:${taskNumber}`,
+        status,
+        reason,
+        filesTouched,
+      });
+
+      runtime.writer.write(status === 'completed' ? 'task-complete' : 'task-blocked', {
+        plan: planName,
+        taskNumber,
+        taskName,
+        reason,
+        filesTouched,
+      });
 
       if (autoCommit && shouldMarkDone) {
         const commitFiles = [summaryPath, PLANNING_FILES.state].map((item) => path.relative(process.cwd(), item).replace(/\\/g, '/'));
@@ -180,6 +246,7 @@ export async function runExecutePhase(phaseNumber, options = {}) {
   const executionState = getPhaseExecutionState(phaseDir.fullPath);
   if (executionState.complete) {
     markRoadmapPhaseComplete(phase.phaseNumber);
+    artifactSet.add(PLANNING_FILES.roadmap);
     if (autoCommit) {
       const commitResult = commitPaths(
         process.cwd(),
@@ -196,6 +263,7 @@ export async function runExecutePhase(phaseNumber, options = {}) {
     promptPath,
     `# Forge Loop Execute Prompt - Phase ${phase.phaseNumber}\n\nUse this with a coding agent or manual execution:\n1. Open plan files in ${path.relative(process.cwd(), phaseDir.fullPath).replace(/\\/g, '/')}\n2. Execute tasks sequentially within wave order.\n3. Keep summary files updated after each completed task.\n4. Run forge-loop verify-work ${phase.phaseNumber} after execution.\n`,
   );
+  artifactSet.add(promptPath);
 
   if (autoCommit) {
     const commitResult = commitPaths(
@@ -224,7 +292,7 @@ export async function runExecutePhase(phaseNumber, options = {}) {
     blockingGaps: normalizedExecution.complete ? [] : [...normalizedExecution.incompletePlans],
   };
 
-  return {
+  const result = enrichStageResult({
     phase,
     completedPlans,
     executionState: normalizedExecution,
@@ -232,5 +300,17 @@ export async function runExecutePhase(phaseNumber, options = {}) {
     summary,
     status: summary.status,
     nextAction: summary.nextAction,
-  };
+    runnerUsed: runtime.runnerSelected,
+    taskResults,
+    artifactsWritten: [...artifactSet],
+  });
+
+  await finalizeStageRunnerContext(runtime, {
+    ok: result.status === 'ready_for_verify',
+    status: result.status,
+    nextAction: result.nextAction,
+    taskResults: result.taskResults,
+  });
+
+  return result;
 }

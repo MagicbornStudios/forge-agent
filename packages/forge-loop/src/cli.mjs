@@ -116,7 +116,7 @@ function resolveLoopContext(command, requestedLoopId) {
 }
 
 function printUsage() {
-  console.log(`forge-loop v1.6\n\nUsage:\n  forge-loop <command> [options]\n\nFirst run:\n  forge-loop new-project --fresh --profile forge-loop\n  forge-loop doctor\n\nCommands:\n  new-project [--fresh] [--profile forge-agent|forge-loop|custom]\n  migrate-legacy\n  discuss-phase <phase> [--notes "..."] [--runner auto|prompt-pack|codex] [--loop <id>]\n  plan-phase <phase> [--skip-research] [--gaps] [--runner auto|prompt-pack|codex] [--loop <id>]\n  execute-phase <phase> [--gaps-only] [--non-interactive] [--headless] [--runner auto|prompt-pack|codex] [--loop <id>]\n  verify-work <phase> [--non-interactive] [--strict] [--headless] [--loop <id>]\n  interactive [--phase <n>] [--mode discuss|plan|execute|verify|full] [--runner auto|prompt-pack|codex] [--loop <id>] [--json]\n  progress [--json] [--loop <id>]\n  sync-legacy [--loop <id>]\n  doctor [--headless] [--loop <id>]\n  loop:list\n  loop:new <loop-id> [--name "..."] [--scope "apps/platform,packages/ui"] [--profile forge-agent|forge-loop|custom] [--runner codex|openrouter|custom]\n  loop:use <loop-id>\n\nGlobal:\n  --json  Print machine-readable command output.\n\nRunbooks:\n  packages/forge-loop/docs/01-quickstart.md (repo)\n  docs/01-quickstart.md (published package)\n\nGUI companion:\n  forge-repo-studio open --view env --mode headless\n`);
+  console.log(`forge-loop v1.6\n\nUsage:\n  forge-loop <command> [options]\n\nFirst run:\n  forge-loop new-project --fresh --profile forge-loop\n  forge-loop doctor\n\nCommands:\n  new-project [--fresh] [--profile forge-agent|forge-loop|custom]\n  migrate-legacy\n  discuss-phase <phase> [--notes "..."] [--runner auto|prompt-pack|codex] [--loop <id>]\n  plan-phase <phase> [--skip-research] [--gaps] [--runner auto|prompt-pack|codex] [--loop <id>]\n  execute-phase <phase> [--gaps-only] [--non-interactive] [--headless] [--runner auto|prompt-pack|codex] [--loop <id>]\n  verify-work <phase> [--non-interactive] [--strict] [--headless] [--loop <id>]\n  interactive [--phase <n>] [--mode discuss|plan|execute|verify|full] [--runner auto|prompt-pack|codex] [--loop <id>] [--json]\n  progress [--json] [--loop <id>]\n  sync-legacy [--loop <id>]\n  doctor [--headless] [--runner auto|prompt-pack|codex] [--loop <id>]\n  loop:list\n  loop:new <loop-id> [--name "..."] [--scope "apps/platform,packages/ui"] [--profile forge-agent|forge-loop|custom] [--runner codex|openrouter|custom]\n  loop:use <loop-id>\n\nGlobal:\n  --json  Print machine-readable command output.\n\nRunbooks:\n  packages/forge-loop/docs/01-quickstart.md (repo)\n  docs/01-quickstart.md (published package)\n\nGUI companion:\n  forge-repo-studio open --view env --mode headless\n`);
 }
 
 function printResult(result, asJson = false) {
@@ -199,7 +199,10 @@ async function main() {
     }
     case 'discuss-phase': {
       const { runDiscussPhase } = await import('./commands/discuss-phase.mjs');
-      result = await runDiscussPhase(positional[0], { notes: flags.get('notes') });
+      result = await runDiscussPhase(positional[0], {
+        notes: flags.get('notes'),
+        runner: flags.get('runner'),
+      });
       break;
     }
     case 'plan-phase': {
@@ -207,6 +210,7 @@ async function main() {
       result = await runPlanPhase(positional[0], {
         skipResearch: flags.has('skip-research'),
         gaps: flags.has('gaps'),
+        runner: flags.get('runner'),
       });
       break;
     }
@@ -216,6 +220,7 @@ async function main() {
         gapsOnly: flags.has('gaps-only'),
         nonInteractive: flags.has('non-interactive'),
         headless: flags.has('headless'),
+        runner: flags.get('runner'),
         allowOutOfScope: flags.has('allow-out-of-scope'),
       });
       break;
@@ -247,6 +252,7 @@ async function main() {
       const { runDoctor } = await import('./commands/doctor.mjs');
       result = await runDoctor({
         headless: flags.has('headless'),
+        runner: flags.get('runner'),
       });
       break;
     }

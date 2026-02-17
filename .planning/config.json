@@ -1,7 +1,7 @@
 {
   "mode": "interactive",
   "runtime": {
-    "mode": "auto",
+    "mode": "prompt-pack",
     "codex": {
       "command": "codex",
       "transport": "app-server",

@@ -110,3 +110,6 @@
 - [x] Phase 12 plan files were initially emitted with invalid frontmatter framing for validator contract.
   - Root cause: initial plan file generation omitted proper YAML closing marker and used CRLF formatting that failed strict frontmatter extraction (`extractFrontmatter` expects LF markers).
   - Resolution: normalized plan files to valid `--- ... ---` blocks with LF line endings and revalidated using interactive plan mode execution.
+- [x] Interactive execute smoke run marked all Phase 12 plan tasks complete before final docs/test closeout.
+  - Root cause: `interactive --mode execute` intentionally reuses execute-phase semantics and auto-writes summaries/state.
+  - Resolution: replaced generated summaries with explicit plan summaries and kept closeout state under `12-05` for strict verification gate completion.

@@ -9,10 +9,13 @@ import {
   getCommitScope,
   getEnvSettings,
   getLegacySyncTargets,
+  getRuntimeSettings,
   loadPlanningConfig,
 } from '../lib/config.mjs';
 import { getStagedFiles, isGitRepo, isInCommitScope } from '../lib/git.mjs';
 import { ensureHeadlessEnvReady } from '../lib/env-preflight.mjs';
+import { evaluateCodexRuntimeReadiness } from '../lib/codex/cli-status.mjs';
+import { resolveRuntimeRunner } from '../lib/runtime/resolver.mjs';
 
 const REQUIRED_FILES = [
   PLANNING_FILES.project,
@@ -71,13 +74,70 @@ export async function runDoctor(options = {}) {
 
   const config = loadPlanningConfig();
   const env = getEnvSettings(config);
-  const runtimeOk = config.runtime === 'prompt-pack';
+  const runtimeSettings = getRuntimeSettings(config);
+  const codexReadiness = evaluateCodexRuntimeReadiness(runtimeSettings);
+
+  let runtimeSelection = null;
+  let runtimeSelectionIssue = null;
+  try {
+    runtimeSelection = resolveRuntimeRunner({
+      config,
+      requestedRunner: options.runner,
+      codexReadiness,
+    });
+  } catch (error) {
+    runtimeSelectionIssue = error instanceof Error ? error.message : String(error);
+  }
+
   checks.push({
-    name: 'config.runtime',
-    ok: runtimeOk,
-    details: `runtime=${config.runtime}`,
+    name: 'runtime.mode',
+    ok: true,
+    details: `mode=${runtimeSettings.mode}`,
   });
-  if (!runtimeOk) issues.push(`Unsupported runtime "${config.runtime}". Only "prompt-pack" is allowed.`);
+
+  checks.push({
+    name: 'runtime.runnerSelected',
+    ok: Boolean(runtimeSelection),
+    details: runtimeSelection ? runtimeSelection.runnerSelected : 'unresolved',
+  });
+  if (!runtimeSelection && runtimeSelectionIssue) {
+    issues.push(runtimeSelectionIssue);
+  }
+
+  checks.push({
+    name: 'runtime.codexCliInstalled',
+    ok: codexReadiness.cli.installed,
+    details: codexReadiness.cli.installed ? codexReadiness.cli.version : 'missing',
+  });
+
+  checks.push({
+    name: 'runtime.codexLoginValid',
+    ok: Boolean(codexReadiness.login?.loggedIn),
+    details: codexReadiness.login?.authType || 'none',
+  });
+
+  checks.push({
+    name: 'runtime.codexAppServerReachable',
+    ok: Boolean(codexReadiness.appServer?.reachable),
+    details: codexReadiness.appServer?.reachable ? 'available' : 'unavailable',
+  });
+
+  checks.push({
+    name: 'runtime.codexFallbackEnabled',
+    ok: true,
+    details: runtimeSettings.codex.execFallbackAllowed === true ? 'true' : 'false',
+  });
+
+  if (runtimeSettings.mode === 'codex' && !codexReadiness.ok) {
+    issues.push(`Runtime mode codex is selected but readiness failed: ${codexReadiness.issues.join(', ')}`);
+  } else if (runtimeSettings.mode === 'auto' && !codexReadiness.ok) {
+    const message = `Runtime auto mode fallback active: ${codexReadiness.issues.join(', ')}`;
+    if (runtimeSettings.codex.execFallbackAllowed === true) {
+      warnings.push(message);
+    } else {
+      issues.push(message);
+    }
+  }
 
   checks.push({
     name: 'config.env.profile',
@@ -166,6 +226,15 @@ export async function runDoctor(options = {}) {
     checks,
     warnings,
     issues,
+    runtime: {
+      mode: runtimeSettings.mode,
+      runnerSelected: runtimeSelection?.runnerSelected || null,
+      codexCliInstalled: codexReadiness.cli.installed,
+      codexLoginValid: Boolean(codexReadiness.login?.loggedIn),
+      codexAppServerReachable: Boolean(codexReadiness.appServer?.reachable),
+      codexFallbackEnabled: runtimeSettings.codex.execFallbackAllowed === true,
+      fallbackReason: runtimeSelection?.fallbackReason || null,
+    },
     report,
     nextAction: issues.length === 0 ? 'forge-loop progress' : 'Fix doctor issues and rerun forge-loop doctor',
   };

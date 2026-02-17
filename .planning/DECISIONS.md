@@ -72,3 +72,4 @@
 - [x] Phase 12 is opened as an additive CLI extension: keep existing `forge-loop` command surface and prompt-pack behavior, and layer codex-interactive runner support behind provider abstraction and explicit runner selection.
 - [x] Phase 12 codex runtime transport is CLI app-server JSON-RPC first with explicit readiness evaluation (`cli/login/app-server`) and no SDK coupling in this phase.
 - [x] Interactive terminal UX for Forge Loop Phase 12 uses Ink with JSON mode fallback, so the same command can support human TUI operation and automation (`--json`).
+- [x] Stage command defaults remain prompt-pack safe; codex runner execution is opt-in via `--runner` or explicit runtime mode override.

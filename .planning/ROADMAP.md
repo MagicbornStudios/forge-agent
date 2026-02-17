@@ -8,7 +8,7 @@ Operational roadmap for Forge Loop lifecycle delivery in RepoStudio, aligned to 
 - `forge_env_analysis/`
 - `ide_navigation_analysis/`
 
-Phase 11 is closed after strict verification. Phase 12 is active.
+Phase 12 implementation is in final closeout (`12-05`).
 
 ## Phases
 
@@ -172,7 +172,7 @@ Plans:
 - [x] 12-01: Runtime provider abstraction + runtime config normalization
 - [x] 12-02: Codex app-server runner core + event telemetry
 - [x] 12-03: Interactive Ink TUI command and flow orchestration
-- [ ] 12-04: Stage command integration (`discuss|plan|execute`) with runner semantics
+- [x] 12-04: Stage command integration (`discuss|plan|execute`) with runner semantics
 - [ ] 12-05: Docs/tests/verification closeout and phase summary artifacts
 
 ## Progress
@@ -190,4 +190,4 @@ Plans:
 | 09. Desktop auth and platform connection | 4/4 | Complete | 2026-02-17 |
 | 10. RepoStudio build and runtime guardrails | 4/4 | Complete | 2026-02-17 |
 | 11. Review Queue persistence and diff UX | 4/4 | Complete | 2026-02-17 |
-| 12. Codex-interactive Ralph Loop CLI | 3/5 | In progress | - |
+| 12. Codex-interactive Ralph Loop CLI | 4/5 | In progress | - |
