@@ -4,3 +4,4 @@
 
 ## Tasks
 - [x] 01. Add predev guard for RepoStudio startup
+- [x] 02. Update RepoStudio runbooks for pre-dev checks
