@@ -4,3 +4,4 @@
 
 ## Tasks
 - [x] 01. Add minimal CI workflow for RepoStudio guardrails
+- [x] 02. Codify CSS import/dependency rule for agents
