@@ -6,3 +6,4 @@
 - [x] 01. Add typed auth client layer and shared payload contracts
 - [x] 02. Register platform connection settings and defaults
 - [x] 03. Ship settings UI connection card with remediation controls
+- [x] 04. Update loop artifacts and traceability
