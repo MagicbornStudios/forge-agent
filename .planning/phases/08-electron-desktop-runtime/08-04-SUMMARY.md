@@ -4,3 +4,4 @@
 
 ## Tasks
 - [x] 01. Implement Desktop packaging and release scripts
+- [x] 02. Update loop artifacts and traceability
