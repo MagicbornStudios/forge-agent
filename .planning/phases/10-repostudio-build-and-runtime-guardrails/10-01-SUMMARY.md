@@ -4,3 +4,4 @@
 
 ## Tasks
 - [x] 01. Add RepoStudio path gate to verification command plan
+- [x] 02. Add integration tests for RepoStudio verification gate
