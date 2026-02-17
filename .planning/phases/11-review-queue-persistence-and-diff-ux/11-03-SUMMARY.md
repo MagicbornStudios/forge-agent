@@ -5,3 +5,4 @@
 ## Tasks
 - [x] 01. Refactor Review Queue workspace layout and behavior
 - [x] 02. Add trust mode settings and wiring
+- [x] 03. Implement auto-apply pipeline for new proposals
