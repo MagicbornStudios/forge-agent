@@ -8,9 +8,17 @@ export const REPO_STUDIO_RUNTIME_PATH = path.join(process.cwd(), '.repo-studio',
 export const REPO_STUDIO_RUNS_DIR = path.join(process.cwd(), '.repo-studio', 'runs');
 export const REPO_STUDIO_APP_DEFAULT_PORT = 3010;
 export const REPO_STUDIO_PACKAGE_DEFAULT_PORT = 3864;
+export const REPO_STUDIO_DESKTOP_DEFAULT_PORT = 3020;
+
+const RUNTIME_MODES = new Set(['app', 'package', 'desktop']);
 
 function normalizeWorkspaceRoot(value) {
   return path.resolve(String(value || process.cwd())).replace(/\\/g, '/').toLowerCase();
+}
+
+function normalizeRuntimeMode(value) {
+  const mode = String(value || 'package').trim().toLowerCase();
+  return RUNTIME_MODES.has(mode) ? mode : 'package';
 }
 
 function parseNetstatPid(line, port) {
@@ -46,9 +54,13 @@ export function findListeningPidByPort(port) {
 }
 
 export function runtimeUrlFor(state) {
-  const port = Number(state?.port || 0);
-  if (!Number.isFinite(port) || port <= 0) return null;
-  return `http://127.0.0.1:${port}`;
+  if (!state || typeof state !== 'object') return null;
+  const mode = normalizeRuntimeMode(state.mode);
+  const portCandidate = mode === 'desktop'
+    ? Number(state?.desktop?.appPort || state.port || 0)
+    : Number(state.port || 0);
+  if (!Number.isFinite(portCandidate) || portCandidate <= 0) return null;
+  return `http://127.0.0.1:${portCandidate}`;
 }
 
 export function isProcessAlive(pid) {
@@ -75,30 +87,56 @@ export function isProcessAlive(pid) {
   }
 }
 
-export async function readRuntimeState() {
-  const state = await readJson(REPO_STUDIO_RUNTIME_PATH, null);
-  if (!state || typeof state !== 'object') return null;
+function normalizeDesktopMetadata(value = {}) {
   return {
-    ...state,
-    url: runtimeUrlFor(state),
+    appPort: Number(value.appPort || 0),
+    serverPid: Number(value.serverPid || 0),
+    electronPid: Number(value.electronPid || 0),
+    serverMode: String(value.serverMode || ''),
+    watcher: value.watcher && typeof value.watcher === 'object' ? value.watcher : null,
+    sqlite: value.sqlite && typeof value.sqlite === 'object' ? value.sqlite : null,
   };
 }
 
-export async function writeRuntimeState(state) {
+function normalizeRuntimeState(state) {
+  const mode = normalizeRuntimeMode(state?.mode);
+  const desktop = mode === 'desktop' ? normalizeDesktopMetadata(state?.desktop || {}) : null;
   const normalized = {
     pid: Number(state?.pid || process.pid),
     port: Number(state?.port || 0),
-    mode: state?.mode === 'app' ? 'app' : 'package',
+    mode,
     startedAt: String(state?.startedAt || new Date().toISOString()),
     workspaceRoot: String(state?.workspaceRoot || process.cwd()),
     view: String(state?.view || 'planning'),
     profile: String(state?.profile || 'forge-loop'),
+    ...(desktop ? { desktop } : {}),
   };
-  await writeJson(REPO_STUDIO_RUNTIME_PATH, normalized);
   return {
     ...normalized,
     url: runtimeUrlFor(normalized),
   };
+}
+
+export async function readRuntimeState() {
+  const state = await readJson(REPO_STUDIO_RUNTIME_PATH, null);
+  if (!state || typeof state !== 'object') return null;
+  return normalizeRuntimeState(state);
+}
+
+export async function writeRuntimeState(state) {
+  const normalized = normalizeRuntimeState(state || {});
+  const persisted = {
+    pid: normalized.pid,
+    port: normalized.port,
+    mode: normalized.mode,
+    startedAt: normalized.startedAt,
+    workspaceRoot: normalized.workspaceRoot,
+    view: normalized.view,
+    profile: normalized.profile,
+    ...(normalized.desktop ? { desktop: normalized.desktop } : {}),
+  };
+  await writeJson(REPO_STUDIO_RUNTIME_PATH, persisted);
+  return normalized;
 }
 
 export async function clearRuntimeState() {
@@ -117,6 +155,42 @@ export async function ensureRunLogsDir() {
   return REPO_STUDIO_RUNS_DIR;
 }
 
+function isDesktopRuntimeHealthy(state) {
+  const electronPid = Number(state?.desktop?.electronPid || state?.pid || 0);
+  const serverPid = Number(state?.desktop?.serverPid || 0);
+  const appPort = Number(state?.desktop?.appPort || state?.port || 0);
+  const electronAlive = isProcessAlive(electronPid);
+  const serverAlive = isProcessAlive(serverPid);
+  const listeningPid = findListeningPidByPort(appPort);
+  const portAlive = Number.isInteger(listeningPid) && listeningPid > 0;
+  const running = electronAlive || serverAlive || portAlive;
+  return {
+    running,
+    details: {
+      electronAlive,
+      serverAlive,
+      portAlive,
+      listeningPid: listeningPid || null,
+    },
+  };
+}
+
+function isRuntimeHealthy(state) {
+  const mode = normalizeRuntimeMode(state?.mode);
+  if (mode === 'desktop') return isDesktopRuntimeHealthy(state);
+  const pidAlive = isProcessAlive(state?.pid);
+  const listeningPid = findListeningPidByPort(state?.port);
+  const runtimeMatchesPort = Number.isInteger(listeningPid) && Number(listeningPid) === Number(state?.pid);
+  return {
+    running: pidAlive && runtimeMatchesPort,
+    details: {
+      pidAlive,
+      runtimeMatchesPort,
+      listeningPid: listeningPid || null,
+    },
+  };
+}
+
 export async function loadActiveRuntimeState(options = {}) {
   const state = await readRuntimeState();
   if (!state) {
@@ -127,15 +201,13 @@ export async function loadActiveRuntimeState(options = {}) {
     };
   }
 
-  const pidAlive = isProcessAlive(state.pid);
-  const listeningPid = findListeningPidByPort(state.port);
-  const runtimeMatchesPort = Number.isInteger(listeningPid) && Number(listeningPid) === Number(state.pid);
-
-  if (pidAlive && runtimeMatchesPort) {
+  const health = isRuntimeHealthy(state);
+  if (health.running) {
     return {
       running: true,
       state,
       stale: false,
+      health: health.details,
     };
   }
 
@@ -147,18 +219,22 @@ export async function loadActiveRuntimeState(options = {}) {
     running: false,
     state,
     stale: true,
+    health: health.details,
   };
 }
 
 export async function detectRuntimeByPort(options = {}) {
-  const mode = options.mode === 'app' ? 'app' : 'package';
-  const port = Number(options.port || (mode === 'app' ? REPO_STUDIO_APP_DEFAULT_PORT : REPO_STUDIO_PACKAGE_DEFAULT_PORT));
+  const mode = normalizeRuntimeMode(options.mode === 'app' ? 'app' : 'package');
+  const port = Number(
+    options.port
+    || (mode === 'app' ? REPO_STUDIO_APP_DEFAULT_PORT : REPO_STUDIO_PACKAGE_DEFAULT_PORT),
+  );
   const pid = findListeningPidByPort(port);
   if (!pid || !isProcessAlive(pid)) {
     return null;
   }
 
-  return {
+  const state = normalizeRuntimeState({
     pid,
     port,
     mode,
@@ -166,18 +242,19 @@ export async function detectRuntimeByPort(options = {}) {
     workspaceRoot: process.cwd(),
     view: 'planning',
     profile: 'forge-loop',
-    url: runtimeUrlFor({ port }),
-  };
+  });
+
+  return state;
 }
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function stopProcessTree(pid) {
+export async function stopProcessTree(pid) {
   const numeric = Number(pid);
   if (!Number.isInteger(numeric) || numeric <= 0) {
-    return { ok: false, message: 'Invalid PID.' };
+    return { ok: false, message: 'Invalid PID.', stdout: '', stderr: '' };
   }
 
   if (process.platform === 'win32') {
@@ -187,13 +264,16 @@ async function stopProcessTree(pid) {
     const stderr = String(result.stderr || '').trim();
     const stdout = String(result.stdout || '').trim();
     if (result.status === 0) {
-      await sleep(150);
+      await sleep(160);
       if (isProcessAlive(numeric)) {
-        return { ok: false, stdout, stderr: `${stderr}\nPID still alive after taskkill.`.trim() };
+        return {
+          ok: false,
+          stdout,
+          stderr: `${stderr}\nPID still alive after taskkill.`.trim(),
+        };
       }
       return { ok: true, stdout, stderr };
     }
-    // "process not found" from taskkill should be treated as already-stopped.
     if (/not found|no running instance/i.test(`${stdout}\n${stderr}`)) {
       return { ok: true, stdout, stderr };
     }
@@ -218,15 +298,27 @@ async function stopProcessTree(pid) {
   try {
     process.kill(numeric, 'SIGKILL');
   } catch {
-    // Ignore if already gone.
+    // ignore if already gone
   }
   return { ok: true, stdout: '', stderr: '' };
 }
 
+function gatherDesktopPids(runtime) {
+  const pids = new Set();
+  const primary = Number(runtime?.pid || 0);
+  const electronPid = Number(runtime?.desktop?.electronPid || 0);
+  const serverPid = Number(runtime?.desktop?.serverPid || 0);
+  for (const pid of [primary, electronPid, serverPid]) {
+    if (Number.isInteger(pid) && pid > 0) pids.add(pid);
+  }
+  return [...pids];
+}
+
 export async function stopRuntime(options = {}) {
+  const requestedMode = options.mode ? normalizeRuntimeMode(options.mode) : null;
   const runtime = await readRuntimeState();
   if (!runtime) {
-    const fallbackMode = options.mode === 'app' ? 'app' : 'package';
+    const fallbackMode = requestedMode && requestedMode !== 'desktop' ? requestedMode : 'app';
     const fallback = await detectRuntimeByPort({
       mode: fallbackMode,
       port: options.port,
@@ -254,49 +346,36 @@ export async function stopRuntime(options = {}) {
     };
   }
 
-  if (options.mode && runtime.mode !== options.mode) {
+  if (requestedMode && runtime.mode !== requestedMode) {
     return {
       ok: false,
       running: true,
       stopped: false,
-      message: `Runtime mode mismatch: running ${runtime.mode}, requested ${options.mode}.`,
+      message: `Runtime mode mismatch: running ${runtime.mode}, requested ${requestedMode}.`,
       state: runtime,
     };
   }
 
-  if (!isProcessAlive(runtime.pid)) {
-    await clearRuntimeState();
-    return {
-      ok: true,
-      running: false,
-      stopped: true,
-      stale: true,
-      message: 'Removed stale runtime state file.',
-      state: runtime,
-    };
+  const targetPids = runtime.mode === 'desktop'
+    ? gatherDesktopPids(runtime)
+    : [Number(runtime.pid || 0)].filter((pid) => Number.isInteger(pid) && pid > 0);
+
+  const results = [];
+  for (const pid of targetPids) {
+    // eslint-disable-next-line no-await-in-loop
+    const outcome = await stopProcessTree(pid);
+    results.push({ pid, ...outcome });
   }
 
-  const stopped = await stopProcessTree(runtime.pid);
-  if (!stopped.ok) {
-    return {
-      ok: false,
-      running: true,
-      stopped: false,
-      message: `Failed to stop runtime pid ${runtime.pid}.`,
-      stdout: stopped.stdout,
-      stderr: stopped.stderr,
-      state: runtime,
-    };
-  }
-
-  if (isProcessAlive(runtime.pid)) {
+  const alive = targetPids.filter((pid) => isProcessAlive(pid));
+  if (alive.length > 0) {
     return {
       ok: false,
       running: true,
       stopped: false,
-      message: `Runtime pid ${runtime.pid} is still alive after stop attempt.`,
-      stdout: stopped.stdout,
-      stderr: stopped.stderr,
+      message: `Runtime PID(s) still alive after stop attempt: ${alive.join(', ')}.`,
+      stdout: results.map((item) => item.stdout).filter(Boolean).join('\n'),
+      stderr: results.map((item) => item.stderr).filter(Boolean).join('\n'),
       state: runtime,
     };
   }
@@ -306,9 +385,11 @@ export async function stopRuntime(options = {}) {
     ok: true,
     running: false,
     stopped: true,
-    message: `Stopped RepoStudio runtime pid ${runtime.pid}.`,
-    stdout: stopped.stdout,
-    stderr: stopped.stderr,
+    message: runtime.mode === 'desktop'
+      ? `Stopped RepoStudio desktop runtime (electron pid ${runtime.desktop?.electronPid || runtime.pid}).`
+      : `Stopped RepoStudio runtime pid ${runtime.pid}.`,
+    stdout: results.map((item) => item.stdout).filter(Boolean).join('\n'),
+    stderr: results.map((item) => item.stderr).filter(Boolean).join('\n'),
     state: runtime,
   };
 }
@@ -317,3 +398,4 @@ export function isSameWorkspace(runtimeState, cwd = process.cwd()) {
   if (!runtimeState?.workspaceRoot) return true;
   return normalizeWorkspaceRoot(runtimeState.workspaceRoot) === normalizeWorkspaceRoot(cwd);
 }
+

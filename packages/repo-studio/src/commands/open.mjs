@@ -6,6 +6,9 @@ import { fileURLToPath } from 'node:url';
 
 import { loadRepoStudioConfig } from '../lib/config.mjs';
 import {
+  REPO_STUDIO_APP_DEFAULT_PORT,
+  REPO_STUDIO_DESKTOP_DEFAULT_PORT,
+  REPO_STUDIO_PACKAGE_DEFAULT_PORT,
   clearRuntimeState,
   detectRuntimeByPort,
   findListeningPidByPort,
@@ -16,9 +19,7 @@ import {
   writeRuntimeState,
 } from '../lib/runtime-manager.mjs';
 import { runRepoStudioServer } from '../server/server.mjs';
-
-const DEFAULT_PACKAGE_PORT = 3864;
-const DEFAULT_APP_PORT = 3010;
+import { runDesktopBoot } from '../desktop/boot.mjs';
 
 function openInBrowser(url) {
   if (!url) return;
@@ -58,11 +59,12 @@ async function detectForgeAgentWorkspace(cwd = process.cwd()) {
 }
 
 function resolveRequestedMode(options, config, isForgeAgentWorkspace) {
+  if (options.desktopRuntime === true) return 'desktop';
   if (options.appRuntime === true) return 'app';
   if (options.packageRuntime === true) return 'package';
 
   const configured = String(config?.runtime?.defaultMode || 'auto').toLowerCase();
-  if (configured === 'app' || configured === 'package') return configured;
+  if (configured === 'desktop' || configured === 'app' || configured === 'package') return configured;
   if (isForgeAgentWorkspace) return 'app';
   return 'package';
 }
@@ -72,17 +74,23 @@ function resolvePort(options, config, mode) {
     return Number(options.port);
   }
 
+  if (mode === 'desktop') {
+    const configured = Number(config?.runtime?.desktopDefaultPort || 0);
+    if (configured > 0) return configured;
+    return REPO_STUDIO_DESKTOP_DEFAULT_PORT;
+  }
+
   if (mode === 'app') {
     const configured = Number(config?.runtime?.defaultPort || 0);
-    if (configured > 0 && configured !== DEFAULT_PACKAGE_PORT) {
+    if (configured > 0 && configured !== REPO_STUDIO_PACKAGE_DEFAULT_PORT) {
       return configured;
     }
-    return DEFAULT_APP_PORT;
+    return REPO_STUDIO_APP_DEFAULT_PORT;
   }
 
   const configured = Number(config?.runtime?.defaultPort || 0);
   if (configured > 0) return configured;
-  return DEFAULT_PACKAGE_PORT;
+  return REPO_STUDIO_PACKAGE_DEFAULT_PORT;
 }
 
 function cliPath() {
@@ -100,8 +108,9 @@ function spawnDetached(command, args, options = {}) {
   child.unref();
   return child;
 }
+
 async function ensureStartupAlive(child) {
-  await new Promise((resolve) => setTimeout(resolve, 1100));
+  await new Promise((resolve) => setTimeout(resolve, 1200));
   if (isProcessAlive(child.pid)) return;
   throw new Error('RepoStudio runtime exited during startup. Check .repo-studio/runs and app logs.');
 }
@@ -129,37 +138,29 @@ function buildAppRuntimeCommand(port) {
   };
 }
 
-async function writeRuntimeRecord({ pid, port, mode, view, profile }) {
+async function writeRuntimeRecord({ pid, port, mode, view, profile, desktop }) {
   return writeRuntimeState({
     pid,
     port,
     mode,
     view,
     profile,
+    desktop,
     workspaceRoot: process.cwd(),
     startedAt: new Date().toISOString(),
   });
-}
-
-function installForegroundCleanup() {
-  const cleanup = () => {
-    clearRuntimeState().finally(() => process.exit(0));
-  };
-  process.once('SIGINT', cleanup);
-  process.once('SIGTERM', cleanup);
 }
 
 async function reuseIfPossible(options) {
   const active = await loadActiveRuntimeState({ cleanupStale: true });
   if (!active.running || !active.state) return null;
   if (!isSameWorkspace(active.state, process.cwd())) return null;
-
-  if (options.explicitMode && active.state.mode !== options.mode) {
+  if (active.state.mode !== options.mode) {
     return null;
   }
 
   const url = runtimeUrlFor(active.state);
-  if (options.openBrowser) openInBrowser(url);
+  if (options.openBrowser && active.state.mode !== 'desktop') openInBrowser(url);
   return {
     ok: true,
     reused: true,
@@ -173,6 +174,7 @@ async function reuseIfPossible(options) {
 }
 
 async function reuseByPortFallback(options) {
+  if (options.mode === 'desktop') return null;
   const detected = await detectRuntimeByPort({
     mode: options.mode,
     port: options.port,
@@ -194,7 +196,6 @@ async function reuseByPortFallback(options) {
 }
 
 async function runPackageRuntimeForeground(options) {
-  installForegroundCleanup();
   const started = await runRepoStudioServer({
     profile: options.profile,
     mode: options.mode,
@@ -300,8 +301,8 @@ async function runAppRuntimeForeground(options) {
   const code = await new Promise((resolve) => {
     child.once('exit', (exitCode) => resolve(Number(exitCode ?? 0)));
   });
-
   await clearRuntimeState();
+
   return {
     ok: code === 0,
     reused: false,
@@ -354,10 +355,65 @@ async function runAppRuntimeDetached(options) {
   };
 }
 
+async function runDesktopRuntimeForeground(options) {
+  return runDesktopBoot({
+    workspaceRoot: process.cwd(),
+    appPort: options.port,
+    profile: options.profile,
+    view: options.view,
+    detach: false,
+    dev: options.desktopDev === true,
+  });
+}
+
+async function runDesktopRuntimeDetached(options) {
+  const args = [
+    'open',
+    '--desktop-runtime',
+    '--foreground',
+    '--runtime-child',
+    '--no-browser',
+    '--no-reuse',
+    '--profile',
+    options.profile,
+    '--mode',
+    options.mode,
+    '--view',
+    options.view,
+    '--port',
+    String(options.port),
+  ];
+
+  if (options.desktopDev === true) args.push('--desktop-dev');
+  const child = spawnDetached(process.execPath, [cliPath(), ...args], {
+    cwd: process.cwd(),
+  });
+
+  if (!isProcessAlive(child.pid)) {
+    throw new Error('Failed to start detached RepoStudio desktop runtime.');
+  }
+  await ensureStartupAlive(child);
+
+  const runtime = await loadActiveRuntimeState({ cleanupStale: false });
+  const state = runtime.state;
+  const url = state ? runtimeUrlFor(state) : `http://127.0.0.1:${options.port}`;
+
+  return {
+    ok: true,
+    reused: false,
+    detached: true,
+    mode: 'desktop',
+    pid: state?.desktop?.electronPid || state?.pid || child.pid,
+    port: state?.desktop?.appPort || options.port,
+    url,
+    runtime: state || null,
+    message: `RepoStudio desktop runtime started at ${url} (electron pid ${state?.desktop?.electronPid || child.pid}).`,
+  };
+}
+
 export async function runOpen(options = {}) {
   const config = await loadRepoStudioConfig();
   const forgeAgentWorkspace = await detectForgeAgentWorkspace();
-  const explicitMode = options.appRuntime === true || options.packageRuntime === true;
   const selectedMode = resolveRequestedMode(options, config, forgeAgentWorkspace);
 
   const reuseByDefault = config?.runtime?.reuseByDefault !== false;
@@ -372,7 +428,6 @@ export async function runOpen(options = {}) {
   if (reuse) {
     const reused = await reuseIfPossible({
       mode: selectedMode,
-      explicitMode,
       openBrowser,
     });
     if (reused) return reused;
@@ -383,6 +438,25 @@ export async function runOpen(options = {}) {
       openBrowser,
     });
     if (byPort) return byPort;
+  }
+
+  if (selectedMode === 'desktop') {
+    if (detach) {
+      return runDesktopRuntimeDetached({
+        profile,
+        mode: envMode,
+        view,
+        port,
+        desktopDev: options.desktopDev === true,
+      });
+    }
+    return runDesktopRuntimeForeground({
+      profile,
+      mode: envMode,
+      view,
+      port,
+      desktopDev: options.desktopDev === true,
+    });
   }
 
   if (selectedMode === 'package') {

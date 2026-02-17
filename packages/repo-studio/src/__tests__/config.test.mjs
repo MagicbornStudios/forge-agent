@@ -6,6 +6,8 @@ import { DEFAULT_REPO_STUDIO_CONFIG } from '../lib/config.mjs';
 test('default config includes runtime controls and planning-first views', () => {
   assert.equal(DEFAULT_REPO_STUDIO_CONFIG.runtime.defaultMode, 'auto');
   assert.equal(DEFAULT_REPO_STUDIO_CONFIG.runtime.reuseByDefault, true);
+  assert.equal(DEFAULT_REPO_STUDIO_CONFIG.runtime.desktopDefaultPort, 3020);
+  assert.equal(DEFAULT_REPO_STUDIO_CONFIG.runtime.desktopWatcher.enabled, true);
   assert.equal(DEFAULT_REPO_STUDIO_CONFIG.views.defaultView, 'planning');
   assert.equal(DEFAULT_REPO_STUDIO_CONFIG.ui.defaultTheme, 'dark');
   assert.equal(DEFAULT_REPO_STUDIO_CONFIG.ui.defaultDensity, 'compact');

@@ -6,3 +6,27 @@
 - [x] 01. Add CSS package resolvability checks to dependency-health modules
 - [x] 02. Propagate updated health contract to doctor/API/UI types
 - [x] 03. Update loop artifacts and traceability
+
+## Implementation Notes
+
+- Extended dependency health contracts in both:
+  - `packages/repo-studio/src/lib/dependency-health.mjs`
+  - `apps/repo-studio/src/lib/dependency-health.ts`
+- Added new fields:
+  - `cssPackagesResolved`
+  - `cssPackageStatus[]` containing `packageName`, `resolved`, `resolvedPath`.
+- Required CSS packages checked:
+  - `tw-animate-css`
+  - `tailwindcss-animate`
+- Updated diagnostics consumers:
+  - `packages/repo-studio/src/commands/doctor.mjs`
+  - `apps/repo-studio/app/api/repo/runtime/deps/route.ts`
+  - `apps/repo-studio/src/lib/api/types.ts`
+  - `apps/repo-studio/src/components/features/env/EnvWorkspace.tsx`
+
+## Verification Evidence
+
+- `pnpm forge-repo-studio doctor --json` now reports `cssPackagesResolved` and per-package status.
+- Added test `packages/repo-studio/src/__tests__/dependency-health.test.mjs` validating unresolved CSS package detection.
+- `pnpm --filter @forge/repo-studio test` passed with new dependency-health coverage.
+- `pnpm --filter @forge/repo-studio-app build` passed without new dependency-health warnings.

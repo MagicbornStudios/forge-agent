@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-
-import { runRepoStudioCli } from '@/lib/cli-runner';
+import { upsertRepoSettings } from '@/lib/settings/repository';
 
 export async function POST(request: Request) {
   let body: {
@@ -16,20 +15,28 @@ export async function POST(request: Request) {
     body = {};
   }
 
-  const args = ['commands-view'];
-  if (body.query != null) args.push('--query', String(body.query));
-  if (body.source != null) args.push('--source', String(body.source));
-  if (body.status != null) args.push('--status', String(body.status));
-  if (body.tab != null) args.push('--tab', String(body.tab));
-  if (body.sort != null) args.push('--sort', String(body.sort));
-  args.push('--json');
+  const commandView = {
+    query: String(body.query || ''),
+    source: String(body.source || 'all'),
+    status: String(body.status || 'all'),
+    tab: String(body.tab || 'recommended'),
+    sort: String(body.sort || 'id'),
+  };
+  const snapshot = await upsertRepoSettings({
+    scope: 'local',
+    scopeId: 'default',
+    settings: {
+      commands: {
+        view: commandView,
+      },
+    },
+  });
+  const merged = (snapshot.merged as Record<string, any>) || {};
+  const commands = merged.commands && typeof merged.commands === 'object' ? merged.commands : {};
 
-  const result = runRepoStudioCli(args);
-  const payload = result.payload || {};
   return NextResponse.json({
-    ok: payload.ok ?? result.ok,
-    commandView: payload.commandView || null,
-    message: payload.message || (result.ok ? 'Updated command view.' : 'Failed to update command view.'),
-    stderr: payload.stderr || result.stderr,
-  }, { status: payload.ok === false || !result.ok ? 400 : 200 });
+    ok: true,
+    commandView: commands.view || commandView,
+    message: 'Updated command view.',
+  }, { status: 200 });
 }

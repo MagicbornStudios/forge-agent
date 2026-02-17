@@ -6,3 +6,20 @@
 - [x] 01. Add RepoStudio path gate to verification command plan
 - [x] 02. Add integration tests for RepoStudio verification gate
 - [x] 03. Update loop artifacts and traceability
+
+## Implementation Notes
+
+- Added `shouldRunRepoStudioBuild(changedFiles)` in `packages/forge-loop/src/commands/verify-work.mjs`.
+- Verification command plan now appends `pnpm --filter @forge/repo-studio-app build` when changed files include:
+  - `apps/repo-studio/**`
+  - `packages/repo-studio/**`
+- Existing command matrix behavior for non-RepoStudio paths remains unchanged.
+
+## Verification Evidence
+
+- `pnpm --filter @forge/forge-loop test` passed with new assertions.
+- Added integration tests in `packages/forge-loop/src/__tests__/verify-work.integration.test.mjs` for:
+  - no RepoStudio build command on unrelated paths
+  - RepoStudio build command on RepoStudio app path changes
+- `pnpm forge-loop verify-work 10 --strict --non-interactive` showed explicit PASS for:
+  - `pnpm --filter @forge/repo-studio-app build`

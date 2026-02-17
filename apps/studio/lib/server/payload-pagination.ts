@@ -21,17 +21,18 @@ export async function findAllDocs<TDoc = Record<string, unknown>>(
   let page = 1;
 
   while (true) {
-    const result = (await payload.find({
+    const rawResult = await payload.find({
       ...options,
       limit: pageSize,
       page,
-    })) as {
-      docs: TDoc[];
+    } as any);
+    const result = rawResult as unknown as {
+      docs: unknown[];
       hasNextPage?: boolean;
       nextPage?: number | null;
     };
 
-    docs.push(...result.docs);
+    docs.push(...(result.docs as TDoc[]));
 
     if (!result.hasNextPage) {
       break;

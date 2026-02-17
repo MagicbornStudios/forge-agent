@@ -2,7 +2,7 @@
 
 ## Vision
 
-Docs site compiles from code deterministically. MDX + Fumadocs for narrative; generated API docs and component descriptors from code. User fine with Docusaurus or TypeDoc "as long as I can compile from code with no issues."
+Docs site compiles from code deterministically. MDX + Fumadocs for narrative; generated component props and catalog from code.
 
 ## Current Stack
 
@@ -10,24 +10,23 @@ Docs site compiles from code deterministically. MDX + Fumadocs for narrative; ge
 - Component showcase: catalog-data.mjs (manual sections/entries), build-showcase-registry, generate-showcase-code
 - Settings: tree-as-source → codegen → generated/defaults.ts (pattern to extend)
 
-## Features (Proposed)
+## Features (Recommended)
 
-| ID | Feature | Status |
-|----|---------|--------|
-| F1 | TypeDoc for API/props extraction | TBD |
-| F2 | Fumadocs content API integration | TBD |
-| F3 | Settings-style descriptors for components (scope, id, description) | TBD |
-| F4 | Deterministic build (no flakiness) | TBD |
-| F5 | Single source of truth for "what gets built" | TBD |
+| ID | Feature | Status | Notes |
+|----|---------|--------|-------|
+| F1 | meta.json per demo → catalog | Recommended | DC-01; replaces manual catalog-data.mjs |
+| F2 | fumadocs-typescript for props tables | Recommended | DC-02; AutoTypeTable in showcase MDX |
+| F3 | TypeDoc for full API reference | Optional | DC-03; add only if full package API docs needed |
+| F4 | Deterministic build (no flakiness) | TBD | — |
+| F5 | Single source of truth for "what gets built" | In progress | meta.json + registry scan achieves this for showcase |
 
 ## Non-Scope
 
 - Replacing MDX
 - Moving off Fumadocs (unless research shows compelling reason)
 
-## Research Targets
+## Implementation Order
 
-- TypeDoc output + Fumadocs consumption
-- Docusaurus TypeDoc plugin
-- Settings-style extension: registry → generated docs
-- Showcase: derive catalog from registry vs manual
+1. **meta.json** — Add to each demo folder; script to generate catalog from registry scan.
+2. **fumadocs-typescript** — Install; add AutoTypeTable to component showcase MDX for props.
+3. **TypeDoc** — Only if full package API docs are required.

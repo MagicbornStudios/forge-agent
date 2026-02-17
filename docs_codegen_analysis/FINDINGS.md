@@ -8,8 +8,13 @@
 - generate-shared-showcase-docs: catalog-data.mjs → apps/docs/content/docs/components/showcase/*.mdx
 - catalog-data.mjs: hand-maintained (sections, titles, summaries, descriptions)
 
-## Research Needed
+## Resolved (see DECISIONS.md)
 
-- Fumadocs content APIs and file-based vs programmatic content
-- TypeDoc JSON/markdown output for Fumadocs
-- Docusaurus TypeDoc plugin comparison
+- **Catalog source**: meta.json per demo folder; script scans registry
+- **Component props**: fumadocs-typescript AutoTypeTable in MDX
+- **Full API reference**: TypeDoc optional, only if needed
+
+## Still Open
+
+- Fumadocs content APIs and file-based vs programmatic content (if extending beyond catalog)
+- Deterministic build hardening

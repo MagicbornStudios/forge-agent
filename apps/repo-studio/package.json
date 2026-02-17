@@ -6,7 +6,12 @@
     "dev": "next dev --turbopack -p 3010",
     "build": "next build",
     "start": "next start -p 3010",
-    "lint": "next lint"
+    "lint": "next lint --max-warnings 0",
+    "test:settings-codegen": "node --import tsx --test \"__tests__/settings/*.test.mjs\"",
+    "test:repo-search": "node --import tsx --test \"__tests__/repo-search/*.test.mjs\"",
+    "test:review-queue": "node --import tsx --test \"__tests__/review-queue/*.test.mjs\"",
+    "check:direct-fetch": "node scripts/check-direct-fetch.mjs",
+    "check:direct-fetch:strict": "node scripts/check-direct-fetch.mjs --strict"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
@@ -15,9 +20,13 @@
     "@assistant-ui/react-ai-sdk": "^1.3.6",
     "@forge/shared": "workspace:*",
     "@forge/ui": "workspace:*",
+    "@payloadcms/db-sqlite": "^3.0.0",
+    "@payloadcms/next": "^3.74.0",
+    "cli-color": "^2.0.4",
     "dockview": "^1.16.3",
     "lucide-react": "^0.468.0",
     "next": "15.5.9",
+    "payload": "^3.74.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "tailwindcss-animate": "^1.0.7",

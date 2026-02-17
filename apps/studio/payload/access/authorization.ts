@@ -1,22 +1,12 @@
-import type { Where } from 'payload';
-
-type RequestUser = {
-  id?: unknown;
-  role?: unknown;
-  defaultOrganization?: unknown;
-};
-
-type PayloadLike = {
-  find: (args: Record<string, unknown>) => Promise<{ docs: Array<Record<string, unknown>> }>;
-};
+import type { PayloadRequest, Where } from 'payload';
 
 type AccessRequest = {
-  user?: RequestUser | null;
-  payload?: PayloadLike;
+  user?: PayloadRequest['user'];
+  payload?: PayloadRequest['payload'];
   __membershipOrgIdsCache?: number[];
   __projectIdsCache?: number[];
   __pageIdsCache?: number[];
-};
+} & PayloadRequest;
 
 type AccessContext = {
   req: AccessRequest;
@@ -50,8 +40,9 @@ function getDefaultOrganizationId(req: AccessRequest): number | null {
   return asNumericId(req.user?.defaultOrganization);
 }
 
-function getMembershipOrganizationId(doc: Record<string, unknown>): number | null {
-  return asNumericId(doc.organization);
+function getMembershipOrganizationId(doc: unknown): number | null {
+  if (!doc || typeof doc !== 'object') return null;
+  return asNumericId((doc as { organization?: unknown }).organization);
 }
 
 export function requireAuthenticated({ req }: AccessContext): boolean {
@@ -197,14 +188,14 @@ async function getAccessibleProjectIds(req: AccessRequest): Promise<number[]> {
 
   const result = await payload.find({
     collection: 'projects',
-    where,
+    ...(where === true ? {} : { where }),
     depth: 0,
     limit: 2000,
     overrideAccess: true,
   });
 
   const ids = result.docs
-    .map((doc) => asNumericId(doc.id))
+    .map((doc) => asNumericId((doc as { id?: unknown }).id))
     .filter((value): value is number => value != null);
 
   req.__projectIdsCache = ids;
@@ -264,7 +255,7 @@ async function getAccessiblePageIds(req: AccessRequest): Promise<number[]> {
   });
 
   const ids = pages.docs
-    .map((doc) => asNumericId(doc.id))
+    .map((doc) => asNumericId((doc as { id?: unknown }).id))
     .filter((value): value is number => value != null);
 
   req.__pageIdsCache = ids;

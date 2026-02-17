@@ -1,7 +1,7 @@
 ---
 title: Errors and attempts
 created: 2026-02-04
-updated: 2026-02-12
+updated: 2026-02-17
 ---
 
 Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx).
@@ -11,6 +11,32 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 > **For coding agents.** See [Agent artifacts index](../../18-agent-artifacts-index.mdx) for the full list.
 
 Log of known failures and fixes so agents and developers avoid repeating the same mistakes.
+
+---
+
+## RepoStudio CSS import dependency drift (`tw-animate-css`, `tailwindcss-animate`)
+
+**Problem**: RepoStudio can fail at build/dev with:
+
+- `Module not found: Can't resolve 'tw-animate-css'`
+- `Module not found: Can't resolve 'tailwindcss-animate'`
+
+when `apps/repo-studio/app/globals.css` imports packages not installed in `apps/repo-studio/package.json`.
+
+**Fix**:
+
+- Add CSS-imported packages to `apps/repo-studio/package.json` dependencies (app-local, no hoist assumptions).
+- Run:
+  - `pnpm install`
+  - `pnpm --filter @forge/repo-studio-app build`
+
+**Guardrails now expected**:
+
+- `forge-loop verify-work` runs `pnpm --filter @forge/repo-studio-app build` for RepoStudio file changes.
+- `forge-repo-studio doctor` checks resolvability of `tw-animate-css` and `tailwindcss-animate`.
+- `pnpm dev:repo-studio` runs a doctor precheck before starting Next dev.
+
+**Do not**: Add CSS `@import` to app globals without updating that same app's dependencies and running the app-local build.
 
 ---
 
@@ -851,7 +877,7 @@ References:
 
 **Problem**: Using raw `fetch` for collection or app API bypasses the Payload SDK / generated client and duplicates logic; it breaks type safety and makes it easy to drift from the contract.
 
-**Fix**: For collection CRUD (forge-graphs, video-docs), use the Payload SDK (`lib/api-client/payload-sdk.ts`) via the TanStack Query hooks. For custom endpoints (auth, settings, AI), use the generated services or **manual client modules** in `lib/api-client/` (e.g. elevenlabs, media, workflows), or **vendor SDKs** where appropriate. Do not call `fetch` for `/api/*` from components or stores. **New endpoints:** add a manual client module in `lib/api-client/` or use a vendor SDK; the OpenAPI spec is for **documentation only** (it does not support streaming)?"do not rely on extending it to generate new clients.
+**Fix**: For collection CRUD (forge-graphs, video-docs), use the Payload SDK (`lib/api-client/payload-sdk.ts`) via the TanStack Query hooks. For custom endpoints (auth, settings, AI), use the generated services or **manual client modules** in `lib/api-client/` (e.g. elevenlabs, media, workflows), or **vendor SDKs** where appropriate. Do not call `fetch` for `/api/*` from components or stores. **New endpoints:** add a manual client module in `lib/api-client/` or use a vendor SDK. The OpenAPI spec is for **documentation only**; OpenAPI client generators do not support streaming responses—use manual modules (e.g. workflows.ts) for SSE/streaming endpoints. Do not rely on extending the spec to generate new clients.
 
 ## Duplicating collection CRUD in custom routes
 

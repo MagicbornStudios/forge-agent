@@ -8,7 +8,7 @@ Operational roadmap for Forge Loop lifecycle delivery in RepoStudio, aligned to 
 - `forge_env_analysis/`
 - `ide_navigation_analysis/`
 
-Phase 11 is active and focused on Review Queue persistence/diff UX hardening.
+Phase 11 is closed after strict verification. Next execution phase is pending definition.
 
 ## Phases
 
@@ -156,10 +156,10 @@ Plans:
 **Plans:** 4 plans
 
 Plans:
-- [ ] 11-01: Proposal store repository refactor + SQLite canonical persistence + one-time JSON import
-- [ ] 11-02: Proposal diff parsing service + diff-files/diff-file API contracts + typed client support
-- [ ] 11-03: Review Queue one-file Monaco UX + settings trust-mode wiring + auto-apply behavior
-- [ ] 11-04: Docs/tests/verification closeout + phase summaries and artifact trace updates
+- [x] 11-01: Proposal store repository refactor + SQLite canonical persistence + one-time JSON import
+- [x] 11-02: Proposal diff parsing service + diff-files/diff-file API contracts + typed client support
+- [x] 11-03: Review Queue one-file Monaco UX + settings trust-mode wiring + auto-apply behavior
+- [x] 11-04: Docs/tests/verification closeout + phase summaries and artifact trace updates
 
 ## Progress
 
@@ -175,4 +175,4 @@ Plans:
 | 08. Electron desktop runtime | 4/4 | Complete | 2026-02-17 |
 | 09. Desktop auth and platform connection | 4/4 | Complete | 2026-02-17 |
 | 10. RepoStudio build and runtime guardrails | 4/4 | Complete | 2026-02-17 |
-| 11. Review Queue persistence and diff UX | 0/4 | In Progress | - |
+| 11. Review Queue persistence and diff UX | 4/4 | Complete | 2026-02-17 |

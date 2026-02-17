@@ -54,6 +54,34 @@ Scope override APIs:
 7. Review and approve assistant proposals from `Review Queue`.
 8. Use `Git` panel to stage/commit.
 
+## Publish Pipeline (Preview -> Queue -> Apply)
+
+Story markdown can be published into RepoStudio-local Payload collections (`repo-pages`, `repo-blocks`) with approval-gated apply.
+
+1. Generate preview from Story panel (`Preview Publish`).
+2. Queue preview into Review Queue (`Queue Publish`).
+3. Approve/apply from Review Queue (or explicit apply endpoint).
+4. Re-applying an already applied publish remains idempotent (no duplicate blocks when hash unchanged).
+
+Trust-mode interaction:
+
+- In `require-approval`, publish proposals stay pending until reviewed.
+- In `auto-approve-all`, queued story publish proposals auto-apply immediately when scope guard allows the target path.
+- Out-of-scope publish proposals remain blocked/failed with actionable remediation payloads.
+
+New publish endpoints:
+
+- `POST /api/repo/story/publish/preview`
+- `POST /api/repo/story/publish/queue`
+- `POST /api/repo/story/publish/apply`
+
+Preview response includes:
+
+- `pageDraft` (title/slug/sourcePath)
+- `blocksDraft` (typed block list with stable hashes)
+- `changedSummary` (existing hash vs next hash, block counts)
+- parser warnings for unsupported markdown constructs
+
 ## Endpoints
 
 - `GET /api/repo/story/tree`
@@ -61,4 +89,6 @@ Scope override APIs:
 - `POST /api/repo/story/page/save`
 - `POST /api/repo/story/create`
 - `GET /api/repo/story/reader`
-
+- `POST /api/repo/story/publish/preview`
+- `POST /api/repo/story/publish/queue`
+- `POST /api/repo/story/publish/apply`

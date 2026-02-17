@@ -73,6 +73,7 @@ function toSettingsObject(value: unknown): Record<string, unknown> {
 function buildInitialState() {
   return {
     appSettings: { ...DEFAULT_APP_SETTINGS },
+    projectSettings: {},
     editorSettings: { ...DEFAULT_EDITOR_SETTINGS },
     viewportSettings: { ...DEFAULT_VIEWPORT_SETTINGS },
   };
@@ -141,6 +142,14 @@ export const useSettingsStore = create<SettingsState>()(
             }
             return;
           }
+          if (scope === "project") {
+            const projectId = ids?.projectId;
+            if (!projectId) return;
+            if (state.projectSettings[projectId]) {
+              delete state.projectSettings[projectId][key];
+            }
+            return;
+          }
           if (scope === "viewport") {
             const viewportKey = getViewportKey(ids?.editorId, ids?.viewportId);
             if (!viewportKey) return;
@@ -170,14 +179,18 @@ export const useSettingsStore = create<SettingsState>()(
       },
 
       getSettingSource: (key, ids) => {
-        const { appSettings, editorSettings, viewportSettings } = get();
+        const { appSettings, projectSettings, editorSettings, viewportSettings } = get();
         const editorId = ids?.editorId;
+        const projectId = ids?.projectId;
         const viewportKey = getViewportKey(ids?.editorId, ids?.viewportId);
         if (viewportKey && viewportSettings[viewportKey] && key in viewportSettings[viewportKey]) {
           return "viewport";
         }
         if (editorId && editorSettings[editorId] && key in editorSettings[editorId]) {
           return "editor";
+        }
+        if (projectId && projectSettings[projectId] && key in projectSettings[projectId]) {
+          return "project";
         }
         if (key in appSettings) {
           return "app";
@@ -231,13 +244,23 @@ export const useSettingsStore = create<SettingsState>()(
       },
 
       getOverridesForScope: (scope, ids) => {
-        const { appSettings, editorSettings, viewportSettings } = get();
+        const { appSettings, projectSettings, editorSettings, viewportSettings } = get();
         const out: Record<string, unknown> = {};
         if (scope === "app") {
           for (const key of Object.keys(appSettings)) {
             const def = DEFAULT_APP_SETTINGS[key];
             if (appSettings[key] !== def) {
               out[key] = appSettings[key];
+            }
+          }
+          return out;
+        }
+        if (scope === "project" && ids?.projectId) {
+          const projectId = ids.projectId;
+          const current = projectSettings[projectId] ?? {};
+          for (const key of Object.keys(current)) {
+            if (current[key] !== DEFAULT_PROJECT_SETTINGS[key]) {
+              out[key] = current[key];
             }
           }
           return out;

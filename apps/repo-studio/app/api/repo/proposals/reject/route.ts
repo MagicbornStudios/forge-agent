@@ -40,7 +40,13 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
   } else {
-    await markProposalRejected(proposal.id);
+    const transition = await markProposalRejected(proposal.id);
+    if (!transition.ok) {
+      return NextResponse.json({
+        ok: false,
+        message: transition.message || 'Unable to reject proposal transition.',
+      }, { status: 503 });
+    }
   }
 
   const updated = await findProposalById(proposal.id);

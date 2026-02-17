@@ -6,3 +6,27 @@
 - [x] 01. Add proposal persistence and diff parser regression tests
 - [x] 02. Update runbooks and README with trust/migration behavior
 - [x] 03. Run strict verification and publish phase summaries
+
+## Implementation Notes
+
+- Added review-queue regression tests:
+  - `apps/repo-studio/__tests__/review-queue/proposal-diff-parser.test.mjs`
+  - `apps/repo-studio/__tests__/review-queue/proposal-store.test.mjs`
+- Added app test script:
+  - `pnpm --filter @forge/repo-studio-app run test:review-queue`
+- Updated runbooks/README to document:
+  - SQLite proposal persistence (`repo-proposals`)
+  - one-time JSON import + read-only fallback semantics
+  - trust mode behavior and scope-guard invariants in auto mode
+
+## Verification Evidence
+
+- `pnpm --filter @forge/repo-studio-app build`
+- `pnpm --filter @forge/repo-studio-app lint`
+- `pnpm --filter @forge/repo-studio-app run test:settings-codegen`
+- `pnpm --filter @forge/repo-studio-app run test:repo-search`
+- `pnpm --filter @forge/repo-studio-app run test:review-queue`
+- `pnpm --filter @forge/repo-studio test`
+- `pnpm --filter @forge/forge-loop test`
+- `pnpm --filter @forge/forge-env test`
+- `pnpm forge-loop verify-work 11 --strict`

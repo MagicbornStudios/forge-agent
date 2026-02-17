@@ -1,11 +1,11 @@
-import type { DomainTool, DomainToolContext } from '@forge/shared/assistant';
+import type { AIHighlightPayload, DomainTool, DomainToolContext } from '@forge/shared/assistant';
 import type { ForgeGraphDoc, ForgeGraphPatchOp, ForgeNodeType } from '@forge/types/graph';
 import { FORGE_NODE_TYPE } from '@forge/types/graph';
 
 export interface ForgeAssistantToolsDeps {
   getGraph: () => ForgeGraphDoc | null;
   applyOperations: (ops: ForgeGraphPatchOp[]) => void;
-  onAIHighlight: (entities: Record<string, string[]>) => void;
+  onAIHighlight: (payload: AIHighlightPayload) => void;
   createPlanApi?: (goal: string, graphSummary: unknown) => Promise<{ steps: unknown[] }>;
   createStoryBuilderApi?: (
     premise: string,

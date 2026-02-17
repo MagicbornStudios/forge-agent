@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { findProposalById, markProposalApplied } from '@/lib/proposals';
 import { resolveApproval } from '@/lib/codex-session';
 import { enforceScopeGuard } from '@/lib/scope-guard';
+import { applyStoryPublishProposal } from '@/lib/story/publish-service';
 
 export async function POST(request: Request) {
   let body: { proposalId?: string } = {};
@@ -28,6 +29,25 @@ export async function POST(request: Request) {
       noop: true,
       message: `Proposal ${proposal.id} is already ${proposal.status}.`,
       proposal,
+    });
+  }
+
+  if (proposal.kind === 'story-publish') {
+    const publishResult = await applyStoryPublishProposal(proposal.id);
+    if (!publishResult.ok) {
+      return NextResponse.json({
+        ok: false,
+        message: publishResult.message || 'Unable to apply story publish proposal.',
+        publish: publishResult,
+      }, { status: 400 });
+    }
+
+    const updatedStoryProposal = await findProposalById(proposal.id);
+    return NextResponse.json({
+      ok: true,
+      proposal: updatedStoryProposal,
+      message: publishResult.message || 'Story publish proposal applied.',
+      publish: publishResult,
     });
   }
 
@@ -57,7 +77,13 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
   } else {
-    await markProposalApplied(proposal.id);
+    const transition = await markProposalApplied(proposal.id);
+    if (!transition.ok) {
+      return NextResponse.json({
+        ok: false,
+        message: transition.message || 'Unable to apply proposal transition.',
+      }, { status: 503 });
+    }
   }
 
   const updated = await findProposalById(proposal.id);

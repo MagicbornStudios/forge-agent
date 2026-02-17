@@ -12,6 +12,8 @@ import {
   type RepoProposal,
   upsertPendingProposal,
 } from '@/lib/proposals';
+import { enforceScopeGuard } from '@/lib/scope-guard';
+import { recordReviewQueueAutoApply, resolveReviewQueueTrustMode } from '@/lib/proposals/trust-mode';
 
 type JsonRpcLike = {
   id?: string | number;
@@ -390,20 +392,36 @@ async function handleApprovalRequest(session: CodexSessionState, message: JsonRp
   const turnIdHint = extractTurnIdFromPayload(message.params);
   const turn = resolveTurn(session, turnIdHint) || findLastRunningTurn(session);
   const turnId = turn?.turnId || '';
-  const proposal = await upsertPendingProposal({
-    editorTarget: turn?.editorTarget || 'codex-assistant',
-    loopId: turn?.loopId || 'default',
-    domain: turn?.domain || '',
-    scopeRoots: turn?.scopeRoots || [],
-    scopeOverrideToken: turn?.scopeOverrideToken || '',
-    threadId: session.threadId || '',
-    turnId,
-    kind: method,
-    summary: messageToText((message.params as any)?.summary || (message.params as any)?.message || method) || method,
-    files: extractFilesFromUnknown(message.params),
-    diff: extractDiffFromUnknown(message.params),
-    approvalToken: String(requestId),
-  });
+  let proposal: RepoProposal;
+  try {
+    proposal = await upsertPendingProposal({
+      editorTarget: turn?.editorTarget || 'codex-assistant',
+      loopId: turn?.loopId || 'default',
+      domain: turn?.domain || '',
+      scopeRoots: turn?.scopeRoots || [],
+      scopeOverrideToken: turn?.scopeOverrideToken || '',
+      threadId: session.threadId || '',
+      turnId,
+      kind: method,
+      summary: messageToText((message.params as any)?.summary || (message.params as any)?.message || method) || method,
+      files: extractFilesFromUnknown(message.params),
+      diff: extractDiffFromUnknown(message.params),
+      approvalToken: String(requestId),
+    });
+  } catch (error: any) {
+    const reason = String(error?.message || error || 'Unable to persist proposal.');
+    session.diagnostics.push(`proposal-upsert-failed: ${reason}`);
+    session.diagnostics = session.diagnostics.slice(-80);
+    writeLine(session, {
+      id: requestId,
+      result: {
+        approved: false,
+        decision: 'rejected',
+        reason,
+      },
+    });
+    return;
+  }
 
   session.pendingApprovals.set(String(requestId), {
     approvalToken: String(requestId),
@@ -420,6 +438,26 @@ async function handleApprovalRequest(session: CodexSessionState, message: JsonRp
       proposal,
       ts: nowIso(),
     });
+  }
+
+  const trust = await resolveReviewQueueTrustMode(turn?.loopId || 'default');
+  if (!trust.autoApplyEnabled) return;
+
+  const scope = await enforceScopeGuard({
+    operation: 'proposal-auto-apply',
+    paths: proposal.files || [],
+    domain: proposal.domain,
+    loopId: proposal.loopId,
+    overrideToken: proposal.scopeOverrideToken || undefined,
+  });
+  if (!scope.ok) {
+    await rejectApprovalWithFailure(String(requestId), scope.message || 'Auto-apply blocked by scope policy.');
+    return;
+  }
+
+  const autoApply = await resolveApproval(String(requestId), 'approve');
+  if (autoApply.ok) {
+    await recordReviewQueueAutoApply(proposal.loopId).catch(() => {});
   }
 }
 
@@ -976,10 +1014,14 @@ export async function resolveApproval(approvalToken: string, decision: 'approve'
   });
   session.pendingApprovals.delete(token);
 
-  if (decision === 'approve') {
-    await markProposalApplied(pending.proposalId);
-  } else {
-    await markProposalRejected(pending.proposalId);
+  const transition = decision === 'approve'
+    ? await markProposalApplied(pending.proposalId)
+    : await markProposalRejected(pending.proposalId);
+  if (!transition.ok) {
+    return {
+      ok: false,
+      message: transition.message || 'Unable to update proposal transition status.',
+    };
   }
 
   const turn = session.turns.get(pending.turnId);

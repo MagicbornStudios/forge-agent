@@ -6,3 +6,20 @@
 - [x] 01. Create proposal repository boundary and payload repository
 - [x] 02. Add SQLite proposal collection and migration fallback wiring
 - [x] 03. Update loop artifacts for persistence cutover
+
+## Implementation Notes
+
+- Added `repo-proposals` Payload collection and wired it into `apps/repo-studio/payload.config.ts`.
+- Replaced flat-file proposal logic with repository modules under `apps/repo-studio/src/lib/proposals/`:
+  - `contracts.ts`
+  - `payload-repository.ts`
+  - `json-legacy-store.ts`
+  - `repository.ts`
+  - `index.ts` façade (backward-compatible import path: `@/lib/proposals`)
+- Added one-time idempotent JSON import on repository init (keyed by proposal id and approval token).
+- Enforced read-only fallback policy when SQLite is unavailable (list/find fallback to JSON; writes fail with actionable message).
+
+## Verification Evidence
+
+- `pnpm --filter @forge/repo-studio-app build`
+- `pnpm --filter @forge/repo-studio-app lint`

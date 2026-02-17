@@ -6,6 +6,10 @@ const AI_SCOPE_OPTIONS = [
   { label: 'Plan Generation', value: 'ai.plan' },
   { label: 'Structured Output', value: 'ai.structured' },
   { label: 'Image Generation', value: 'ai.image' },
+  { label: 'RepoStudio Desktop (all)', value: 'repo-studio.*' },
+  { label: 'RepoStudio Connect', value: 'repo-studio.connect' },
+  { label: 'RepoStudio Read', value: 'repo-studio.read' },
+  { label: 'RepoStudio Write', value: 'repo-studio.write' },
 ] as const;
 
 export const ApiKeys: CollectionConfig = {

@@ -4,6 +4,26 @@ import path from 'node:path';
 import { normalizeRelPath, resolveRepoRoot } from '@/lib/repo-files';
 
 export type RepoStudioConfig = {
+  commandPolicy?: {
+    mode?: string;
+    sources?: string[];
+    defaultSources?: string[];
+    requireConfirm?: boolean;
+    denyPatterns?: string[];
+    disabledCommandIds?: string[];
+    allowTerminal?: boolean;
+    terminalAllowlistedOnly?: boolean;
+  };
+  views?: {
+    order?: string[];
+    hidden?: string[];
+    defaultView?: string;
+  };
+  ui?: {
+    defaultTheme?: string;
+    defaultView?: string;
+    defaultDensity?: string;
+  };
   domains?: {
     story?: {
       roots?: string[];

@@ -17,6 +17,11 @@ export type OrganizationMembershipSummary = {
   stripeConnectOnboardingComplete?: boolean | null;
 };
 
+const DEFAULT_ORGANIZATION_PLAN_TIER = 'free';
+const DEFAULT_ORGANIZATION_STORAGE_QUOTA_BYTES = 5 * 1024 * 1024 * 1024;
+const DEFAULT_ORGANIZATION_STORAGE_USED_BYTES = 0;
+const DEFAULT_ORGANIZATION_STORAGE_WARNING_THRESHOLD_PERCENT = 80;
+
 function slugify(value: string): string {
   return value
     .toLowerCase()
@@ -146,6 +151,11 @@ async function createPersonalOrganization(
       name: buildPersonalOrgName(user),
       slug: buildPersonalOrgSlug(user),
       owner: user.id,
+      planTier: DEFAULT_ORGANIZATION_PLAN_TIER,
+      storageQuotaBytes: DEFAULT_ORGANIZATION_STORAGE_QUOTA_BYTES,
+      storageUsedBytes: DEFAULT_ORGANIZATION_STORAGE_USED_BYTES,
+      storageWarningThresholdPercent:
+        DEFAULT_ORGANIZATION_STORAGE_WARNING_THRESHOLD_PERCENT,
     },
     overrideAccess: true,
   });

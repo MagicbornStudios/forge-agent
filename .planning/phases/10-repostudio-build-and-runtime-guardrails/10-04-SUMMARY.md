@@ -6,3 +6,28 @@
 - [x] 01. Add minimal CI workflow for RepoStudio guardrails
 - [x] 02. Codify CSS import/dependency rule for agents
 - [x] 03. Publish Phase 10 summaries and close traceability
+
+## Implementation Notes
+
+- Added minimal CI workflow:
+  - `.github/workflows/ci.yml`
+- CI checks now include:
+  - `pnpm install --frozen-lockfile`
+  - `pnpm --filter @forge/repo-studio-app build`
+  - `pnpm --filter @forge/repo-studio-app lint`
+  - `pnpm --filter @forge/repo-studio test`
+  - `pnpm --filter @forge/forge-loop test`
+  - `pnpm --filter @forge/forge-env test`
+
+## Agent Guidance Hardening
+
+- Updated `AGENTS.md` with explicit CSS import dependency rule:
+  - app-local dependency declaration required
+  - required `pnpm --filter <app-package-name> build` validation step
+- Updated `docs/agent-artifacts/core/errors-and-attempts.md` with recurrence prevention entry for tw-animate/tailwindcss-animate regressions.
+
+## Verification Evidence
+
+- `pnpm forge-loop verify-work 10 --strict --non-interactive` PASS.
+- `pnpm forge-loop progress --json` now reports Phase 10 complete (4 plans, 4 summaries, 100%).
+- `pnpm forge-loop sync-legacy` executed post-verify.

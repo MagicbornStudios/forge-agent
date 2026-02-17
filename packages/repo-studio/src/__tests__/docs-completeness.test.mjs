@@ -15,6 +15,7 @@ const REQUIRED_DOCS = [
   '04-forge-loop-console.md',
   '05-assistant.md',
   '06-story-domain.md',
+  '07-desktop-runtime.md',
 ];
 
 test('repo-studio runbooks are present for package consumers', () => {

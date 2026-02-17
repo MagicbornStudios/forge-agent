@@ -1,7 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
-import type { DomainAssistantContract, DomainContextSnapshot } from '@forge/shared/assistant';
+import type {
+  AIHighlightPayload,
+  DomainAssistantContract,
+  DomainContextSnapshot,
+} from '@forge/shared/assistant';
 import type { Selection } from '@forge/shared';
 import type { ForgeGraphDoc } from '@forge/types/graph';
 import { buildForgeContext } from '../copilot/context';
@@ -16,7 +20,7 @@ export interface ForgeAssistantDeps {
   selection: Selection | null;
   isDirty: boolean;
   applyOperations: (ops: import('@forge/types/graph').ForgeGraphPatchOp[]) => void;
-  onAIHighlight: (entities: Record<string, string[]>) => void;
+  onAIHighlight: (payload: AIHighlightPayload) => void;
   clearAIHighlights: () => void;
   /** Optional: plan API (Slice 5); openOverlay, revealSelection, etc. (Slice 6). */
   openOverlay?: (id: string, payload?: Record<string, unknown>) => void;

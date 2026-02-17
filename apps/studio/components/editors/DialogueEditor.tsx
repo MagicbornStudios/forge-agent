@@ -31,7 +31,7 @@ import { ModelSwitcher } from '@/components/model-switcher';
 import { useEditorPanelVisibility } from '@/lib/app-shell/useEditorPanelVisibility';
 import { useSettingsStore } from '@/lib/settings/store';
 import { isLangGraphEnabledClient } from '@/lib/feature-flags';
-import { useAIHighlight } from '@forge/shared/assistant';
+import { useAIHighlight, type AIHighlightPayload } from '@forge/shared/assistant';
 import { useForgeAssistantContract } from '@forge/domain-forge/assistant';
 import { planStepToOp } from '@forge/domain-forge/copilot/plan-utils';
 import { useCreateForgePlan, useForgeStoryBuilder } from '@/lib/data/hooks';
@@ -788,8 +788,8 @@ export function DialogueEditor() {
   );
 
   const handleAssistantHighlight = useCallback(
-    (entities: Record<string, string[]>) => {
-      onAIHighlight({ entities });
+    (payload: AIHighlightPayload) => {
+      onAIHighlight(payload);
     },
     [onAIHighlight],
   );

@@ -20,6 +20,20 @@ For this monorepo:
 pnpm forge-repo-studio open --view planning --mode local --profile forge-agent
 ```
 
+When starting with root script, RepoStudio now runs a doctor precheck first:
+
+```bash
+pnpm dev:repo-studio
+```
+
+If precheck fails, remediate in this order:
+
+```bash
+pnpm install
+pnpm forge-repo-studio doctor --json
+pnpm --filter @forge/repo-studio-app build
+```
+
 ## 3) Run one complete slice
 
 1. `Planning` tab: copy next command from `Next Action`.
@@ -32,6 +46,12 @@ Runtime controls:
 
 - `forge-repo-studio status`
 - `forge-repo-studio stop`
+
+Desktop controls:
+
+- `forge-repo-studio open --desktop-runtime`
+- `forge-repo-studio stop --desktop-runtime`
+- `pnpm --filter @forge/repo-studio run desktop:build`
 
 ## 4) Optional fallback UI
 

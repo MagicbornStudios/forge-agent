@@ -6,3 +6,22 @@
 - [x] 01. Add predev guard for RepoStudio startup
 - [x] 02. Update RepoStudio runbooks for pre-dev checks
 - [x] 03. Update loop artifacts and traceability
+
+## Implementation Notes
+
+- Added root script:
+  - `predev:repo-studio`: `pnpm forge-repo-studio doctor`
+- Existing `dev:repo-studio` remains:
+  - `pnpm --filter @forge/repo-studio-app dev`
+- Result: local dev startup now fails early when doctor detects missing RepoStudio dependencies.
+
+## Documentation Updates
+
+- Updated `packages/repo-studio/docs/01-quickstart.md` with fail-fast startup flow and remediation commands.
+- Updated `packages/repo-studio/README.md` with precheck behavior and install/doctor/build remediation sequence.
+
+## Verification Evidence
+
+- `pnpm --filter @forge/repo-studio-app build` PASS.
+- `pnpm --filter @forge/repo-studio-app lint` PASS.
+- `pnpm forge-repo-studio doctor --json` PASS with dependency diagnostics fields present.

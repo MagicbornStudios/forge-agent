@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-
-import { runRepoStudioCli } from '@/lib/cli-runner';
+import { loadCommandsModel } from '@/lib/command-policy';
+import { upsertRepoSettings } from '@/lib/settings/repository';
 
 export async function POST(request: Request) {
   let body: { commandId?: string; disabled?: boolean } = {};
@@ -15,20 +15,30 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, message: 'commandId is required.' }, { status: 400 });
   }
 
-  const args = [
-    'commands-toggle',
-    commandId,
-    body.disabled === false ? '--enable' : '--disable',
-    '--json',
-  ];
-  const result = runRepoStudioCli(args);
-  const payload = result.payload || {};
+  const model = await loadCommandsModel();
+  const current = new Set(model.disabledCommandIds);
+  if (body.disabled === false) current.delete(commandId);
+  else current.add(commandId);
+
+  const snapshot = await upsertRepoSettings({
+    scope: 'local',
+    scopeId: 'default',
+    settings: {
+      commands: {
+        disabledCommandIds: [...current].sort((a, b) => String(a).localeCompare(String(b))),
+      },
+    },
+  });
+
+  const merged = (snapshot.merged as Record<string, any>) || {};
+  const commands = merged.commands && typeof merged.commands === 'object' ? merged.commands : {};
+  const disabledCommandIds = Array.isArray(commands.disabledCommandIds) ? commands.disabledCommandIds : [];
+
   return NextResponse.json({
-    ok: payload.ok ?? result.ok,
-    commandId: payload.commandId || commandId,
-    disabled: payload.disabled ?? (body.disabled !== false),
-    disabledCommandIds: payload.disabledCommandIds || [],
-    message: payload.message || (result.ok ? 'Updated command policy.' : 'Failed to update command policy.'),
-    stderr: payload.stderr || result.stderr,
-  }, { status: payload.ok === false || !result.ok ? 400 : 200 });
+    ok: true,
+    commandId,
+    disabled: body.disabled !== false,
+    disabledCommandIds,
+    message: 'Updated command policy.',
+  }, { status: 200 });
 }

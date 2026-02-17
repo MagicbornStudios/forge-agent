@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.5
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: RepoStudio App Build
+        run: pnpm --filter @forge/repo-studio-app build
+
+      - name: RepoStudio App Lint
+        run: pnpm --filter @forge/repo-studio-app lint
+
+      - name: RepoStudio Package Tests
+        run: pnpm --filter @forge/repo-studio test
+
+      - name: Forge Loop Tests
+        run: pnpm --filter @forge/forge-loop test
+
+      - name: Forge Env Tests
+        run: pnpm --filter @forge/forge-env test

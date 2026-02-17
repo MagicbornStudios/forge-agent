@@ -1,88 +1,73 @@
 # Repo Studio Gaps
 
-Identified gaps between current state and PRD. Ambiguity removed where possible.
+Identified gaps between current state and PRD. Updated 2026-02. Phases A-D (05-08) complete; Phase E (09) in progress.
 
-## High Priority
+## Resolved (Phases 05-08)
+
+| Gap | Resolved In |
+|-----|-------------|
+| Settings persistence | Phase 05: Payload + SQLite, settings registry |
+| Settings UI coverage | Phase 05: RepoSettingsRegistrations, section/field |
+| Structured parsers | Phase 07: packages/repo-studio core parsers |
+| Electron packaging | Phase 08: Desktop packaging, bundled SQLite |
+| Menu contribution | Phase 06: buildRepoWorkspaceMenus, REPO_WORKSPACE_MENU_FACTORIES |
+| Publish story → pages | Phase 07: publish-service, repo-pages/repo-blocks |
+| UI definitions of done | styling-and-ui-consistency.md |
+| Package publish | Phase 06: forge-repo-studio:package:publish (batch script: Low) |
+| Layout/settings parity | Phase 05: registry pattern, codegen defaults |
+| Env: per-key editing, copy-paste, scope, mode | Phase 05-04: Env workspace |
+| Per-workspace menus/shortcuts | Phase 06: workspace menu factories |
+| Navigator panel, server-side search | Phase 06: Code workspace, /api/repo/search |
+| Repo Studio UI loads | Resolved; runs without blocking errors |
+
+## Open (Phase E and Backlog)
+
+### High Priority (Phase E)
 
 | Gap | Current State | Target | Phase |
 |-----|---------------|--------|-------|
-| Settings persistence | config.json + local.overrides.json; no registry | Internal Payload + SQLite; settings registry; section/field UI | A |
-| Settings UI coverage | 4 controls (profile, mode, confirmRuns, panels) | All config sections editable via right sidebar | A |
-| Structured parsers | Raw `<pre>` for planning; raw for story | Parsed YAML/XML for planning; markdown → structure for story | C |
-| Electron packaging | None | Desktop app with bundled SQLite | D |
+| API key auth (desktop) | Session only (web) | Desktop scope + client flow; platform connection | E |
 
-## Medium Priority
-
-| Gap | Current State | Target | Phase |
-|-----|---------------|--------|-------|
-| Menu contribution | Hardcoded in RepoStudioShell | Per-workspace menu registration | B |
-| Publish story → pages | Story saves to files only | API: story file → Page + Blocks | C |
-| API key auth (desktop) | Session only (web) | Desktop scope + client flow | E |
-| UI definitions of done | Ad-hoc | Formal DoD; compact tokens; no ad-hoc padding | B |
-| Package publish | repo-studio not in registry script | Add to Verdaccio/npm publish | B |
-
-## Low Priority
-
-| Gap | Current State | Target | Phase |
-|-----|---------------|--------|-------|
-| Layout/settings parity | RepoSettingsPanelContent vs AppSettingsPanelContent | Same registration pattern; codegen for defaults | A/B |
-
-## Workspace Maturity
-
-See [WORKSPACE-AUDIT.md](WORKSPACE-AUDIT.md) for full feature matrix and Env gap breakdown.
-
-| Workspace | Maturity | Gaps |
-|-----------|----------|------|
-| Planning | Basic | Raw text; no parser; no structured view |
-| Env | Partial | Doctor-only; no per-key editing; no copy-paste; no scope selector |
-| Commands | Good | — |
-| Story | In progress | Parser weak; no publish; scope guard in progress |
-| Code | Basic | Read-first only; no write flow |
-| Diff | Good | Monaco diff; attach works |
-| Git | Partial | Panel exists; "first-class" ops (REQ-15) pending |
-| Docs | Basic | Docs load |
-| Terminal | Basic | Workspace exists |
-| Loop Assistant | Good | Shared runtime |
-| Codex Assistant | Good | App-server; fallback |
-| Review Queue | Partial | Proposals; Tool UI cards not standardized |
-
-### Env Workspace Gaps (canonical env UI; no standalone portal)
-
-- Per-key editing per target; Save/Refresh
-- Copy-paste: paste .env content into target/mode inputs
-- Scope selector: package \| app \| vendor \| root
-- Mode-scoped inputs per target (local vs dev vs prod)
-
-### UI Load / Runtime (blocking)
+### Medium / Low Priority (Backlog)
 
 | Gap | Current | Target |
 |-----|---------|--------|
-| Repo Studio UI loads | Has not loaded due to errors | Runs without blocking errors |
-| Root cause | TBD | Analyze and document in errors-and-attempts |
-
-### New Gaps (from DECISIONS-WORKSPACE-PANELS)
-
-| Gap | Current | Target |
-|-----|---------|--------|
-| React Query | Not used in repo-studio-app | Add for server state; avoid performance issues |
-| Per-workspace menus/shortcuts | Hardcoded | Workspace registration |
 | Per-workspace settings sections | Minimal RepoSettingsPanelContent | Each workspace contributes; centralized registry |
-| Navigator panel | None | Generic Navigator; Code workspace first; server-side search; no default exclude (ide_navigation_analysis IN-01–IN-04) |
-| Review Queue diff UX | Table/list view | Click file → Monaco with diff; one file at a time |
-| Proposal storage | In-memory? | SQLite |
-| Panel behavior props | Ad-hoc | Attach/copy/refresh modular; hide when no data |
-| Story/Docs as sibling workspaces | Story exists; Docs is panel | Story + Docs each full workspace |
-| Loops for planning | Planning artifacts | PRD/plan iteration; loop creation |
-| Trust scope | None | **Global only**: auto-approve all vs require approval |
-| @ mentions UX | None | Paste data; display as tag (like Cursor); remove @ removes from chat |
+| Review Queue diff UX | Table/list view | Click file → Monaco with diff; one file at a time (DS-13) |
+| Proposal storage | In-memory / file | SQLite |
+| Trust scope | None | Global only: auto-approve all vs require approval |
+| React Query | Not used | Add for server state (optional) |
+
+### Future / Aspirational
+
+| Gap | Current | Target |
+|-----|---------|--------|
+| @ mentions UX | None | Paste data; display as tag (like Cursor) |
 | Loop context cache | None | Invalidate on file change or manual refresh |
 | Proposal attribution | None | agentId + agentType in requestApproval |
 | Queue views | Single | Separate per-agent + aggregate views |
 | Orchestrator | None | Repo Studio process for planning + execution loops |
-| Codex observability | None | Dedicated Observability workspace; real-time; tools, searches, paths, latency, tokens, cost (agent_observability_analysis) |
-| Loop Assistant context | Minimal | Active loop id + loop files by default |
-| Review Queue Monaco UX | Table + raw diff | File list left, Monaco diff right; unified view with highlighting; parse diff per-file |
-| Docs workspace | Panel only | Own workspace; doc content; markdown; aspirational MDX |
+| Codex observability | None | Dedicated Observability workspace |
+| Docs workspace | Panel | Own workspace; doc content; markdown; aspirational MDX |
+
+## Workspace Maturity
+
+See [WORKSPACE-AUDIT.md](WORKSPACE-AUDIT.md) for full feature matrix.
+
+| Workspace | Maturity | Notes |
+|-----------|----------|-------|
+| Planning | Good | Docs, loop snapshot; parser in core |
+| Env | Good | Per-key editing, copy-paste, scope selector, mode |
+| Commands | Good | — |
+| Story | Good | Parser, publish API, scope guard |
+| Code | Good | Navigator, file tree, server search, write flow |
+| Diff | Good | Monaco diff; attach works |
+| Git | Good | Panel, status, branches, commit |
+| Docs | Basic | Docs load; panel only |
+| Terminal | Basic | Workspace exists |
+| Loop Assistant | Good | Shared runtime |
+| Codex Assistant | Good | App-server; fallback |
+| Review Queue | Partial | Proposals; Monaco diff UX pending (DS-13) |
 
 ## Ambiguity Resolved
 

@@ -5,6 +5,15 @@ import {
   writeRuntimeState,
 } from '../lib/runtime-manager.mjs';
 
+function desktopLines(state) {
+  const lines = [];
+  if (state?.desktop?.electronPid) lines.push(`desktop.electronPid: ${state.desktop.electronPid}`);
+  if (state?.desktop?.serverPid) lines.push(`desktop.serverPid: ${state.desktop.serverPid}`);
+  if (state?.desktop?.appPort) lines.push(`desktop.appPort: ${state.desktop.appPort}`);
+  if (state?.desktop?.serverMode) lines.push(`desktop.serverMode: ${state.desktop.serverMode}`);
+  return lines;
+}
+
 export async function runStatus() {
   const runtime = await loadActiveRuntimeState({ cleanupStale: true });
   if (!runtime.running || !runtime.state) {
@@ -55,6 +64,7 @@ export async function runStatus() {
     `mode: ${state.mode}`,
     `pid: ${state.pid}`,
     `port: ${state.port}`,
+    ...desktopLines(state),
     `url: ${url || 'n/a'}`,
     `startedAt: ${state.startedAt || 'unknown'}`,
     `workspaceRoot: ${state.workspaceRoot || process.cwd()}`,
@@ -74,3 +84,4 @@ export async function runStatus() {
     report: `${report}\n`,
   };
 }
+

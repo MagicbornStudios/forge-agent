@@ -148,6 +148,12 @@ function shouldRunStudioBuild(changedFiles) {
   return changedFiles.some((filePath) => filePath.startsWith('apps/studio/') || filePath.startsWith('packages/'));
 }
 
+function shouldRunRepoStudioBuild(changedFiles) {
+  return changedFiles.some(
+    (filePath) => filePath.startsWith('apps/repo-studio/') || filePath.startsWith('packages/repo-studio/'),
+  );
+}
+
 function parseConfigCommand(entry) {
   if (!entry) return null;
   if (typeof entry === 'string') {
@@ -199,6 +205,10 @@ export function buildVerificationCommandPlan(config, changedFiles) {
 
   if (config?.verification?.build !== false && shouldRunStudioBuild(changedFiles)) {
     commands.push({ command: 'pnpm', args: ['--filter', '@forge/studio', 'build'] });
+  }
+
+  if (config?.verification?.build !== false && shouldRunRepoStudioBuild(changedFiles)) {
+    commands.push({ command: 'pnpm', args: ['--filter', '@forge/repo-studio-app', 'build'] });
   }
 
   if (config?.verification?.tests !== false && shouldRunStudioBuild(changedFiles)) {

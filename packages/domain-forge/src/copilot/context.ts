@@ -1,4 +1,4 @@
-import type { DomainContextSnapshot } from '@forge/shared/assistant';
+import type { DomainContextSnapshot } from '@forge/shared/copilot/types';
 import type { Selection } from '@forge/shared';
 import { isEntity } from '@forge/shared';
 import type { ForgeGraphDoc } from '@forge/types/graph';

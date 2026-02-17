@@ -6,3 +6,21 @@
 - [x] 01. Add proposal unified-diff parser
 - [x] 02. Add proposal diff APIs
 - [x] 03. Extend typed client contracts
+
+## Implementation Notes
+
+- Added proposal diff parser at `apps/repo-studio/src/lib/proposals/diff-parser.ts` with deterministic extraction of:
+  - file path
+  - status
+  - additions/deletions
+  - hunk count
+  - per-file unified patch payload
+- Added new routes:
+  - `GET /api/repo/proposals/diff-files`
+  - `GET /api/repo/proposals/diff-file`
+- Extended typed client contracts in `apps/repo-studio/src/lib/api/types.ts` and service methods in `apps/repo-studio/src/lib/api/services/proposals.ts`.
+
+## Verification Evidence
+
+- `pnpm --filter @forge/repo-studio-app build`
+- `pnpm --filter @forge/repo-studio-app run test:review-queue`

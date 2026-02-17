@@ -40,7 +40,7 @@ async function ensureUser(payload: Payload, data: typeof DEFAULT_ADMIN) {
     limit: 1,
   });
   if (existing.docs.length > 0) return existing.docs[0];
-  return payload.create({
+  return (payload as any).create({
     collection: 'users',
     data: {
       email: data.email,
@@ -69,7 +69,7 @@ async function ensureGraph(
     limit: 1,
   });
   if (existing.docs.length > 0) return existing.docs[0];
-  return payload.create({
+  return (payload as any).create({
     collection: 'forge-graphs',
     data: {
       title,
@@ -88,7 +88,7 @@ async function ensureProject(payload: Payload, ownerId: string | number) {
     limit: 1,
   });
   if (existing.docs.length > 0) return existing.docs[0];
-  return payload.create({
+  return (payload as any).create({
     collection: 'projects',
     data: {
       title: 'Demo Project',
@@ -118,7 +118,7 @@ async function ensurePersonalOrganization(payload: Payload, userId: number, name
   }
 
   const normalizedName = name.trim().length > 0 ? name : `User ${userId}`;
-  const organization = await payload.create({
+  const organization = await (payload as any).create({
     collection: 'organizations',
     data: {
       name: `${normalizedName} Workspace`,
@@ -128,7 +128,7 @@ async function ensurePersonalOrganization(payload: Payload, userId: number, name
     overrideAccess: true,
   });
 
-  await payload.create({
+  await (payload as any).create({
     collection: 'organization-memberships',
     data: {
       organization: organization.id,
@@ -138,7 +138,7 @@ async function ensurePersonalOrganization(payload: Payload, userId: number, name
     overrideAccess: true,
   });
 
-  await payload.update({
+  await (payload as any).update({
     collection: 'users',
     id: userId,
     data: {
@@ -160,7 +160,7 @@ async function ensurePromotion(payload: Payload) {
     limit: 1,
   });
   if (existing.docs.length > 0) return existing.docs[0];
-  return payload.create({
+  return (payload as any).create({
     collection: 'promotions',
     data: {
       title: SEED_PROMOTION_TITLE,
@@ -179,7 +179,7 @@ async function ensureWaitlistEntry(payload: Payload) {
     limit: 1,
   });
   if (existing.docs.length > 0) return existing.docs[0];
-  return payload.create({
+  return (payload as any).create({
     collection: 'waitlist',
     data: {
       email: SEED_WAITLIST_EMAIL,
@@ -196,7 +196,7 @@ async function ensureNewsletterEntry(payload: Payload) {
     limit: 1,
   });
   if (existing.docs.length > 0) return existing.docs[0];
-  return payload.create({
+  return (payload as any).create({
     collection: 'newsletter-subscribers',
     data: {
       email: SEED_WAITLIST_EMAIL,
@@ -281,7 +281,7 @@ async function ensureFirstBlogPost(payload: Payload) {
     limit: 1,
   });
   if (existing.docs.length > 0) return existing.docs[0];
-  return payload.create({
+  return (payload as any).create({
     collection: 'posts',
     data: {
       title: 'Setting up the shadcn MCP server and component registries',
@@ -303,7 +303,7 @@ export async function seedStudio(payload: Payload) {
     await ensurePersonalOrganization(payload, Number(basicUser.id), basicUser.name ?? 'User');
     const project = await ensureProject(payload, admin.id);
     if (!project.organization) {
-      await payload.update({
+      await (payload as any).update({
         collection: 'projects',
         id: project.id,
         data: { organization: adminOrgId },
@@ -322,7 +322,7 @@ export async function seedStudio(payload: Payload) {
       DEMO_STORYLET_GRAPH_TITLE,
     );
     if (!project.forgeGraph) {
-      await payload.update({
+      await (payload as any).update({
         collection: 'projects',
         id: project.id,
         data: { forgeGraph: narrative.id },

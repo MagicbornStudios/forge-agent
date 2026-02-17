@@ -7,25 +7,20 @@ import { Button } from '@forge/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@forge/ui/card';
 import { Input } from '@forge/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@forge/ui/select';
+import { toErrorMessage } from '@/lib/api/http';
+import {
+  fetchGitStatus,
+  fetchRepoFile,
+  fetchRepoFilesTree,
+  searchRepo,
+  writeRepoFile,
+} from '@/lib/api/services';
+import type { RepoScope, RepoSearchMatch } from '@/lib/api/types';
 
 const MonacoEditor = dynamic(
   () => import('@monaco-editor/react').then((module) => module.default),
   { ssr: false },
 );
-
-type FilesTreePayload = {
-  ok: boolean;
-  files: string[];
-  truncated?: boolean;
-  message?: string;
-};
-
-type ReadPayload = {
-  ok: boolean;
-  path: string;
-  content: string;
-  message?: string;
-};
 
 export interface CodeWorkspaceProps {
   activeLoopId: string;
@@ -38,57 +33,98 @@ export function CodeWorkspace({
   onAttachToAssistant,
   onCopyText,
 }: CodeWorkspaceProps) {
-  const [scope, setScope] = React.useState<'workspace' | 'loop'>('loop');
+  const [scope, setScope] = React.useState<RepoScope>('loop');
   const [files, setFiles] = React.useState<string[]>([]);
-  const [query, setQuery] = React.useState('');
+  const [gitStatusByPath, setGitStatusByPath] = React.useState<Record<string, string>>({});
+  const [fileQuery, setFileQuery] = React.useState('');
   const [selectedPath, setSelectedPath] = React.useState('');
   const [content, setContent] = React.useState('');
   const [baselineContent, setBaselineContent] = React.useState('');
   const [message, setMessage] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [searchInclude, setSearchInclude] = React.useState('');
+  const [searchExclude, setSearchExclude] = React.useState('');
+  const [searchRegex, setSearchRegex] = React.useState(false);
+  const [searching, setSearching] = React.useState(false);
+  const [searchMatches, setSearchMatches] = React.useState<RepoSearchMatch[]>([]);
+  const [searchMessage, setSearchMessage] = React.useState('');
 
   const filteredFiles = React.useMemo(() => {
-    const needle = query.trim().toLowerCase();
+    const needle = fileQuery.trim().toLowerCase();
     if (!needle) return files;
     return files.filter((file) => file.toLowerCase().includes(needle));
-  }, [files, query]);
+  }, [fileQuery, files]);
 
   const hasChanges = React.useMemo(() => content !== baselineContent, [content, baselineContent]);
+
+  const splitGlobs = React.useCallback((value: string) => (
+    String(value || '')
+      .split(',')
+      .map((entry) => entry.trim())
+      .filter(Boolean)
+  ), []);
 
   const refreshTree = React.useCallback(async () => {
     setLoading(true);
     setMessage('');
-    const response = await fetch(`/api/repo/files/tree?scope=${scope}&loopId=${encodeURIComponent(activeLoopId)}`);
-    const payload = await response.json().catch(() => ({ ok: false })) as FilesTreePayload;
-    setLoading(false);
-    if (!payload.ok) {
+    try {
+      const [payload, gitStatus] = await Promise.all([
+        fetchRepoFilesTree({
+          scope,
+          loopId: activeLoopId,
+        }),
+        fetchGitStatus(),
+      ]);
+
+      if (!payload.ok) {
+        setFiles([]);
+        setMessage(payload.message || 'Unable to load file tree.');
+        setLoading(false);
+        return;
+      }
+      const nextFiles = Array.isArray(payload.files) ? payload.files : [];
+      setFiles(nextFiles);
+      if (!selectedPath && nextFiles[0]) {
+        setSelectedPath(nextFiles[0]);
+      }
+      if (payload.truncated) {
+        setMessage('Tree truncated. Refine scope or query for focused editing.');
+      }
+
+      const statusMap: Record<string, string> = {};
+      for (const row of gitStatus.files || []) {
+        if (!row?.path) continue;
+        statusMap[row.path] = row.status;
+      }
+      setGitStatusByPath(statusMap);
+    } catch (error) {
       setFiles([]);
-      setMessage(payload.message || 'Unable to load file tree.');
-      return;
-    }
-    setFiles(Array.isArray(payload.files) ? payload.files : []);
-    if (!selectedPath && payload.files[0]) {
-      setSelectedPath(payload.files[0]);
-    }
-    if (payload.truncated) {
-      setMessage('Tree truncated. Refine scope or query for focused editing.');
+      setMessage(toErrorMessage(error, 'Unable to load file tree.'));
+    } finally {
+      setLoading(false);
     }
   }, [activeLoopId, scope, selectedPath]);
 
   const loadFile = React.useCallback(async (filePath: string) => {
     if (!filePath) return;
     setLoading(true);
-    const response = await fetch(`/api/repo/files/read?path=${encodeURIComponent(filePath)}`);
-    const payload = await response.json().catch(() => ({ ok: false })) as ReadPayload;
-    setLoading(false);
-    if (!payload.ok) {
-      setMessage(payload.message || 'Unable to read file.');
-      return;
+    try {
+      const payload = await fetchRepoFile(filePath);
+      if (!payload.ok) {
+        setMessage(payload.message || 'Unable to read file.');
+        setLoading(false);
+        return;
+      }
+      setContent(payload.content || '');
+      setBaselineContent(payload.content || '');
+      setMessage(`Loaded ${payload.path}`);
+    } catch (error) {
+      setMessage(toErrorMessage(error, 'Unable to read file.'));
+    } finally {
+      setLoading(false);
     }
-    setContent(payload.content || '');
-    setBaselineContent(payload.content || '');
-    setMessage(`Loaded ${payload.path}`);
   }, []);
 
   React.useEffect(() => {
@@ -103,24 +139,61 @@ export function CodeWorkspace({
   const saveFile = React.useCallback(async () => {
     if (!selectedPath) return;
     setSaving(true);
-    const response = await fetch('/api/repo/files/write', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
+    try {
+      const payload = await writeRepoFile({
         path: selectedPath,
         content,
-        approved: true,
-      }),
-    });
-    const payload = await response.json().catch(() => ({ ok: false }));
-    setSaving(false);
-    if (!payload.ok) {
-      setMessage(payload.message || 'Unable to save file.');
+      });
+      if (!payload.ok) {
+        setMessage(payload.message || 'Unable to save file.');
+        setSaving(false);
+        return;
+      }
+      setBaselineContent(content);
+      setMessage(payload.message || `Saved ${selectedPath}`);
+      await refreshTree();
+    } catch (error) {
+      setMessage(toErrorMessage(error, 'Unable to save file.'));
+    } finally {
+      setSaving(false);
+    }
+  }, [content, refreshTree, selectedPath]);
+
+  const runSearch = React.useCallback(async () => {
+    const query = searchQuery.trim();
+    if (!query) {
+      setSearchMessage('Enter a search query.');
+      setSearchMatches([]);
       return;
     }
-    setBaselineContent(content);
-    setMessage(payload.message || `Saved ${selectedPath}`);
-  }, [content, selectedPath]);
+    setSearching(true);
+    try {
+      const payload = await searchRepo({
+        query,
+        regex: searchRegex,
+        include: splitGlobs(searchInclude),
+        exclude: splitGlobs(searchExclude),
+        scope,
+        loopId: activeLoopId,
+      });
+      if (!payload.ok) {
+        setSearchMessage(payload.message || 'Search failed.');
+        setSearchMatches([]);
+        return;
+      }
+      setSearchMatches(payload.matches || []);
+      setSearchMessage(
+        payload.matches.length === 0
+          ? 'No matches found.'
+          : `Found ${payload.matches.length} match(es)${payload.truncated ? ' (truncated)' : ''}.`,
+      );
+    } catch (error) {
+      setSearchMatches([]);
+      setSearchMessage(toErrorMessage(error, 'Search failed.'));
+    } finally {
+      setSearching(false);
+    }
+  }, [activeLoopId, scope, searchExclude, searchInclude, searchQuery, searchRegex, splitGlobs]);
 
   const attachFile = React.useCallback(() => {
     if (!selectedPath) return;
@@ -134,6 +207,31 @@ export function CodeWorkspace({
       '```',
     ].join('\n'));
   }, [content, onAttachToAssistant, selectedPath]);
+
+  const attachSearchMatches = React.useCallback(() => {
+    if (searchMatches.length === 0) return;
+    const preview = searchMatches
+      .slice(0, 40)
+      .map((match) => `${match.path}:${match.line}:${match.column} | ${match.preview}`)
+      .join('\n');
+    onAttachToAssistant(
+      'search:navigator',
+      [
+        '# Repo Search Context',
+        '',
+        `loopId: ${activeLoopId}`,
+        `scope: ${scope}`,
+        `query: ${searchQuery.trim() || '(none)'}`,
+        `regex: ${searchRegex ? 'true' : 'false'}`,
+        `include: ${searchInclude.trim() || '(none)'}`,
+        `exclude: ${searchExclude.trim() || '(none)'}`,
+        '',
+        '```txt',
+        preview,
+        '```',
+      ].join('\n'),
+    );
+  }, [activeLoopId, onAttachToAssistant, scope, searchExclude, searchInclude, searchMatches, searchQuery, searchRegex]);
 
   return (
     <div className="h-full min-h-0 space-y-3 overflow-auto p-2">
@@ -153,8 +251,8 @@ export function CodeWorkspace({
               </SelectContent>
             </Select>
             <Input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              value={fileQuery}
+              onChange={(event) => setFileQuery(event.target.value)}
               className="w-full md:w-[320px]"
               placeholder="Filter files..."
             />
@@ -166,7 +264,9 @@ export function CodeWorkspace({
                 {filteredFiles.length === 0 ? (
                   <SelectItem value="__none__" disabled>No files</SelectItem>
                 ) : filteredFiles.map((file) => (
-                  <SelectItem key={file} value={file}>{file}</SelectItem>
+                  <SelectItem key={file} value={file}>
+                    {gitStatusByPath[file] ? `[${gitStatusByPath[file]}] ` : ''}{file}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -204,6 +304,83 @@ export function CodeWorkspace({
                 automaticLayout: true,
               }}
             />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm">Navigator Search</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-5">
+            <Input
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search query (plain or regex)"
+              className="md:col-span-2"
+            />
+            <Input
+              value={searchInclude}
+              onChange={(event) => setSearchInclude(event.target.value)}
+              placeholder="include globs (comma-separated)"
+            />
+            <Input
+              value={searchExclude}
+              onChange={(event) => setSearchExclude(event.target.value)}
+              placeholder="exclude globs (comma-separated)"
+            />
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant={searchRegex ? 'secondary' : 'outline'}
+                onClick={() => setSearchRegex((current) => !current)}
+              >
+                {searchRegex ? 'Regex On' : 'Regex Off'}
+              </Button>
+              <Button size="sm" variant="outline" onClick={runSearch} disabled={searching}>
+                {searching ? 'Searching...' : 'Search'}
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="outline">scope: {scope}</Badge>
+            <Badge variant="outline">loop: {activeLoopId}</Badge>
+            <Badge variant="outline">matches: {searchMatches.length}</Badge>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={attachSearchMatches}
+              disabled={searchMatches.length === 0}
+            >
+              Attach Matches
+            </Button>
+          </div>
+
+          {searchMessage ? <p className="text-xs text-muted-foreground">{searchMessage}</p> : null}
+
+          <div className="max-h-56 overflow-auto rounded-md border border-border">
+            {searchMatches.length === 0 ? (
+              <div className="p-3 text-xs text-muted-foreground">No search results yet.</div>
+            ) : (
+              <ul className="divide-y divide-border">
+                {searchMatches.map((match, index) => (
+                  <li key={`${match.path}:${match.line}:${match.column}:${index}`}>
+                    <button
+                      type="button"
+                      className="w-full px-3 py-2 text-left text-xs hover:bg-muted/40"
+                      onClick={() => setSelectedPath(match.path)}
+                    >
+                      <div className="font-mono text-[11px]">
+                        {match.path}:{match.line}:{match.column}
+                      </div>
+                      <div className="truncate text-muted-foreground">{match.preview}</div>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </CardContent>
       </Card>

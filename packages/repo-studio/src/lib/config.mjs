@@ -11,6 +11,13 @@ export const DEFAULT_REPO_STUDIO_CONFIG = {
     defaultMode: 'auto',
     reuseByDefault: true,
     defaultPort: 3864,
+    desktopDefaultPort: 3020,
+    desktopWatcher: {
+      enabled: true,
+      fallbackPolling: true,
+      pollingIntervalMs: 1200,
+      watchedRoots: ['.planning', 'apps', 'packages', 'content/story'],
+    },
   },
   commandPolicy: {
     mode: 'allowlist',

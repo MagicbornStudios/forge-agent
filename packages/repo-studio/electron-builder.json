@@ -1,0 +1,38 @@
+{
+  "appId": "com.forge.repostudio",
+  "productName": "RepoStudio",
+  "directories": {
+    "output": "dist/desktop"
+  },
+  "files": [
+    "src/desktop/**",
+    "src/core/runtime/**",
+    "src/lib/config.mjs",
+    "src/lib/io.mjs",
+    "src/lib/runtime-manager.mjs",
+    "package.json"
+  ],
+  "extraResources": [
+    {
+      "from": ".desktop-build/next",
+      "to": "next"
+    }
+  ],
+  "win": {
+    "target": [
+      "nsis",
+      "portable"
+    ]
+  },
+  "mac": {
+    "target": [
+      "dmg"
+    ]
+  },
+  "linux": {
+    "target": [
+      "AppImage"
+    ]
+  }
+}
+

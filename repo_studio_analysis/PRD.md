@@ -4,6 +4,8 @@
 
 Repo Studio as official platform desktop app—same data, Electron-packaged, downloadable. A standalone analysis and development surface for repository operations that shares platform data and editor patterns with the main Studio. Has its own internal Payload + SQLite for settings and local state; when packaged as Electron, the DB is bundled with the app.
 
+**Status (2026-02):** Phases A-D complete (05-08); Phase E (desktop auth) is the only remaining deliverable.
+
 ## Terminology
 
 | Term | Meaning | Notes |
@@ -30,16 +32,16 @@ Repo Studio as official platform desktop app—same data, Electron-packaged, dow
 
 | ID | Feature | Status | Phase |
 |----|---------|--------|-------|
-| F1 | Structured file parsers (planning, story) | Planned | C |
-| F2 | Publish story files as project Pages (content → Blocks) | Planned | C |
-| F3 | Electron desktop packaging | Planned | D |
+| F1 | Structured file parsers (planning, story) | Done | C |
+| F2 | Publish story files as project Pages (content → Blocks) | Done | C |
+| F3 | Electron desktop packaging | Done | D |
 | F4 | API key auth for desktop app (platform connection) | Planned | E |
-| F5 | Package publishability (Verdaccio + npm) | Planned | B |
-| F6 | Definitions of done for UI/layout | Planned | B |
-| F7 | Studio/editor parity (looks, patterns) | In progress | A |
-| F8 | Internal Payload + SQLite for settings | Planned | A |
-| F9 | Settings registry (section/field) + right sidebar | Planned | A |
-| F10 | Per-workspace menu contribution | Planned | B |
+| F5 | Package publishability (Verdaccio + npm) | Done | B |
+| F6 | Definitions of done for UI/layout | Done | B |
+| F7 | Studio/editor parity (looks, patterns) | Done | A |
+| F8 | Internal Payload + SQLite for settings | Done | A |
+| F9 | Settings registry (section/field) + right sidebar | Done | A |
+| F10 | Per-workspace menu contribution | Done | B |
 
 ## Phasing
 

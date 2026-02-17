@@ -1,4 +1,4 @@
-import type { CollectionConfig } from 'payload';
+import type { CollectionConfig, Where } from 'payload';
 import {
   isAdminUser,
   organizationScopedAccess,
@@ -31,12 +31,14 @@ export const Listings: CollectionConfig = {
   slug: 'listings',
   access: {
     read: async ({ req }) => {
+      const publishedWhere = {
+        status: {
+          equals: 'published',
+        },
+      } as unknown as Where;
+
       if (!req.user) {
-        return {
-          status: {
-            equals: 'published',
-          },
-        };
+        return publishedWhere;
       }
       if (isAdminUser(req)) return true;
       const scoped = await organizationScopedAccess(
@@ -44,22 +46,17 @@ export const Listings: CollectionConfig = {
         { ownerField: 'creator', organizationField: 'organization' },
       );
       if (scoped === false) {
-        return {
-          status: {
-            equals: 'published',
-          },
-        };
+        return publishedWhere;
+      }
+      if (scoped === true) {
+        return true;
       }
       return {
         or: [
-          {
-            status: {
-              equals: 'published',
-            },
-          },
+          publishedWhere,
           scoped,
         ],
-      };
+      } as unknown as Where;
     },
     create: requireAuthenticated,
     update: ({ req }) =>

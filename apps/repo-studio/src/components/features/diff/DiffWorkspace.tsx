@@ -6,26 +6,14 @@ import { Badge } from '@forge/ui/badge';
 import { Button } from '@forge/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@forge/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@forge/ui/select';
+import { toErrorMessage } from '@/lib/api/http';
+import { fetchDiffFile, fetchDiffStatus } from '@/lib/api/services';
+import type { DiffFilePayload, DiffStatusEntry } from '@/lib/api/types';
 
 const MonacoDiffEditor = dynamic(
   () => import('@monaco-editor/react').then((module) => module.DiffEditor),
   { ssr: false },
 );
-
-type DiffStatusEntry = {
-  status: string;
-  path: string;
-};
-
-type DiffFilePayload = {
-  ok: boolean;
-  path: string;
-  base: string;
-  head: string;
-  original: string;
-  modified: string;
-  unifiedDiff: string;
-};
 
 export interface DiffWorkspaceProps {
   onAttachToAssistant: (label: string, content: string) => void;
@@ -44,16 +32,20 @@ export function DiffWorkspace({
 
   const refreshStatus = React.useCallback(async () => {
     setError('');
-    const response = await fetch('/api/repo/diff/status?scope=workspace');
-    const body = await response.json().catch(() => ({ ok: false }));
-    if (!body.ok || !Array.isArray(body.files)) {
+    try {
+      const body = await fetchDiffStatus({ scope: 'workspace' });
+      if (!body.ok || !Array.isArray(body.files)) {
+        setFiles([]);
+        setError(body.message || 'Unable to load git status.');
+        return;
+      }
+      setFiles(body.files as DiffStatusEntry[]);
+      if (!selectedPath && body.files[0]?.path) {
+        setSelectedPath(String(body.files[0].path));
+      }
+    } catch (error) {
       setFiles([]);
-      setError(body.message || body.stderr || 'Unable to load git status.');
-      return;
-    }
-    setFiles(body.files as DiffStatusEntry[]);
-    if (!selectedPath && body.files[0]?.path) {
-      setSelectedPath(String(body.files[0].path));
+      setError(toErrorMessage(error, 'Unable to load git status.'));
     }
   }, [selectedPath]);
 
@@ -61,15 +53,25 @@ export function DiffWorkspace({
     if (!filePath) return;
     setLoading(true);
     setError('');
-    const response = await fetch(`/api/repo/diff/file?path=${encodeURIComponent(filePath)}&base=HEAD&head=WORKTREE`);
-    const body = await response.json().catch(() => ({ ok: false }));
-    setLoading(false);
-    if (!body.ok) {
+    try {
+      const body = await fetchDiffFile({
+        path: filePath,
+        base: 'HEAD',
+        head: 'WORKTREE',
+      });
+      if (!body.ok) {
+        setPayload(null);
+        setError(body.message || 'Unable to load diff file.');
+        setLoading(false);
+        return;
+      }
+      setPayload(body as DiffFilePayload);
+    } catch (error) {
       setPayload(null);
-      setError(body.message || 'Unable to load diff file.');
-      return;
+      setError(toErrorMessage(error, 'Unable to load diff file.'));
+    } finally {
+      setLoading(false);
     }
-    setPayload(body as DiffFilePayload);
   }, []);
 
   React.useEffect(() => {
@@ -161,4 +163,3 @@ export function DiffWorkspace({
     </div>
   );
 }
-

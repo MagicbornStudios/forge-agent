@@ -65,4 +65,23 @@ Attach planning docs from the `Planning` tab with `Attach To Assistant`, then co
 
 Story contexts can be attached from the `Story` panel, and scope guard rules apply when Codex turns propose edits outside configured story roots.
 
-When codex requests file/planning changes, RepoStudio records a proposal in `.repo-studio/proposals.json` and requires explicit apply/reject via the `Review Queue` workspace.
+When codex requests file/planning changes, RepoStudio records a proposal in SQLite (`repo-proposals` collection) and routes review/apply through the `Review Queue` workspace.
+
+Legacy `.repo-studio/proposals.json` is used only for one-time import and read-only fallback when SQLite is unavailable.
+
+## Review Queue Trust Mode
+
+Settings key:
+
+- `reviewQueue.trustMode`: `require-approval` | `auto-approve-all`
+
+Behavior:
+
+- `require-approval` (default): proposals remain pending until user action.
+- `auto-approve-all`: new proposals auto-apply immediately when scope guard permits.
+- Scope guard is never bypassed by trust mode.
+
+Review Queue patch APIs:
+
+- `GET /api/repo/proposals/diff-files?proposalId=<id>`
+- `GET /api/repo/proposals/diff-file?proposalId=<id>&path=<repo-relative>`

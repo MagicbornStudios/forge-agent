@@ -24,7 +24,7 @@ Usage:
   forge-repo-studio <command> [options]
 
 Commands:
-  open [--profile forge-agent|forge-loop|custom] [--mode local|preview|production|headless] [--view planning|env|commands|docs|loop-assistant|codex-assistant|diff] [--port <n>] [--app-runtime|--package-runtime] [--reuse|--no-reuse] [--detach|--foreground] [--legacy-ui]
+  open [--profile forge-agent|forge-loop|custom] [--mode local|preview|production|headless] [--view planning|env|commands|docs|loop-assistant|codex-assistant|diff|story|git|code|review-queue] [--port <n>] [--app-runtime|--package-runtime|--desktop-runtime] [--reuse|--no-reuse] [--detach|--foreground] [--desktop-dev] [--legacy-ui]
   doctor
   commands-list
   commands-toggle <command-id> [--enable|--disable]
@@ -34,7 +34,7 @@ Commands:
   codex-stop
   codex-exec [--prompt <text>]
   status
-  stop [--app-runtime|--package-runtime]
+  stop [--app-runtime|--package-runtime|--desktop-runtime]
   run <command-id> [--confirm]
 `);
 }
@@ -81,9 +81,11 @@ export async function runRepoStudioCli(argv = process.argv.slice(2)) {
       port: flags.get('port'),
       appRuntime: flags.has('app-runtime'),
       packageRuntime: flags.has('package-runtime'),
+      desktopRuntime: flags.has('desktop-runtime'),
       reuse,
       detach,
       foreground: flags.has('foreground'),
+      desktopDev: flags.has('desktop-dev'),
       legacyUi: flags.has('legacy-ui'),
       openBrowser: !flags.has('no-browser'),
       runtimeChild: flags.has('runtime-child'),
@@ -124,6 +126,7 @@ export async function runRepoStudioCli(argv = process.argv.slice(2)) {
     result = await runStop({
       appRuntime: flags.has('app-runtime'),
       packageRuntime: flags.has('package-runtime'),
+      desktopRuntime: flags.has('desktop-runtime'),
     });
   } else if (command === 'run') {
     result = await runCommandById({

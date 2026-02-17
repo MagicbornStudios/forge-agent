@@ -242,7 +242,7 @@ export async function POST(req: Request) {
         keyLast4: material.keyLast4,
         secretSalt: material.secretSalt,
         secretHash: material.secretHash,
-        scopes,
+        scopes: scopes as any,
         user: user.id,
         organization: context.activeOrganizationId,
         expiresAt: expiresAt ?? undefined,

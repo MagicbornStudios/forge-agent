@@ -35,6 +35,7 @@ type RepoStudioShellState = {
   reviewQueue: RepoReviewQueueState;
   activeRunId: string | null;
   activeRun: RepoRunRef | null;
+  selectedRepoPath: string | null;
 
   setActiveWorkspace: (workspaceId: RepoWorkspaceId) => void;
   setOpenWorkspaceIds: (workspaceIds: RepoWorkspaceId[]) => void;
@@ -46,6 +47,7 @@ type RepoStudioShellState = {
 
   setPanelVisible: (panelId: string, visible: boolean) => void;
   restoreAllPanels: () => void;
+  replaceHiddenPanelIds: (panelIds: string[]) => void;
 
   setCommandView: (next: Partial<RepoCommandView>) => void;
   replaceCommandView: (next: RepoCommandView) => void;
@@ -57,6 +59,7 @@ type RepoStudioShellState = {
   setReviewQueueState: (next: Partial<RepoReviewQueueState>) => void;
 
   setActiveRun: (run: RepoRunRef | null) => void;
+  setSelectedRepoPath: (path: string | null) => void;
 };
 
 const DEFAULT_ROUTE: RepoStudioRouteState = {
@@ -92,6 +95,7 @@ export const useRepoStudioShellStore = create<RepoStudioShellState>()(
       },
       activeRunId: null,
       activeRun: null,
+      selectedRepoPath: null,
 
       setActiveWorkspace: (workspaceId) => {
         set((state) => {
@@ -153,6 +157,11 @@ export const useRepoStudioShellStore = create<RepoStudioShellState>()(
 
       restoreAllPanels: () => set({ hiddenPanelIds: [] }),
 
+      replaceHiddenPanelIds: (panelIds) => {
+        const normalized = [...new Set((panelIds || []).map((item) => String(item).trim()).filter(Boolean))];
+        set({ hiddenPanelIds: normalized });
+      },
+
       setCommandView: (next) => {
         set((state) => ({
           commandView: {
@@ -200,6 +209,11 @@ export const useRepoStudioShellStore = create<RepoStudioShellState>()(
           activeRun: run,
           activeRunId: run?.id || null,
         }),
+
+      setSelectedRepoPath: (path) =>
+        set({
+          selectedRepoPath: path ? String(path) : null,
+        }),
     }),
     {
       name: 'forge:repo-studio-shell:v1',
@@ -212,6 +226,7 @@ export const useRepoStudioShellStore = create<RepoStudioShellState>()(
         attachedPlanningDocIds: state.attachedPlanningDocIds,
         activeLoopId: state.activeLoopId,
         reviewQueue: state.reviewQueue,
+        selectedRepoPath: state.selectedRepoPath,
       }),
     },
   ),

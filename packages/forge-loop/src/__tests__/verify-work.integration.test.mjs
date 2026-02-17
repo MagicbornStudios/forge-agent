@@ -29,8 +29,27 @@ test('buildVerificationCommandPlan selects matrix commands by changed paths', ()
   assert.ok(rendered.includes('pnpm docs:runtime:doctor'));
   assert.ok(rendered.includes('pnpm --filter @forge/platform build'));
   assert.ok(rendered.includes('pnpm --filter @forge/studio build'));
+  assert.ok(!rendered.includes('pnpm --filter @forge/repo-studio-app build'));
   assert.ok(rendered.includes('pnpm --filter @forge/studio test -- --runInBand'));
   assert.ok(rendered.includes('pnpm forge-loop:test'));
+});
+
+test('buildVerificationCommandPlan adds repo-studio build for repo-studio app changes only', () => {
+  const commands = buildVerificationCommandPlan(
+    {
+      verification: {
+        docs: true,
+        build: true,
+        tests: true,
+      },
+    },
+    ['apps/repo-studio/src/components/RepoStudioShell.tsx'],
+  );
+
+  const rendered = commands.map((item) => `${item.command} ${item.args.join(' ')}`);
+  assert.ok(rendered.includes('pnpm --filter @forge/repo-studio-app build'));
+  assert.ok(!rendered.includes('pnpm --filter @forge/studio build'));
+  assert.ok(!rendered.includes('pnpm --filter @forge/studio test -- --runInBand'));
 });
 
 test('buildVerificationCommandPlan supports forge-loop profile', () => {

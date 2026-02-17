@@ -77,16 +77,17 @@ function byteLength(value: unknown): number {
 }
 
 async function getOrganizationStorageFields(payload: Payload, organizationId: number) {
-  const organization = (await payload.findByID({
+  const organizationRaw = await payload.findByID({
     collection: 'organizations',
     id: organizationId,
     depth: 0,
     overrideAccess: true,
-  })) as Record<string, unknown>;
+  });
 
-  if (!organization) {
+  if (!organizationRaw || typeof organizationRaw !== 'object') {
     throw new Error('Organization not found');
   }
+  const organization = organizationRaw as unknown as Record<string, unknown>;
 
   const storageQuotaBytes = Math.max(
     0,
@@ -216,14 +217,15 @@ export async function calculateProjectEstimatedSizeBytes(
   payload: Payload,
   projectId: number,
 ): Promise<number> {
-  const project = (await payload.findByID({
+  const projectRaw = await payload.findByID({
     collection: 'projects',
     id: projectId,
     depth: 0,
     overrideAccess: true,
-  })) as Record<string, unknown> | null;
+  });
 
-  if (!project) return 0;
+  if (!projectRaw || typeof projectRaw !== 'object') return 0;
+  const project = projectRaw as unknown as Record<string, unknown>;
 
   const [graphs, characters, relationships, pages] = await Promise.all([
     findAllDocs<Record<string, unknown>>(payload, {
@@ -347,14 +349,14 @@ export async function recomputeProjectStorageUsage(
   deltaBytes: number;
   organizationId: number | null;
 }> {
-  const project = (await payload.findByID({
+  const projectRaw = await payload.findByID({
     collection: 'projects',
     id: projectId,
     depth: 0,
     overrideAccess: true,
-  })) as Record<string, unknown> | null;
+  });
 
-  if (!project) {
+  if (!projectRaw || typeof projectRaw !== 'object') {
     return {
       previousEstimatedSizeBytes: 0,
       nextEstimatedSizeBytes: 0,
@@ -362,6 +364,7 @@ export async function recomputeProjectStorageUsage(
       organizationId: null,
     };
   }
+  const project = projectRaw as unknown as Record<string, unknown>;
 
   const organizationId = asNumericId(project.organization);
   const previousEstimatedSizeBytes = Math.max(
@@ -479,14 +482,15 @@ export async function estimateCloneStorageDeltaBytes(
   payload: Payload,
   sourceProjectId: number,
 ): Promise<number> {
-  const project = (await payload.findByID({
+  const projectRaw = await payload.findByID({
     collection: 'projects',
     id: sourceProjectId,
     depth: 0,
     overrideAccess: true,
-  })) as Record<string, unknown> | null;
+  });
 
-  if (!project) return 0;
+  if (!projectRaw || typeof projectRaw !== 'object') return 0;
+  const project = projectRaw as unknown as Record<string, unknown>;
 
   const estimated = Math.max(0, Math.round(toFiniteNumber(project.estimatedSizeBytes, 0)));
   if (estimated > 0) return estimated;
@@ -508,7 +512,9 @@ async function getProjectLabels(payload: Payload, projectIds: number[]) {
     overrideAccess: true,
   });
   const map = new Map<number, string>();
-  for (const doc of docs.docs as Array<Record<string, unknown>>) {
+  for (const rawDoc of docs.docs as unknown[]) {
+    if (!rawDoc || typeof rawDoc !== 'object') continue;
+    const doc = rawDoc as Record<string, unknown>;
     const id = asNumericId(doc.id);
     if (id == null) continue;
     const title = typeof doc.title === 'string' && doc.title.trim().length > 0
@@ -533,7 +539,9 @@ async function getUserLabels(payload: Payload, userIds: number[]) {
     overrideAccess: true,
   });
   const map = new Map<number, string>();
-  for (const doc of docs.docs as Array<Record<string, unknown>>) {
+  for (const rawDoc of docs.docs as unknown[]) {
+    if (!rawDoc || typeof rawDoc !== 'object') continue;
+    const doc = rawDoc as Record<string, unknown>;
     const id = asNumericId(doc.id);
     if (id == null) continue;
     const name =

@@ -88,6 +88,14 @@ export async function runDoctor(options = {}) {
 
   const strict = options.strict === true;
   const ok = readiness.ok && (!strict || readiness.conflicts.length === 0);
+  const targets = state.targets.map((target) => ({
+    targetId: target.target.id,
+    label: target.target.label,
+    dir: target.target.dir,
+    keys: target.unionKeys.length,
+    missingCount: readiness.missing.filter((item) => item.startsWith(`${target.target.id}:`)).length,
+    conflictCount: target.conflicts.length,
+  }));
 
   const result = {
     ok,
@@ -102,6 +110,7 @@ export async function runDoctor(options = {}) {
     codexCliInstalled: readiness.runnerChecks?.codexCliInstalled ?? null,
     codexLoginChatgpt: readiness.runnerChecks?.codexLoginChatgpt ?? null,
     runnerChecks: readiness.runnerChecks || null,
+    targets,
     discovery: state.discovery,
     report: buildTable(state, mode, readiness),
   };

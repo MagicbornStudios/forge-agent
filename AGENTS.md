@@ -49,6 +49,7 @@ When touching editors (Dialogue, Character, Video, Strategy): use the shared she
 ## Styling and UI
 
 - When changing UI/styling: follow [docs/agent-artifacts/core/styling-and-ui-consistency.md](docs/agent-artifacts/core/styling-and-ui-consistency.md) and [how-to 26 - Styling debugging with Cursor](docs/how-to/26-styling-debugging-with-cursor.mdx). Do not run browser screenshot automation (it errors often). After implementing, update design docs and STATUS; an "after" screenshot is optional—humans should capture and save to docs/images when they want a visual reference.
+- When adding a CSS `@import` in any app `globals.css`, add that package to the same app `package.json` and run `pnpm --filter <app-package-name> build` before phase closeout.
 
 ## Vendor workflow
 

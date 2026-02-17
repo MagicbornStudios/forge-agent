@@ -7,32 +7,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@forge/ui/card';
 import { Input } from '@forge/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@forge/ui/table';
 import { Textarea } from '@forge/ui/textarea';
-
-type GitStatusEntry = {
-  status: string;
-  path: string;
-};
-
-type GitBranchEntry = {
-  name: string;
-  current: boolean;
-};
-
-type GitLogEntry = {
-  hash: string;
-  shortHash: string;
-  author: string;
-  date: string;
-  subject: string;
-};
+import { toErrorMessage } from '@/lib/api/http';
+import {
+  commitGitChanges,
+  createGitBranch,
+  fetchGitBranches,
+  fetchGitLog,
+  fetchGitStatus,
+  restoreGitPaths,
+  stageGitPaths,
+  switchGitBranch,
+} from '@/lib/api/services';
+import type { GitBranchEntry, GitLogEntry, GitStatusEntry } from '@/lib/api/types';
 
 export interface GitWorkspaceProps {
   onAttachToAssistant: (label: string, content: string) => void;
   onCopyText: (text: string) => void;
-}
-
-async function parseJson(response: Response) {
-  return response.json().catch(() => ({ ok: false, message: 'Invalid response.' }));
 }
 
 export function GitWorkspace({
@@ -50,30 +40,32 @@ export function GitWorkspace({
 
   const refresh = React.useCallback(async () => {
     setBusy(true);
-    const [statusRes, branchRes, logRes] = await Promise.all([
-      fetch('/api/repo/git/status'),
-      fetch('/api/repo/git/branches'),
-      fetch('/api/repo/git/log?limit=30'),
-    ]);
-    const statusPayload = await parseJson(statusRes);
-    const branchPayload = await parseJson(branchRes);
-    const logPayload = await parseJson(logRes);
-    setBusy(false);
+    try {
+      const [statusPayload, branchPayload, logPayload] = await Promise.all([
+        fetchGitStatus(),
+        fetchGitBranches(),
+        fetchGitLog(30),
+      ]);
+      if (!statusPayload.ok || !branchPayload.ok || !logPayload.ok) {
+        setMessage(
+          statusPayload.message
+          || branchPayload.message
+          || logPayload.message
+          || 'Unable to refresh git workspace.',
+        );
+        setBusy(false);
+        return;
+      }
 
-    if (!statusPayload.ok || !branchPayload.ok || !logPayload.ok) {
-      setMessage(
-        statusPayload.message
-        || branchPayload.message
-        || logPayload.message
-        || 'Unable to refresh git workspace.',
-      );
-      return;
+      setStatusRows(Array.isArray(statusPayload.files) ? statusPayload.files : []);
+      setBranches(Array.isArray(branchPayload.branches) ? branchPayload.branches : []);
+      setLogRows(Array.isArray(logPayload.entries) ? logPayload.entries : []);
+      setMessage(`Git refreshed: ${statusPayload.files.length} changed file(s).`);
+    } catch (error) {
+      setMessage(toErrorMessage(error, 'Unable to refresh git workspace.'));
+    } finally {
+      setBusy(false);
     }
-
-    setStatusRows(Array.isArray(statusPayload.files) ? statusPayload.files : []);
-    setBranches(Array.isArray(branchPayload.branches) ? branchPayload.branches : []);
-    setLogRows(Array.isArray(logPayload.entries) ? logPayload.entries : []);
-    setMessage(`Git refreshed: ${statusPayload.files.length} changed file(s).`);
   }, []);
 
   React.useEffect(() => {
@@ -82,20 +74,36 @@ export function GitWorkspace({
 
   const runMutation = React.useCallback(async (url: string, payload: Record<string, unknown>, successMessage: string) => {
     setBusy(true);
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    const body = await parseJson(response);
-    setBusy(false);
-    if (!body.ok) {
-      setMessage(body.message || body.stderr || 'Git action failed.');
+    try {
+      let body: { ok: boolean; message?: string; stderr?: string };
+      if (url === '/api/repo/git/branch/create') {
+        body = await createGitBranch(String(payload.name || ''));
+      } else if (url === '/api/repo/git/branch/switch') {
+        body = await switchGitBranch(String(payload.name || ''));
+      } else if (url === '/api/repo/git/restore') {
+        body = await restoreGitPaths(Array.isArray(payload.paths) ? payload.paths.map(String) : []);
+      } else if (url === '/api/repo/git/stage') {
+        body = await stageGitPaths(Array.isArray(payload.paths) ? payload.paths.map(String) : []);
+      } else if (url === '/api/repo/git/commit') {
+        body = await commitGitChanges(String(payload.message || ''));
+      } else {
+        body = { ok: false, message: `Unknown mutation: ${url}` };
+      }
+
+      if (!body.ok) {
+        setMessage(body.message || body.stderr || 'Git action failed.');
+        setBusy(false);
+        return false;
+      }
+      setMessage(body.message || successMessage);
+      await refresh();
+      return true;
+    } catch (error) {
+      setMessage(toErrorMessage(error, 'Git action failed.'));
       return false;
+    } finally {
+      setBusy(false);
     }
-    setMessage(body.message || successMessage);
-    await refresh();
-    return true;
   }, [refresh]);
 
   const togglePath = React.useCallback((repoPath: string) => {
@@ -306,4 +314,3 @@ export function GitWorkspace({
     </div>
   );
 }
-

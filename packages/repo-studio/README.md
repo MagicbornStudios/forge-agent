@@ -29,6 +29,20 @@ In this monorepo (`forge-agent`):
 pnpm forge-repo-studio open --view planning --mode local --profile forge-agent
 ```
 
+Fail-fast local dev startup (doctor precheck before Next dev):
+
+```bash
+pnpm dev:repo-studio
+```
+
+If precheck fails, run:
+
+```bash
+pnpm install
+pnpm forge-repo-studio doctor --json
+pnpm --filter @forge/repo-studio-app build
+```
+
 After publish:
 
 ```bash
@@ -37,7 +51,7 @@ npx @forge/repo-studio open --view planning --mode headless
 
 ## Commands
 
-- `forge-repo-studio open [--profile ...] [--mode ...] [--view planning|env|commands|story|docs|git|loop-assistant|codex-assistant|diff|code|review-queue] [--port ...] [--app-runtime|--package-runtime] [--reuse|--no-reuse] [--detach|--foreground] [--legacy-ui]`
+- `forge-repo-studio open [--profile ...] [--mode ...] [--view planning|env|commands|story|docs|git|loop-assistant|codex-assistant|diff|code|review-queue] [--port ...] [--app-runtime|--package-runtime|--desktop-runtime] [--reuse|--no-reuse] [--detach|--foreground] [--desktop-dev] [--legacy-ui]`
 - `forge-repo-studio doctor`
 - `forge-repo-studio commands-list`
 - `forge-repo-studio commands-toggle <command-id> [--enable|--disable]`
@@ -47,12 +61,29 @@ npx @forge/repo-studio open --view planning --mode headless
 - `forge-repo-studio codex-stop`
 - `forge-repo-studio codex-exec --prompt "..."` (or stdin)
 - `forge-repo-studio status`
-- `forge-repo-studio stop [--app-runtime|--package-runtime]`
+- `forge-repo-studio stop [--app-runtime|--package-runtime|--desktop-runtime]`
 - `forge-repo-studio run <command-id> [--confirm]`
 
 `forge-env portal` now reuses/launches RepoStudio via:
 
 - `forge-repo-studio open --view env --reuse`
+
+## Desktop Runtime
+
+Phase 08 adds Electron runtime support with app parity preserved from the Next app surface.
+
+- Start desktop runtime:
+  - `forge-repo-studio open --desktop-runtime`
+- Start desktop in foreground:
+  - `forge-repo-studio open --desktop-runtime --foreground`
+- Development-mode desktop (no standalone required):
+  - `forge-repo-studio open --desktop-runtime --desktop-dev`
+- Status/stop:
+  - `forge-repo-studio status --json`
+  - `forge-repo-studio stop --desktop-runtime`
+- Build/package scripts:
+  - `pnpm --filter @forge/repo-studio run desktop:build`
+  - `pnpm --filter @forge/repo-studio run desktop:package:win`
 
 ## Loop Cadence
 
@@ -85,8 +116,20 @@ Multi-loop helpers:
 - Uses the same assistant route contract defined in `.repo-studio/config.json`.
 - Manual planning-context attach is supported from the Planning workspace.
 - Assistant-generated file/planning changes are routed through the Review Queue (approval-gated apply/reject).
+- Review Queue proposals persist in RepoStudio SQLite (`repo-proposals`); legacy `.repo-studio/proposals.json` is migration input + read-only fallback.
 - `routeMode: codex|local|proxy|openrouter` is supported.
 - `codex` mode enforces `chatgpt-strict` readiness by default (`codex login status` must report ChatGPT auth).
+
+### Review Queue Trust Modes
+
+- `require-approval` (default): proposals stay `pending` until explicit apply/reject.
+- `auto-approve-all`: new in-scope proposals auto-apply immediately.
+- Scope guard is always enforced, including auto mode. Out-of-scope proposals are blocked/failed with remediation details.
+
+Review Queue diff endpoints:
+
+- `GET /api/repo/proposals/diff-files?proposalId=<id>`
+- `GET /api/repo/proposals/diff-file?proposalId=<id>&path=<repo-relative>`
 
 ## Config
 
@@ -130,3 +173,4 @@ Runbooks:
 - `docs/04-forge-loop-console.md`
 - `docs/05-assistant.md`
 - `docs/06-story-domain.md`
+- `docs/07-desktop-runtime.md`

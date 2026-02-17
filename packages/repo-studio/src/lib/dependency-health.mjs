@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
 
 const SHARED_STYLE_RELATIVE_PATHS = [
   'packages/shared/src/shared/styles/editor-surface.css',
@@ -7,6 +8,8 @@ const SHARED_STYLE_RELATIVE_PATHS = [
   'packages/shared/src/shared/styles/themes.css',
   'packages/shared/src/shared/styles/contexts.css',
 ];
+
+const REQUIRED_CSS_PACKAGES = ['tw-animate-css', 'tailwindcss-animate'];
 
 function exists(filePath) {
   try {
@@ -85,6 +88,41 @@ function resolveDockviewInstall(repoRoot, appRoot) {
   return { packagePath: null, cssPath: null };
 }
 
+function resolvePackageInstall(packageName, repoRoot, appRoot) {
+  try {
+    const appRequire = createRequire(path.join(appRoot, 'package.json'));
+    return appRequire.resolve(`${packageName}/package.json`);
+  } catch {
+    // Fall through to filesystem-based checks.
+  }
+
+  const directCandidates = [
+    path.join(appRoot, 'node_modules', packageName, 'package.json'),
+    path.join(repoRoot, 'node_modules', packageName, 'package.json'),
+  ];
+  for (const candidate of directCandidates) {
+    if (exists(candidate)) return candidate;
+  }
+
+  const pnpmStore = path.join(repoRoot, 'node_modules', '.pnpm');
+  if (!exists(pnpmStore)) return null;
+
+  const pnpmPrefix = packageName.replace('/', '+');
+  try {
+    const entries = fs.readdirSync(pnpmStore, { withFileTypes: true });
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      if (!entry.name.startsWith(`${pnpmPrefix}@`)) continue;
+      const candidate = path.join(pnpmStore, entry.name, 'node_modules', packageName, 'package.json');
+      if (exists(candidate)) return candidate;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
 export function getDependencyHealth(startCwd = process.cwd()) {
   const repoRoot = resolveRepoRoot(startCwd);
   const appRoot = resolveAppRoot(repoRoot, startCwd);
@@ -111,14 +149,34 @@ export function getDependencyHealth(startCwd = process.cwd()) {
     messages.push(`Missing shared style files: ${missingShared.join(', ')}`);
   }
 
+  const cssPackageStatus = REQUIRED_CSS_PACKAGES.map((packageName) => {
+    const resolvedPath = resolvePackageInstall(packageName, repoRoot, appRoot);
+    return {
+      packageName,
+      resolved: resolvedPath != null,
+      resolvedPath,
+    };
+  });
+  const cssPackagesResolved = cssPackageStatus.every((item) => item.resolved);
+  if (!cssPackagesResolved) {
+    const missingPackages = cssPackageStatus
+      .filter((item) => !item.resolved)
+      .map((item) => item.packageName);
+    messages.push(
+      `Missing RepoStudio CSS packages: ${missingPackages.join(', ')}. Add to apps/repo-studio/package.json, run pnpm install, then pnpm --filter @forge/repo-studio-app build.`,
+    );
+  }
+
   if (messages.length === 0) {
-    messages.push('Dockview package, Dockview CSS, and shared styles resolved.');
+    messages.push('Dockview package/CSS, shared styles, and required CSS packages resolved.');
   }
 
   return {
     dockviewPackageResolved,
     dockviewCssResolved,
     sharedStylesResolved,
+    cssPackagesResolved,
+    cssPackageStatus,
     messages,
     details: {
       repoRoot,

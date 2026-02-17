@@ -32,3 +32,40 @@
 - [x] Roadmap history remains intact; future direction is appended as new phases 05-09 (A-E mapping) after Phase 04.
 - [x] Phase 04 is an execution gate: no Phase 05 implementation begins until 04-01 through 04-04 are complete and strict verification closes.
 - [x] Strict verification policy remains unchanged; baseline failures are fixed at source (`@forge/studio` build/test blockers) rather than bypassed.
+
+## 2026-02-16
+
+- [x] Plan frontmatter validation now accepts YAML block arrays for `depends_on` and `files_modified`; inline-only parsing is no longer required.
+- [x] `@forge/studio` build stability uses robust config hardening (`optimization.realContentHash = false`) to prevent intermittent webpack hash crashes from undefined asset sources.
+- [x] Phase 04 is closed after strict verification pass; Phase 05 becomes the active execution gate.
+- [x] RepoStudio Phase 05 settings persistence is app-runtime hard-cutover: app settings now persist through Payload+SQLite APIs (`snapshot|upsert|reset|export`) with no local-overrides file dependency.
+- [x] RepoStudio settings sidebar now uses a declarative registry/provider flow with deterministic generated defaults verification (`test:settings-codegen`).
+- [x] Forge Env now exposes target-scoped read/write commands (`target-read`, `target-write`) and enforces deterministic headless write blocking with actionable error payloads.
+- [x] RepoStudio Env workspace is now editor-first (target/mode/scope controls, per-key editing, paste import, changed-file summary, post-save readiness cards), while raw output remains debug-only.
+- [x] Phase 05 is closed after strict verification pass; next execution gate advances to Phase 06.
+- [x] Phase 06 UI networking now routes through typed API clients/services; component-level direct `fetch` calls are removed from migrated RepoStudio workspaces/hooks.
+- [x] RepoStudio search baseline uses `GET /api/repo/search` with validated `q|regex|include|exclude|scope` inputs and ripgrep-backed server execution (no default exclude policy).
+- [x] Phase 06 is closed after strict verification pass; next execution gate advances to Phase 07.
+- [x] Phase 07 parser foundation is shared in `@forge/repo-studio` core modules (`packages/repo-studio/src/core/parsers`) and consumed by app runtime adapters/routes.
+- [x] Story publish target for Phase 07 is RepoStudio-local Payload+SQLite collections (`repo-pages`, `repo-blocks`) with hash-aware idempotent apply.
+- [x] Story publish flow is approval-gated (`preview -> queue -> apply`) and integrates with existing review queue semantics (`kind=story-publish`) instead of bypassing proposal controls.
+- [x] RepoStudio lint is now non-interactive with local ESLint config, while retaining strict warning/error reporting in CI-style runs.
+- [x] Phase 07 is closed after `forge-loop verify-work 07 --strict`; next execution gate advances to Phase 08.
+
+## 2026-02-17
+
+- [x] Phase 08 desktop runtime mode is embedded Next server + Electron host, implemented inside `@forge/repo-studio` (`src/desktop/*`) and launched through `forge-repo-studio open --desktop-runtime`.
+- [x] Runtime lifecycle contract is extended to `mode=desktop` with tracked `serverPid` and `electronPid` metadata in `.repo-studio/runtime.json`; `status` and `stop` now handle desktop mode natively.
+- [x] SQLite runtime strategy is split by mode: repo-local path for web/app/package runtime and Electron `userData` path for desktop runtime via shared resolver module.
+- [x] Desktop watcher strategy is native-first (`chokidar`) with automatic polling fallback and typed invalidation events (`treeChanged`, `searchInvalidated`, `gitStatusInvalidated`, `watcherHealth`).
+- [x] Desktop packaging is Windows-first via `electron-builder`, with cross-platform scaffolding retained and operator scripts/docs added under `@forge/repo-studio`.
+- [x] Doctor readiness treats `nextStandalonePresent` as diagnostic (not a hard blocker) so desktop dev-fallback remains operable on Windows environments where standalone artifact linking fails.
+- [x] Phase 10 adopts path-based verification gating: `forge-loop verify-work` runs `pnpm --filter @forge/repo-studio-app build` only when `apps/repo-studio/**` or `packages/repo-studio/**` changed.
+- [x] RepoStudio dependency health now treats `tw-animate-css` and `tailwindcss-animate` resolvability as first-class checks (`cssPackagesResolved`, `cssPackageStatus`) across package doctor and app runtime deps API.
+- [x] Local RepoStudio dev startup is fail-fast by default via root `predev:repo-studio` (`pnpm forge-repo-studio doctor`) before `dev:repo-studio`.
+- [x] Minimal CI baseline is now mandatory (`.github/workflows/ci.yml`) for install + RepoStudio build/lint + Forge Loop/Env/RepoStudio package tests.
+- [x] Phase 11 starts with app-runtime-first Review Queue hardening: proposals migrate to Payload+SQLite (`repo-proposals`) as canonical source, with one-time JSON import and read-only JSON fallback.
+- [x] Review Queue trust policy default remains `require-approval`; `auto-approve-all` is supported and performs full auto-apply while still enforcing hard scope guard.
+- [x] Review Queue diff UX target for Phase 11 is one-file-at-a-time Monaco patch inspection backed by typed proposal diff APIs (`/api/repo/proposals/diff-files`, `/api/repo/proposals/diff-file`).
+- [x] Proposal queue list responses are now loop-scoped (`loopId` query) and include trust metadata (`trustMode`, `autoApplyEnabled`, `lastAutoApplyAt`) for UI policy visibility.
+- [x] Auto-approve pipelines are implemented at proposal ingestion boundaries (Codex approval requests and story publish queue), not as a background poller, to keep scope enforcement and approval transitions deterministic.

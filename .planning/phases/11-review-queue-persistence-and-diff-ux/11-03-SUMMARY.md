@@ -6,3 +6,21 @@
 - [x] 01. Refactor Review Queue workspace layout and behavior
 - [x] 02. Add trust mode settings and wiring
 - [x] 03. Implement auto-apply pipeline for new proposals
+
+## Implementation Notes
+
+- Refactored `ReviewQueueWorkspace` into a three-pane review surface:
+  - proposal list
+  - per-proposal file list
+  - Monaco patch viewer (one file at a time)
+- Added trust-mode settings (`reviewQueue.trustMode`, derived `reviewQueue.autoApplyEnabled`, `reviewQueue.lastAutoApplyAt`) to settings registry/defaults/provider/shell wiring.
+- Added loop-scoped proposal list trust metadata (`trustMode`, `autoApplyEnabled`, `lastAutoApplyAt`) to `/api/repo/proposals/list`.
+- Implemented auto-apply on proposal ingestion:
+  - Codex approval requests auto-resolve only when trust mode is `auto-approve-all` and scope guard passes.
+  - Story publish queued proposals auto-apply under the same trust/scope policy.
+
+## Verification Evidence
+
+- `pnpm --filter @forge/repo-studio-app build`
+- `pnpm --filter @forge/repo-studio-app lint`
+- `pnpm --filter @forge/repo-studio-app run test:settings-codegen`

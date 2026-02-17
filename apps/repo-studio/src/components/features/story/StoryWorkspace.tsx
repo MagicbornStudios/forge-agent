@@ -9,60 +9,27 @@ import { Input } from '@forge/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@forge/ui/select';
 import { Textarea } from '@forge/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@forge/ui/table';
+import { toErrorMessage } from '@/lib/api/http';
+import {
+  applyStoryPublish,
+  createStoryPage,
+  fetchStoryPage,
+  fetchStoryReader,
+  fetchStoryTree,
+  previewStoryPublish,
+  queueStoryPublish,
+  saveStoryPage,
+} from '@/lib/api/services';
+import type {
+  StoryActNode,
+  StoryPublishPreviewPayload,
+  StoryReaderPayload,
+} from '@/lib/api/types';
 
 const MonacoEditor = dynamic(
   () => import('@monaco-editor/react').then((module) => module.default),
   { ssr: false },
 );
-
-type StoryPageNode = {
-  id: string;
-  name: string;
-  index: number;
-  path: string;
-};
-
-type StoryChapterNode = {
-  id: string;
-  name: string;
-  index: number;
-  path: string;
-  pages: StoryPageNode[];
-};
-
-type StoryActNode = {
-  id: string;
-  name: string;
-  index: number;
-  path: string;
-  chapters: StoryChapterNode[];
-};
-
-type StoryTreePayload = {
-  ok: boolean;
-  roots: string[];
-  tree?: {
-    acts: StoryActNode[];
-    pageCount: number;
-  };
-  message?: string;
-};
-
-type StoryPagePayload = {
-  ok: boolean;
-  path: string;
-  content: string;
-  message?: string;
-};
-
-type StoryReaderPayload = {
-  ok: boolean;
-  current: StoryPageNode | null;
-  prev: StoryPageNode | null;
-  next: StoryPageNode | null;
-  content: string;
-  message?: string;
-};
 
 export interface StoryWorkspaceProps {
   activeLoopId: string;
@@ -81,8 +48,11 @@ export function StoryWorkspace({
   const [content, setContent] = React.useState('');
   const [baseline, setBaseline] = React.useState('');
   const [reader, setReader] = React.useState<StoryReaderPayload | null>(null);
+  const [publishPreview, setPublishPreview] = React.useState<StoryPublishPreviewPayload | null>(null);
+  const [publishProposalId, setPublishProposalId] = React.useState('');
   const [message, setMessage] = React.useState('');
   const [loading, setLoading] = React.useState(false);
+  const [publishing, setPublishing] = React.useState(false);
 
   const [createActIndex, setCreateActIndex] = React.useState('1');
   const [createChapterIndex, setCreateChapterIndex] = React.useState('1');
@@ -98,63 +68,73 @@ export function StoryWorkspace({
 
   const refreshTree = React.useCallback(async () => {
     setLoading(true);
-    const params = new URLSearchParams({
-      loopId: activeLoopId,
-      domain: 'story',
-    });
-    if (scopeOverrideToken.trim()) params.set('scopeOverrideToken', scopeOverrideToken.trim());
-    const response = await fetch(`/api/repo/story/tree?${params.toString()}`);
-    const payload = await response.json().catch(() => ({ ok: false })) as StoryTreePayload;
-    setLoading(false);
-    if (!payload.ok) {
-      setMessage(payload.message || 'Unable to load story tree.');
-      return;
+    try {
+      const payload = await fetchStoryTree({
+        loopId: activeLoopId,
+        domain: 'story',
+        scopeOverrideToken: scopeOverrideToken.trim() || undefined,
+      });
+      if (!payload.ok) {
+        setMessage(payload.message || 'Unable to load story tree.');
+        setLoading(false);
+        return;
+      }
+      const acts = payload.tree?.acts || [];
+      setRoots(payload.roots || []);
+      setTree(acts);
+      const firstPath = acts[0]?.chapters[0]?.pages[0]?.path || '';
+      if (!selectedPath && firstPath) {
+        setSelectedPath(firstPath);
+      }
+      setMessage(`Loaded story tree (${payload.tree?.pageCount || 0} pages).`);
+    } catch (error) {
+      setMessage(toErrorMessage(error, 'Unable to load story tree.'));
+    } finally {
+      setLoading(false);
     }
-    const acts = payload.tree?.acts || [];
-    setRoots(payload.roots || []);
-    setTree(acts);
-    const firstPath = acts[0]?.chapters[0]?.pages[0]?.path || '';
-    if (!selectedPath && firstPath) {
-      setSelectedPath(firstPath);
-    }
-    setMessage(`Loaded story tree (${payload.tree?.pageCount || 0} pages).`);
   }, [activeLoopId, scopeOverrideToken, selectedPath]);
 
   const loadPage = React.useCallback(async (targetPath: string) => {
     if (!targetPath) return;
     setLoading(true);
-    const params = new URLSearchParams({
-      path: targetPath,
-      loopId: activeLoopId,
-      domain: 'story',
-    });
-    if (scopeOverrideToken.trim()) params.set('scopeOverrideToken', scopeOverrideToken.trim());
-    const response = await fetch(`/api/repo/story/page?${params.toString()}`);
-    const payload = await response.json().catch(() => ({ ok: false })) as StoryPagePayload;
-    setLoading(false);
-    if (!payload.ok) {
-      setMessage(payload.message || 'Unable to read story page.');
-      return;
+    try {
+      const payload = await fetchStoryPage({
+        path: targetPath,
+        loopId: activeLoopId,
+        domain: 'story',
+        scopeOverrideToken: scopeOverrideToken.trim() || undefined,
+      });
+      if (!payload.ok) {
+        setMessage(payload.message || 'Unable to read story page.');
+        setLoading(false);
+        return;
+      }
+      setContent(payload.content || '');
+      setBaseline(payload.content || '');
+      setMessage(`Loaded ${payload.path}.`);
+    } catch (error) {
+      setMessage(toErrorMessage(error, 'Unable to read story page.'));
+    } finally {
+      setLoading(false);
     }
-    setContent(payload.content || '');
-    setBaseline(payload.content || '');
-    setMessage(`Loaded ${payload.path}.`);
   }, [activeLoopId, scopeOverrideToken]);
 
   const refreshReader = React.useCallback(async (targetPath: string) => {
-    const params = new URLSearchParams({
-      loopId: activeLoopId,
-      domain: 'story',
-    });
-    if (targetPath) params.set('path', targetPath);
-    if (scopeOverrideToken.trim()) params.set('scopeOverrideToken', scopeOverrideToken.trim());
-    const response = await fetch(`/api/repo/story/reader?${params.toString()}`);
-    const payload = await response.json().catch(() => ({ ok: false })) as StoryReaderPayload;
-    if (!payload.ok) {
-      setMessage(payload.message || 'Unable to load story reader.');
-      return;
+    try {
+      const payload = await fetchStoryReader({
+        path: targetPath,
+        loopId: activeLoopId,
+        domain: 'story',
+        scopeOverrideToken: scopeOverrideToken.trim() || undefined,
+      });
+      if (!payload.ok) {
+        setMessage(payload.message || 'Unable to load story reader.');
+        return;
+      }
+      setReader(payload);
+    } catch (error) {
+      setMessage(toErrorMessage(error, 'Unable to load story reader.'));
     }
-    setReader(payload);
   }, [activeLoopId, scopeOverrideToken]);
 
   React.useEffect(() => {
@@ -169,51 +149,120 @@ export function StoryWorkspace({
 
   const savePage = React.useCallback(async () => {
     if (!selectedPath) return;
-    const response = await fetch('/api/repo/story/page/save', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
+    try {
+      const payload = await saveStoryPage({
         path: selectedPath,
         content,
-        approved: true,
-        domain: 'story',
         loopId: activeLoopId,
+        domain: 'story',
         scopeOverrideToken: scopeOverrideToken.trim() || undefined,
-      }),
-    });
-    const payload = await response.json().catch(() => ({ ok: false }));
-    if (!payload.ok) {
-      setMessage(payload.message || 'Unable to save story page.');
-      return;
+      });
+      if (!payload.ok) {
+        setMessage(payload.message || 'Unable to save story page.');
+        return;
+      }
+      setBaseline(content);
+      setMessage(payload.message || `Saved ${selectedPath}.`);
+      await refreshReader(selectedPath);
+    } catch (error) {
+      setMessage(toErrorMessage(error, 'Unable to save story page.'));
     }
-    setBaseline(content);
-    setMessage(payload.message || `Saved ${selectedPath}.`);
-    await refreshReader(selectedPath);
   }, [activeLoopId, content, refreshReader, scopeOverrideToken, selectedPath]);
 
+  const previewPublish = React.useCallback(async () => {
+    if (!selectedPath) return;
+    setPublishing(true);
+    try {
+      const payload = await previewStoryPublish({
+        path: selectedPath,
+        loopId: activeLoopId,
+        domain: 'story',
+        scopeOverrideToken: scopeOverrideToken.trim() || undefined,
+      });
+      if (!payload.ok) {
+        setMessage(payload.message || 'Unable to build publish preview.');
+        return;
+      }
+      setPublishPreview(payload);
+      setMessage(`Publish preview ready for ${selectedPath}.`);
+    } catch (error) {
+      setMessage(toErrorMessage(error, 'Unable to preview story publish.'));
+    } finally {
+      setPublishing(false);
+    }
+  }, [activeLoopId, scopeOverrideToken, selectedPath]);
+
+  const queuePublish = React.useCallback(async () => {
+    if (!selectedPath) return;
+    setPublishing(true);
+    try {
+      const payload = await queueStoryPublish({
+        previewToken: publishPreview?.previewToken,
+        path: publishPreview?.previewToken ? undefined : selectedPath,
+        loopId: activeLoopId,
+        domain: 'story',
+        scopeOverrideToken: scopeOverrideToken.trim() || undefined,
+        editorTarget: 'loop-assistant',
+      });
+      if (!payload.ok) {
+        setMessage(payload.message || 'Unable to queue publish proposal.');
+        return;
+      }
+      if (payload.proposalId) {
+        setPublishProposalId(payload.proposalId);
+      }
+      setMessage(payload.message || 'Publish proposal queued.');
+    } catch (error) {
+      setMessage(toErrorMessage(error, 'Unable to queue publish proposal.'));
+    } finally {
+      setPublishing(false);
+    }
+  }, [activeLoopId, publishPreview?.previewToken, scopeOverrideToken, selectedPath]);
+
+  const applyPublish = React.useCallback(async () => {
+    if (!selectedPath) return;
+    setPublishing(true);
+    try {
+      const payload = await applyStoryPublish({
+        proposalId: publishProposalId || undefined,
+        previewToken: publishProposalId ? undefined : publishPreview?.previewToken,
+        approved: true,
+      });
+      if (!payload.ok) {
+        setMessage(payload.message || 'Unable to apply story publish.');
+        return;
+      }
+      setMessage(payload.message || `Publish applied for ${selectedPath}.`);
+      await previewPublish();
+    } catch (error) {
+      setMessage(toErrorMessage(error, 'Unable to apply story publish.'));
+    } finally {
+      setPublishing(false);
+    }
+  }, [publishProposalId, publishPreview?.previewToken, previewPublish, selectedPath]);
+
   const createCanonicalPage = React.useCallback(async () => {
-    const response = await fetch('/api/repo/story/create', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
+    try {
+      const payload = await createStoryPage({
         actIndex: Number(createActIndex || '1'),
         chapterIndex: Number(createChapterIndex || '1'),
         pageIndex: Number(createPageIndex || '1'),
         content: '',
-        domain: 'story',
         loopId: activeLoopId,
+        domain: 'story',
         scopeOverrideToken: scopeOverrideToken.trim() || undefined,
-      }),
-    });
-    const payload = await response.json().catch(() => ({ ok: false }));
-    if (!payload.ok) {
-      setMessage(payload.message || 'Unable to create story page.');
-      return;
-    }
-    setMessage(payload.message || 'Created story page.');
-    await refreshTree();
-    if (payload.path) {
-      setSelectedPath(String(payload.path));
+      });
+      if (!payload.ok) {
+        setMessage(payload.message || 'Unable to create story page.');
+        return;
+      }
+      setMessage(payload.message || 'Created story page.');
+      await refreshTree();
+      if (payload.path) {
+        setSelectedPath(String(payload.path));
+      }
+    } catch (error) {
+      setMessage(toErrorMessage(error, 'Unable to create story page.'));
     }
   }, [activeLoopId, createActIndex, createChapterIndex, createPageIndex, refreshTree, scopeOverrideToken]);
 
@@ -231,6 +280,26 @@ export function StoryWorkspace({
     ].join('\n');
     onAttachToAssistant(`story:${selectedPath}`, block);
   }, [activeLoopId, content, onAttachToAssistant, selectedPath]);
+
+  const attachPublishPreview = React.useCallback(() => {
+    if (!publishPreview?.ok) return;
+    const block = [
+      '# Story Publish Preview',
+      '',
+      `loopId: ${publishPreview.loopId || activeLoopId}`,
+      `path: ${publishPreview.path || selectedPath}`,
+      `contentHash: ${publishPreview.contentHash || ''}`,
+      `changed: ${publishPreview.changedSummary?.changed ? 'yes' : 'no'}`,
+      `previousBlocks: ${publishPreview.changedSummary?.previousBlockCount || 0}`,
+      `nextBlocks: ${publishPreview.changedSummary?.nextBlockCount || 0}`,
+      '',
+      '## warnings',
+      ...(publishPreview.warnings && publishPreview.warnings.length > 0
+        ? publishPreview.warnings.map((warning) => `- ${warning}`)
+        : ['- none']),
+    ].join('\n');
+    onAttachToAssistant(`story-publish:${publishPreview.path || selectedPath}`, block);
+  }, [activeLoopId, onAttachToAssistant, publishPreview, selectedPath]);
 
   return (
     <div className="h-full min-h-0 space-y-3 overflow-auto p-2">
@@ -375,6 +444,75 @@ export function StoryWorkspace({
             </Button>
           </div>
           {message ? <p className="text-xs text-muted-foreground">{message}</p> : null}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm">Publish Pipeline</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button size="sm" variant="outline" onClick={previewPublish} disabled={!selectedPath || publishing}>
+              Preview Publish
+            </Button>
+            <Button size="sm" variant="outline" onClick={queuePublish} disabled={!selectedPath || publishing}>
+              Queue Publish
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={applyPublish}
+              disabled={!selectedPath || publishing || (!publishProposalId && !publishPreview?.previewToken)}
+            >
+              Apply Publish
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={attachPublishPreview}
+              disabled={!publishPreview?.ok}
+            >
+              Attach Publish Preview
+            </Button>
+            {publishing ? <Badge variant="secondary">working</Badge> : null}
+            {publishProposalId ? <Badge variant="outline">proposal: {publishProposalId}</Badge> : null}
+          </div>
+
+          {publishPreview?.ok ? (
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+              <div className="rounded-md border border-border p-2 text-xs">
+                <div className="font-semibold">Draft Page</div>
+                <div>path: {publishPreview.pageDraft?.sourcePath || selectedPath}</div>
+                <div>title: {publishPreview.pageDraft?.title || '(n/a)'}</div>
+                <div>slug: {publishPreview.pageDraft?.slug || '(n/a)'}</div>
+                <div>hash: {publishPreview.contentHash || '(n/a)'}</div>
+              </div>
+              <div className="rounded-md border border-border p-2 text-xs">
+                <div className="font-semibold">Changed Summary</div>
+                <div>changed: {publishPreview.changedSummary?.changed ? 'yes' : 'no'}</div>
+                <div>existing hash: {publishPreview.changedSummary?.existingHash || '(none)'}</div>
+                <div>previous blocks: {publishPreview.changedSummary?.previousBlockCount || 0}</div>
+                <div>next blocks: {publishPreview.changedSummary?.nextBlockCount || 0}</div>
+              </div>
+              <div className="rounded-md border border-border p-2 text-xs md:col-span-2">
+                <div className="font-semibold">Warnings</div>
+                {publishPreview.warnings && publishPreview.warnings.length > 0 ? (
+                  <ul className="mt-1 list-disc pl-4">
+                    {publishPreview.warnings.map((warning) => (
+                      <li key={warning}>{warning}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-1 text-muted-foreground">No parser warnings.</p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Generate preview to inspect page/block draft before queuing publish.
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

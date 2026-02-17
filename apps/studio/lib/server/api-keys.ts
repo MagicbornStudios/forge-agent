@@ -16,6 +16,10 @@ export const API_KEY_SCOPES = [
   'ai.plan',
   'ai.structured',
   'ai.image',
+  'repo-studio.*',
+  'repo-studio.connect',
+  'repo-studio.read',
+  'repo-studio.write',
 ] as const;
 
 export type ApiKeyScope = (typeof API_KEY_SCOPES)[number];
@@ -34,6 +38,17 @@ export type AiRequestAuthContext = {
   apiKeyId: number | null;
   scopes: ApiKeyScope[];
 };
+
+export type ScopedRequestAuthResult =
+  | {
+    ok: true;
+    context: AiRequestAuthContext;
+  }
+  | {
+    ok: false;
+    status: 401 | 403;
+    message: string;
+  };
 
 type ApiKeyDoc = {
   id: number;
@@ -105,8 +120,16 @@ function normalizeScopes(value: unknown): ApiKeyScope[] {
   return unique.size > 0 ? [...unique] : ['ai.*'];
 }
 
+function wildcardScopeFor(requiredScope: ApiKeyScope): ApiKeyScope | null {
+  if (requiredScope.startsWith('ai.')) return 'ai.*';
+  if (requiredScope.startsWith('repo-studio.')) return 'repo-studio.*';
+  return null;
+}
+
 function hasScope(scopes: ApiKeyScope[], requiredScope: ApiKeyScope): boolean {
-  return scopes.includes('ai.*') || scopes.includes(requiredScope);
+  if (scopes.includes(requiredScope)) return true;
+  const wildcard = wildcardScopeFor(requiredScope);
+  return wildcard ? scopes.includes(wildcard) : false;
 }
 
 function parseApiKey(token: string): ParsedApiKey | null {
@@ -198,56 +221,120 @@ function isActiveKey(doc: ApiKeyDoc, now: Date): boolean {
   return true;
 }
 
-async function authenticateWithApiKeyToken(
+async function authenticateWithApiKeyTokenDetailed(
   payload: Payload,
   token: string,
   requiredScope?: ApiKeyScope,
-): Promise<AiRequestAuthContext | null> {
+): Promise<{ context: AiRequestAuthContext | null; failure: 'unauthorized' | 'forbidden' | null }> {
   const parsed = parseApiKey(token);
-  if (!parsed) return null;
+  if (!parsed) return { context: null, failure: 'unauthorized' };
 
   const doc = await findApiKeyByKeyId(payload, parsed.keyId);
-  if (!doc) return null;
+  if (!doc) return { context: null, failure: 'unauthorized' };
 
   const secretSalt = typeof doc.secretSalt === 'string' ? doc.secretSalt : '';
   const secretHash = typeof doc.secretHash === 'string' ? doc.secretHash : '';
-  if (!secretSalt || !secretHash) return null;
+  if (!secretSalt || !secretHash) return { context: null, failure: 'unauthorized' };
 
-  if (!verifySecret(parsed.secret, secretSalt, secretHash)) return null;
+  if (!verifySecret(parsed.secret, secretSalt, secretHash)) {
+    return { context: null, failure: 'unauthorized' };
+  }
 
   const now = new Date();
-  if (!isActiveKey(doc, now)) return null;
+  if (!isActiveKey(doc, now)) return { context: null, failure: 'unauthorized' };
 
   const scopes = normalizeScopes(doc.scopes);
-  if (requiredScope && !hasScope(scopes, requiredScope)) return null;
+  if (requiredScope && !hasScope(scopes, requiredScope)) {
+    return { context: null, failure: 'forbidden' };
+  }
 
   const userId = asNumericId(doc.user);
-  if (userId == null) return null;
+  if (userId == null) return { context: null, failure: 'unauthorized' };
   const organizationId = asNumericId(doc.organization);
-  if (organizationId == null) return null;
+  if (organizationId == null) return { context: null, failure: 'unauthorized' };
 
   return {
-    authType: 'api_key',
-    userId,
-    organizationId,
-    apiKeyId: doc.id,
-    scopes,
+    context: {
+      authType: 'api_key',
+      userId,
+      organizationId,
+      apiKeyId: doc.id,
+      scopes,
+    },
+    failure: null,
   };
 }
 
 async function authenticateWithSession(
   payload: Payload,
   headers: Headers,
+  requiredScope?: ApiKeyScope,
 ): Promise<AiRequestAuthContext | null> {
   const user: AuthenticatedUser | null = await requireAuthenticatedUser(payload, headers);
   if (!user) return null;
   const context = await resolveOrganizationFromInput(payload, user, null);
+  const scopeFamily = requiredScope?.startsWith('repo-studio.') ? 'repo-studio.*' : 'ai.*';
   return {
     authType: 'session',
     userId: user.id,
     organizationId: context.activeOrganizationId ?? null,
     apiKeyId: null,
-    scopes: ['ai.*'],
+    scopes: [scopeFamily],
+  };
+}
+
+export async function requireRequestAuth(
+  payload: Payload,
+  request: Request,
+  requiredScope?: ApiKeyScope,
+): Promise<ScopedRequestAuthResult> {
+  const token = parseApiKeyFromHeaders(request.headers);
+  if (token) {
+    const detailed = await authenticateWithApiKeyTokenDetailed(payload, token, requiredScope);
+    if (detailed.context) {
+      return {
+        ok: true,
+        context: detailed.context,
+      };
+    }
+
+    if (detailed.failure === 'forbidden') {
+      return {
+        ok: false,
+        status: 403,
+        message: requiredScope
+          ? `Missing required scope: ${requiredScope}.`
+          : 'Missing required scope.',
+      };
+    }
+
+    return {
+      ok: false,
+      status: 401,
+      message: 'Invalid or expired API key.',
+    };
+  }
+
+  const session = await authenticateWithSession(payload, request.headers, requiredScope);
+  if (!session) {
+    return {
+      ok: false,
+      status: 401,
+      message: 'Unauthorized.',
+    };
+  }
+
+  if (requiredScope && !hasScope(session.scopes, requiredScope)) {
+    return {
+      ok: false,
+      status: 403,
+      message: `Missing required scope: ${requiredScope}.`,
+    };
+  }
+
+  return {
+    ok: true,
+    context: session,
   };
 }
 
@@ -256,11 +343,8 @@ export async function requireAiRequestAuth(
   request: Request,
   requiredScope?: ApiKeyScope,
 ): Promise<AiRequestAuthContext | null> {
-  const token = parseApiKeyFromHeaders(request.headers);
-  if (token) {
-    return authenticateWithApiKeyToken(payload, token, requiredScope);
-  }
-  return authenticateWithSession(payload, request.headers);
+  const auth = await requireRequestAuth(payload, request, requiredScope);
+  return auth.ok ? auth.context : null;
 }
 
 export async function recordApiKeyUsage(

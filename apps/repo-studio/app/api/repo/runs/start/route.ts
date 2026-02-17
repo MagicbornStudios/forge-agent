@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { loadCommandsFromCli } from '@/lib/command-policy';
+import { loadCommandsModel } from '@/lib/command-policy';
 import { serializeRun, startRepoRun } from '@/lib/run-manager';
 
 export async function POST(request: Request) {
@@ -15,17 +15,9 @@ export async function POST(request: Request) {
   if (!commandId) {
     return NextResponse.json({ ok: false, message: 'commandId is required.' }, { status: 400 });
   }
-  if (body.confirm !== true) {
+  const commandsModel = await loadCommandsModel();
+  if (commandsModel.requireConfirm && body.confirm !== true) {
     return NextResponse.json({ ok: false, message: 'Confirmation required before execution.' }, { status: 400 });
-  }
-
-  const commandsModel = loadCommandsFromCli();
-  if (!commandsModel.ok) {
-    return NextResponse.json({
-      ok: false,
-      message: 'Unable to load allowlisted commands.',
-      stderr: commandsModel.raw.stderr,
-    }, { status: 500 });
   }
 
   const entry = commandsModel.commands.find((item) => item.id === commandId);
@@ -34,7 +26,7 @@ export async function POST(request: Request) {
   }
   if (entry.blocked) {
     const reason = entry.blockedBy === 'disabled-id'
-      ? 'Command is disabled in local overrides.'
+      ? 'Command is disabled in RepoStudio settings.'
       : `Command is blocked by policy: ${entry.command}`;
     return NextResponse.json({ ok: false, message: reason }, { status: 400 });
   }
