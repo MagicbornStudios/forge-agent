@@ -24,3 +24,4 @@ Plan 12-03 delivered a new `forge-loop interactive` command with an Ink-based te
 - Integrate runtime provider resolver into `discuss|plan|execute` commands in Plan 12-04.
 - Add doctor runtime diagnostics and codex readiness fields in Plan 12-04.
 - [x] 01. Add interactive command orchestration
+- [x] 02. Implement Ink TUI and build pipeline
