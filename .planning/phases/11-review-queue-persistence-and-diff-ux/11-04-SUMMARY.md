@@ -5,3 +5,4 @@
 ## Tasks
 - [x] 01. Add proposal persistence and diff parser regression tests
 - [x] 02. Update runbooks and README with trust/migration behavior
+- [x] 03. Run strict verification and publish phase summaries
