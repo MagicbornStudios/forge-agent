@@ -2,13 +2,13 @@
 
 ## Current Position
 
-Phase: 11
-Plan: 11-04
-Status: Complete
-Last activity: 2026-02-17T07:02:00.000Z - Phase 11 strict verification passed and legacy sync completed
+Phase: 12
+Plan: 12-01
+Status: In progress
+Last activity: 2026-02-17T17:10:00.000Z - Phase 12 kickoff and runtime abstraction implementation started
 
 ## Execution
 
-- Active phase: Review Queue persistence and diff UX
-- Active plan: 11-04
-- Active task: Phase complete; awaiting next roadmap phase definition
+- Active phase: Codex-interactive Ralph Loop CLI
+- Active plan: 12-01
+- Active task: Implement provider resolver and runtime config normalization

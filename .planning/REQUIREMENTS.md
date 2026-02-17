@@ -27,6 +27,7 @@
 - [x] **REQ-23**: Implement desktop auth scope and secure connection/token flow for platform connectivity
 - [x] **REQ-24**: Prevent RepoStudio CSS/dependency regressions with verify-work, doctor diagnostics, pre-dev guards, and CI
 - [x] **REQ-25**: Make Review Queue production-grade with SQLite proposal persistence, one-file Monaco diff review UX, and scope-safe global trust-mode auto-apply
+- [ ] **REQ-26**: Add codex-interactive forge-loop runtime (provider abstraction + interactive TUI) while preserving prompt-pack compatibility and artifact contracts
 
 ## Traceability
 
@@ -57,3 +58,4 @@
 | REQ-23 | Phase 09 | Complete |
 | REQ-24 | Phase 10 | Complete |
 | REQ-25 | Phase 11 | Complete |
+| REQ-26 | Phase 12 | In progress |

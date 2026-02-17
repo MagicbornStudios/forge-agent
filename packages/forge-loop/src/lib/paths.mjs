@@ -33,7 +33,16 @@ export const GENERATED_END_MARKER = '<!-- forge-loop:generated:end -->';
 
 export const DEFAULT_CONFIG = {
   mode: 'interactive',
-  runtime: 'prompt-pack',
+  runtime: {
+    mode: 'prompt-pack',
+    codex: {
+      transport: 'app-server',
+      execFallbackAllowed: false,
+      approvalMode: 'on-request',
+      sandboxMode: 'workspace-write',
+      defaultModel: 'gpt-5',
+    },
+  },
   scope: 'monorepo',
   git: {
     autoCommit: true,

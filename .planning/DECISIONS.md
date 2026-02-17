@@ -69,3 +69,4 @@
 - [x] Review Queue diff UX target for Phase 11 is one-file-at-a-time Monaco patch inspection backed by typed proposal diff APIs (`/api/repo/proposals/diff-files`, `/api/repo/proposals/diff-file`).
 - [x] Proposal queue list responses are now loop-scoped (`loopId` query) and include trust metadata (`trustMode`, `autoApplyEnabled`, `lastAutoApplyAt`) for UI policy visibility.
 - [x] Auto-approve pipelines are implemented at proposal ingestion boundaries (Codex approval requests and story publish queue), not as a background poller, to keep scope enforcement and approval transitions deterministic.
+- [x] Phase 12 is opened as an additive CLI extension: keep existing `forge-loop` command surface and prompt-pack behavior, and layer codex-interactive runner support behind provider abstraction and explicit runner selection.

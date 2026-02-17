@@ -2,7 +2,8 @@ import { readJson } from './fs-utils.mjs';
 import { DEFAULT_CONFIG, LEGACY_SYNC_TARGETS, PLANNING_FILES } from './paths.mjs';
 
 function mergeObjects(base, override) {
-  const result = { ...base };
+  const safeBase = base && typeof base === 'object' && !Array.isArray(base) ? base : {};
+  const result = { ...safeBase };
   if (!override || typeof override !== 'object') return result;
 
   for (const [key, value] of Object.entries(override)) {
@@ -22,13 +23,72 @@ function mergeObjects(base, override) {
   return result;
 }
 
+function normalizeRuntimeMode(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  if (raw === 'codex' || raw === 'auto') return raw;
+  return 'prompt-pack';
+}
+
+function normalizeCodexTransport(value) {
+  return String(value || '').trim().toLowerCase() === 'exec' ? 'exec' : 'app-server';
+}
+
+function normalizeCodexApprovalMode(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  if (raw === 'never' || raw === 'untrusted') return raw;
+  return 'on-request';
+}
+
+function normalizeCodexSandboxMode(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  if (raw === 'read-only' || raw === 'danger-full-access') return raw;
+  return 'workspace-write';
+}
+
+function normalizeRuntimeSettings(value, defaults = DEFAULT_CONFIG.runtime) {
+  const defaultCodex = defaults?.codex || {};
+
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    const codex = value.codex && typeof value.codex === 'object' ? value.codex : {};
+    return {
+      mode: normalizeRuntimeMode(value.mode),
+      codex: {
+        transport: normalizeCodexTransport(codex.transport || defaultCodex.transport),
+        execFallbackAllowed: codex.execFallbackAllowed === true,
+        approvalMode: normalizeCodexApprovalMode(codex.approvalMode || defaultCodex.approvalMode),
+        sandboxMode: normalizeCodexSandboxMode(codex.sandboxMode || defaultCodex.sandboxMode),
+        defaultModel: String(codex.defaultModel || defaultCodex.defaultModel || 'gpt-5'),
+      },
+    };
+  }
+
+  return {
+    mode: normalizeRuntimeMode(value),
+    codex: {
+      transport: normalizeCodexTransport(defaultCodex.transport),
+      execFallbackAllowed: defaultCodex.execFallbackAllowed === true,
+      approvalMode: normalizeCodexApprovalMode(defaultCodex.approvalMode),
+      sandboxMode: normalizeCodexSandboxMode(defaultCodex.sandboxMode),
+      defaultModel: String(defaultCodex.defaultModel || 'gpt-5'),
+    },
+  };
+}
+
 export function loadPlanningConfig() {
   const onDisk = readJson(PLANNING_FILES.config, null) || {};
   const merged = mergeObjects(DEFAULT_CONFIG, onDisk);
+  const runtimeSettings = normalizeRuntimeSettings(merged.runtime);
   return {
     ...merged,
-    runtime: 'prompt-pack',
+    runtime: runtimeSettings.mode,
+    runtimeSettings,
   };
+}
+
+export function getRuntimeSettings(config = null) {
+  const resolved = config || loadPlanningConfig();
+  if (resolved.runtimeSettings) return resolved.runtimeSettings;
+  return normalizeRuntimeSettings(resolved.runtime);
 }
 
 export function getAutoCommitEnabled(config = null) {

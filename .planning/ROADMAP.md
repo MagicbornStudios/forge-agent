@@ -8,7 +8,7 @@ Operational roadmap for Forge Loop lifecycle delivery in RepoStudio, aligned to 
 - `forge_env_analysis/`
 - `ide_navigation_analysis/`
 
-Phase 11 is closed after strict verification. Next execution phase is pending definition.
+Phase 11 is closed after strict verification. Phase 12 is active.
 
 ## Phases
 
@@ -23,6 +23,7 @@ Phase 11 is closed after strict verification. Next execution phase is pending de
 - [x] **Phase 09: Desktop auth and platform connection** - Add secure desktop connection/auth scope and credential flow
 - [x] **Phase 10: RepoStudio build and runtime guardrails** - Prevent CSS/dependency regressions with verify-work, doctor, dev prechecks, and CI gates
 - [x] **Phase 11: Review Queue persistence and diff UX** - Move proposals to SQLite source-of-truth, add one-file Monaco diff review, and enforce scope-safe global trust-mode auto-apply
+- [ ] **Phase 12: Codex-interactive Ralph Loop CLI** - Add provider-based interactive CLI runtime with Codex app-server primary, prompt-pack fallback, and run-event telemetry
 
 ## Phase Details
 
@@ -161,6 +162,19 @@ Plans:
 - [x] 11-03: Review Queue one-file Monaco UX + settings trust-mode wiring + auto-apply behavior
 - [x] 11-04: Docs/tests/verification closeout + phase summaries and artifact trace updates
 
+### Phase 12: Codex-interactive Ralph Loop CLI
+**Goal:** Extend `forge-loop` with provider abstraction and interactive codex-enabled execution while preserving prompt-pack compatibility.
+**Depends on:** Phase 11
+**Requirements:** [REQ-26]
+**Plans:** 5 plans
+
+Plans:
+- [ ] 12-01: Runtime provider abstraction + runtime config normalization
+- [ ] 12-02: Codex app-server runner core + event telemetry
+- [ ] 12-03: Interactive Ink TUI command and flow orchestration
+- [ ] 12-04: Stage command integration (`discuss|plan|execute`) with runner semantics
+- [ ] 12-05: Docs/tests/verification closeout and phase summary artifacts
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -176,3 +190,4 @@ Plans:
 | 09. Desktop auth and platform connection | 4/4 | Complete | 2026-02-17 |
 | 10. RepoStudio build and runtime guardrails | 4/4 | Complete | 2026-02-17 |
 | 11. Review Queue persistence and diff UX | 4/4 | Complete | 2026-02-17 |
+| 12. Codex-interactive Ralph Loop CLI | 0/5 | In progress | - |

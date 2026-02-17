@@ -101,3 +101,6 @@
 - [x] Initial proposal-store unit test approach failed with Payload bootstrap env interop (`loadEnvConfig` import mismatch in `payload/dist/bin/loadEnv.js`) under `node --test`.
   - Root cause: direct Payload runtime initialization in this test harness is brittle and unnecessary for parser/legacy-store regression coverage.
   - Resolution: shifted app review-queue tests to deterministic contract + legacy JSON store coverage and relied on strict build/verify integration gates for persistence wiring validation.
+- [x] Phase 12 kickoff required strict continuity check before opening new roadmap work.
+  - Root cause: loop was at 100% (Phase 11 complete) with next action `verify-work 11`, and Phase 12 artifacts did not yet exist.
+  - Resolution: ran `pnpm forge-loop:verify-work -- 11 --strict --non-interactive` successfully, then opened Phase 12 artifacts and state tracking.

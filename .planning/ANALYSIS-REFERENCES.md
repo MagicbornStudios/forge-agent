@@ -22,6 +22,8 @@ Source map for planning decisions ingested on 2026-02-15. These analysis artifac
 | `forge_env_analysis/PRD.md` | Env workspace goals and parity expectations | Phase 05 plan decomposition |
 | `forge_env_analysis/GAPS.md` | Missing env UX/API parity and data-shape gaps | Phase 05 plan decomposition |
 | `ide_navigation_analysis/FINDINGS.md` | Navigation/search implementation findings | Phase 06 plan decomposition |
+| `https://developers.openai.com/codex/app-server` | Codex app-server protocol and session semantics | Phase 12 runner transport and readiness contracts |
+| `https://developers.openai.com/codex/sdk` | Codex SDK capability reference used for transport tradeoff decisions | Phase 12 non-SDK decision justification |
 
 ## Traceability Rules
 

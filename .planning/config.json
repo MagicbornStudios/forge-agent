@@ -1,6 +1,15 @@
 {
   "mode": "interactive",
-  "runtime": "prompt-pack",
+  "runtime": {
+    "mode": "auto",
+    "codex": {
+      "transport": "app-server",
+      "execFallbackAllowed": true,
+      "approvalMode": "on-request",
+      "sandboxMode": "workspace-write",
+      "defaultModel": "gpt-5"
+    }
+  },
   "scope": "monorepo",
   "git": {
     "autoCommit": true,
