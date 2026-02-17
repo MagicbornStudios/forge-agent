@@ -8,7 +8,7 @@ Operational roadmap for Forge Loop lifecycle delivery in RepoStudio, aligned to 
 - `forge_env_analysis/`
 - `ide_navigation_analysis/`
 
-Phase 06 is closed. Phase 07 is now the active execution gate before phases 08-09.
+Phase 07 is closed. Phase 08 is now the active execution gate before phase 09.
 
 ## Phases
 
@@ -19,7 +19,7 @@ Phase 06 is closed. Phase 07 is now the active execution gate before phases 08-0
 - [x] **Phase 05: Settings foundation and canonical env UX** - Move RepoStudio settings to internal Payload+SQLite patterns and complete env target editing parity
 - [x] **Phase 06: Workspace contributions and IDE navigation core** - Add per-workspace menus/settings, Navigator/search baseline, and publishability parity
 - [x] **Phase 07: Structured parsers and story publish pipeline** - Convert planning/story content into structured models and publish story files into pages/blocks
-- [ ] **Phase 08: Electron desktop runtime** - Deliver packaged desktop runtime with bundled SQLite and watcher-first behavior
+- [x] **Phase 08: Electron desktop runtime** - Deliver packaged desktop runtime with bundled SQLite and watcher-first behavior
 - [ ] **Phase 09: Desktop auth and platform connection** - Add secure desktop connection/auth scope and credential flow
 
 ## Phase Details
@@ -106,10 +106,10 @@ Plans:
 **Plans:** 4 plans
 
 Plans:
-- [ ] 07-01: Planning parser utility (frontmatter + section extraction)
-- [ ] 07-02: Story markdown to blocks transformer
-- [ ] 07-03: Story publish API (`story file -> page + blocks`)
-- [ ] 07-04: Review/diff integration for publish previews
+- [x] 07-01: Planning parser utility (frontmatter + section extraction)
+- [x] 07-02: Story markdown to blocks transformer
+- [x] 07-03: Story publish API (`story file -> page + blocks`)
+- [x] 07-04: Review/diff integration for publish previews
 
 ### Phase 08: Electron desktop runtime
 **Goal:** Provide Electron runtime with bundled SQLite and native watcher-first repository refresh behavior.
@@ -145,6 +145,6 @@ Plans:
 | 04. Story domain Codex writer | 4/4 | Complete | 2026-02-16 |
 | 05. Settings foundation and canonical env UX | 4/4 | Complete | 2026-02-16 |
 | 06. Workspace contributions and IDE navigation core | 4/4 | Complete | 2026-02-16 |
-| 07. Structured parsers and story publish pipeline | 0/4 | Planned | - |
+| 07. Structured parsers and story publish pipeline | 4/4 | Complete | 2026-02-16 |
 | 08. Electron desktop runtime | 0/4 | Planned | - |
 | 09. Desktop auth and platform connection | 0/4 | Planned | - |
