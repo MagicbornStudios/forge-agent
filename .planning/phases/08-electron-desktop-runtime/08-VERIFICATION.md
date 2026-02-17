@@ -1,6 +1,6 @@
 ---
 phase: 08-electron-desktop-runtime
-verified: 2026-02-17T02:48:14.243Z
+verified: 2026-02-17T02:54:10.645Z
 status: human_needed
 score: 0/8
 ---
@@ -26,7 +26,7 @@ score: 0/8
 > node scripts/docs-runtime-doctor.mjs
 
 [docs-runtime-doctor] PASS: docs runtime guardrails satisfied |
-| pnpm --filter @forge/studio build | PASS | ⚠ Compiled with warnings in 45s
+| pnpm --filter @forge/studio build | PASS | ⚠ Compiled with warnings in 36.1s
 
 ../../node_modules/.pnpm/payload@3.74.0_graphql@16.12.0_typescript@5.9.3/node_modules/payload/dist/utilities/dynamicImport.js
 Critical dependency: the request of a dependency is an expression
@@ -34,20 +34,20 @@ Critical dependency: the request of a dependency is an expression
 Import trace for requested module:
 ../../node_modules/.pnpm/payload@3.74.0_graphql@16.12.0_typescript@5.9.3/node_modules/payload/dist/utilities/dynamicImport.js
 ../../node_modules/.pnpm/payload@3.74.0_graphql@16.12.0_typescript@5.9.3/node_modules/payload/dist/index.js
-./app/api/catalog/route.ts
+./app/api/catalog/[id]/clone/route.ts
 
 Failed to load undo-redo state from localStorage: ReferenceError: localStorage is not defined
-    at aq (C:\Users\benja\Documents\forge-agent\apps\studio\.next\server\chunks\1170.js:3:96152)
-    at <unknown> (C:\Users\benja\Documents\forge-agent\apps\studio\.next\server\chunks\1170.js:3:96404)
-    at ar (C:\Users\benja\Documents\forge-agent\apps\studio\.next\server\chunks\1170.js:3:96386)
+    at aq (C:\Users\benja\Documents\forge-agent\apps\studio\.next\server\chunks\1170.js:3:96155)
+    at <unknown> (C:\Users\benja\Documents\forge-agent\apps\studio\.next\server\chunks\1170.js:3:96407)
+    at ar (C:\Users\benja\Documents\forge-agent\apps\studio\.next\server\chunks\1170.js:3:96389)
 Failed to load undo-redo state from localStorage: ReferenceError: localStorage is not defined
-    at aq (C:\Users\benja\Documents\forge-agent\apps\studio\.next\server\chunks\1170.js:3:96152)
-    at <unknown> (C:\Users\benja\Documents\forge-agent\apps\studio\.next\server\chunks\1170.js:3:96404)
-    at ar (C:\Users\benja\Documents\forge-agent\apps\studio\.next\server\chunks\1170.js:3:96386)
+    at aq (C:\Users\benja\Documents\forge-agent\apps\studio\.next\server\chunks\1170.js:3:96155)
+    at <unknown> (C:\Users\benja\Documents\forge-agent\apps\studio\.next\server\chunks\1170.js:3:96407)
+    at ar (C:\Users\benja\Documents\forge-agent\apps\studio\.next\server\chunks\1170.js:3:96389)
 Failed to load undo-redo state from localStorage: ReferenceError: localStorage is not defined
-    at aq (C:\Users\benja\Documents\forge-agent\apps\studio\.next\server\chunks\1170.js:3:96152)
-    at <unknown> (C:\Users\benja\Documents\forge-agent\apps\studio\.next\server\chunks\1170.js:3:96404)
-    at ar (C:\Users\benja\Documents\forge-agent\apps\studio\.next\server\chunks\1170.js:3:96386) |
+    at aq (C:\Users\benja\Documents\forge-agent\apps\studio\.next\server\chunks\1170.js:3:96155)
+    at <unknown> (C:\Users\benja\Documents\forge-agent\apps\studio\.next\server\chunks\1170.js:3:96407)
+    at ar (C:\Users\benja\Documents\forge-agent\apps\studio\.next\server\chunks\1170.js:3:96389) |
 | pnpm --filter @forge/studio test -- --runInBand | PASS | PASS __tests__/assistant-runtime.test.ts
 PASS __tests__/settings/settings-codegen.test.tsx
   ● Console
@@ -607,7 +607,7 @@ PASS __tests__/model-router/selection.test.ts
 Test Suites: 6 passed, 6 total
 Tests:       19 passed, 19 total
 Snapshots:   0 total
-Time:        2.703 s, estimated 3 s
+Time:        2.504 s, estimated 3 s
 Ran all test suites. |
 | pnpm forge-loop:test | PASS | > forge-agent@ forge-loop:test C:\Users\benja\Documents\forge-agent
 > pnpm --filter @forge/forge-loop test
@@ -616,44 +616,44 @@ Ran all test suites. |
 > @forge/forge-loop@0.1.0 test C:\Users\benja\Documents\forge-agent\packages\forge-loop
 > node --test "src/__tests__/*.test.mjs"
 
-✔ required package runbooks exist (9.8529ms)
-✔ package.json includes docs and readme in published files (0.7834ms)
-✔ package docs and generated prompt templates are agent-agnostic (11.3278ms)
-✔ doctor validates planning artifacts and reports next action (471.7823ms)
-✔ headless env gate runs only when headless flag is set (2.326ms)
-✔ headless env gate respects env enabled and enforce flags (0.4249ms)
-✔ execute-phase summary upserts tasks and remains idempotent on rerun (1654.4373ms)
-✔ commit message formatters follow contract (2.0127ms)
-✔ commitPaths skips when repository is not git (71.7977ms)
-✔ commitPaths skips when no tracked changes are present (624.4747ms)
-✔ isInCommitScope matches allowed glob patterns (0.7708ms)
-✔ commitPaths blocks out-of-scope files when commitScope is set (231.95ms)
-✔ commitPaths blocks staged files outside commit scope (362.6967ms)
-✔ assertCommitResult throws on failed commit result (0.7052ms)
-✔ parseStatusSections returns expected heading sections (2.3217ms)
-✔ parseRalphDoneItems returns only done bullet lines (2.5285ms)
-✔ parseNextItems parses bold and non-bold numbered lines (1.0286ms)
-✔ parseTaskRegistryInitiatives parses markdown table rows (0.6488ms)
-✔ buildMigrationWarnings reports missing key inputs (0.5451ms)
-✔ loop:new creates loop scaffold and loop:use + --loop drive progress routing (852.2981ms)
-✔ updateGeneratedBlock injects generated section when markers are missing (3.9723ms)
-✔ updateGeneratedBlock only replaces marker section and is idempotent (2.7535ms)
-✔ new-project migrates legacy docs into .planning tree (254.3164ms)
-✔ new-project on existing .planning reports guidance and does not overwrite (324.8719ms)
-✔ new-project supports forge-loop profile (167.9636ms)
-✔ new-project accepts generic as deprecated alias for forge-loop (156.6592ms)
-✔ new-project supports custom profile with forge-loop verification baseline (149.7063ms)
-✔ plan-phase creates plan files with required frontmatter fields (451.5816ms)
-✔ sync-legacy respects legacySync.enabled flag (364.8121ms)
-✔ validatePlanFrontmatter accepts required schema (5.7148ms)
-✔ validatePlanFrontmatter fails missing required schema fields (0.7418ms)
-✔ parsePlanFrontmatterYaml returns typed values (0.589ms)
-✔ validateWaveOrdering checks dependency graph and wave ordering (0.7442ms)
-✔ parsePlanWave reads wave from frontmatter (0.6198ms)
-✔ buildVerificationCommandPlan selects matrix commands by changed paths (2.1862ms)
-✔ buildVerificationCommandPlan supports forge-loop profile (1.8629ms)
-✔ verify-work emits expected check matrix in command output (3556.5614ms)
-✔ verify-work --strict exits non-zero when checks fail (2057.9884ms)
+✔ required package runbooks exist (5.0442ms)
+✔ package.json includes docs and readme in published files (0.7392ms)
+✔ package docs and generated prompt templates are agent-agnostic (15.8301ms)
+✔ doctor validates planning artifacts and reports next action (456.7132ms)
+✔ headless env gate runs only when headless flag is set (1.8295ms)
+✔ headless env gate respects env enabled and enforce flags (0.3513ms)
+✔ execute-phase summary upserts tasks and remains idempotent on rerun (1653.036ms)
+✔ commit message formatters follow contract (2.6053ms)
+✔ commitPaths skips when repository is not git (73.8297ms)
+✔ commitPaths skips when no tracked changes are present (598.9831ms)
+✔ isInCommitScope matches allowed glob patterns (0.7029ms)
+✔ commitPaths blocks out-of-scope files when commitScope is set (232.7941ms)
+✔ commitPaths blocks staged files outside commit scope (361.1233ms)
+✔ assertCommitResult throws on failed commit result (0.9896ms)
+✔ parseStatusSections returns expected heading sections (2.3401ms)
+✔ parseRalphDoneItems returns only done bullet lines (2.038ms)
+✔ parseNextItems parses bold and non-bold numbered lines (0.8225ms)
+✔ parseTaskRegistryInitiatives parses markdown table rows (0.6274ms)
+✔ buildMigrationWarnings reports missing key inputs (0.5067ms)
+✔ loop:new creates loop scaffold and loop:use + --loop drive progress routing (840.1185ms)
+✔ updateGeneratedBlock injects generated section when markers are missing (3.1249ms)
+✔ updateGeneratedBlock only replaces marker section and is idempotent (1.7969ms)
+✔ new-project migrates legacy docs into .planning tree (260.5695ms)
+✔ new-project on existing .planning reports guidance and does not overwrite (309.6573ms)
+✔ new-project supports forge-loop profile (180.675ms)
+✔ new-project accepts generic as deprecated alias for forge-loop (161.7195ms)
+✔ new-project supports custom profile with forge-loop verification baseline (145.317ms)
+✔ plan-phase creates plan files with required frontmatter fields (451.1953ms)
+✔ sync-legacy respects legacySync.enabled flag (362.3942ms)
+✔ validatePlanFrontmatter accepts required schema (5.7948ms)
+✔ validatePlanFrontmatter fails missing required schema fields (0.7397ms)
+✔ parsePlanFrontmatterYaml returns typed values (0.5053ms)
+✔ validateWaveOrdering checks dependency graph and wave ordering (0.5779ms)
+✔ parsePlanWave reads wave from frontmatter (0.4508ms)
+✔ buildVerificationCommandPlan selects matrix commands by changed paths (2.3504ms)
+✔ buildVerificationCommandPlan supports forge-loop profile (2.5289ms)
+✔ verify-work emits expected check matrix in command output (3404.9831ms)
+✔ verify-work --strict exits non-zero when checks fail (2040.1065ms)
 ℹ tests 38
 ℹ suites 0
 ℹ pass 38
@@ -661,7 +661,7 @@ Ran all test suites. |
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 5965.5303 |
+ℹ duration_ms 5793.9961 |
 
 ## UAT Truths
 
