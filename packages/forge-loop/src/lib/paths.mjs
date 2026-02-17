@@ -36,6 +36,7 @@ export const DEFAULT_CONFIG = {
   runtime: {
     mode: 'prompt-pack',
     codex: {
+      command: 'codex',
       transport: 'app-server',
       execFallbackAllowed: false,
       approvalMode: 'on-request',

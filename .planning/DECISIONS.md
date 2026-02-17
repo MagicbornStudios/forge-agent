@@ -70,3 +70,4 @@
 - [x] Proposal queue list responses are now loop-scoped (`loopId` query) and include trust metadata (`trustMode`, `autoApplyEnabled`, `lastAutoApplyAt`) for UI policy visibility.
 - [x] Auto-approve pipelines are implemented at proposal ingestion boundaries (Codex approval requests and story publish queue), not as a background poller, to keep scope enforcement and approval transitions deterministic.
 - [x] Phase 12 is opened as an additive CLI extension: keep existing `forge-loop` command surface and prompt-pack behavior, and layer codex-interactive runner support behind provider abstraction and explicit runner selection.
+- [x] Phase 12 codex runtime transport is CLI app-server JSON-RPC first with explicit readiness evaluation (`cli/login/app-server`) and no SDK coupling in this phase.

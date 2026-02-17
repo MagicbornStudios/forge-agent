@@ -56,8 +56,8 @@
 | FRG-1102 | 11 | 11-02 | Complete | Added proposal diff parser and new APIs (`diff-files`, `diff-file`) with typed client/service contracts for Review Queue file-level patch reads. |
 | FRG-1103 | 11 | 11-03 | Complete | Upgraded Review Queue to one-file Monaco diff UX and wired global trust-mode (`require-approval|auto-approve-all`) with scope-safe auto-apply. |
 | FRG-1104 | 11 | 11-04 | Complete | Closed docs/tests/verification for Phase 11 and published summaries + decision/error trace updates. |
-| FRG-1201 | 12 | 12-01 | In progress | Runtime provider abstraction and config normalization (`runtime.mode|runtime.codex.*`) with compatibility for legacy string runtime values. |
-| FRG-1202 | 12 | 12-02 | Planned | Codex app-server runner core with structured event capture into `.planning/runs/*.jsonl`. |
-| FRG-1203 | 12 | 12-03 | Planned | Add `forge-loop interactive` Ink TUI command for single-loop sequential Ralph flow execution. |
+| FRG-1201 | 12 | 12-01 | Complete | Runtime provider abstraction and config normalization (`runtime.mode|runtime.codex.*`) with compatibility for legacy string runtime values. |
+| FRG-1202 | 12 | 12-02 | Complete | Codex app-server runner core with structured event capture into `.planning/runs/*.jsonl`. |
+| FRG-1203 | 12 | 12-03 | In progress | Add `forge-loop interactive` Ink TUI command for single-loop sequential Ralph flow execution. |
 | FRG-1204 | 12 | 12-04 | Planned | Wire stage commands to runner resolver and codex task-result semantics while preserving prompt-pack behavior. |
 | FRG-1205 | 12 | 12-05 | Planned | Docs/tests/verification closeout and Phase 12 summary artifacts. |

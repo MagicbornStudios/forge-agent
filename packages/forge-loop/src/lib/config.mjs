@@ -53,6 +53,7 @@ function normalizeRuntimeSettings(value, defaults = DEFAULT_CONFIG.runtime) {
     return {
       mode: normalizeRuntimeMode(value.mode),
       codex: {
+        command: String(codex.command || defaultCodex.command || 'codex'),
         transport: normalizeCodexTransport(codex.transport || defaultCodex.transport),
         execFallbackAllowed: codex.execFallbackAllowed === true,
         approvalMode: normalizeCodexApprovalMode(codex.approvalMode || defaultCodex.approvalMode),
@@ -65,6 +66,7 @@ function normalizeRuntimeSettings(value, defaults = DEFAULT_CONFIG.runtime) {
   return {
     mode: normalizeRuntimeMode(value),
     codex: {
+      command: String(defaultCodex.command || 'codex'),
       transport: normalizeCodexTransport(defaultCodex.transport),
       execFallbackAllowed: defaultCodex.execFallbackAllowed === true,
       approvalMode: normalizeCodexApprovalMode(defaultCodex.approvalMode),

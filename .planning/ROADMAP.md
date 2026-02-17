@@ -169,8 +169,8 @@ Plans:
 **Plans:** 5 plans
 
 Plans:
-- [ ] 12-01: Runtime provider abstraction + runtime config normalization
-- [ ] 12-02: Codex app-server runner core + event telemetry
+- [x] 12-01: Runtime provider abstraction + runtime config normalization
+- [x] 12-02: Codex app-server runner core + event telemetry
 - [ ] 12-03: Interactive Ink TUI command and flow orchestration
 - [ ] 12-04: Stage command integration (`discuss|plan|execute`) with runner semantics
 - [ ] 12-05: Docs/tests/verification closeout and phase summary artifacts
@@ -190,4 +190,4 @@ Plans:
 | 09. Desktop auth and platform connection | 4/4 | Complete | 2026-02-17 |
 | 10. RepoStudio build and runtime guardrails | 4/4 | Complete | 2026-02-17 |
 | 11. Review Queue persistence and diff UX | 4/4 | Complete | 2026-02-17 |
-| 12. Codex-interactive Ralph Loop CLI | 0/5 | In progress | - |
+| 12. Codex-interactive Ralph Loop CLI | 2/5 | In progress | - |

@@ -3,6 +3,7 @@
   "runtime": {
     "mode": "auto",
     "codex": {
+      "command": "codex",
       "transport": "app-server",
       "execFallbackAllowed": true,
       "approvalMode": "on-request",

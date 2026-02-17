@@ -104,3 +104,6 @@
 - [x] Phase 12 kickoff required strict continuity check before opening new roadmap work.
   - Root cause: loop was at 100% (Phase 11 complete) with next action `verify-work 11`, and Phase 12 artifacts did not yet exist.
   - Resolution: ran `pnpm forge-loop:verify-work -- 11 --strict --non-interactive` successfully, then opened Phase 12 artifacts and state tracking.
+- [x] Phase 12 initially created plan files under mismatched phase directory slug (`12-codex-interactive-cli`), so `forge-loop progress` reported no plans.
+  - Root cause: phase directory naming must match roadmap phase title slug (`12-codex-interactive-ralph-loop-cli`).
+  - Resolution: renamed phase folder, updated frontmatter references, and revalidated progress (`plans: 5`, `nextAction: execute-phase 12`).
