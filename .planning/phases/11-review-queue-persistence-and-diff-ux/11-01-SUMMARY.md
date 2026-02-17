@@ -5,3 +5,4 @@
 ## Tasks
 - [x] 01. Create proposal repository boundary and payload repository
 - [x] 02. Add SQLite proposal collection and migration fallback wiring
+- [x] 03. Update loop artifacts for persistence cutover
