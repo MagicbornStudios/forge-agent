@@ -4,3 +4,4 @@
 
 ## Tasks
 - [x] 01. Extend doctor payload with desktopAuth diagnostics
+- [x] 02. Add security-focused tests and redaction checks
