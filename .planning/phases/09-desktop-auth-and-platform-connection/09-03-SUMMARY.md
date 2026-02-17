@@ -4,3 +4,4 @@
 
 ## Tasks
 - [x] 01. Add typed auth client layer and shared payload contracts
+- [x] 02. Register platform connection settings and defaults
