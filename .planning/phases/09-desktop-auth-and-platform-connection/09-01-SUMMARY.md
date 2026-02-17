@@ -6,3 +6,4 @@
 - [x] 01. Implement repo-studio scope taxonomy in Studio auth surfaces
 - [x] 02. Add platform validation endpoint for desktop capability introspection
 - [x] 03. Add auth unit coverage for scope allow/deny behavior
+- [x] 04. Update loop artifacts and traceability
