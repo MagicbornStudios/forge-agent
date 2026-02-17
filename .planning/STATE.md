@@ -3,12 +3,12 @@
 ## Current Position
 
 Phase: 11
-Plan: 11-01
+Plan: 11-02
 Status: In progress
-Last activity: 2026-02-17T06:33:59.806Z - Update loop artifacts for persistence cutover
+Last activity: 2026-02-17T06:34:00.618Z - Add proposal unified-diff parser
 
 ## Execution
 
 - Active phase: Review Queue persistence and diff UX
-- Active plan: 11-01
-- Active task: Update loop artifacts for persistence cutover
+- Active plan: 11-02
+- Active task: Add proposal unified-diff parser
