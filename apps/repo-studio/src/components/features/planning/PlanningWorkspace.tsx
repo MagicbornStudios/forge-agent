@@ -23,7 +23,7 @@ export interface PlanningWorkspaceProps {
   selectedDocId: string | null;
   onSelectDoc: (docId: string) => void;
   onSwitchLoop: (loopId: string) => void;
-  onAttachSelected: () => void;
+  onCopyMentionToken: () => void;
   onCopyText: (text: string) => void;
   onOpenAssistant: () => void;
   selectedDocContent: string;
@@ -37,7 +37,7 @@ export function PlanningWorkspace({
   selectedDocId,
   onSelectDoc,
   onSwitchLoop,
-  onAttachSelected,
+  onCopyMentionToken,
   onCopyText,
   onOpenAssistant,
   selectedDocContent,
@@ -240,8 +240,13 @@ export function PlanningWorkspace({
             </Select>
 
             {selectedDoc ? (
-              <Button size="sm" variant="outline" onClick={onAttachSelected}>
-                Attach To Assistant
+              <Button size="sm" variant="outline" onClick={onCopyMentionToken}>
+                Copy @ token
+              </Button>
+            ) : null}
+            {selectedDoc ? (
+              <Button size="sm" variant="outline" onClick={onOpenAssistant}>
+                Open Assistant
               </Button>
             ) : null}
             {selectedDoc ? (

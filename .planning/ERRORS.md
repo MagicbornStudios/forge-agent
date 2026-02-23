@@ -113,3 +113,42 @@
 - [x] Interactive execute smoke run marked all Phase 12 plan tasks complete before final docs/test closeout.
   - Root cause: `interactive --mode execute` intentionally reuses execute-phase semantics and auto-writes summaries/state.
   - Resolution: replaced generated summaries with explicit plan summaries and kept closeout state under `12-05` for strict verification gate completion.
+
+## 2026-02-22
+
+- [x] Studio runtime crash in dock panel rehydration (`referencePanel 'main' does not exist`) when restoring layouts with missing main anchor.
+  - Root cause: `EditorDockLayout` side-rail visibility sync always used `main` (or first main id) as `referencePanel` even when main was hidden/missing in restored layout state.
+  - Resolution: updated `EditorDockLayout` to rehydrate visible main panels first, guard `addPanel` with anchor existence checks (fallback to root add when missing), and resolve side-rail anchor as visible-main -> configured-main -> first existing panel.
+- [x] Repo Studio dev startup was blocked by Codex auth state (`predev:repo-studio` failed when login was missing).
+  - Root cause: doctor readiness required `codex_chatgpt_login` for `ok=true`, so `pnpm dev:repo-studio` failed before Next dev server start.
+  - Resolution: made doctor login gating opt-in strict (`--require-codex-login`) while keeping CLI-installed as hard gate; added bundled Codex invocation diagnostics and UI login action (`codex-login` + `/api/repo/codex/login`) for self-serve onboarding.
+
+## 2026-02-23
+
+- [x] Repo Studio dev was repeatedly blocked by orphaned listeners (`EADDRINUSE` on 3010 and related repo ports) with no safe manual reclaim path.
+  - Root cause: no explicit process inventory/reclaim workflow; `stop` fallback could attempt to terminate untracked port owners without workspace ownership checks.
+  - Resolution: added `forge-repo-studio processes` + `forge-repo-studio reclaim` (safe `repo-studio` scope and explicit `repo --force` scope), ANSI-rich process/reclaim reports, root convenience scripts, and ownership-safe `stop` fallback that refuses to kill foreign untracked port owners.
+- [x] Repo Studio Env workspace hit `Maximum update depth exceeded` from target-selection sync.
+  - Root cause: effect dependencies used non-memoized target arrays and empty-target fallback repeatedly called `setEditedValues({})`/state resets with new object references.
+  - Resolution: extracted pure target-state helpers, memoized `allTargets`/`filteredTargets`, switched reset logic to idempotent functional updates, normalized Select value to `undefined` when empty, and added stale-request guards for async target loads.
+- [x] Repo Studio runtime dependency endpoint returned noisy `500` for desktop standalone diagnostics.
+  - Root cause: `/api/repo/runtime/deps` treated `desktop.nextStandalonePresent` as hard failure, while doctor treated it as informational.
+  - Resolution: moved runtime dependency evaluation to a shared helper, aligned semantics to `desktopRuntimeReady` + `desktopStandaloneReady`, returned HTTP `200` with additive `severity`/readiness fields, and updated Env workspace + doctor output with explicit runtime quick-start/remediation guidance.
+- [x] Repo Studio UI rendered unstyled browser-default controls even though globals.css imported Tailwind directives.
+  - Root cause: `apps/repo-studio` lacked local PostCSS wiring for Tailwind v4 (`postcss.config.*` + `@tailwindcss/postcss` dependency), so runtime CSS shipped raw `@theme`/`@apply` directives without utility generation.
+  - Resolution: restored app-local PostCSS config, added `@tailwindcss/postcss` + `postcss` + `postcss-load-config` dependencies, extended package/app dependency health with style-pipeline readiness flags, made doctor fail-fast on pipeline breakage, and added compile-time regression test for `app/globals.css`.
+- [x] Repo Studio UX degraded into panel overload and non-workspace behavior, with assistant setup/attachment controls spread across panels.
+  - Root cause: global panel visibility model and panel-local assistant attachment actions created clutter, while codex controls lived inside assistant content instead of app chrome.
+  - Resolution: introduced workspace presets + true workspace tabs, moved codex auth/session controls to app bar, removed panel-level attach-to-assistant actions, and standardized assistant context to system prompts plus `@planning/...` mentions.
+- [x] Repo Studio terminal panel did not provide an interactive shell workflow.
+  - Root cause: previous terminal panel was output-oriented and not backed by a persistent shell session API.
+  - Resolution: added terminal session manager + start/stream/input/resize/stop API routes and switched UI to `xterm`-based interactive terminal.
+- [x] Repo Studio build failed on Node 24 with webpack `WasmHash` crash (`TypeError: Cannot read properties of undefined (reading 'length')`) during `next build`.
+  - Root cause: Node 24 + webpack wasm hash path instability in this environment.
+  - Resolution: forced `config.output.hashFunction = 'sha256'` in `apps/repo-studio/next.config.ts` to avoid wasm hashing path and restore deterministic builds.
+- [x] Terminal session API test intermittently failed (`/api/repo/terminal/session/start` returned `500`) when PTY spawn failed in test/runtime contexts.
+  - Root cause: `startTerminalSession` hard-threw on `node-pty` spawn/init failures without fallback.
+  - Resolution: added degraded fallback PTY session mode (non-500 start response, warning banner/reason surfaced, input/stream/stop still functional) so terminal panel and API tests remain stable.
+- [x] Repo Studio build type-check failed from implicit-any callbacks in shared docs sidebar (`DocsSidebar.tsx`).
+  - Root cause: strict TS checks flagged untyped callback parameters in `.some(...)` filters.
+  - Resolution: typed callback params as `Node` and revalidated `pnpm --filter @forge/repo-studio-app build`.

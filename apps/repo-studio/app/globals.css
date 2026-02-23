@@ -1,5 +1,5 @@
 @import "../../../packages/shared/src/shared/styles/editor-surface.css";
-@import "tw-animate-css";
+@import "@xterm/xterm/css/xterm.css";
 @import "tailwindcss";
 
 @plugin "tailwindcss-animate";

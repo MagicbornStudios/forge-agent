@@ -10,8 +10,7 @@ function appendOutput(current: string, ...lines: string[]) {
   return [current, ...lines].filter(Boolean).join('\n');
 }
 
-export function useCommandRuns() {
-  const [commandOutput, setCommandOutput] = React.useState('No command run yet.');
+export function useCommandRuns(setCommandOutput: (value: string | ((prev: string) => string)) => void) {
   const [confirmRuns, setConfirmRuns] = React.useState(true);
   const activeRun = useRepoStudioShellStore((state) => state.activeRun);
   const setActiveRun = useRepoStudioShellStore((state) => state.setActiveRun);
@@ -80,7 +79,7 @@ export function useCommandRuns() {
     } catch (error) {
       setCommandOutput(toErrorMessage(error, 'Unable to start command run.'));
     }
-  }, [confirmRuns, setActiveRun]);
+  }, [confirmRuns, setActiveRun, setCommandOutput]);
 
   const stopActiveRun = React.useCallback(async () => {
     if (!activeRun?.stopPath) return;
@@ -95,11 +94,9 @@ export function useCommandRuns() {
     } catch (error) {
       setCommandOutput((current) => appendOutput(current, '\n# stop request', toErrorMessage(error, 'Unable to stop run.')));
     }
-  }, [activeRun, setActiveRun]);
+  }, [activeRun, setActiveRun, setCommandOutput]);
 
   return {
-    commandOutput,
-    setCommandOutput,
     confirmRuns,
     setConfirmRuns,
     activeRun,

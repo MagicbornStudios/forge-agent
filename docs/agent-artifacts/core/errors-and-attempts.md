@@ -1,7 +1,7 @@
 ---
 title: Errors and attempts
 created: 2026-02-04
-updated: 2026-02-17
+updated: 2026-02-23
 ---
 
 Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx).
@@ -14,6 +14,44 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ---
 
+## Repo Studio predev blocked by Codex login state (`pnpm dev:repo-studio`)
+
+**Problem**: Repo Studio dev startup failed before Next server start when Codex CLI was installed but not logged in (`codex login: not-logged-in`). `predev:repo-studio` ran `forge-repo-studio doctor` and exited non-zero.
+
+**Root cause**: Doctor readiness required `codex_chatgpt_login` for default `ok=true`, coupling runtime/dependency health with user auth state.
+
+**Fix (2026-02-22)**:
+- Keep Codex CLI installation as a hard gate, but make login non-blocking in default doctor mode.
+- Add strict auth mode only when explicitly requested: `forge-repo-studio doctor --require-codex-login`.
+- Bundle `@openai/codex` in `@forge/repo-studio` and prefer bundled invocation by default.
+- Add UI-first sign-in path through Repo Studio (`POST /api/repo/codex/login`, Codex Setup card actions).
+
+**Guardrail**:
+- `pnpm dev:repo-studio` must fail-fast on dependency/runtime breakage, but must not fail solely because Codex login is missing unless strict mode is explicitly enabled.
+
+---
+
+## Repo Studio dev blocked by orphaned ports (`EADDRINUSE` on 3010/related ports)
+
+**Problem**: `pnpm dev:repo-studio` failed with `listen EADDRINUSE` because orphaned dev processes were still holding RepoStudio/Codex ports.
+
+**Root cause**: cleanup was fragmented (`stop` only tracked runtime + unguarded untracked fallback by port), and there was no explicit repo-scoped reclaim workflow for orphan processes.
+
+**Fix (2026-02-23)**:
+- Added manual reclaim commands:
+  - `forge-repo-studio processes [--scope repo-studio|repo]`
+  - `forge-repo-studio reclaim [--scope repo-studio|repo] [--dry-run] [--force]`
+- Safe default scope (`repo-studio`) targets only RepoStudio/Codex-owned processes and known ports.
+- Force scope (`repo`) requires `--force` for actual kills and supports repo-wide cleanup of repo-owned runtime processes.
+- Added ownership guard to `forge-repo-studio stop` fallback: do not kill foreign untracked port owners.
+- Added ANSI-rich CLI reporting with machine-safe `--json` and plain fallback (`--plain` / `NO_COLOR`).
+
+**Guardrails**:
+- `pnpm dev:repo-studio` stays non-destructive by default.
+- Use `reclaim --dry-run` first, then `reclaim` (safe) or `reclaim --scope repo --force` (explicitly destructive).
+
+---
+
 ## RepoStudio CSS import dependency drift (`tw-animate-css`, `tailwindcss-animate`)
 
 **Problem**: RepoStudio can fail at build/dev with:
@@ -23,20 +61,42 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 when `apps/repo-studio/app/globals.css` imports packages not installed in `apps/repo-studio/package.json`.
 
-**Fix**:
+**Fix (2026-02)**: Repo Studio uses only `tailwindcss-animate` via `@plugin "tailwindcss-animate"`. The `tw-animate-css` package was removed because its CSS export resolution fails with Next.js/webpack (package exports conditional `"style"` not resolved). `tailwindcss-animate` is Tailwind v4 compatible and sufficient for animation utilities.
 
-- Add CSS-imported packages to `apps/repo-studio/package.json` dependencies (app-local, no hoist assumptions).
-- Run:
-  - `pnpm install`
-  - `pnpm --filter @forge/repo-studio-app build`
+- `apps/repo-studio/app/globals.css`: no `@import "tw-animate-css"`; only `@plugin "tailwindcss-animate"`.
+- `apps/repo-studio/package.json`: no `tw-animate-css` dependency.
+- `forge-repo-studio doctor` checks only `tailwindcss-animate`.
 
 **Guardrails now expected**:
 
 - `forge-loop verify-work` runs `pnpm --filter @forge/repo-studio-app build` for RepoStudio file changes.
-- `forge-repo-studio doctor` checks resolvability of `tw-animate-css` and `tailwindcss-animate`.
+- `forge-repo-studio doctor` checks resolvability of `tailwindcss-animate`.
 - `pnpm dev:repo-studio` runs a doctor precheck before starting Next dev.
 
 **Do not**: Add CSS `@import` to app globals without updating that same app's dependencies and running the app-local build.
+
+---
+
+## Repo Studio unstyled UI from missing Tailwind/PostCSS runtime transform
+
+**Problem**: Repo Studio rendered as browser-default HTML controls (unstyled buttons/inputs/cards). Live CSS payloads contained raw Tailwind directives (`@theme`, `@apply`) and lacked generated utility classes.
+
+**Root cause**: `apps/repo-studio` was missing local Tailwind v4 PostCSS wiring (`postcss.config.*`) and `@tailwindcss/postcss` resolution, so Next served untransformed CSS for app globals.
+
+**Fix (2026-02-23)**:
+- Added app-local PostCSS config: `apps/repo-studio/postcss.config.mjs` with `@tailwindcss/postcss`.
+- Added app dependencies: `@tailwindcss/postcss`, `postcss`, `postcss-load-config`.
+- Extended dependency health contracts (app + package) with:
+  - `postcssConfigResolved`
+  - `tailwindPostcssResolved`
+  - `tailwindPipelineResolved`
+- Made doctor/predev fail-fast on style pipeline breakage by gating `depsOk` on those fields.
+- Added regression coverage:
+  - `packages/repo-studio/src/__tests__/dependency-health.test.mjs` (missing config/dependency cases)
+  - `apps/repo-studio/__tests__/styles/tailwind-pipeline.test.mjs` (compile globals.css, assert no raw directives).
+
+**Guardrail**:
+- Repo Studio startup must block when Tailwind/PostCSS compiler wiring is broken. Run `pnpm forge-repo-studio doctor` before `pnpm dev:repo-studio`, and revalidate with `pnpm --filter @forge/repo-studio-app test:styles`.
 
 ---
 
@@ -931,6 +991,26 @@ References:
 
 ---
 
+## DockLayout runtime crash: `referencePanel 'main' does not exist`
+
+**Problem**: Dialogue/Character could crash at runtime from `api.addPanel(...)` with `referencePanel 'main' does not exist` when rehydrating visible side rails after loading a saved layout that did not contain the main anchor panel.
+
+**Root cause**: Visibility-sync logic in `EditorDockLayout` assumed `main` (or first main rail id) always exists and used it as `position.referencePanel` for first left/right/bottom re-add. With persisted layouts or settings where main content was hidden/missing, Dockview rejected that add.
+
+**Fix**:
+
+- Rehydrate visible `mainPanels` first.
+- Add an anchor-safe panel helper: if `position.referencePanel` is missing, omit `position` and add at root.
+- Resolve side-rail first-panel anchors in order:
+  1. first visible main panel id,
+  2. configured main id,
+  3. first existing panel id in the current layout.
+- Keep existing behavior for closing hidden panels and for within-rail tab stacking.
+
+**Result**: Main remains hideable, and layout recovery no longer throws when saved layout state has no main anchor.
+
+---
+
 ## Dockview tab props leaking to DOM
 
 **Problem**: Dockview panel header props include `containerApi` and other non-DOM fields. Spreading them onto a `<div>` triggers React warnings or invalid DOM props.
@@ -1244,6 +1324,96 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 **Cause**: Stacking order: CopilotKit sidebar and other UI (e.g. Dockview) use z-index 30–50. Our Sheet and Drawer used z-50 / z-100 and could render behind another layer or a floating layer could capture clicks before they reached the buttons.
 
 **Fix**: (1) Raise overlay z-index for Sheet, Drawer, and DropdownMenu in `packages/ui`: use `z-[200]` for overlay and content so they sit above CopilotKit and Dockview. (2) In `apps/studio/app/globals.css`, add `.copilotKitSidebar { z-index: 20; }` so the CopilotKit sidebar stays below our overlays. (3) Ensure DropdownMenuContent (editor Settings menu) uses the same z-[200]. See [styling-and-ui-consistency.md](./styling-and-ui-consistency.md) for UI debugging.
+
+---
+
+## Repo Studio Env render loop + runtime deps semantics drift (2026-02-23)
+
+**Problems**:
+1. `EnvWorkspace` intermittently crashed with `Maximum update depth exceeded` (Select trigger stack), followed by secondary React unmount errors.
+2. `/api/repo/runtime/deps` returned `500` for `desktop.nextStandalonePresent=false` even though doctor treated that condition as diagnostic-only.
+3. `forge-repo-studio doctor` output did not clearly guide runtime start/reclaim actions when runtime was stopped or ports were occupied.
+
+**Causes**:
+- Target-sync effects depended on non-memoized arrays and reset state with fresh object literals (`setEditedValues({})`) even when already empty.
+- Runtime deps route mixed hard readiness and diagnostics in one `ok/status` path.
+- Doctor runtime row was warning-only with no explicit quick-action command block.
+
+**Fix**:
+- Extracted pure target helpers (`deriveNextSelectedTargetId`, `shouldResetTargetState`) and switched Env workspace sync to memoized target lists + idempotent functional resets.
+- Added stale async load guard for target fetch races and normalized empty Select value to `undefined`.
+- Moved runtime dependency evaluation to `src/lib/runtime-deps-evaluator.ts`; route now always returns HTTP `200` with additive fields: `desktopRuntimeReady`, `desktopStandaloneReady`, `severity`.
+- Upgraded doctor runtime section with deterministic quick actions:
+  - stopped (expected): start commands,
+  - running: URL + stop command,
+  - port listener conflict: reclaim command flow.
+- Added optional doctor link suppression flag: `--no-links` (OSC8 links stay rich-mode-only).
+
+**Guardrails**:
+- New tests:
+  - `apps/repo-studio/__tests__/env/env-target-state.test.mjs`
+  - `apps/repo-studio/__tests__/api/runtime-deps-route.test.mjs`
+  - `packages/repo-studio/src/__tests__/doctor-runtime-hints.test.mjs`
+  - `packages/repo-studio/src/__tests__/terminal-format-links.test.mjs`
+- Note: Next route files cannot export extra symbols beyond route handler contracts; shared evaluators must live in separate modules (e.g. `runtime-deps-evaluator.ts`).
+
+---
+
+## Repo Studio workspace overload + assistant context UX mismatch (2026-02-23)
+
+**Problems**:
+1. Repo Studio surfaced too many panels at once and behaved unlike a focused workspace app.
+2. Codex auth/session controls were embedded as a large setup card inside assistant content.
+3. Assistant context still relied on panel-side "Attach To Assistant" actions instead of chat-input mentions.
+4. Terminal panel did not provide a true interactive shell workflow.
+
+**Causes**:
+- Global visibility model + static tab labeling encouraged panel sprawl instead of workspace-focused presets.
+- Codex setup was implemented as in-panel status card instead of app-bar controls.
+- Legacy attachment actions remained in code/diff/git/story/review surfaces after mention-model direction was chosen.
+- Terminal UI lacked persistent session APIs (start/stream/input/resize/stop).
+
+**Fix**:
+- Added workspace preset contracts and per-workspace hidden-panel maps; main tabs now render true workspace tabs with open/close/switch behavior.
+- Moved Codex controls to compact app-bar actions (`Sign In`, `Refresh`, `Start/Stop`) with status surfaced via concise UI affordances.
+- Adopted mention-first assistant context:
+  - per-loop/per-assistant system prompts in settings,
+  - `@planning/...` mention parsing/resolution in assistant chat route,
+  - removed panel-level attach-context actions and related planning-attachment coupling.
+- Replaced terminal panel with interactive `xterm` client backed by terminal session API routes and server-side session manager.
+- Added sidebar close hardening (`X` button + `Esc`) and panel overflow fixes (`min-h-0` / `overflow-auto`).
+
+**Guardrails**:
+- Added workspace preset regression tests and mention-context parsing tests.
+- Added terminal route API tests and style-pipeline compile test coverage.
+
+---
+
+## Repo Studio build hash/runtime terminal hardening follow-up (2026-02-23)
+
+**Problems**:
+1. `pnpm --filter @forge/repo-studio-app build` failed on Node 24 with webpack `WasmHash` crash (`TypeError: Cannot read properties of undefined (reading 'length')`).
+2. Terminal session start route could return `500` when `node-pty` spawn/init failed in constrained test/runtime contexts.
+3. Strict type-checking surfaced implicit-any callbacks in shared docs sidebar (`DocsSidebar.tsx`), blocking app build.
+
+**Causes**:
+- Webpack wasm hash path instability under this environment’s Node 24 runtime.
+- PTY startup path threw without fallback, so route-level catch returned `500`.
+- Untyped callback parameters in `.some(...)` calls under strict TS settings.
+
+**Fix**:
+- Added Repo Studio webpack override in `apps/repo-studio/next.config.ts`:
+  - `config.output.hashFunction = 'sha256'`
+  - Avoids wasm hash path and restores deterministic build behavior on Node 24.
+- Hardened terminal session startup in `apps/repo-studio/src/lib/terminal-session.ts`:
+  - Added degraded fallback PTY mode when `node-pty` fails.
+  - Start route now returns `200` with fallback metadata/message instead of hard `500`.
+  - Terminal UI surfaces fallback status/reason.
+- Typed docs sidebar callbacks in `packages/shared/src/shared/components/docs/DocsSidebar.tsx` to remove implicit-any build failures.
+
+**Guardrails**:
+- Re-ran API tests to confirm terminal route behavior in fallback scenarios.
+- Re-ran full Repo Studio app build to ensure strict type + build pipeline stays green.
 
 ---
 

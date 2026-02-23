@@ -16,6 +16,10 @@ import { runCodexStatus } from './commands/codex-status.mjs';
 import { runCodexStart } from './commands/codex-start.mjs';
 import { runCodexStop } from './commands/codex-stop.mjs';
 import { runCodexExecCommand } from './commands/codex-exec.mjs';
+import { runCodexLoginCommand } from './commands/codex-login.mjs';
+import { runProcesses } from './commands/processes.mjs';
+import { runReclaim } from './commands/reclaim.mjs';
+import { shouldUseAnsiOutput } from './lib/terminal-format.mjs';
 
 function usage() {
   fs.writeSync(1, `forge-repo-studio v0.1
@@ -25,14 +29,17 @@ Usage:
 
 Commands:
   open [--profile forge-agent|forge-loop|custom] [--mode local|preview|production|headless] [--view planning|env|commands|docs|loop-assistant|codex-assistant|diff|story|git|code|review-queue] [--port <n>] [--app-runtime|--package-runtime|--desktop-runtime] [--reuse|--no-reuse] [--detach|--foreground] [--desktop-dev] [--legacy-ui]
-  doctor
+  doctor [--require-codex-login] [--no-links] [--plain] [--json]
   commands-list
   commands-toggle <command-id> [--enable|--disable]
   commands-view [--query <text>] [--source <all|forge-builtins|root-scripts|workspace-scripts>] [--status <all|allowed|blocked>] [--tab <recommended|all|blocked>] [--sort <id|source|command>]
   codex-status
+  codex-login
   codex-start [--ws-port <n>] [--reuse|--no-reuse]
   codex-stop
   codex-exec [--prompt <text>]
+  processes [--scope repo-studio|repo] [--json] [--plain]
+  reclaim [--scope repo-studio|repo] [--dry-run] [--force] [--json] [--plain]
   status
   stop [--app-runtime|--package-runtime|--desktop-runtime]
   run <command-id> [--confirm]
@@ -44,14 +51,24 @@ function printLine(stream, text = '') {
   fs.writeSync(fd, `${text}\n`);
 }
 
-function printResult(result, asJson = false, stream = 'stdout') {
+function printResult(result, options = {}) {
+  const asJson = options.asJson === true;
+  const stream = options.stream || 'stdout';
+  const useAnsi = shouldUseAnsiOutput({
+    plain: options.plain === true,
+    asJson,
+    stream,
+  });
   if (!result) return;
   if (asJson) {
     printLine(stream, JSON.stringify(result, null, 2));
     return;
   }
   if (result.message) printLine(stream, result.message);
-  if (result.report) printLine(stream, result.report);
+  const report = useAnsi && result.reportAnsi
+    ? result.reportAnsi
+    : result.report;
+  if (report) printLine(stream, report);
   if (result.url) printLine(stream, `url: ${result.url}`);
   if (result.pid) printLine(stream, `pid: ${result.pid}`);
   if (result.mode) printLine(stream, `mode: ${result.mode}`);
@@ -69,6 +86,7 @@ export async function runRepoStudioCli(argv = process.argv.slice(2)) {
 
   const { positional, flags } = parseArgs(argv.slice(1));
   const asJson = flags.has('json');
+  const plain = flags.has('plain');
   let result;
 
   if (command === 'open') {
@@ -91,7 +109,10 @@ export async function runRepoStudioCli(argv = process.argv.slice(2)) {
       runtimeChild: flags.has('runtime-child'),
     });
   } else if (command === 'doctor') {
-    result = await runDoctor();
+    result = await runDoctor({
+      requireCodexLogin: flags.has('require-codex-login'),
+      noLinks: flags.has('no-links'),
+    });
   } else if (command === 'commands-list') {
     result = await runCommandsList();
   } else if (command === 'commands-toggle') {
@@ -109,6 +130,8 @@ export async function runRepoStudioCli(argv = process.argv.slice(2)) {
     });
   } else if (command === 'codex-status') {
     result = await runCodexStatus();
+  } else if (command === 'codex-login') {
+    result = await runCodexLoginCommand();
   } else if (command === 'codex-start') {
     result = await runCodexStart({
       wsPort: flags.get('ws-port'),
@@ -122,6 +145,16 @@ export async function runRepoStudioCli(argv = process.argv.slice(2)) {
     });
   } else if (command === 'status') {
     result = await runStatus();
+  } else if (command === 'processes') {
+    result = await runProcesses({
+      scope: flags.get('scope'),
+    });
+  } else if (command === 'reclaim') {
+    result = await runReclaim({
+      scope: flags.get('scope'),
+      dryRun: flags.has('dry-run'),
+      force: flags.has('force'),
+    });
   } else if (command === 'stop') {
     result = await runStop({
       appRuntime: flags.has('app-runtime'),
@@ -138,7 +171,11 @@ export async function runRepoStudioCli(argv = process.argv.slice(2)) {
   }
 
   const outputStream = command === 'open' ? 'stderr' : 'stdout';
-  printResult(result, asJson, outputStream);
+  printResult(result, {
+    asJson,
+    stream: outputStream,
+    plain,
+  });
   return { exitCode: result?.ok === false ? 1 : 0 };
 }
 

@@ -31,7 +31,8 @@ export interface PanelTabProps {
   children?: React.ReactNode;
 }
 
-function PanelTab(_props: PanelTabProps) {
+/** Tab marker component for declarative PanelTabs children. Exported so declaration emit can reference it (EditorDockPanel.Tab). */
+export function PanelTab(_props: PanelTabProps) {
   return null;
 }
 PanelTab.displayName = 'PanelTabs.Tab';

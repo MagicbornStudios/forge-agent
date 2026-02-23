@@ -54,7 +54,7 @@ function shouldRenderNode(node: Node, query: string): boolean {
   if (isItem(node)) return matchesLabel(node.name, query, node.url);
   if (isFolder(node)) {
     if (matchesLabel(node.name, query, resolveFolderUrl(node) ?? '')) return true;
-    return node.children.some((child) => shouldRenderNode(child, query));
+    return node.children.some((child: Node) => shouldRenderNode(child, query));
   }
   return false;
 }
@@ -223,7 +223,7 @@ export function DocsSidebar({ serializedTree, baseUrl = '/docs' }: DocsSidebarPr
                 openMap={openMap}
                 onToggleFolder={onToggleFolder}
               />
-              {normalizedQuery.length > 0 && !tree.children.some((node) => shouldRenderNode(node, normalizedQuery)) ? (
+              {normalizedQuery.length > 0 && !tree.children.some((node: Node) => shouldRenderNode(node, normalizedQuery)) ? (
                 <p className="px-3 py-2 text-xs text-muted-foreground">No results for "{query}"</p>
               ) : null}
             </SidebarMenu>

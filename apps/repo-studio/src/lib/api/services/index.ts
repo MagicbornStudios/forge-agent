@@ -13,3 +13,4 @@ export * from './runtime';
 export * from './search';
 export * from './settings';
 export * from './story';
+export * from './terminal';

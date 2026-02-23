@@ -4,6 +4,10 @@ import { createUIMessageStream, createUIMessageStreamResponse } from 'ai';
 import { runRepoStudioCli } from '@/lib/cli-runner';
 import { runLocalLoopAssistant } from '@/lib/loop-assistant-chat';
 import { resolveLoopAssistantEndpoint } from '@/lib/loop-assistant-runtime';
+import { resolvePlanningMentionContext } from '@/lib/assistant/mention-context';
+import { loadRepoStudioSnapshot } from '@/lib/repo-data';
+import { resolveRepoRoot } from '@/lib/repo-files';
+import { getRepoSettingsSnapshot } from '@/lib/settings/repository';
 import {
   readRepoStudioConfig,
   resolveCodexAssistantRoute,
@@ -76,6 +80,143 @@ function codexExec(prompt: string) {
     ok: exec.ok && payload.ok !== false,
     payload,
     stderr: exec.stderr,
+  };
+}
+
+function normalizeLoopId(value: unknown) {
+  const normalized = String(value || '').trim().toLowerCase();
+  return normalized || 'default';
+}
+
+function assistantPromptKey(editorTarget: 'loop-assistant' | 'codex-assistant') {
+  return editorTarget === 'codex-assistant' ? 'codexAssistant' : 'loopAssistant';
+}
+
+async function resolveAssistantSystemPrompt(input: {
+  editorTarget: 'loop-assistant' | 'codex-assistant';
+  workspaceId?: string;
+  loopId: string;
+}) {
+  try {
+    const snapshot = await getRepoSettingsSnapshot({
+      workspaceId: String(input.workspaceId || 'planning'),
+      loopId: input.loopId,
+    });
+    const merged = (snapshot?.merged && typeof snapshot.merged === 'object')
+      ? snapshot.merged as Record<string, any>
+      : {};
+    const prompts = merged.assistant?.prompts && typeof merged.assistant.prompts === 'object'
+      ? merged.assistant.prompts as Record<string, any>
+      : {};
+    const byLoop = prompts.byLoop && typeof prompts.byLoop === 'object'
+      ? prompts.byLoop as Record<string, any>
+      : {};
+    const promptKey = assistantPromptKey(input.editorTarget);
+    const byLoopPrompt = String(byLoop?.[input.loopId]?.[promptKey] || '').trim();
+    if (byLoopPrompt) return byLoopPrompt;
+    const fallbackPrompt = String(prompts?.[promptKey] || '').trim();
+    return fallbackPrompt || '';
+  } catch {
+    return '';
+  }
+}
+
+function updateLatestUserMessage(messages: any[], text: string) {
+  const next = Array.isArray(messages) ? [...messages] : [];
+  for (let index = next.length - 1; index >= 0; index -= 1) {
+    const message = next[index];
+    if (!message || typeof message !== 'object') continue;
+    if (String(message.role || '') !== 'user') continue;
+    if (typeof message.content === 'string') {
+      next[index] = { ...message, content: text };
+      return next;
+    }
+    if (Array.isArray(message.content)) {
+      const content = [...message.content];
+      const textIndex = content.findIndex((part) => part?.type === 'text');
+      if (textIndex >= 0) {
+        content[textIndex] = { ...content[textIndex], text };
+      } else {
+        content.push({ type: 'text', text });
+      }
+      next[index] = { ...message, content };
+      return next;
+    }
+    next[index] = { ...message, content: text };
+    return next;
+  }
+  return next.length > 0
+    ? [...next, { role: 'user', content: text }]
+    : [{ role: 'user', content: text }];
+}
+
+function buildEnrichedPrompt(input: {
+  userPrompt: string;
+  systemPrompt: string;
+  mentionContext: string;
+}) {
+  const basePrompt = String(input.userPrompt || '').trim();
+  if (!basePrompt) return '';
+  const systemPrompt = String(input.systemPrompt || '').trim();
+  const mentionContext = String(input.mentionContext || '').trim();
+  if (!systemPrompt && !mentionContext) return basePrompt;
+  const parts: string[] = [];
+  if (systemPrompt) {
+    parts.push('## Assistant System Prompt');
+    parts.push(systemPrompt);
+  }
+  if (mentionContext) {
+    parts.push(mentionContext);
+  }
+  parts.push('## User Prompt');
+  parts.push(basePrompt);
+  return parts.join('\n\n');
+}
+
+async function buildAssistantRequestContext(input: {
+  body: any;
+  editorTarget: 'loop-assistant' | 'codex-assistant';
+}) {
+  const loopId = normalizeLoopId(input.body?.loopId);
+  const userPrompt = extractPrompt(input.body);
+  const systemPrompt = await resolveAssistantSystemPrompt({
+    editorTarget: input.editorTarget,
+    workspaceId: String(input.body?.workspaceId || 'planning'),
+    loopId,
+  });
+
+  let mentionContext = '';
+  if (userPrompt.includes('@planning/')) {
+    try {
+      const snapshot = await loadRepoStudioSnapshot(resolveRepoRoot(), { loopId });
+      mentionContext = resolvePlanningMentionContext({
+        text: userPrompt,
+        docs: snapshot.planning.docs,
+      }).contextBlock;
+    } catch {
+      mentionContext = '';
+    }
+  }
+
+  const enrichedPrompt = buildEnrichedPrompt({
+    userPrompt,
+    systemPrompt,
+    mentionContext,
+  });
+
+  const body = enrichedPrompt
+    ? {
+        ...input.body,
+        input: enrichedPrompt,
+        prompt: enrichedPrompt,
+        messages: updateLatestUserMessage(input.body?.messages, enrichedPrompt),
+      }
+    : input.body;
+
+  return {
+    body,
+    loopId,
+    prompt: enrichedPrompt || userPrompt,
   };
 }
 
@@ -197,8 +338,10 @@ async function runCodexPath(input: {
   url: URL;
   body: any;
   editorTarget: string;
+  prompt: string;
+  loopId: string;
 }) {
-  const prompt = extractPrompt(input.body);
+  const prompt = String(input.prompt || '').trim();
   if (!prompt) {
     return NextResponse.json({ error: 'No user prompt found for Codex execution.' }, { status: 400 });
   }
@@ -221,13 +364,13 @@ async function runCodexPath(input: {
     const turn = await startCodexTurn({
       prompt,
       messages: input.body?.messages,
-      loopId: String(input.body?.loopId || 'default'),
+      loopId: input.loopId,
       editorTarget: input.editorTarget,
       domain: String(input.body?.domain || '').trim().toLowerCase(),
       scopeOverrideToken: String(input.body?.scopeOverrideToken || '').trim(),
       scopeRoots: (await resolveScopeGuardContext({
         domain: String(input.body?.domain || '').trim().toLowerCase(),
-        loopId: String(input.body?.loopId || 'default'),
+        loopId: input.loopId,
         overrideToken: String(input.body?.scopeOverrideToken || '').trim(),
       })).allowedRoots,
     });
@@ -282,13 +425,20 @@ export async function POST(request: Request) {
   const rawBody = await request.text();
   const parsedBody = parseBody(rawBody);
   const editorTarget = editorFromRequest(url, parsedBody, config);
+  const requestContext = await buildAssistantRequestContext({
+    body: parsedBody,
+    editorTarget,
+  });
+  const requestBody = requestContext.body;
 
   if (editorTarget === 'codex-assistant') {
     return runCodexPath({
       config,
       url,
-      body: parsedBody,
+      body: requestBody,
       editorTarget: 'codex-assistant',
+      prompt: requestContext.prompt,
+      loopId: requestContext.loopId,
     });
   }
 
@@ -305,7 +455,7 @@ export async function POST(request: Request) {
 
   if (loopRoute.local === true || !loopRoute.endpoint) {
     return runLocalLoopAssistant({
-      body: parsedBody,
+      body: requestBody,
       editorTarget: 'loop-assistant',
     });
   }
@@ -316,7 +466,7 @@ export async function POST(request: Request) {
       'content-type': request.headers.get('content-type') || 'application/json',
       accept: request.headers.get('accept') || '*/*',
     },
-    body: rawBody,
+    body: JSON.stringify(requestBody),
   });
 
   return new Response(upstream.body, {

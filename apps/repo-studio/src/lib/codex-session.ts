@@ -12,6 +12,7 @@ import {
   type RepoProposal,
   upsertPendingProposal,
 } from '@/lib/proposals';
+import { resolveRepoRoot } from '@/lib/repo-files';
 import { enforceScopeGuard } from '@/lib/scope-guard';
 import { recordReviewQueueAutoApply, resolveReviewQueueTrustMode } from '@/lib/proposals/trust-mode';
 
@@ -115,6 +116,12 @@ type CodexConfig = {
   execFallbackAllowed: boolean;
 };
 
+type CodexInvocation = {
+  command: string;
+  args: string[];
+  source: string;
+};
+
 type ConfigShape = {
   assistant?: {
     codex?: {
@@ -127,7 +134,9 @@ type ConfigShape = {
   };
 };
 
-const CODEX_SESSION_META_PATH = path.join(process.cwd(), '..', '..', '.repo-studio', 'codex-session.json');
+function getCodexSessionMetaPath() {
+  return path.join(resolveRepoRoot(), '.repo-studio', 'codex-session.json');
+}
 
 declare global {
   // eslint-disable-next-line no-var
@@ -136,10 +145,6 @@ declare global {
 
 function nowIso() {
   return new Date().toISOString();
-}
-
-function resolveRepoRoot() {
-  return path.resolve(process.cwd(), '..', '..');
 }
 
 function messageToText(value: unknown): string {
@@ -294,6 +299,30 @@ function runCodexStatusCheck() {
   };
 }
 
+function normalizeCodexInvocation(raw: unknown, fallbackCommand: string): CodexInvocation {
+  if (raw && typeof raw === 'object') {
+    const record = raw as Record<string, unknown>;
+    const command = String(record.command || '').trim();
+    const args = Array.isArray(record.args)
+      ? record.args.map((value) => String(value || '').trim()).filter(Boolean)
+      : [];
+    const source = String(record.source || '').trim() || 'configured';
+    if (command) {
+      return {
+        command,
+        args,
+        source,
+      };
+    }
+  }
+
+  return {
+    command: String(fallbackCommand || 'codex').trim() || 'codex',
+    args: [],
+    source: 'configured',
+  };
+}
+
 async function persistSessionMetadata(session: CodexSessionState | null, extra: Record<string, unknown> = {}) {
   const payload = session ? {
     sessionId: session.sessionId,
@@ -317,8 +346,9 @@ async function persistSessionMetadata(session: CodexSessionState | null, extra: 
     ...extra,
   };
 
-  await fs.mkdir(path.dirname(CODEX_SESSION_META_PATH), { recursive: true });
-  await fs.writeFile(CODEX_SESSION_META_PATH, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+  const metaPath = getCodexSessionMetaPath();
+  await fs.mkdir(path.dirname(metaPath), { recursive: true });
+  await fs.writeFile(metaPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
 }
 
 function getGlobalSession() {
@@ -593,18 +623,22 @@ function notify(session: CodexSessionState, method: string, params: Record<strin
   writeLine(session, { method, params });
 }
 
-function spawnCodexAppServer(cliCommand: string) {
+function spawnCodexAppServer(invocation: CodexInvocation) {
   const repoRoot = resolveRepoRoot();
+  const args = [...invocation.args, 'app-server'];
   if (process.platform === 'win32') {
-    return spawn('cmd.exe', ['/d', '/s', '/c', `${cliCommand} app-server`], {
-      cwd: repoRoot,
-      stdio: ['pipe', 'pipe', 'pipe'],
-      windowsHide: true,
-    });
+    if (invocation.command === 'codex' && invocation.args.length === 0) {
+      return spawn('cmd.exe', ['/d', '/s', '/c', `${invocation.command} app-server`], {
+        cwd: repoRoot,
+        stdio: ['pipe', 'pipe', 'pipe'],
+        windowsHide: true,
+      });
+    }
   }
-  return spawn(cliCommand, ['app-server'], {
+  return spawn(invocation.command, args, {
     cwd: repoRoot,
     stdio: ['pipe', 'pipe', 'pipe'],
+    windowsHide: process.platform === 'win32',
   });
 }
 
@@ -686,7 +720,11 @@ export async function ensureCodexSession() {
     };
   }
 
-  const child = spawnCodexAppServer(codexConfig.cliCommand);
+  const invocation = normalizeCodexInvocation(
+    readiness.payload?.readiness?.cli?.invocation,
+    codexConfig.cliCommand,
+  );
+  const child = spawnCodexAppServer(invocation);
   const session: CodexSessionState = {
     sessionId: randomUUID(),
     process: child,
@@ -700,6 +738,7 @@ export async function ensureCodexSession() {
     pendingApprovals: new Map(),
     diagnostics: [],
   };
+  session.diagnostics.push(`codex-invocation: ${invocation.command} ${invocation.args.join(' ')}`.trim());
 
   const stdoutLines = createInterface({ input: child.stdout });
   stdoutLines.on('line', (line) => {

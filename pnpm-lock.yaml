@@ -352,6 +352,12 @@ importers:
       '@payloadcms/next':
         specifier: ^3.74.0
         version: 3.74.0(@types/react@19.2.11)(graphql@16.12.0)(monaco-editor@0.55.1)(next@15.5.9(@opentelemetry/api@1.9.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.77.4))(payload@3.74.0(graphql@16.12.0)(typescript@5.8.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.8.3)
+      '@xterm/addon-fit':
+        specifier: ^0.10.0
+        version: 0.10.0(@xterm/xterm@5.5.0)
+      '@xterm/xterm':
+        specifier: ^5.5.0
+        version: 5.5.0
       ai:
         specifier: ^6.0.34
         version: 6.0.75(zod@4.3.6)
@@ -367,6 +373,9 @@ importers:
       next:
         specifier: 15.5.9
         version: 15.5.9(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.77.4)
+      node-pty:
+        specifier: ^1.0.0
+        version: 1.1.0
       payload:
         specifier: ^3.74.0
         version: 3.74.0(graphql@16.12.0)(typescript@5.8.3)
@@ -379,13 +388,13 @@ importers:
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@4.1.18)
-      tw-animate-css:
-        specifier: ^1.3.7
-        version: 1.4.0
       zustand:
         specifier: ^5.0.9
         version: 5.0.11(@types/react@19.2.11)(immer@11.1.3)(react@19.2.4)(use-sync-external-store@1.6.0(react@19.2.4))
     devDependencies:
+      '@tailwindcss/postcss':
+        specifier: ^4.0.0
+        version: 4.1.18
       '@types/node':
         specifier: ^22
         version: 22.19.8
@@ -401,6 +410,12 @@ importers:
       eslint-config-next:
         specifier: 15.5.9
         version: 15.5.9(eslint@9.39.2(jiti@2.6.1))(typescript@5.8.3)
+      postcss:
+        specifier: 8.4.49
+        version: 8.4.49
+      postcss-load-config:
+        specifier: ^6.0.1
+        version: 6.0.1(jiti@2.6.1)(postcss@8.4.49)(tsx@4.21.0)(yaml@2.8.2)
       tailwindcss:
         specifier: ^4.0.0
         version: 4.1.18
@@ -868,6 +883,9 @@ importers:
 
   packages/repo-studio:
     dependencies:
+      '@openai/codex':
+        specifier: ^0.104.0
+        version: 0.104.0
       chokidar:
         specifier: ^4.0.3
         version: 4.0.3
@@ -5052,6 +5070,47 @@ packages:
     resolution: {integrity: sha512-/xGlezI6xfGO9NwuJlnwz/K14qD1kCSAGtacBHnGzeAIuJGazcp45KP5NuyARXoKb7cwulAGWVsbeSxdG/cb0Q==}
     engines: {node: ^18.17.0 || >=20.5.0}
 
+  '@openai/codex@0.104.0':
+    resolution: {integrity: sha512-pPa2VGHozwjPsPOYAEXcH7nNt1QH7AZR8zV8jYx6BFi1LJlmJkan2rvIS4MYbPdi2O6cd5kWfPCAHE0fEV2ifA==}
+    engines: {node: '>=16'}
+    hasBin: true
+
+  '@openai/codex@0.104.0-darwin-arm64':
+    resolution: {integrity: sha512-Y+lifRKAgNSBcaIM5UXXYnGWAJrPORPXABZBCxxiwwB8/XzZRDwp3K+X5i7dT0GfKScGFXuul6sJ2sVSPL4w4A==}
+    engines: {node: '>=16'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@openai/codex@0.104.0-darwin-x64':
+    resolution: {integrity: sha512-TwQ9zj0XbSrtCxFWKnnSQfmWmKhNMx1rSpSaSrLNSFVohxRwOWUZ2GBciO6jCLEiJvswR6nTMy1mA0n7MyVJiw==}
+    engines: {node: '>=16'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@openai/codex@0.104.0-linux-arm64':
+    resolution: {integrity: sha512-3oBBjMaCnhGfijsklOzVqG0LH/IFWoDnRJkvFl1utMI+GJECUr37uL/KsSFTuC2kIjham6U57dAK6xQnQxqxPQ==}
+    engines: {node: '>=16'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@openai/codex@0.104.0-linux-x64':
+    resolution: {integrity: sha512-vhYaWsEwZmxZbeu5u9/k3VO1F4aTMYaTCebRgdzux7bfeDw2nms1SAcP+AkfCStqVSz26yaPGbwcUMqaknW4gQ==}
+    engines: {node: '>=16'}
+    cpu: [x64]
+    os: [linux]
+
+  '@openai/codex@0.104.0-win32-arm64':
+    resolution: {integrity: sha512-2ypuM6yWcjAtq7DmEgFBsmtw7rWLcoy6Cxaq+Hn8dZfEdijASyc59AzyWhWLKYLuOxcprFn/oQitElrpPD9JOA==}
+    engines: {node: '>=16'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@openai/codex@0.104.0-win32-x64':
+    resolution: {integrity: sha512-awyNLtfbTbj+2JzgsAIm+KFrxeAmxe/Fuqw/ZwBj8ljtO7SQWTT3kxDbf7iuA7E7IErGlQw/plgFgq/LJdsacg==}
+    engines: {node: '>=16'}
+    cpu: [x64]
+    os: [win32]
+
   '@opentelemetry/api-logs@0.208.0':
     resolution: {integrity: sha512-CjruKY9V6NMssL/T1kAFgzosF1v9o6oeN+aX5JB/C/xPNtmgIJqcXHG7fA82Ou1zCpWGl4lROQUKwUNE1pMCyg==}
     engines: {node: '>=8.0.0'}
@@ -7699,6 +7758,14 @@ packages:
   '@xmldom/xmldom@0.9.8':
     resolution: {integrity: sha512-p96FSY54r+WJ50FIOsCOjyj/wavs8921hG5+kVMmZgKcvIKxMXHTrjNJvRgWa/zuX3B6t2lijLNFaOyuxUH+2A==}
     engines: {node: '>=14.6'}
+
+  '@xterm/addon-fit@0.10.0':
+    resolution: {integrity: sha512-UFYkDm4HUahf2lnEyHvio51TNGiLK66mqP2JoATy7hRZeXaGMRDr00JiSF7m63vR5WKATF605yEggJKsw0JpMQ==}
+    peerDependencies:
+      '@xterm/xterm': ^5.0.0
+
+  '@xterm/xterm@5.5.0':
+    resolution: {integrity: sha512-hqJHYaQb5OptNunnyAnkHyM8aCjZ1MEIDTQu1iIbbTD/xops91NB5yq1ZK/dC2JDbVWtF23zUtl9JE2NqwT87A==}
 
   '@xtuc/ieee754@1.2.0':
     resolution: {integrity: sha512-DX8nKgqcGwsc0eJSqYt5lwP4DH5FlHnmuWWBRy7X0NcaGR0ZtuyeESgMwTYVEtxmsNGY+qit4QYT/MIYTOTPeA==}
@@ -13081,6 +13148,9 @@ packages:
   node-addon-api@4.3.0:
     resolution: {integrity: sha512-73sE9+3UaLYYFmDsFZnqCInzPyh3MqIwZO9cw58yIqAZhONrrabrYyYe3TuIqtIiOuTXVhsGau8hcrhhwSsDIQ==}
 
+  node-addon-api@7.1.1:
+    resolution: {integrity: sha512-5m3bsyrjFWE1xf7nz7YXdN4udnVtXK6/Yfgn5qnahL6bCkf2yKt4k3nuTKAtT4r3IG8JNR2ncsIMdZuAzJjHQQ==}
+
   node-addon-api@8.5.0:
     resolution: {integrity: sha512-/bRZty2mXUIFY/xU5HLvveNHlswNJej+RnxBjOMkidWfwZzgTbPG1E3K5TOxRLOR+5hX7bSofy8yf1hZevMS8A==}
     engines: {node: ^18 || ^20 || >= 21}
@@ -13138,6 +13208,9 @@ packages:
 
   node-int64@0.4.0:
     resolution: {integrity: sha512-O5lz91xSOeoXP6DulyHfllpq+Eg00MWitZIbtPfoSEvqIHdl5gfcY6hYzDWnj0qD5tz52PI08u9qUvSVeUBeHw==}
+
+  node-pty@1.1.0:
+    resolution: {integrity: sha512-20JqtutY6JPXTUnL0ij1uad7Qe1baT46lyolh2sSENDd4sTzKZ4nmAFkeAARDKwmlLjPx6XKRlwRUxwjOy+lUg==}
 
   node-releases@2.0.27:
     resolution: {integrity: sha512-nmh3lCkYZ3grZvqcCH+fjmQ7X+H0OeZgP40OierEaAptX4XofMh5kwNbWh7lBduUzCcV/8kZ+NDLCwm2iorIlA==}
@@ -21887,6 +21960,33 @@ snapshots:
     dependencies:
       semver: 7.7.3
 
+  '@openai/codex@0.104.0':
+    optionalDependencies:
+      '@openai/codex-darwin-arm64': '@openai/codex@0.104.0-darwin-arm64'
+      '@openai/codex-darwin-x64': '@openai/codex@0.104.0-darwin-x64'
+      '@openai/codex-linux-arm64': '@openai/codex@0.104.0-linux-arm64'
+      '@openai/codex-linux-x64': '@openai/codex@0.104.0-linux-x64'
+      '@openai/codex-win32-arm64': '@openai/codex@0.104.0-win32-arm64'
+      '@openai/codex-win32-x64': '@openai/codex@0.104.0-win32-x64'
+
+  '@openai/codex@0.104.0-darwin-arm64':
+    optional: true
+
+  '@openai/codex@0.104.0-darwin-x64':
+    optional: true
+
+  '@openai/codex@0.104.0-linux-arm64':
+    optional: true
+
+  '@openai/codex@0.104.0-linux-x64':
+    optional: true
+
+  '@openai/codex@0.104.0-win32-arm64':
+    optional: true
+
+  '@openai/codex@0.104.0-win32-x64':
+    optional: true
+
   '@opentelemetry/api-logs@0.208.0':
     dependencies:
       '@opentelemetry/api': 1.9.0
@@ -26033,6 +26133,12 @@ snapshots:
   '@xmldom/xmldom@0.8.11': {}
 
   '@xmldom/xmldom@0.9.8': {}
+
+  '@xterm/addon-fit@0.10.0(@xterm/xterm@5.5.0)':
+    dependencies:
+      '@xterm/xterm': 5.5.0
+
+  '@xterm/xterm@5.5.0': {}
 
   '@xtuc/ieee754@1.2.0': {}
 
@@ -33120,6 +33226,8 @@ snapshots:
   node-addon-api@4.3.0:
     optional: true
 
+  node-addon-api@7.1.1: {}
+
   node-addon-api@8.5.0:
     optional: true
 
@@ -33180,6 +33288,10 @@ snapshots:
       - supports-color
 
   node-int64@0.4.0: {}
+
+  node-pty@1.1.0:
+    dependencies:
+      node-addon-api: 7.1.1
 
   node-releases@2.0.27: {}
 

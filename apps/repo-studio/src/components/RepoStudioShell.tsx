@@ -1,13 +1,24 @@
+﻿
 'use client';
 
 import * as React from 'react';
-import { BookOpen, Bot, GitCompareArrows, LayoutPanelTop, ShieldCheck, TerminalSquare, Wrench } from 'lucide-react';
+import {
+  BookOpen,
+  Bot,
+  GitCompareArrows,
+  LayoutPanelTop,
+  ShieldCheck,
+  TerminalSquare,
+  Wrench,
+  X,
+} from 'lucide-react';
 import { StudioApp } from '@forge/shared/components/app';
 import {
   EditorDockLayout,
   EditorMenubar,
   type DockLayoutRef,
 } from '@forge/shared/components/editor';
+import { Button } from '@forge/ui/button';
 import {
   Sidebar,
   SidebarContent,
@@ -19,31 +30,27 @@ import {
 import { toErrorMessage } from '@/lib/api/http';
 import {
   fetchCommandsModel,
-  fetchRepoAuthStatus,
-  fetchLoopSnapshot,
-  fetchRuntimeDependencies,
   fetchSettingsSnapshot,
-  connectRepoAuth,
-  disconnectRepoAuth,
-  runEnvDoctor as runEnvDoctorRequest,
-  runEnvReconcile as runEnvReconcileRequest,
   saveCommandView,
-  setActiveLoop as setActiveLoopRequest,
   stopRuntime,
   toggleCommandPolicy,
   upsertSettings,
-  validateRepoAuth,
 } from '@/lib/api/services';
-import type { DependencyHealth, RepoAuthStatusResponse, RepoMode } from '@/lib/api/types';
+import type { EnvDoctorPayload, RepoMode } from '@/lib/api/types';
 import type { PlanningSnapshot, RepoCommandEntry, RepoLoopsSnapshot } from '@/lib/repo-data';
-import type { RepoCommandView } from '@/lib/types';
+import type { RepoCommandView, RepoWorkspaceId } from '@/lib/types';
 import { getDesktopRuntimeBridge } from '@/lib/desktop-runtime';
 import { buildRepoWorkspaceMenus } from '@/lib/app-shell/menu-contributions';
 import { REPO_STUDIO_LAYOUT_ID, useRepoStudioShellStore } from '@/lib/app-shell/store';
+import { RepoStudioProvider } from '@/lib/app-shell/RepoStudioContext';
 import { useRepoPanelVisibility } from '@/lib/app-shell/useRepoPanelVisibility';
-import { usePlanningAttachments } from '@/components/hooks/usePlanningAttachments';
 import { useCommandFilters } from '@/components/hooks/useCommandFilters';
+import { useCommandOutput } from '@/components/hooks/useCommandOutput';
 import { useCommandRuns } from '@/components/hooks/useCommandRuns';
+import { useEnvDoctor } from '@/components/hooks/useEnvDoctor';
+import { usePlatformAuth } from '@/components/hooks/usePlatformAuth';
+import { usePlanningSync } from '@/components/hooks/usePlanningSync';
+import { RepoCodexControls } from '@/components/appbar/RepoCodexControls';
 import { LoopCadencePanel } from '@/components/features/planning/LoopCadencePanel';
 import { PlanningWorkspace } from '@/components/features/planning/PlanningWorkspace';
 import { EnvWorkspace } from '@/components/features/env/EnvWorkspace';
@@ -58,9 +65,44 @@ import { GitWorkspace } from '@/components/features/git/GitWorkspace';
 import { ReviewQueueWorkspace } from '@/components/features/review-queue/ReviewQueueWorkspace';
 import { RepoSettingsPanelContent } from '@/components/settings/RepoSettingsPanelContent';
 
+const WORKSPACE_LABELS: Record<RepoWorkspaceId, string> = {
+  planning: 'Planning',
+  env: 'Env',
+  commands: 'Commands',
+  story: 'Story',
+  docs: 'Docs',
+  git: 'Git',
+  'loop-assistant': 'Loop Assistant',
+  'codex-assistant': 'Codex Assistant',
+  diff: 'Diff',
+  code: 'Code',
+  'review-queue': 'Review Queue',
+};
+
 function copyText(text: string) {
   if (!text) return;
   navigator.clipboard?.writeText(text).catch(() => {});
+}
+
+function getAssistantPrompts(merged: Record<string, unknown>, loopId: string) {
+  const assistant = merged.assistant && typeof merged.assistant === 'object'
+    ? merged.assistant as Record<string, unknown>
+    : {};
+  const prompts = assistant.prompts && typeof assistant.prompts === 'object'
+    ? assistant.prompts as Record<string, unknown>
+    : {};
+  const byLoop = prompts.byLoop && typeof prompts.byLoop === 'object'
+    ? prompts.byLoop as Record<string, unknown>
+    : {};
+  const perLoop = byLoop[loopId] && typeof byLoop[loopId] === 'object'
+    ? byLoop[loopId] as Record<string, unknown>
+    : (byLoop.default && typeof byLoop.default === 'object'
+      ? byLoop.default as Record<string, unknown>
+      : {});
+  return {
+    loopAssistant: String(perLoop.loopAssistant || '').trim(),
+    codexAssistant: String(perLoop.codexAssistant || '').trim(),
+  };
 }
 
 export function RepoStudioShell({
@@ -75,22 +117,20 @@ export function RepoStudioShell({
   const layoutRef = React.useRef<DockLayoutRef | null>(null);
   const [profile, setProfile] = React.useState('forge-agent');
   const [mode, setMode] = React.useState<RepoMode>('local');
-  const [envOutput, setEnvOutput] = React.useState('Run "Doctor" to check environment readiness.');
-  const [envDoctorPayload, setEnvDoctorPayload] = React.useState<any | null>(null);
-  const [dependencyHealth, setDependencyHealth] = React.useState<DependencyHealth | null>(null);
-  const [platformBaseUrl, setPlatformBaseUrl] = React.useState('');
-  const [platformAutoValidate, setPlatformAutoValidate] = React.useState(true);
-  const [platformStatus, setPlatformStatus] = React.useState<RepoAuthStatusResponse | null>(null);
-  const [platformBusy, setPlatformBusy] = React.useState(false);
   const [reviewQueueTrustMode, setReviewQueueTrustMode] = React.useState<'require-approval' | 'auto-approve-all'>('require-approval');
   const [reviewQueueLastAutoApplyAt, setReviewQueueLastAutoApplyAt] = React.useState('');
-  const [planningSnapshot, setPlanningSnapshot] = React.useState(planning);
-  const [loopSnapshot, setLoopSnapshot] = React.useState(loops);
-  const [switchingLoop, setSwitchingLoop] = React.useState(false);
-  const [attachedDiffContext, setAttachedDiffContext] = React.useState<{ label: string; content: string } | null>(null);
+  const [loopAssistantPrompt, setLoopAssistantPrompt] = React.useState('');
+  const [codexAssistantPrompt, setCodexAssistantPrompt] = React.useState('');
+  const [selectedDocId, setSelectedDocId] = React.useState<string | null>(planning.docs[0]?.id || null);
 
   const activeWorkspaceId = useRepoStudioShellStore((state) => state.route.activeWorkspaceId);
+  const openWorkspaceIds = useRepoStudioShellStore((state) => state.route.openWorkspaceIds);
+  const workspaceHiddenPanelIds = useRepoStudioShellStore((state) => state.workspaceHiddenPanelIds);
   const setActiveWorkspace = useRepoStudioShellStore((state) => state.setActiveWorkspace);
+  const openWorkspace = useRepoStudioShellStore((state) => state.openWorkspace);
+  const closeWorkspace = useRepoStudioShellStore((state) => state.closeWorkspace);
+  const applyWorkspacePreset = useRepoStudioShellStore((state) => state.applyWorkspacePreset);
+  const setPanelVisibleForWorkspace = useRepoStudioShellStore((state) => state.setPanelVisibleForWorkspace);
   const settingsSidebarOpen = useRepoStudioShellStore((state) => state.settingsSidebarOpen);
   const setSettingsSidebarOpen = useRepoStudioShellStore((state) => state.setSettingsSidebarOpen);
   const layoutJson = useRepoStudioShellStore((state) => state.dockLayouts[REPO_STUDIO_LAYOUT_ID] || null);
@@ -98,6 +138,7 @@ export function RepoStudioShell({
   const clearDockLayout = useRepoStudioShellStore((state) => state.clearDockLayout);
   const replaceCommandView = useRepoStudioShellStore((state) => state.replaceCommandView);
   const replaceHiddenPanelIds = useRepoStudioShellStore((state) => state.replaceHiddenPanelIds);
+  const replaceWorkspaceHiddenPanelIds = useRepoStudioShellStore((state) => state.replaceWorkspaceHiddenPanelIds);
   const activeLoopId = useRepoStudioShellStore((state) => state.activeLoopId);
   const setActiveLoopId = useRepoStudioShellStore((state) => state.setActiveLoopId);
 
@@ -109,17 +150,6 @@ export function RepoStudioShell({
   } = useRepoPanelVisibility();
 
   const {
-    selectedDocId,
-    setSelectedDocId,
-    selectedDoc,
-    attachedDocs,
-    assistantContext,
-    detachDoc,
-    clearAttachedDocs,
-    attachSelectedDoc,
-  } = usePlanningAttachments(planningSnapshot.docs);
-
-  const {
     commandView,
     setCommandView,
     setCommandRows,
@@ -127,25 +157,12 @@ export function RepoStudioShell({
     filteredCommands,
   } = useCommandFilters(commands);
 
+  const { setCommandOutput } = useCommandOutput();
   const {
-    commandOutput,
-    setCommandOutput,
     confirmRuns,
     setConfirmRuns,
-    activeRun,
     runCommand,
-    stopActiveRun,
-  } = useCommandRuns();
-
-  const combinedAssistantContext = React.useMemo(
-    () => [
-      assistantContext,
-      attachedDiffContext
-        ? `### ${attachedDiffContext.label}\n\n\`\`\`diff\n${attachedDiffContext.content}\n\`\`\``
-        : '',
-    ].filter(Boolean).join('\n\n'),
-    [assistantContext, attachedDiffContext],
-  );
+  } = useCommandRuns(setCommandOutput);
 
   const persistLocalSettings = React.useCallback(async (settings: Record<string, unknown>) => {
     await upsertSettings({
@@ -157,51 +174,30 @@ export function RepoStudioShell({
     });
   }, [activeLoopId, activeWorkspaceId]);
 
-  const persistHiddenPanels = React.useCallback(() => {
-    const hiddenPanelIds = useRepoStudioShellStore.getState().hiddenPanelIds;
-    persistLocalSettings({
-      panels: {
-        hiddenPanelIds,
-      },
-    }).catch(() => {});
-  }, [persistLocalSettings]);
+  const {
+    platformBaseUrl,
+    setPlatformBaseUrl,
+    platformAutoValidate,
+    setPlatformAutoValidate,
+    platformStatus,
+    platformBusy,
+    updatePlatformBaseUrl,
+    updatePlatformAutoValidate,
+    connectPlatform,
+    validatePlatform,
+    disconnectPlatform,
+    refreshPlatformStatus,
+  } = usePlatformAuth(setCommandOutput, persistLocalSettings);
 
-  const setPanelVisibleAndPersist = React.useCallback((panelId: string, visible: boolean) => {
-    setVisibleByPanelId(panelId, visible);
-    persistHiddenPanels();
-  }, [persistHiddenPanels, setVisibleByPanelId]);
-
-  const restorePanelsAndPersist = React.useCallback(() => {
-    restoreAllPanels();
-    persistHiddenPanels();
-  }, [persistHiddenPanels, restoreAllPanels]);
-
-  const refreshCommands = React.useCallback(async () => {
-    const payload = await fetchCommandsModel();
-    if (Array.isArray(payload.commands)) {
-      setCommandRows(payload.commands as Parameters<typeof setCommandRows>[0]);
-    }
-    if (payload.commandView && typeof payload.commandView === 'object') {
-      replaceCommandView(payload.commandView as RepoCommandView);
-    }
-  }, [replaceCommandView, setCommandRows]);
-
-  const refreshDependencyHealth = React.useCallback(async () => {
-    const payload = await fetchRuntimeDependencies();
-    if (payload?.deps) {
-      setDependencyHealth(payload.deps as DependencyHealth);
-    } else {
-      setDependencyHealth(null);
-    }
-  }, []);
-
-  const refreshPlatformStatus = React.useCallback(async () => {
-    const payload = await fetchRepoAuthStatus();
-    setPlatformStatus(payload);
-    if (!platformBaseUrl && payload.baseUrl) {
-      setPlatformBaseUrl(payload.baseUrl);
-    }
-  }, [platformBaseUrl]);
+  const {
+    envOutput,
+    envDoctorPayload,
+    dependencyHealth,
+    runtimeDeps,
+    runEnvDoctor,
+    runEnvReconcile,
+    refreshDependencyHealth,
+  } = useEnvDoctor(profile, mode);
 
   const loadSettingsSnapshot = React.useCallback(async (workspaceId: string, loopId: string) => {
     const payload = await fetchSettingsSnapshot({ workspaceId, loopId });
@@ -210,6 +206,10 @@ export function RepoStudioShell({
     const mergedEnv = merged.env && typeof merged.env === 'object' ? merged.env : {};
     const mergedCommands = merged.commands && typeof merged.commands === 'object' ? merged.commands : {};
     const mergedPanels = merged.panels && typeof merged.panels === 'object' ? merged.panels : {};
+    const prompts = getAssistantPrompts(merged, loopId);
+    setLoopAssistantPrompt(prompts.loopAssistant);
+    setCodexAssistantPrompt(prompts.codexAssistant);
+
     const profileValue = String(mergedEnv.profile || '').trim();
     if (profileValue) setProfile(profileValue);
     const modeValue = String(mergedEnv.mode || '').trim().toLowerCase();
@@ -222,9 +222,12 @@ export function RepoStudioShell({
     if (mergedCommands.view && typeof mergedCommands.view === 'object') {
       replaceCommandView(mergedCommands.view as RepoCommandView);
     }
-    if (Array.isArray(mergedPanels.hiddenPanelIds)) {
+    if (mergedPanels.workspaceHiddenPanelIds && typeof mergedPanels.workspaceHiddenPanelIds === 'object') {
+      replaceWorkspaceHiddenPanelIds(mergedPanels.workspaceHiddenPanelIds as Partial<Record<RepoWorkspaceId, string[]>>);
+    } else if (Array.isArray(mergedPanels.hiddenPanelIds)) {
       replaceHiddenPanelIds(mergedPanels.hiddenPanelIds.map((item: unknown) => String(item)).filter(Boolean));
     }
+
     const mergedPlatform = merged.platform && typeof merged.platform === 'object'
       ? merged.platform as Record<string, unknown>
       : {};
@@ -244,47 +247,85 @@ export function RepoStudioShell({
         ? mergedReviewQueue.lastAutoApplyAt
         : '',
     );
-  }, [replaceCommandView, replaceHiddenPanelIds, setConfirmRuns]);
+  }, [
+    replaceCommandView,
+    replaceHiddenPanelIds,
+    replaceWorkspaceHiddenPanelIds,
+    setConfirmRuns,
+    setPlatformBaseUrl,
+    setPlatformAutoValidate,
+  ]);
 
-  const refreshLoopSnapshot = React.useCallback(async (loopId: string) => {
-    const payload = await fetchLoopSnapshot(loopId);
-    if (!payload.ok) {
-      throw new Error(payload.message || 'Unable to refresh loop snapshot.');
-    }
-    if (payload.loops) {
-      setLoopSnapshot(payload.loops as RepoLoopsSnapshot);
-      if (payload.loops.activeLoopId) {
-        setActiveLoopId(String(payload.loops.activeLoopId));
-        const active = payload.loops.entries?.find((entry: any) => entry.id === payload.loops.activeLoopId);
-        if (active?.profile) setProfile(String(active.profile));
-      }
-    }
-    if (payload.planning) {
-      setPlanningSnapshot(payload.planning as PlanningSnapshot);
-    }
-    const resolvedLoopId = String(payload?.loops?.activeLoopId || loopId || 'default');
-    await loadSettingsSnapshot(activeWorkspaceId, resolvedLoopId);
-  }, [activeWorkspaceId, loadSettingsSnapshot, setActiveLoopId]);
+  const {
+    planningSnapshot,
+    loopSnapshot,
+    switchingLoop,
+    refreshLoopSnapshot,
+    switchLoop,
+  } = usePlanningSync(planning, loops, {
+    activeWorkspaceId,
+    activeLoopId,
+    setActiveLoopId,
+    setProfile,
+    setCommandOutput,
+    loadSettingsSnapshot,
+  });
 
-  const switchLoop = React.useCallback(async (loopId: string) => {
-    if (!loopId || loopId === activeLoopId) return;
-    setSwitchingLoop(true);
-    try {
-      const payload = await setActiveLoopRequest(loopId);
-      if (!payload.ok) {
-        setCommandOutput(payload.message || payload.stderr || 'Unable to switch loop.');
-        setSwitchingLoop(false);
-        return;
-      }
-
-      await refreshLoopSnapshot(loopId);
-      setCommandOutput(payload.message || `Active loop set to ${loopId}.`);
-    } catch (error) {
-      setCommandOutput(toErrorMessage(error, `Unable to switch to loop ${loopId}.`));
-    } finally {
-      setSwitchingLoop(false);
+  React.useEffect(() => {
+    if (!selectedDocId) {
+      setSelectedDocId(planningSnapshot.docs[0]?.id || null);
+      return;
     }
-  }, [activeLoopId, refreshLoopSnapshot, setCommandOutput]);
+    const exists = planningSnapshot.docs.some((doc) => doc.id === selectedDocId);
+    if (!exists) {
+      setSelectedDocId(planningSnapshot.docs[0]?.id || null);
+    }
+  }, [planningSnapshot.docs, selectedDocId]);
+
+  const selectedDoc = React.useMemo(
+    () => planningSnapshot.docs.find((doc) => doc.id === selectedDocId) || null,
+    [planningSnapshot.docs, selectedDocId],
+  );
+
+  const persistHiddenPanels = React.useCallback(() => {
+    const state = useRepoStudioShellStore.getState();
+    const currentWorkspaceId = state.route.activeWorkspaceId;
+    const workspaceMap = state.workspaceHiddenPanelIds || {};
+    persistLocalSettings({
+      panels: {
+        hiddenPanelIds: workspaceMap[currentWorkspaceId] || [],
+        workspaceHiddenPanelIds: workspaceMap,
+      },
+    }).catch(() => {});
+  }, [persistLocalSettings]);
+
+  const setPanelVisibleAndPersist = React.useCallback((
+    panelId: string,
+    visible: boolean,
+    workspaceId?: RepoWorkspaceId,
+  ) => {
+    if (workspaceId) {
+      setPanelVisibleForWorkspace(workspaceId, panelId, visible);
+    } else {
+      setVisibleByPanelId(panelId, visible);
+    }
+    persistHiddenPanels();
+  }, [persistHiddenPanels, setPanelVisibleForWorkspace, setVisibleByPanelId]);
+
+  const restorePanelsAndPersist = React.useCallback(() => {
+    restoreAllPanels();
+    persistHiddenPanels();
+  }, [persistHiddenPanels, restoreAllPanels]);
+
+  const refreshCommands = React.useCallback(async () => {
+    const payload = await fetchCommandsModel();
+    if (Array.isArray(payload.commands)) {
+      setCommandRows(payload.commands as Parameters<typeof setCommandRows>[0]);
+    }
+    if (payload.commandView && typeof payload.commandView === 'object') {
+      replaceCommandView(payload.commandView as RepoCommandView);
+    }
+  }, [replaceCommandView, setCommandRows]);
 
   React.useEffect(() => {
     setActiveLoopId(loops.activeLoopId);
@@ -308,6 +349,12 @@ export function RepoStudioShell({
   ]);
 
   React.useEffect(() => {
+    if (workspaceHiddenPanelIds[activeWorkspaceId]) return;
+    applyWorkspacePreset(activeWorkspaceId);
+    persistHiddenPanels();
+  }, [activeWorkspaceId, applyWorkspacePreset, persistHiddenPanels, workspaceHiddenPanelIds]);
+
+  React.useEffect(() => {
     saveCommandView(commandView).catch(() => {});
   }, [commandView]);
 
@@ -326,7 +373,7 @@ export function RepoStudioShell({
       }
       if (event.type === 'watcherHealth') {
         const message = `[desktop watcher] ${event.status || 'unknown'}${event.reason ? `: ${event.reason}` : ''}`;
-        setCommandOutput((current) => (current.includes(message) ? current : `${message}\n\n${current}`));
+        setCommandOutput(message);
       }
     });
 
@@ -334,6 +381,18 @@ export function RepoStudioShell({
       if (typeof unsubscribe === 'function') unsubscribe();
     };
   }, [activeLoopId, refreshLoopSnapshot, setCommandOutput]);
+
+  React.useEffect(() => {
+    if (!settingsSidebarOpen) return undefined;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      setSettingsSidebarOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [settingsSidebarOpen, setSettingsSidebarOpen]);
 
   const updateProfile = React.useCallback((value: string) => {
     setProfile(value);
@@ -373,91 +432,35 @@ export function RepoStudioShell({
     }).catch(() => {});
   }, [persistLocalSettings]);
 
-  const persistPlatformMetadata = React.useCallback((payload: RepoAuthStatusResponse, fallbackBaseUrl = '') => {
-    const lastStatus = payload.connected
-      ? (payload.ok === true ? 'connected' : 'error')
-      : 'disconnected';
+  const updateLoopAssistantPrompt = React.useCallback((value: string) => {
+    setLoopAssistantPrompt(value);
     persistLocalSettings({
-      platform: {
-        baseUrl: payload.baseUrl || fallbackBaseUrl || platformBaseUrl,
-        autoValidate: platformAutoValidate,
-        lastStatus,
-        lastValidatedAt: payload.lastValidatedAt || '',
+      assistant: {
+        prompts: {
+          byLoop: {
+            [activeLoopId]: {
+              loopAssistant: value,
+            },
+          },
+        },
       },
     }).catch(() => {});
-  }, [persistLocalSettings, platformAutoValidate, platformBaseUrl]);
+  }, [activeLoopId, persistLocalSettings]);
 
-  const updatePlatformBaseUrl = React.useCallback((value: string) => {
-    setPlatformBaseUrl(value);
+  const updateCodexAssistantPrompt = React.useCallback((value: string) => {
+    setCodexAssistantPrompt(value);
     persistLocalSettings({
-      platform: {
-        baseUrl: value,
-        autoValidate: platformAutoValidate,
+      assistant: {
+        prompts: {
+          byLoop: {
+            [activeLoopId]: {
+              codexAssistant: value,
+            },
+          },
+        },
       },
     }).catch(() => {});
-  }, [persistLocalSettings, platformAutoValidate]);
-
-  const updatePlatformAutoValidate = React.useCallback((value: boolean) => {
-    setPlatformAutoValidate(value);
-    persistLocalSettings({
-      platform: {
-        baseUrl: platformBaseUrl,
-        autoValidate: value,
-      },
-    }).catch(() => {});
-  }, [persistLocalSettings, platformBaseUrl]);
-
-  const connectPlatform = React.useCallback(async (input: { baseUrl: string; token: string }) => {
-    setPlatformBusy(true);
-    try {
-      const payload = await connectRepoAuth({
-        baseUrl: input.baseUrl,
-        token: input.token,
-      });
-      setPlatformStatus(payload);
-      if (payload.baseUrl) setPlatformBaseUrl(payload.baseUrl);
-      persistPlatformMetadata(payload, input.baseUrl);
-      if (platformAutoValidate && payload.ok) {
-        const next = await validateRepoAuth();
-        setPlatformStatus(next);
-        persistPlatformMetadata(next, payload.baseUrl || input.baseUrl);
-      }
-      setCommandOutput(payload.message || (payload.ok ? 'Platform connected.' : 'Platform connection failed.'));
-    } catch (error) {
-      setCommandOutput(toErrorMessage(error, 'Unable to connect platform.'));
-    } finally {
-      setPlatformBusy(false);
-    }
-  }, [persistPlatformMetadata, platformAutoValidate, setCommandOutput]);
-
-  const validatePlatform = React.useCallback(async (input: { baseUrl?: string; token?: string } = {}) => {
-    setPlatformBusy(true);
-    try {
-      const payload = await validateRepoAuth(input);
-      setPlatformStatus(payload);
-      if (payload.baseUrl) setPlatformBaseUrl(payload.baseUrl);
-      persistPlatformMetadata(payload, input.baseUrl || platformBaseUrl);
-      setCommandOutput(payload.message || (payload.ok ? 'Platform connection validated.' : 'Platform validation failed.'));
-    } catch (error) {
-      setCommandOutput(toErrorMessage(error, 'Unable to validate platform connection.'));
-    } finally {
-      setPlatformBusy(false);
-    }
-  }, [persistPlatformMetadata, platformBaseUrl, setCommandOutput]);
-
-  const disconnectPlatform = React.useCallback(async () => {
-    setPlatformBusy(true);
-    try {
-      const payload = await disconnectRepoAuth();
-      setPlatformStatus(payload);
-      persistPlatformMetadata(payload, platformBaseUrl);
-      setCommandOutput(payload.message || 'Platform disconnected.');
-    } catch (error) {
-      setCommandOutput(toErrorMessage(error, 'Unable to disconnect platform connection.'));
-    } finally {
-      setPlatformBusy(false);
-    }
-  }, [persistPlatformMetadata, platformBaseUrl, setCommandOutput]);
+  }, [activeLoopId, persistLocalSettings]);
 
   const toggleCommand = React.useCallback(async (commandId: string, disabled: boolean) => {
     try {
@@ -487,42 +490,18 @@ export function RepoStudioShell({
     }
   }, [setCommandOutput]);
 
-  const runEnvDoctor = React.useCallback(async () => {
-    try {
-      const payload = await runEnvDoctorRequest({ profile, mode });
-      setEnvDoctorPayload(payload.payload || null);
-      const lines = [
-        payload.report || '',
-        payload.stderr || '',
-        payload.resolvedAttempt ? `resolved: ${payload.resolvedAttempt}` : '',
-      ].filter(Boolean);
-      setEnvOutput(lines.join('\n\n') || 'No env output.');
-    } catch (error) {
-      setEnvOutput(toErrorMessage(error, 'Unable to run env doctor.'));
-    }
-  }, [mode, profile]);
-
-  const runEnvReconcile = React.useCallback(async () => {
-    try {
-      const payload = await runEnvReconcileRequest({ profile, mode });
-      const lines = [
-        payload.report || payload.stdout || '',
-        payload.stderr || '',
-        payload.command ? `command: ${payload.command}` : '',
-        payload.resolvedAttempt ? `resolved: ${payload.resolvedAttempt}` : '',
-      ].filter(Boolean);
-      setEnvOutput(lines.join('\n\n') || 'No env output.');
-      await runEnvDoctor();
-      await refreshDependencyHealth();
-    } catch (error) {
-      setEnvOutput(toErrorMessage(error, 'Unable to run env reconcile.'));
-    }
-  }, [mode, profile, refreshDependencyHealth, runEnvDoctor]);
-
   const resetDockLayout = React.useCallback(() => {
     clearDockLayout(REPO_STUDIO_LAYOUT_ID);
     layoutRef.current?.resetLayout();
   }, [clearDockLayout]);
+
+  const openWorkspaceWithPreset = React.useCallback((workspaceId: RepoWorkspaceId) => {
+    openWorkspace(workspaceId);
+    if (!workspaceHiddenPanelIds[workspaceId]) {
+      applyWorkspacePreset(workspaceId);
+      persistHiddenPanels();
+    }
+  }, [applyWorkspacePreset, openWorkspace, persistHiddenPanels, workspaceHiddenPanelIds]);
 
   const layoutMenuItems = React.useMemo(() => [
     {
@@ -555,21 +534,23 @@ export function RepoStudioShell({
     },
   ], [panelSpecs, visibility, setPanelVisibleAndPersist, restorePanelsAndPersist, resetDockLayout, setSettingsSidebarOpen]);
 
-  const focusWorkspace = React.useCallback((workspaceId: typeof activeWorkspaceId, panelId?: string) => {
-    setActiveWorkspace(workspaceId);
+  const focusWorkspace = React.useCallback((workspaceId: RepoWorkspaceId, panelId?: string) => {
+    openWorkspaceWithPreset(workspaceId);
     if (panelId) {
-      setPanelVisibleAndPersist(panelId, true);
+      setPanelVisibleAndPersist(panelId, true, workspaceId);
     }
-  }, [setActiveWorkspace, setPanelVisibleAndPersist]);
+  }, [openWorkspaceWithPreset, setPanelVisibleAndPersist]);
 
   const menus = React.useMemo(
     () => buildRepoWorkspaceMenus({
       workspaceId: activeWorkspaceId,
+      openWorkspaceIds,
       nextAction: planningSnapshot.nextAction,
       onRefreshSnapshot: () => refreshLoopSnapshot(activeLoopId).catch(() => {}),
       onRunEnvDoctor: () => runEnvDoctor().catch(() => {}),
       onRunEnvReconcile: () => runEnvReconcile().catch(() => {}),
       onFocusWorkspace: focusWorkspace,
+      onOpenWorkspace: openWorkspaceWithPreset,
       onCopyText: copyText,
       layoutViewItems: [
         ...layoutMenuItems,
@@ -585,6 +566,8 @@ export function RepoStudioShell({
       activeWorkspaceId,
       focusWorkspace,
       layoutMenuItems,
+      openWorkspaceIds,
+      openWorkspaceWithPreset,
       planningSnapshot.nextAction,
       refreshLoopSnapshot,
       runEnvDoctor,
@@ -592,254 +575,271 @@ export function RepoStudioShell({
     ],
   );
 
-  const openAssistantWithDoc = React.useCallback(() => {
-    attachSelectedDoc();
-    setActiveWorkspace('loop-assistant');
-    setPanelVisibleAndPersist('loop-assistant', true);
-  }, [attachSelectedDoc, setActiveWorkspace, setPanelVisibleAndPersist]);
+  const copyPlanningMentionToken = React.useCallback(() => {
+    if (!selectedDoc) return;
+    copyText(`@planning/${selectedDoc.id}`);
+  }, [selectedDoc]);
 
-  const attachDiffToAssistant = React.useCallback((label: string, content: string) => {
-    setAttachedDiffContext({ label, content });
-    setActiveWorkspace('codex-assistant');
-    setPanelVisibleAndPersist('codex-assistant', true);
-  }, [setActiveWorkspace, setPanelVisibleAndPersist]);
+  const openLoopAssistant = React.useCallback(() => {
+    openWorkspaceWithPreset('loop-assistant');
+    setPanelVisibleAndPersist('loop-assistant', true, 'loop-assistant');
+  }, [openWorkspaceWithPreset, setPanelVisibleAndPersist]);
 
   return (
-    <SidebarProvider
-      defaultOpen={false}
-      open={settingsSidebarOpen}
-      onOpenChange={setSettingsSidebarOpen}
-      className="h-screen w-full"
+    <RepoStudioProvider
+      value={{
+        profile,
+        mode,
+        platformStatus,
+        copyText,
+      }}
     >
-      <SidebarInset className="h-screen overflow-hidden bg-background">
-        <StudioApp className="h-full">
-          <StudioApp.Tabs label="RepoStudio Tabs" tabListClassName="justify-center">
-            <StudioApp.Tabs.Left>
-              <EditorMenubar menus={menus} />
-            </StudioApp.Tabs.Left>
-            <StudioApp.Tabs.Main>
-              <StudioApp.Tab
-                label={`RepoStudio - ${activeWorkspaceId}`}
-                isActive
-                domain="forge"
-                onSelect={() => {}}
-              />
-            </StudioApp.Tabs.Main>
-            <StudioApp.Tabs.Right>
-              <SidebarTrigger aria-label="Toggle settings sidebar" />
-            </StudioApp.Tabs.Right>
-          </StudioApp.Tabs>
+      <SidebarProvider
+        defaultOpen={false}
+        open={settingsSidebarOpen}
+        onOpenChange={setSettingsSidebarOpen}
+        className="h-screen w-full"
+      >
+        <SidebarInset className="h-screen overflow-hidden bg-background">
+          <StudioApp className="h-full">
+            <StudioApp.Tabs label="RepoStudio Tabs" tabListClassName="justify-center">
+              <StudioApp.Tabs.Left>
+                <EditorMenubar menus={menus} />
+              </StudioApp.Tabs.Left>
+              <StudioApp.Tabs.Main>
+                {openWorkspaceIds.map((workspaceId) => (
+                  <StudioApp.Tab
+                    key={workspaceId}
+                    label={WORKSPACE_LABELS[workspaceId]}
+                    isActive={activeWorkspaceId === workspaceId}
+                    domain="forge"
+                    onSelect={() => {
+                      openWorkspaceWithPreset(workspaceId);
+                      setActiveWorkspace(workspaceId);
+                    }}
+                    onClose={
+                      openWorkspaceIds.length > 1
+                        ? () => closeWorkspace(workspaceId)
+                        : undefined
+                    }
+                  />
+                ))}
+              </StudioApp.Tabs.Main>
+              <StudioApp.Tabs.Right>
+                <RepoCodexControls />
+                <SidebarTrigger aria-label="Toggle settings sidebar" />
+              </StudioApp.Tabs.Right>
+            </StudioApp.Tabs>
 
-          <StudioApp.Content className="min-h-0 overflow-hidden">
-            <EditorDockLayout
-              ref={layoutRef}
-              layoutId={REPO_STUDIO_LAYOUT_ID}
-              layoutJson={layoutJson}
-              onLayoutChange={(json) => setDockLayout(REPO_STUDIO_LAYOUT_ID, json)}
-              clearLayout={() => clearDockLayout(REPO_STUDIO_LAYOUT_ID)}
-              onPanelClosed={(panelId) => setPanelVisibleAndPersist(panelId, false)}
-              className="h-full"
-            >
-              <EditorDockLayout.Left>
-                {visibility['panel.visible.repo-loop-cadence'] !== false ? (
-                  <EditorDockLayout.Panel id="loop-cadence" title="Loop Cadence" icon={<ShieldCheck size={14} />}>
-                    <LoopCadencePanel
-                      nextAction={planningSnapshot.nextAction}
-                      onCopyText={copyText}
-                      onRefresh={() => refreshLoopSnapshot(activeLoopId).catch(() => {})}
-                    />
-                  </EditorDockLayout.Panel>
-                ) : null}
-              </EditorDockLayout.Left>
+            <StudioApp.Content className="min-h-0 overflow-hidden">
+              <EditorDockLayout
+                ref={layoutRef}
+                layoutId={REPO_STUDIO_LAYOUT_ID}
+                layoutJson={layoutJson}
+                onLayoutChange={(json) => setDockLayout(REPO_STUDIO_LAYOUT_ID, json)}
+                clearLayout={() => clearDockLayout(REPO_STUDIO_LAYOUT_ID)}
+                onPanelClosed={(panelId) => setPanelVisibleAndPersist(panelId, false)}
+                className="h-full"
+              >
+                <EditorDockLayout.Left>
+                  {visibility['panel.visible.repo-loop-cadence'] !== false ? (
+                    <EditorDockLayout.Panel id="loop-cadence" title="Loop Cadence" icon={<ShieldCheck size={14} />}>
+                      <LoopCadencePanel
+                        nextAction={planningSnapshot.nextAction}
+                        onCopyText={copyText}
+                        onRefresh={() => refreshLoopSnapshot(activeLoopId).catch(() => {})}
+                      />
+                    </EditorDockLayout.Panel>
+                  ) : null}
+                </EditorDockLayout.Left>
 
-              <EditorDockLayout.Main>
-                {visibility['panel.visible.repo-planning'] !== false ? (
-                  <EditorDockLayout.Panel id="planning" title="Planning" icon={<BookOpen size={14} />}>
-                    <PlanningWorkspace
-                      planning={planningSnapshot}
-                      loops={loopSnapshot.entries}
-                      activeLoopId={activeLoopId}
-                      switchingLoop={switchingLoop}
-                      selectedDocId={selectedDocId}
-                      onSelectDoc={setSelectedDocId}
-                      onSwitchLoop={switchLoop}
-                      onAttachSelected={openAssistantWithDoc}
-                      onCopyText={copyText}
-                      onOpenAssistant={() => setActiveWorkspace('loop-assistant')}
-                      selectedDocContent={selectedDoc?.content || ''}
-                    />
-                  </EditorDockLayout.Panel>
-                ) : null}
+                <EditorDockLayout.Main>
+                  {visibility['panel.visible.repo-planning'] !== false ? (
+                    <EditorDockLayout.Panel id="planning" title="Planning" icon={<BookOpen size={14} />}>
+                      <PlanningWorkspace
+                        planning={planningSnapshot}
+                        loops={loopSnapshot.entries}
+                        activeLoopId={activeLoopId}
+                        switchingLoop={switchingLoop}
+                        selectedDocId={selectedDocId}
+                        onSelectDoc={setSelectedDocId}
+                        onSwitchLoop={switchLoop}
+                        onCopyMentionToken={copyPlanningMentionToken}
+                        onCopyText={copyText}
+                        onOpenAssistant={openLoopAssistant}
+                        selectedDocContent={selectedDoc?.content || ''}
+                      />
+                    </EditorDockLayout.Panel>
+                  ) : null}
 
-                {visibility['panel.visible.repo-commands'] !== false ? (
-                  <EditorDockLayout.Panel id="commands" title="Commands" icon={<Wrench size={14} />}>
-                    <CommandsWorkspace
-                      commandView={commandView}
-                      commandSources={commandSources}
-                      filteredCommands={filteredCommands}
-                      onSetView={setCommandView}
-                      onRunCommand={runCommand}
-                      onToggleCommand={toggleCommand}
-                      onCopyText={copyText}
-                    />
-                  </EditorDockLayout.Panel>
-                ) : null}
+                  {visibility['panel.visible.repo-commands'] !== false ? (
+                    <EditorDockLayout.Panel id="commands" title="Commands" icon={<Wrench size={14} />}>
+                      <CommandsWorkspace
+                        commandView={commandView}
+                        commandSources={commandSources}
+                        filteredCommands={filteredCommands}
+                        onSetView={setCommandView}
+                        onRunCommand={runCommand}
+                        onToggleCommand={toggleCommand}
+                        onCopyText={copyText}
+                      />
+                    </EditorDockLayout.Panel>
+                  ) : null}
 
-                {visibility['panel.visible.repo-story'] !== false ? (
-                  <EditorDockLayout.Panel id="story" title="Story" icon={<BookOpen size={14} />}>
-                    <StoryWorkspace
-                      activeLoopId={activeLoopId}
-                      onAttachToAssistant={attachDiffToAssistant}
-                      onCopyText={copyText}
-                    />
-                  </EditorDockLayout.Panel>
-                ) : null}
-              </EditorDockLayout.Main>
+                  {visibility['panel.visible.repo-story'] !== false ? (
+                    <EditorDockLayout.Panel id="story" title="Story" icon={<BookOpen size={14} />}>
+                      <StoryWorkspace
+                        activeLoopId={activeLoopId}
+                        onCopyText={copyText}
+                      />
+                    </EditorDockLayout.Panel>
+                  ) : null}
+                </EditorDockLayout.Main>
 
-              <EditorDockLayout.Right>
-                {visibility['panel.visible.repo-env'] !== false ? (
-                  <EditorDockLayout.Panel id="env" title="Env" icon={<ShieldCheck size={14} />}>
-                    <EnvWorkspace
-                      profile={profile}
-                      mode={mode}
-                      onProfileChange={updateProfile}
-                      onModeChange={updateMode}
-                      envOutput={envOutput}
-                      envDoctorPayload={envDoctorPayload}
-                      dependencyHealth={dependencyHealth}
-                      onRunDoctor={runEnvDoctor}
-                      onRunReconcile={runEnvReconcile}
-                      onRefreshDeps={refreshDependencyHealth}
-                      onCopyText={copyText}
-                    />
-                  </EditorDockLayout.Panel>
-                ) : null}
+                <EditorDockLayout.Right>
+                  {visibility['panel.visible.repo-env'] !== false ? (
+                    <EditorDockLayout.Panel id="env" title="Env" icon={<ShieldCheck size={14} />}>
+                      <EnvWorkspace
+                        profile={profile}
+                        mode={mode}
+                        onProfileChange={updateProfile}
+                        onModeChange={updateMode}
+                        envOutput={envOutput}
+                        envDoctorPayload={envDoctorPayload as EnvDoctorPayload | null}
+                        dependencyHealth={dependencyHealth}
+                        runtimeDeps={runtimeDeps}
+                        onRunDoctor={runEnvDoctor}
+                        onRunReconcile={runEnvReconcile}
+                        onRefreshDeps={refreshDependencyHealth}
+                        onCopyText={copyText}
+                      />
+                    </EditorDockLayout.Panel>
+                  ) : null}
 
-                {visibility['panel.visible.repo-loop-assistant'] !== false ? (
-                  <EditorDockLayout.Panel id="loop-assistant" title="Loop Assistant" icon={<Bot size={14} />}>
-                    <AssistantWorkspace
-                      title="Loop Assistant"
-                      editorTarget="loop-assistant"
-                      attachedDocs={attachedDocs}
-                      assistantContext={combinedAssistantContext}
-                      onDetachDoc={detachDoc}
-                      onCopyText={copyText}
-                      onClearAttachments={clearAttachedDocs}
-                    />
-                  </EditorDockLayout.Panel>
-                ) : null}
+                  {visibility['panel.visible.repo-loop-assistant'] !== false ? (
+                    <EditorDockLayout.Panel id="loop-assistant" title="Loop Assistant" icon={<Bot size={14} />}>
+                      <AssistantWorkspace
+                        title="Loop Assistant"
+                        editorTarget="loop-assistant"
+                      />
+                    </EditorDockLayout.Panel>
+                  ) : null}
 
-                {visibility['panel.visible.repo-codex-assistant'] !== false ? (
-                  <EditorDockLayout.Panel id="codex-assistant" title="Codex Assistant" icon={<Bot size={14} />}>
-                    <AssistantWorkspace
-                      title="Codex Assistant"
-                      editorTarget="codex-assistant"
-                      attachedDocs={attachedDocs}
-                      assistantContext={combinedAssistantContext}
-                      onDetachDoc={detachDoc}
-                      onCopyText={copyText}
-                      onClearAttachments={clearAttachedDocs}
-                    />
-                  </EditorDockLayout.Panel>
-                ) : null}
-              </EditorDockLayout.Right>
+                  {visibility['panel.visible.repo-codex-assistant'] !== false ? (
+                    <EditorDockLayout.Panel id="codex-assistant" title="Codex Assistant" icon={<Bot size={14} />}>
+                      <AssistantWorkspace
+                        title="Codex Assistant"
+                        editorTarget="codex-assistant"
+                      />
+                    </EditorDockLayout.Panel>
+                  ) : null}
+                </EditorDockLayout.Right>
 
-              <EditorDockLayout.Bottom>
-                {visibility['panel.visible.repo-docs'] !== false ? (
-                  <EditorDockLayout.Panel id="docs" title="Docs" icon={<BookOpen size={14} />}>
-                    <DocsWorkspace />
-                  </EditorDockLayout.Panel>
-                ) : null}
+                <EditorDockLayout.Bottom>
+                  {visibility['panel.visible.repo-docs'] !== false ? (
+                    <EditorDockLayout.Panel id="docs" title="Docs" icon={<BookOpen size={14} />}>
+                      <DocsWorkspace />
+                    </EditorDockLayout.Panel>
+                  ) : null}
 
-                {visibility['panel.visible.repo-terminal'] !== false ? (
-                  <EditorDockLayout.Panel id="terminal" title="Terminal" icon={<TerminalSquare size={14} />}>
-                    <TerminalWorkspace
-                      commandOutput={commandOutput}
-                      hasActiveRun={Boolean(activeRun)}
-                      onClear={() => setCommandOutput('No command run yet.')}
-                      onStop={stopActiveRun}
-                    />
-                  </EditorDockLayout.Panel>
-                ) : null}
+                  {visibility['panel.visible.repo-terminal'] !== false ? (
+                    <EditorDockLayout.Panel id="terminal" title="Terminal" icon={<TerminalSquare size={14} />}>
+                      <TerminalWorkspace />
+                    </EditorDockLayout.Panel>
+                  ) : null}
 
-                {visibility['panel.visible.repo-diff'] !== false ? (
-                  <EditorDockLayout.Panel id="diff" title="Diff" icon={<GitCompareArrows size={14} />}>
-                    <DiffWorkspace
-                      onAttachToAssistant={attachDiffToAssistant}
-                      onCopyText={copyText}
-                    />
-                  </EditorDockLayout.Panel>
-                ) : null}
+                  {visibility['panel.visible.repo-diff'] !== false ? (
+                    <EditorDockLayout.Panel id="diff" title="Diff" icon={<GitCompareArrows size={14} />}>
+                      <DiffWorkspace
+                        onCopyText={copyText}
+                      />
+                    </EditorDockLayout.Panel>
+                  ) : null}
 
-                {visibility['panel.visible.repo-git'] !== false ? (
-                  <EditorDockLayout.Panel id="git" title="Git" icon={<GitCompareArrows size={14} />}>
-                    <GitWorkspace
-                      onAttachToAssistant={attachDiffToAssistant}
-                      onCopyText={copyText}
-                    />
-                  </EditorDockLayout.Panel>
-                ) : null}
+                  {visibility['panel.visible.repo-git'] !== false ? (
+                    <EditorDockLayout.Panel id="git" title="Git" icon={<GitCompareArrows size={14} />}>
+                      <GitWorkspace
+                        onCopyText={copyText}
+                      />
+                    </EditorDockLayout.Panel>
+                  ) : null}
 
-                {visibility['panel.visible.repo-code'] !== false ? (
-                  <EditorDockLayout.Panel id="code" title="Code" icon={<TerminalSquare size={14} />}>
-                    <CodeWorkspace
-                      activeLoopId={activeLoopId}
-                      onAttachToAssistant={attachDiffToAssistant}
-                      onCopyText={copyText}
-                    />
-                  </EditorDockLayout.Panel>
-                ) : null}
+                  {visibility['panel.visible.repo-code'] !== false ? (
+                    <EditorDockLayout.Panel id="code" title="Code" icon={<TerminalSquare size={14} />}>
+                      <CodeWorkspace
+                        activeLoopId={activeLoopId}
+                        onCopyText={copyText}
+                      />
+                    </EditorDockLayout.Panel>
+                  ) : null}
 
-                {visibility['panel.visible.repo-review-queue'] !== false ? (
-                  <EditorDockLayout.Panel id="review-queue" title="Review Queue" icon={<ShieldCheck size={14} />}>
-                    <ReviewQueueWorkspace
-                      activeLoopId={activeLoopId}
-                      onAttachToAssistant={attachDiffToAssistant}
-                      onCopyText={copyText}
-                    />
-                  </EditorDockLayout.Panel>
-                ) : null}
-              </EditorDockLayout.Bottom>
-            </EditorDockLayout>
-          </StudioApp.Content>
-        </StudioApp>
-      </SidebarInset>
+                  {visibility['panel.visible.repo-review-queue'] !== false ? (
+                    <EditorDockLayout.Panel id="review-queue" title="Review Queue" icon={<ShieldCheck size={14} />}>
+                      <ReviewQueueWorkspace
+                        activeLoopId={activeLoopId}
+                        onCopyText={copyText}
+                      />
+                    </EditorDockLayout.Panel>
+                  ) : null}
+                </EditorDockLayout.Bottom>
+              </EditorDockLayout>
+            </StudioApp.Content>
+          </StudioApp>
+        </SidebarInset>
 
-      <Sidebar side="right" collapsible="offcanvas" className="border-l border-sidebar-border">
-        <SidebarHeader>
-          <h2 className="text-sm font-semibold">Settings</h2>
-          <p className="text-xs text-muted-foreground">
-            Right sidebar is reserved for settings/codegen only.
-          </p>
-        </SidebarHeader>
-        <SidebarContent>
-          <RepoSettingsPanelContent
-            profile={profile}
-            mode={mode}
-            confirmRuns={confirmRuns}
-            reviewQueueTrustMode={reviewQueueTrustMode}
-            reviewQueueLastAutoApplyAt={reviewQueueLastAutoApplyAt}
-            platformBaseUrl={platformBaseUrl}
-            platformAutoValidate={platformAutoValidate}
-            platformStatus={platformStatus}
-            platformBusy={platformBusy}
-            panelSpecs={panelSpecs}
-            panelVisibility={visibility}
-            onProfileChange={updateProfile}
-            onModeChange={updateMode}
-            onConfirmRunsChange={updateConfirmRuns}
-            onReviewQueueTrustModeChange={updateReviewQueueTrustMode}
-            onPlatformBaseUrlChange={updatePlatformBaseUrl}
-            onPlatformAutoValidateChange={updatePlatformAutoValidate}
-            onPlatformConnect={connectPlatform}
-            onPlatformValidate={validatePlatform}
-            onPlatformDisconnect={disconnectPlatform}
-            onSetPanelVisible={setPanelVisibleAndPersist}
-            onRestorePanels={restorePanelsAndPersist}
-            onStopRuntime={stopRepoStudioRuntime}
-          />
-        </SidebarContent>
-      </Sidebar>
-    </SidebarProvider>
+        <Sidebar side="right" collapsible="offcanvas" className="border-l border-sidebar-border">
+          <SidebarHeader>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <h2 className="text-sm font-semibold">Settings</h2>
+                <p className="text-xs text-muted-foreground">
+                  Right sidebar is reserved for settings/codegen only.
+                </p>
+              </div>
+              <Button
+                size="icon"
+                variant="ghost"
+                aria-label="Close settings sidebar"
+                onClick={() => setSettingsSidebarOpen(false)}
+              >
+                <X className="size-4" />
+              </Button>
+            </div>
+          </SidebarHeader>
+          <SidebarContent>
+            <RepoSettingsPanelContent
+              profile={profile}
+              mode={mode}
+              confirmRuns={confirmRuns}
+              reviewQueueTrustMode={reviewQueueTrustMode}
+              reviewQueueLastAutoApplyAt={reviewQueueLastAutoApplyAt}
+              activeLoopId={activeLoopId}
+              loopAssistantPrompt={loopAssistantPrompt}
+              codexAssistantPrompt={codexAssistantPrompt}
+              platformBaseUrl={platformBaseUrl}
+              platformAutoValidate={platformAutoValidate}
+              platformStatus={platformStatus}
+              platformBusy={platformBusy}
+              panelSpecs={panelSpecs}
+              panelVisibility={visibility}
+              onProfileChange={updateProfile}
+              onModeChange={updateMode}
+              onConfirmRunsChange={updateConfirmRuns}
+              onReviewQueueTrustModeChange={updateReviewQueueTrustMode}
+              onLoopAssistantPromptChange={updateLoopAssistantPrompt}
+              onCodexAssistantPromptChange={updateCodexAssistantPrompt}
+              onPlatformBaseUrlChange={updatePlatformBaseUrl}
+              onPlatformAutoValidateChange={updatePlatformAutoValidate}
+              onPlatformConnect={connectPlatform}
+              onPlatformValidate={validatePlatform}
+              onPlatformDisconnect={disconnectPlatform}
+              onSetPanelVisible={(panelId, visible) => setPanelVisibleAndPersist(panelId, visible)}
+              onRestorePanels={restorePanelsAndPersist}
+              onStopRuntime={stopRepoStudioRuntime}
+            />
+          </SidebarContent>
+        </Sidebar>
+      </SidebarProvider>
+    </RepoStudioProvider>
   );
 }

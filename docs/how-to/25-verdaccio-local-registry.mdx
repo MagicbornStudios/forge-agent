@@ -60,10 +60,85 @@ Twick: [24 - Vendoring](24-vendoring-third-party-code) for Twick build + publish
 3. **Install:** Verdaccio running, then `pnpm install`
 4. Import: `EditorShell`, `DockLayout`, etc. from `@forge/dev-kit`
 
+## Consuming the Forge Loop
+
+Use the same Forge Loop lifecycle (doctor, new-project, discuss-phase, plan-phase, execute-phase, verify-work) from another repo by installing the loop tools from Verdaccio.
+
+### 1. `.npmrc`
+
+Same as above: in consumer repo root, ensure:
+
+```ini
+@forge:registry=http://localhost:4873
+@twick:registry=http://localhost:4873
+```
+
+(Use your Verdaccio URL if not localhost.)
+
+### 2. `package.json` dependencies and scripts
+
+**Minimum (loop only):**
+
+```json
+{
+  "devDependencies": {
+    "@forge/forge-loop": "^0.1.0"
+  },
+  "scripts": {
+    "forge-loop": "forge-loop",
+    "forge-loop:doctor": "forge-loop doctor",
+    "forge-loop:new-project": "forge-loop new-project",
+    "forge-loop:discuss-phase": "forge-loop discuss-phase",
+    "forge-loop:plan-phase": "forge-loop plan-phase",
+    "forge-loop:execute-phase": "forge-loop execute-phase",
+    "forge-loop:verify-work": "forge-loop verify-work",
+    "forge-loop:progress": "forge-loop progress",
+    "forge-loop:sync-legacy": "forge-loop sync-legacy"
+  }
+}
+```
+
+**With env gate (recommended for headless):** Add `@forge/forge-env` so `forge-loop doctor` and headless runbooks can call the env doctor:
+
+```json
+"devDependencies": {
+  "@forge/forge-loop": "^0.1.0",
+  "@forge/forge-env": "^0.1.0"
+},
+"scripts": {
+  "forge-env": "forge-env",
+  "forge-env:doctor": "forge-env doctor",
+  ...
+}
+```
+
+**Optional (Repo Studio GUI):** To open the env view or run Repo Studio from the loop:
+
+```json
+"devDependencies": {
+  "@forge/repo-studio": "^0.1.0"
+},
+"scripts": {
+  "forge-repo-studio": "forge-repo-studio",
+  ...
+}
+```
+
+### 3. Workflow
+
+1. Start Verdaccio (or ensure your shared Verdaccio is running).
+2. In the consumer repo: `pnpm install`.
+3. Run the loop: e.g. `pnpm forge-loop doctor`, then `pnpm forge-loop new-project --fresh --profile forge-loop`, then discuss → plan → execute → verify as in the [@forge/forge-loop README](../../packages/forge-loop/README.md).
+
+### 4. Keeping packages updated
+
+- **Publisher (forge-agent):** Bump versions in the loop packages if needed, then run `pnpm registry:forge:publish:local` (publishes all @forge packages including loop tools) or `pnpm registry:forge:loop:publish` (builds and publishes only forge-loop, forge-env, repo-studio).
+- **Consumer:** Run `pnpm update @forge/forge-loop @forge/forge-env @forge/repo-studio` or bump the version ranges in `package.json` and run `pnpm install`.
+
 **Next:** [26 - Styling debugging with Cursor](26-styling-debugging-with-cursor)
 
 <Callout variant="note" title="For coding agents">
-File refs: `verdaccio.yaml`, package.json scripts `registry:start`, `registry:forge:build`, `registry:forge:publish:local`
-Related: how-to/24-vendoring-third-party-code, how-to/05-building-an-editor
+File refs: `verdaccio.yaml`, package.json scripts `registry:start`, `registry:forge:build`, `registry:forge:publish:local`, `registry:forge:loop:publish`
+Related: how-to/24-vendoring-third-party-code, how-to/05-building-an-editor, packages/forge-loop/README.md
 Do not: Publish to npm before local testing; E409 fix documented above
 </Callout>

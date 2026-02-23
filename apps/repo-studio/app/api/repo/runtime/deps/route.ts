@@ -3,30 +3,25 @@ import { NextResponse } from 'next/server';
 import { getDependencyHealth } from '@/lib/dependency-health';
 import { runRepoStudioCli } from '@/lib/cli-runner';
 import { getRepoAuthStatus } from '@/lib/repo-auth-memory';
+import { evaluateRuntimeDepsSnapshot } from '@/lib/runtime-deps-evaluator';
 
 export async function GET() {
   const deps = getDependencyHealth(process.cwd());
   const doctor = runRepoStudioCli(['doctor', '--json']);
   const desktop = doctor.payload?.desktop || null;
   const desktopAuth = getRepoAuthStatus();
-  const desktopOk = desktop
-    ? Boolean(
-      desktop.electronInstalled
-      && desktop.nextStandalonePresent
-      && desktop.sqlitePathWritable
-      && desktop.watcherAvailable,
-    )
-    : false;
-  const ok = deps.dockviewPackageResolved
-    && deps.dockviewCssResolved
-    && deps.sharedStylesResolved
-    && deps.cssPackagesResolved
-    && desktopOk;
+  const evaluated = evaluateRuntimeDepsSnapshot({
+    deps,
+    desktop,
+  });
 
   return NextResponse.json({
-    ok,
+    ok: evaluated.ok,
+    severity: evaluated.severity,
+    desktopRuntimeReady: evaluated.desktopRuntimeReady,
+    desktopStandaloneReady: evaluated.desktopStandaloneReady,
     deps,
     desktop,
     desktopAuth,
-  }, { status: ok ? 200 : 500 });
+  }, { status: 200 });
 }

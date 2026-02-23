@@ -24,13 +24,11 @@ const MonacoEditor = dynamic(
 
 export interface CodeWorkspaceProps {
   activeLoopId: string;
-  onAttachToAssistant: (label: string, content: string) => void;
   onCopyText: (text: string) => void;
 }
 
 export function CodeWorkspace({
   activeLoopId,
-  onAttachToAssistant,
   onCopyText,
 }: CodeWorkspaceProps) {
   const [scope, setScope] = React.useState<RepoScope>('loop');
@@ -195,44 +193,6 @@ export function CodeWorkspace({
     }
   }, [activeLoopId, scope, searchExclude, searchInclude, searchQuery, searchRegex, splitGlobs]);
 
-  const attachFile = React.useCallback(() => {
-    if (!selectedPath) return;
-    onAttachToAssistant(`file:${selectedPath}`, [
-      `# Repo File Context`,
-      '',
-      `path: ${selectedPath}`,
-      '',
-      '```',
-      content,
-      '```',
-    ].join('\n'));
-  }, [content, onAttachToAssistant, selectedPath]);
-
-  const attachSearchMatches = React.useCallback(() => {
-    if (searchMatches.length === 0) return;
-    const preview = searchMatches
-      .slice(0, 40)
-      .map((match) => `${match.path}:${match.line}:${match.column} | ${match.preview}`)
-      .join('\n');
-    onAttachToAssistant(
-      'search:navigator',
-      [
-        '# Repo Search Context',
-        '',
-        `loopId: ${activeLoopId}`,
-        `scope: ${scope}`,
-        `query: ${searchQuery.trim() || '(none)'}`,
-        `regex: ${searchRegex ? 'true' : 'false'}`,
-        `include: ${searchInclude.trim() || '(none)'}`,
-        `exclude: ${searchExclude.trim() || '(none)'}`,
-        '',
-        '```txt',
-        preview,
-        '```',
-      ].join('\n'),
-    );
-  }, [activeLoopId, onAttachToAssistant, scope, searchExclude, searchInclude, searchMatches, searchQuery, searchRegex]);
-
   return (
     <div className="h-full min-h-0 space-y-3 overflow-auto p-2">
       <Card>
@@ -278,9 +238,6 @@ export function CodeWorkspace({
             </Button>
             <Button size="sm" variant="outline" onClick={saveFile} disabled={!selectedPath || !hasChanges || saving}>
               {saving ? 'Saving...' : 'Save'}
-            </Button>
-            <Button size="sm" variant="outline" onClick={attachFile} disabled={!selectedPath}>
-              Attach To Assistant
             </Button>
             <Button size="sm" variant="outline" onClick={() => onCopyText(content)} disabled={!selectedPath}>
               Copy File
@@ -348,14 +305,6 @@ export function CodeWorkspace({
             <Badge variant="outline">scope: {scope}</Badge>
             <Badge variant="outline">loop: {activeLoopId}</Badge>
             <Badge variant="outline">matches: {searchMatches.length}</Badge>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={attachSearchMatches}
-              disabled={searchMatches.length === 0}
-            >
-              Attach Matches
-            </Button>
           </div>
 
           {searchMessage ? <p className="text-xs text-muted-foreground">{searchMessage}</p> : null}

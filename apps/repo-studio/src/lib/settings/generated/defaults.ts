@@ -35,4 +35,14 @@ export const REPO_SETTINGS_GENERATED_DEFAULTS = {
     autoApplyEnabled: false,
     lastAutoApplyAt: '',
   },
+  assistant: {
+    prompts: {
+      byLoop: {
+        default: {
+          loopAssistant: '',
+          codexAssistant: '',
+        },
+      },
+    },
+  },
 } as const;

@@ -12,6 +12,9 @@ export interface RepoSettingsPanelContentProps {
   confirmRuns: boolean;
   reviewQueueTrustMode: 'require-approval' | 'auto-approve-all';
   reviewQueueLastAutoApplyAt: string;
+  activeLoopId: string;
+  loopAssistantPrompt: string;
+  codexAssistantPrompt: string;
   platformBaseUrl: string;
   platformAutoValidate: boolean;
   platformStatus: RepoAuthStatusResponse | null;
@@ -22,6 +25,8 @@ export interface RepoSettingsPanelContentProps {
   onModeChange: (value: 'local' | 'preview' | 'production' | 'headless') => void;
   onConfirmRunsChange: (value: boolean) => void;
   onReviewQueueTrustModeChange: (value: 'require-approval' | 'auto-approve-all') => void;
+  onLoopAssistantPromptChange: (value: string) => void;
+  onCodexAssistantPromptChange: (value: string) => void;
   onPlatformBaseUrlChange: (value: string) => void;
   onPlatformAutoValidateChange: (value: boolean) => void;
   onPlatformConnect: (input: { baseUrl: string; token: string }) => Promise<void>;

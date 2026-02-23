@@ -264,15 +264,19 @@ export async function stopProcessTree(pid) {
     const stderr = String(result.stderr || '').trim();
     const stdout = String(result.stdout || '').trim();
     if (result.status === 0) {
-      await sleep(160);
-      if (isProcessAlive(numeric)) {
-        return {
-          ok: false,
-          stdout,
-          stderr: `${stderr}\nPID still alive after taskkill.`.trim(),
-        };
+      const timeoutAt = Date.now() + 2200;
+      while (Date.now() < timeoutAt) {
+        if (!isProcessAlive(numeric)) {
+          return { ok: true, stdout, stderr };
+        }
+        // eslint-disable-next-line no-await-in-loop
+        await sleep(80);
       }
-      return { ok: true, stdout, stderr };
+      return {
+        ok: false,
+        stdout,
+        stderr: `${stderr}\nPID still alive after taskkill.`.trim(),
+      };
     }
     if (/not found|no running instance/i.test(`${stdout}\n${stderr}`)) {
       return { ok: true, stdout, stderr };
@@ -314,17 +318,94 @@ function gatherDesktopPids(runtime) {
   return [...pids];
 }
 
+function commandLineForPid(pid) {
+  const numeric = Number(pid);
+  if (!Number.isInteger(numeric) || numeric <= 0) return '';
+
+  if (process.platform === 'win32') {
+    const script = [
+      `$p = Get-CimInstance Win32_Process -Filter "ProcessId = ${numeric}" -ErrorAction SilentlyContinue`,
+      'if ($null -ne $p) { $p.CommandLine }',
+    ].join('; ');
+    const result = spawnSync('powershell', ['-NoProfile', '-Command', script], {
+      encoding: 'utf8',
+    });
+    return String(result.stdout || '').trim();
+  }
+
+  const result = spawnSync('ps', ['-p', String(numeric), '-o', 'args='], {
+    encoding: 'utf8',
+  });
+  return String(result.stdout || '').trim();
+}
+
+async function resolveProcessOwnership(pid, options = {}) {
+  const numeric = Number(pid);
+  if (!Number.isInteger(numeric) || numeric <= 0) {
+    return {
+      repoOwned: false,
+      commandLine: '',
+    };
+  }
+
+  if (typeof options.ownershipResolver === 'function') {
+    const resolved = await options.ownershipResolver(numeric, options);
+    if (resolved && typeof resolved === 'object') {
+      return {
+        repoOwned: resolved.repoOwned === true,
+        commandLine: String(resolved.commandLine || ''),
+      };
+    }
+    return {
+      repoOwned: resolved === true,
+      commandLine: '',
+    };
+  }
+
+  const commandLine = commandLineForPid(numeric);
+  const workspaceRoot = normalizeWorkspaceRoot(options.workspaceRoot || process.cwd());
+  const repoOwned = String(commandLine || '').replace(/\\/g, '/').toLowerCase().includes(workspaceRoot);
+  return {
+    repoOwned,
+    commandLine,
+  };
+}
+
 export async function stopRuntime(options = {}) {
   const requestedMode = options.mode ? normalizeRuntimeMode(options.mode) : null;
+  const detectRuntime = typeof options.detectRuntimeByPort === 'function'
+    ? options.detectRuntimeByPort
+    : detectRuntimeByPort;
+  const stopProcess = typeof options.stopProcessTree === 'function'
+    ? options.stopProcessTree
+    : stopProcessTree;
+  const processAlive = typeof options.isProcessAlive === 'function'
+    ? options.isProcessAlive
+    : isProcessAlive;
   const runtime = await readRuntimeState();
   if (!runtime) {
     const fallbackMode = requestedMode && requestedMode !== 'desktop' ? requestedMode : 'app';
-    const fallback = await detectRuntimeByPort({
+    const fallback = await detectRuntime({
       mode: fallbackMode,
       port: options.port,
     });
     if (fallback) {
-      const stopped = await stopProcessTree(fallback.pid);
+      const ownership = await resolveProcessOwnership(fallback.pid, {
+        workspaceRoot: process.cwd(),
+        ownershipResolver: options.ownershipResolver,
+      });
+      if (!ownership.repoOwned) {
+        return {
+          ok: false,
+          running: true,
+          stopped: false,
+          message: `Port ${fallback.port} is owned by pid ${fallback.pid} outside this workspace. Use "forge-repo-studio reclaim --scope repo --force" for explicit cleanup.`,
+          state: fallback,
+          ownership,
+        };
+      }
+
+      const stopped = await stopProcess(fallback.pid);
       return {
         ok: stopped.ok,
         running: false,
@@ -363,11 +444,11 @@ export async function stopRuntime(options = {}) {
   const results = [];
   for (const pid of targetPids) {
     // eslint-disable-next-line no-await-in-loop
-    const outcome = await stopProcessTree(pid);
+    const outcome = await stopProcess(pid);
     results.push({ pid, ...outcome });
   }
 
-  const alive = targetPids.filter((pid) => isProcessAlive(pid));
+  const alive = targetPids.filter((pid) => processAlive(pid));
   if (alive.length > 0) {
     return {
       ok: false,
@@ -398,4 +479,3 @@ export function isSameWorkspace(runtimeState, cwd = process.cwd()) {
   if (!runtimeState?.workspaceRoot) return true;
   return normalizeWorkspaceRoot(runtimeState.workspaceRoot) === normalizeWorkspaceRoot(cwd);
 }
-

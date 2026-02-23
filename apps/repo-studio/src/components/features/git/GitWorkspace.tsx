@@ -21,12 +21,10 @@ import {
 import type { GitBranchEntry, GitLogEntry, GitStatusEntry } from '@/lib/api/types';
 
 export interface GitWorkspaceProps {
-  onAttachToAssistant: (label: string, content: string) => void;
   onCopyText: (text: string) => void;
 }
 
 export function GitWorkspace({
-  onAttachToAssistant,
   onCopyText,
 }: GitWorkspaceProps) {
   const [statusRows, setStatusRows] = React.useState<GitStatusEntry[]>([]);
@@ -114,19 +112,6 @@ export function GitWorkspace({
     ));
   }, []);
 
-  const attachSelection = React.useCallback(() => {
-    const lines = [
-      '# Git Workspace Context',
-      '',
-      `selected paths: ${selectedPaths.join(', ') || '(none)'}`,
-      '',
-      ...statusRows
-        .filter((row) => selectedPaths.length === 0 || selectedPaths.includes(row.path))
-        .map((row) => `- [${row.status}] ${row.path}`),
-    ];
-    onAttachToAssistant('git:selection', lines.join('\n'));
-  }, [onAttachToAssistant, selectedPaths, statusRows]);
-
   return (
     <div className="h-full min-h-0 space-y-3 overflow-auto p-2">
       <Card>
@@ -153,9 +138,6 @@ export function GitWorkspace({
               disabled={busy || selectedPaths.length === 0}
             >
               Restore Selected
-            </Button>
-            <Button size="sm" variant="outline" onClick={attachSelection} disabled={busy}>
-              Attach To Assistant
             </Button>
             <Button
               size="sm"

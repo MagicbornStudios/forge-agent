@@ -16,12 +16,10 @@ const MonacoDiffEditor = dynamic(
 );
 
 export interface DiffWorkspaceProps {
-  onAttachToAssistant: (label: string, content: string) => void;
   onCopyText: (text: string) => void;
 }
 
 export function DiffWorkspace({
-  onAttachToAssistant,
   onCopyText,
 }: DiffWorkspaceProps) {
   const [files, setFiles] = React.useState<DiffStatusEntry[]>([]);
@@ -83,22 +81,6 @@ export function DiffWorkspace({
     loadDiff(selectedPath).catch((reason) => setError(String(reason?.message || reason)));
   }, [selectedPath, loadDiff]);
 
-  const attachDiff = React.useCallback(() => {
-    if (!payload) return;
-    const context = [
-      `# RepoStudio Diff Context`,
-      '',
-      `file: ${payload.path}`,
-      `base: ${payload.base}`,
-      `head: ${payload.head}`,
-      '',
-      '```diff',
-      payload.unifiedDiff || '(no textual diff)',
-      '```',
-    ].join('\n');
-    onAttachToAssistant(`diff:${payload.path}`, context);
-  }, [onAttachToAssistant, payload]);
-
   return (
     <div className="h-full min-h-0 space-y-3 overflow-auto p-2">
       <Card>
@@ -125,9 +107,6 @@ export function DiffWorkspace({
             </Select>
             <Button size="sm" variant="outline" onClick={() => refreshStatus().catch(() => {})}>
               Refresh
-            </Button>
-            <Button size="sm" variant="outline" onClick={attachDiff} disabled={!payload}>
-              Attach To Assistant
             </Button>
             <Button
               size="sm"

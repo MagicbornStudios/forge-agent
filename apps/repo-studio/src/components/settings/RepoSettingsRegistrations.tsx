@@ -6,6 +6,7 @@ import { Button } from '@forge/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@forge/ui/card';
 import { Input } from '@forge/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@forge/ui/select';
+import { Textarea } from '@forge/ui/textarea';
 import { REPO_SETTINGS_SECTIONS } from '@/lib/settings/registry';
 import { PlatformConnectionCard } from '@/components/features/settings/PlatformConnectionCard';
 import { useRepoSettings } from './RepoSettingsProvider';
@@ -54,6 +55,20 @@ export function RepoSettingsRegistrations() {
                         ))}
                       </SelectContent>
                     </Select>
+                  </label>
+                );
+              }
+
+              if (field.type === 'textarea') {
+                return (
+                  <label key={field.key} className="block space-y-1">
+                    <span className="text-muted-foreground">{field.label}</span>
+                    <Textarea
+                      value={String(value || '')}
+                      className="min-h-24 font-mono text-xs"
+                      onChange={(event) => settings.setFieldValue(field.key, event.target.value)}
+                    />
+                    {field.description ? <p className="text-[10px] text-muted-foreground">{field.description}</p> : null}
                   </label>
                 );
               }

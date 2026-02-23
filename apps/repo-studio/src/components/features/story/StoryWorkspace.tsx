@@ -33,13 +33,11 @@ const MonacoEditor = dynamic(
 
 export interface StoryWorkspaceProps {
   activeLoopId: string;
-  onAttachToAssistant: (label: string, content: string) => void;
   onCopyText: (text: string) => void;
 }
 
 export function StoryWorkspace({
   activeLoopId,
-  onAttachToAssistant,
   onCopyText,
 }: StoryWorkspaceProps) {
   const [tree, setTree] = React.useState<StoryActNode[]>([]);
@@ -266,41 +264,6 @@ export function StoryWorkspace({
     }
   }, [activeLoopId, createActIndex, createChapterIndex, createPageIndex, refreshTree, scopeOverrideToken]);
 
-  const attachPage = React.useCallback(() => {
-    if (!selectedPath) return;
-    const block = [
-      '# Story Page Context',
-      '',
-      `loopId: ${activeLoopId}`,
-      `path: ${selectedPath}`,
-      '',
-      '```md',
-      content,
-      '```',
-    ].join('\n');
-    onAttachToAssistant(`story:${selectedPath}`, block);
-  }, [activeLoopId, content, onAttachToAssistant, selectedPath]);
-
-  const attachPublishPreview = React.useCallback(() => {
-    if (!publishPreview?.ok) return;
-    const block = [
-      '# Story Publish Preview',
-      '',
-      `loopId: ${publishPreview.loopId || activeLoopId}`,
-      `path: ${publishPreview.path || selectedPath}`,
-      `contentHash: ${publishPreview.contentHash || ''}`,
-      `changed: ${publishPreview.changedSummary?.changed ? 'yes' : 'no'}`,
-      `previousBlocks: ${publishPreview.changedSummary?.previousBlockCount || 0}`,
-      `nextBlocks: ${publishPreview.changedSummary?.nextBlockCount || 0}`,
-      '',
-      '## warnings',
-      ...(publishPreview.warnings && publishPreview.warnings.length > 0
-        ? publishPreview.warnings.map((warning) => `- ${warning}`)
-        : ['- none']),
-    ].join('\n');
-    onAttachToAssistant(`story-publish:${publishPreview.path || selectedPath}`, block);
-  }, [activeLoopId, onAttachToAssistant, publishPreview, selectedPath]);
-
   return (
     <div className="h-full min-h-0 space-y-3 overflow-auto p-2">
       <Card>
@@ -373,9 +336,6 @@ export function StoryWorkspace({
             </Select>
             <Button size="sm" variant="outline" onClick={savePage} disabled={!selectedPath || !hasChanges}>
               Save
-            </Button>
-            <Button size="sm" variant="outline" onClick={attachPage} disabled={!selectedPath}>
-              Attach To Assistant
             </Button>
             <Button size="sm" variant="outline" onClick={() => onCopyText(content)} disabled={!selectedPath}>
               Copy Page
@@ -466,14 +426,6 @@ export function StoryWorkspace({
               disabled={!selectedPath || publishing || (!publishProposalId && !publishPreview?.previewToken)}
             >
               Apply Publish
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={attachPublishPreview}
-              disabled={!publishPreview?.ok}
-            >
-              Attach Publish Preview
             </Button>
             {publishing ? <Badge variant="secondary">working</Badge> : null}
             {publishProposalId ? <Badge variant="outline">proposal: {publishProposalId}</Badge> : null}

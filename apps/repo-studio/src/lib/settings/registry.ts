@@ -1,4 +1,4 @@
-export type RepoSettingsFieldType = 'text' | 'select' | 'toggle';
+export type RepoSettingsFieldType = 'text' | 'textarea' | 'select' | 'toggle';
 
 export type RepoSettingsFieldOption = {
   label: string;
@@ -112,6 +112,26 @@ export const REPO_SETTINGS_SECTIONS: RepoSettingsSectionRegistration[] = [
         label: 'Last auto apply',
         type: 'text',
         description: 'Timestamp of the most recent automatic proposal apply.',
+        defaultValue: '',
+      },
+    ],
+  },
+  {
+    id: 'assistants',
+    title: 'Assistants',
+    fields: [
+      {
+        key: 'assistant.prompts.loopAssistant',
+        label: 'Loop Assistant System Prompt',
+        type: 'textarea',
+        description: 'Applied to loop assistant before user prompt and @planning mentions.',
+        defaultValue: '',
+      },
+      {
+        key: 'assistant.prompts.codexAssistant',
+        label: 'Codex Assistant System Prompt',
+        type: 'textarea',
+        description: 'Applied to codex assistant before user prompt and @planning mentions.',
         defaultValue: '',
       },
     ],

@@ -10,7 +10,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@forge/ui/table';
 import { toErrorMessage } from '@/lib/api/http';
 import { fetchEnvTarget, saveEnvTarget } from '@/lib/api/services';
-import type { DependencyHealth, EnvDoctorPayload, EnvTargetPayload, RepoMode } from '@/lib/api/types';
+import type {
+  DependencyHealth,
+  EnvDoctorPayload,
+  EnvTargetPayload,
+  RepoMode,
+  RuntimeDepsResponse,
+} from '@/lib/api/types';
+import {
+  deriveNextSelectedTargetId,
+  shouldResetTargetState,
+} from '@/components/features/env/env-target-state';
 
 export interface EnvWorkspaceProps {
   profile: string;
@@ -20,6 +30,7 @@ export interface EnvWorkspaceProps {
   envOutput: string;
   envDoctorPayload: EnvDoctorPayload | null;
   dependencyHealth: DependencyHealth | null;
+  runtimeDeps: RuntimeDepsResponse | null;
   onRunDoctor: () => void;
   onRunReconcile: () => void;
   onRefreshDeps: () => void;
@@ -54,6 +65,7 @@ export function EnvWorkspace({
   envOutput,
   envDoctorPayload,
   dependencyHealth,
+  runtimeDeps,
   onRunDoctor,
   onRunReconcile,
   onRefreshDeps,
@@ -69,24 +81,49 @@ export function EnvWorkspace({
   const [savingTarget, setSavingTarget] = React.useState(false);
   const [lastChangedFiles, setLastChangedFiles] = React.useState<string[]>([]);
   const [lastSaveReadiness, setLastSaveReadiness] = React.useState<EnvTargetPayload['readiness'] | null>(null);
+  const loadRequestRef = React.useRef(0);
 
   const depsOk = dependencyHealth
     ? dependencyHealth.dockviewPackageResolved
       && dependencyHealth.dockviewCssResolved
       && dependencyHealth.sharedStylesResolved
       && dependencyHealth.cssPackagesResolved
+      && dependencyHealth.runtimePackagesResolved
+      && dependencyHealth.postcssConfigResolved !== false
+      && dependencyHealth.tailwindPostcssResolved !== false
+      && dependencyHealth.tailwindPipelineResolved !== false
     : null;
-  const missing = Array.isArray(envDoctorPayload?.missing) ? envDoctorPayload.missing : [];
-  const conflicts = Array.isArray(envDoctorPayload?.conflicts) ? envDoctorPayload.conflicts : [];
-  const warnings = Array.isArray(envDoctorPayload?.warnings) ? envDoctorPayload.warnings : [];
+  const missing = React.useMemo(
+    () => (Array.isArray(envDoctorPayload?.missing) ? envDoctorPayload.missing : []),
+    [envDoctorPayload?.missing],
+  );
+  const conflicts = React.useMemo(
+    () => (Array.isArray(envDoctorPayload?.conflicts) ? envDoctorPayload.conflicts : []),
+    [envDoctorPayload?.conflicts],
+  );
+  const warnings = React.useMemo(
+    () => (Array.isArray(envDoctorPayload?.warnings) ? envDoctorPayload.warnings : []),
+    [envDoctorPayload?.warnings],
+  );
   const discovery = envDoctorPayload?.discovery || null;
-  const allTargets = Array.isArray(envDoctorPayload?.targets) ? envDoctorPayload.targets : [];
-  const filteredTargets = allTargets.filter((target) => (
-    scopeFilter === 'all' ? true : classifyScope(target.dir) === scopeFilter
-  ));
+  const allTargets = React.useMemo(
+    () => (Array.isArray(envDoctorPayload?.targets) ? envDoctorPayload.targets : []),
+    [envDoctorPayload?.targets],
+  );
+  const filteredTargets = React.useMemo(
+    () => allTargets.filter((target) => (
+      scopeFilter === 'all' ? true : classifyScope(target.dir) === scopeFilter
+    )),
+    [allTargets, scopeFilter],
+  );
+  const desktopRuntimeReady = runtimeDeps?.desktopRuntimeReady === true;
+  const desktopStandaloneReady = runtimeDeps?.desktopStandaloneReady === true;
+  const runtimeSeverity = runtimeDeps?.severity || 'warn';
 
   const loadTarget = React.useCallback(async (targetId: string) => {
     if (!targetId) return;
+    const requestId = loadRequestRef.current + 1;
+    loadRequestRef.current = requestId;
     setLoadingTarget(true);
     try {
       const payload = await fetchEnvTarget({
@@ -94,11 +131,11 @@ export function EnvWorkspace({
         profile,
         mode,
       });
+      if (requestId !== loadRequestRef.current) return;
       if (!payload.ok) {
         setTargetStatus(payload.message || `Unable to load target ${targetId}.`);
         setTargetPayload(null);
         setEditedValues({});
-        setLoadingTarget(false);
         return;
       }
       const rows = Array.isArray(payload.entries) ? payload.entries : [];
@@ -109,26 +146,38 @@ export function EnvWorkspace({
       setTargetPayload(payload);
       setEditedValues(nextValues);
       setTargetStatus(`Loaded ${rows.length} key(s) for ${targetId}.`);
-    } catch (error: any) {
+    } catch (error) {
+      if (requestId !== loadRequestRef.current) return;
       setTargetStatus(toErrorMessage(error, `Unable to load target ${targetId}.`));
       setTargetPayload(null);
       setEditedValues({});
     } finally {
-      setLoadingTarget(false);
+      if (requestId === loadRequestRef.current) {
+        setLoadingTarget(false);
+      }
     }
   }, [mode, profile]);
 
   React.useEffect(() => {
-    if (filteredTargets.length === 0) {
-      setSelectedTargetId('');
-      setTargetPayload(null);
-      setEditedValues({});
-      return;
-    }
-    if (!selectedTargetId || !filteredTargets.some((target) => target.targetId === selectedTargetId)) {
-      setSelectedTargetId(filteredTargets[0].targetId);
+    const nextSelected = deriveNextSelectedTargetId(filteredTargets, selectedTargetId);
+    if (nextSelected !== selectedTargetId) {
+      setSelectedTargetId(nextSelected);
     }
   }, [filteredTargets, selectedTargetId]);
+
+  React.useEffect(() => {
+    if (!shouldResetTargetState({
+      selectedTargetId,
+      targetPayload,
+      editedValues,
+      hasTargets: filteredTargets.length > 0,
+    })) {
+      return;
+    }
+    setSelectedTargetId((current) => (current ? '' : current));
+    setTargetPayload((current) => (current == null ? current : null));
+    setEditedValues((current) => (Object.keys(current || {}).length > 0 ? {} : current));
+  }, [editedValues, filteredTargets.length, selectedTargetId, targetPayload]);
 
   React.useEffect(() => {
     if (!selectedTargetId) return;
@@ -215,12 +264,14 @@ export function EnvWorkspace({
                 <SelectItem value="vendor">vendor</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={selectedTargetId || ''} onValueChange={(value) => setSelectedTargetId(value)}>
+            <Select value={selectedTargetId || undefined} onValueChange={(value) => setSelectedTargetId(value)}>
               <SelectTrigger className="w-[260px]">
                 <SelectValue placeholder="Select target" />
               </SelectTrigger>
               <SelectContent>
-                {filteredTargets.map((target) => (
+                {filteredTargets.length === 0 ? (
+                  <SelectItem value="__none__" disabled>No targets in current scope</SelectItem>
+                ) : filteredTargets.map((target) => (
                   <SelectItem key={target.targetId} value={target.targetId}>
                     {target.targetId} ({classifyScope(target.dir)})
                   </SelectItem>
@@ -421,6 +472,46 @@ export function EnvWorkspace({
 
       <Card>
         <CardHeader className="pb-2">
+          <CardTitle className="text-sm">Runtime Quick Start</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-xs">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant={runtimeSeverity === 'fail' ? 'secondary' : 'outline'}>
+              {desktopRuntimeReady ? 'Runtime ready' : 'Runtime setup needed'}
+            </Badge>
+            <Badge variant={desktopStandaloneReady ? 'outline' : 'secondary'}>
+              {desktopStandaloneReady ? 'Standalone ready' : 'Standalone missing (diagnostic)'}
+            </Badge>
+            <Button size="sm" variant="outline" onClick={() => onCopyText('pnpm dev:repo-studio')}>
+              Copy Start (root)
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onCopyText('pnpm --filter @forge/repo-studio-app dev')}
+            >
+              Copy Start (app)
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onCopyText('pnpm forge-repo-studio:reclaim -- --dry-run')}
+            >
+              Copy Reclaim Dry Run
+            </Button>
+          </div>
+          <pre className="overflow-auto rounded-md border border-border bg-background p-3 text-xs">
+            {[
+              'pnpm dev:repo-studio',
+              'pnpm --filter @forge/repo-studio-app dev',
+              'pnpm forge-repo-studio:reclaim -- --dry-run',
+            ].join('\n')}
+          </pre>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
           <CardTitle className="text-sm">Runtime Dependency Health</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-xs">
@@ -436,7 +527,7 @@ export function EnvWorkspace({
               variant="outline"
               onClick={() => onCopyText('pnpm install\npnpm --filter @forge/repo-studio-app build')}
             >
-              Copy Remediation
+              Copy Dependency Remediation
             </Button>
           </div>
 

@@ -1,14 +1,9 @@
-import path from 'node:path';
-import { NextResponse } from 'next/server';
-
 import { buildPlanningStructuredModelFromSnapshot } from '@/lib/planning/model';
 import { loadRepoStudioSnapshot } from '@/lib/repo-data';
+import { resolveRepoRoot } from '@/lib/repo-files';
+import { withRepoRoute } from '@/lib/api/with-repo-route';
 
-function resolveRepoRoot() {
-  return path.resolve(process.cwd(), '..', '..');
-}
-
-export async function GET(request: Request) {
+export const GET = withRepoRoute(async (request: Request) => {
   const url = new URL(request.url);
   const loopId = String(url.searchParams.get('loopId') || '').trim().toLowerCase() || undefined;
   const includeStructured = String(url.searchParams.get('structured') || '').trim() === '1';
@@ -16,15 +11,15 @@ export async function GET(request: Request) {
   const snapshot = await loadRepoStudioSnapshot(repoRoot, { loopId });
   const structured = includeStructured ? buildPlanningStructuredModelFromSnapshot(snapshot.planning) : null;
 
-  return NextResponse.json({
+  return {
     ok: true,
     loops: snapshot.loops,
     planning: includeStructured
       ? {
-        ...snapshot.planning,
-        structured,
-      }
+          ...snapshot.planning,
+          structured,
+        }
       : snapshot.planning,
     commands: snapshot.commands,
-  });
-}
+  };
+});

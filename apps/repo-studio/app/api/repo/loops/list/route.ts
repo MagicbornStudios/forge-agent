@@ -1,18 +1,10 @@
-import path from 'node:path';
-import { NextResponse } from 'next/server';
-
 import { loadRepoStudioSnapshot } from '@/lib/repo-data';
+import { resolveRepoRoot } from '@/lib/repo-files';
+import { withRepoRoute } from '@/lib/api/with-repo-route';
 
-function resolveRepoRoot() {
-  return path.resolve(process.cwd(), '..', '..');
-}
-
-export async function GET() {
+export const GET = withRepoRoute(async () => {
   const repoRoot = resolveRepoRoot();
   const snapshot = await loadRepoStudioSnapshot(repoRoot);
-  return NextResponse.json({
-    ok: true,
-    loops: snapshot.loops,
-  });
-}
+  return { ok: true, loops: snapshot.loops };
+});
 

@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
+import { resolveRepoRoot } from '@/lib/repo-files';
 import {
   compareByDateDesc,
   sanitizeProposal,
@@ -11,10 +12,6 @@ type LegacyStore = {
   version?: number;
   proposals?: unknown[];
 };
-
-function resolveRepoRoot() {
-  return path.resolve(process.cwd(), '..', '..');
-}
 
 function legacyProposalsPath() {
   return path.join(resolveRepoRoot(), '.repo-studio', 'proposals.json');

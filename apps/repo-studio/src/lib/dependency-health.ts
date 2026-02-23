@@ -1,12 +1,23 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { resolveRepoRoot } from '@/lib/repo-files';
+
 export type DependencyHealth = {
   dockviewPackageResolved: boolean;
   dockviewCssResolved: boolean;
   sharedStylesResolved: boolean;
   cssPackagesResolved: boolean;
+  runtimePackagesResolved: boolean;
+  postcssConfigResolved: boolean;
+  tailwindPostcssResolved: boolean;
+  tailwindPipelineResolved: boolean;
   cssPackageStatus: Array<{
+    packageName: string;
+    resolved: boolean;
+    resolvedPath: string | null;
+  }>;
+  runtimePackageStatus: Array<{
     packageName: string;
     resolved: boolean;
     resolvedPath: string | null;
@@ -17,6 +28,8 @@ export type DependencyHealth = {
     appRoot: string;
     dockviewPackagePath: string | null;
     dockviewCssPath: string | null;
+    postcssConfigPath: string | null;
+    tailwindPostcssPackagePath: string | null;
     sharedStylePaths: string[];
   };
 };
@@ -28,7 +41,8 @@ const SHARED_STYLE_RELATIVE_PATHS = [
   'packages/shared/src/shared/styles/contexts.css',
 ];
 
-const REQUIRED_CSS_PACKAGES = ['tw-animate-css', 'tailwindcss-animate'];
+const REQUIRED_CSS_PACKAGES = ['tailwindcss-animate'];
+const REQUIRED_RUNTIME_PACKAGES = ['@openai/codex'];
 
 function exists(filePath: string) {
   try {
@@ -37,19 +51,6 @@ function exists(filePath: string) {
   } catch {
     return false;
   }
-}
-
-function resolveRepoRoot(cwd = process.cwd()) {
-  const direct = path.resolve(cwd);
-  if (exists(path.join(direct, 'pnpm-workspace.yaml'))) return direct;
-
-  const parent = path.resolve(direct, '..');
-  if (exists(path.join(parent, 'pnpm-workspace.yaml'))) return parent;
-
-  const grandParent = path.resolve(direct, '..', '..');
-  if (exists(path.join(grandParent, 'pnpm-workspace.yaml'))) return grandParent;
-
-  return direct;
 }
 
 function resolveAppRoot(repoRoot: string, cwd = process.cwd()) {
@@ -135,6 +136,18 @@ function resolvePackageInstall(packageName: string, repoRoot: string, appRoot: s
   return null;
 }
 
+function resolvePostcssConfigPath(appRoot: string): string | null {
+  const candidates = [
+    path.join(appRoot, 'postcss.config.mjs'),
+    path.join(appRoot, 'postcss.config.js'),
+    path.join(appRoot, 'postcss.config.cjs'),
+  ];
+  for (const candidate of candidates) {
+    if (exists(candidate)) return candidate;
+  }
+  return null;
+}
+
 export function getDependencyHealth(startCwd = process.cwd()): DependencyHealth {
   const repoRoot = resolveRepoRoot(startCwd);
   const appRoot = resolveAppRoot(repoRoot, startCwd);
@@ -143,6 +156,8 @@ export function getDependencyHealth(startCwd = process.cwd()): DependencyHealth 
   const resolvedDockview = resolveDockviewInstall(repoRoot, appRoot);
   const dockviewPackagePath = resolvedDockview.packagePath;
   const dockviewCssPath = resolvedDockview.cssPath;
+  const postcssConfigPath = resolvePostcssConfigPath(appRoot);
+  const tailwindPostcssPackagePath = resolvePackageInstall('@tailwindcss/postcss', repoRoot, appRoot);
   const sharedStylePaths = SHARED_STYLE_RELATIVE_PATHS.map((relativePath) => path.join(repoRoot, relativePath));
 
   const dockviewPackageResolved = dockviewPackagePath != null;
@@ -179,8 +194,45 @@ export function getDependencyHealth(startCwd = process.cwd()): DependencyHealth 
     );
   }
 
+  const runtimePackageStatus = REQUIRED_RUNTIME_PACKAGES.map((packageName) => {
+    const resolvedPath = resolvePackageInstall(packageName, repoRoot, appRoot);
+    return {
+      packageName,
+      resolved: resolvedPath != null,
+      resolvedPath,
+    };
+  });
+  const runtimePackagesResolved = runtimePackageStatus.every((item) => item.resolved);
+  if (!runtimePackagesResolved) {
+    const missingPackages = runtimePackageStatus
+      .filter((item) => !item.resolved)
+      .map((item) => item.packageName);
+    messages.push(
+      `Missing RepoStudio runtime packages: ${missingPackages.join(', ')}. Run pnpm install to restore bundled runtime dependencies.`,
+    );
+  }
+
+  const postcssConfigResolved = postcssConfigPath != null;
+  if (!postcssConfigResolved) {
+    messages.push(
+      'Missing RepoStudio PostCSS config. Restore apps/repo-studio/postcss.config.mjs with @tailwindcss/postcss plugin wiring.',
+    );
+  }
+
+  const tailwindPostcssResolved = tailwindPostcssPackagePath != null;
+  if (!tailwindPostcssResolved) {
+    messages.push(
+      'Missing @tailwindcss/postcss in RepoStudio app dependencies. Add it to apps/repo-studio/package.json and run pnpm install.',
+    );
+  }
+
+  const tailwindPipelineResolved = postcssConfigResolved && tailwindPostcssResolved;
+  if (!tailwindPipelineResolved) {
+    messages.push('RepoStudio Tailwind/PostCSS pipeline is not ready. Recheck with: pnpm forge-repo-studio doctor');
+  }
+
   if (messages.length === 0) {
-    messages.push('Dockview package/CSS, shared styles, and required CSS packages resolved.');
+    messages.push('Dockview package/CSS, shared styles, Tailwind/PostCSS pipeline, required CSS packages, and bundled runtime dependencies resolved.');
   }
 
   return {
@@ -188,13 +240,20 @@ export function getDependencyHealth(startCwd = process.cwd()): DependencyHealth 
     dockviewCssResolved,
     sharedStylesResolved,
     cssPackagesResolved,
+    runtimePackagesResolved,
+    postcssConfigResolved,
+    tailwindPostcssResolved,
+    tailwindPipelineResolved,
     cssPackageStatus,
+    runtimePackageStatus,
     messages,
     details: {
       repoRoot,
       appRoot,
       dockviewPackagePath,
       dockviewCssPath,
+      postcssConfigPath,
+      tailwindPostcssPackagePath,
       sharedStylePaths,
     },
   };

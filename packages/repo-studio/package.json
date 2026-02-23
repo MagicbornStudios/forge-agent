@@ -1,6 +1,6 @@
 {
   "name": "@forge/repo-studio",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": false,
   "type": "module",
   "main": "./src/desktop/main.mjs",
@@ -21,6 +21,7 @@
     "publish": "npm publish"
   },
   "dependencies": {
+    "@openai/codex": "^0.104.0",
     "chokidar": "^4.0.3",
     "electron": "^37.2.6",
     "yaml": "^2.8.1"

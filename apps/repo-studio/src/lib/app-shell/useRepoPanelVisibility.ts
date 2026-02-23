@@ -3,11 +3,15 @@
 import { useMemo } from 'react';
 import { REPO_EDITOR_PANEL_SPECS, panelIdFromVisibilityKey } from './editor-panels';
 import { useRepoStudioShellStore } from './store';
+import { getWorkspaceHiddenPanelIds } from './workspace-presets';
 
 export function useRepoPanelVisibility() {
-  const hiddenPanelIds = useRepoStudioShellStore((state) => state.hiddenPanelIds);
-  const setPanelVisible = useRepoStudioShellStore((state) => state.setPanelVisible);
-  const restoreAllPanels = useRepoStudioShellStore((state) => state.restoreAllPanels);
+  const activeWorkspaceId = useRepoStudioShellStore((state) => state.route.activeWorkspaceId);
+  const workspaceHiddenPanelIds = useRepoStudioShellStore((state) => state.workspaceHiddenPanelIds);
+  const setPanelVisibleForWorkspace = useRepoStudioShellStore((state) => state.setPanelVisibleForWorkspace);
+  const restoreWorkspacePanels = useRepoStudioShellStore((state) => state.restoreWorkspacePanels);
+
+  const hiddenPanelIds = workspaceHiddenPanelIds[activeWorkspaceId] || getWorkspaceHiddenPanelIds(activeWorkspaceId);
 
   const visibility = useMemo(() => {
     const hidden = new Set(hiddenPanelIds);
@@ -21,13 +25,14 @@ export function useRepoPanelVisibility() {
   return {
     panelSpecs: REPO_EDITOR_PANEL_SPECS,
     visibility,
-    setVisibleByPanelId: setPanelVisible,
+    setVisibleByPanelId: (panelId: string, visible: boolean) => {
+      setPanelVisibleForWorkspace(activeWorkspaceId, panelId, visible);
+    },
     setVisibleByKey: (key: string, visible: boolean) => {
       const panelId = panelIdFromVisibilityKey(key);
       if (!panelId) return;
-      setPanelVisible(panelId, visible);
+      setPanelVisibleForWorkspace(activeWorkspaceId, panelId, visible);
     },
-    restoreAllPanels,
+    restoreAllPanels: () => restoreWorkspacePanels(activeWorkspaceId),
   };
 }
-

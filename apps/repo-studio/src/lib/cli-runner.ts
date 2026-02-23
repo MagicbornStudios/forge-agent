@@ -1,6 +1,8 @@
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
+import { resolveRepoRoot } from '@/lib/repo-files';
+
 function parseJsonPayload(stdout: string) {
   const raw = String(stdout || '').trim();
   if (!raw) return null;
@@ -22,9 +24,7 @@ function parseJsonPayloadFromStreams(stdout: string, stderr: string) {
   return parseJsonPayload(stdout) || parseJsonPayload(stderr);
 }
 
-export function resolveRepoRoot() {
-  return path.resolve(process.cwd(), '..', '..');
-}
+export { resolveRepoRoot } from '@/lib/repo-files';
 
 export function runRepoStudioCli(args: string[]) {
   const repoRoot = resolveRepoRoot();

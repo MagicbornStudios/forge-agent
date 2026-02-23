@@ -34,6 +34,24 @@ pnpm forge-repo-studio doctor --json
 pnpm --filter @forge/repo-studio-app build
 ```
 
+Precheck still fails for dependency/runtime health issues, but missing Codex login no longer blocks startup.
+
+If startup fails with `EADDRINUSE` (for example port `3010`), reclaim orphaned RepoStudio/Codex processes manually:
+
+```bash
+pnpm forge-repo-studio:processes
+pnpm forge-repo-studio:reclaim -- --dry-run
+pnpm forge-repo-studio:reclaim
+pnpm dev:repo-studio
+```
+
+For explicit repo-wide cleanup (destructive):
+
+```bash
+pnpm forge-repo-studio:reclaim -- --scope repo --dry-run
+pnpm forge-repo-studio:reclaim:all
+```
+
 ## 3) Run one complete slice
 
 1. `Planning` tab: copy next command from `Next Action`.
@@ -46,6 +64,8 @@ Runtime controls:
 
 - `forge-repo-studio status`
 - `forge-repo-studio stop`
+- `forge-repo-studio processes`
+- `forge-repo-studio reclaim`
 
 Desktop controls:
 

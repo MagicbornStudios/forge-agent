@@ -705,21 +705,36 @@ const DockLayoutRoot = forwardRef<DockLayoutRef, DockLayoutProps>(function DockL
   useEffect(() => {
     if (!api) return;
     const { leftPanels, mainPanels, rightPanels, bottomPanels } = slotsRef.current;
-    const mainRefId = mainPanels?.length ? mainPanels[0].id : 'main';
+    const configuredMainRefId = mainPanels?.length ? mainPanels[0].id : 'main';
+
+    const getFirstExistingPanelId = () => {
+      const candidates = [
+        configuredMainRefId,
+        ...(mainPanels ?? []).map((p) => p.id),
+        ...(leftPanels ?? []).map((p) => p.id),
+        ...(rightPanels ?? []).map((p) => p.id),
+        ...(bottomPanels ?? []).map((p) => p.id),
+      ];
+      for (const id of candidates) {
+        if (api.getPanel(id)) return id;
+      }
+      return undefined;
+    };
 
     const addPanel = (
       desc: RailPanelDescriptor,
-      position: { referencePanel: string; direction: 'left' | 'right' | 'below' | 'within' },
+      position: { referencePanel: string; direction: 'left' | 'right' | 'below' | 'within' } | undefined,
       configKey: keyof typeof DEFAULT_SLOT_CONFIG
     ) => {
       const defaultConfig = DEFAULT_SLOT_CONFIG[configKey];
+      const safePosition = position != null && api.getPanel(position.referencePanel) ? position : undefined;
       api.addPanel({
         id: desc.id,
         component: 'slot',
         tabComponent: 'slotTab',
         params: { slotId: desc.id, icon: desc.icon ?? defaultConfig.icon, title: desc.title },
         title: desc.title,
-        position,
+        ...(safePosition ? { position: safePosition } : {}),
       });
     };
 
@@ -728,6 +743,24 @@ const DockLayoutRoot = forwardRef<DockLayoutRef, DockLayoutProps>(function DockL
       const panel = api.getPanel(slotId);
       if (content == null && panel) panel.api.close();
     }
+
+    const visibleMainPanels = (mainPanels ?? []).filter((p) => resolvedSlots[p.id] != null);
+    for (let i = 0; i < visibleMainPanels.length; i++) {
+      const desc = visibleMainPanels[i];
+      if (api.getPanel(desc.id)) continue;
+      const position =
+        i === 0
+          ? undefined
+          : ({ referencePanel: visibleMainPanels[0].id, direction: 'within' } as const);
+      addPanel(desc, position, 'main');
+    }
+
+    const resolveSideAnchor = () => {
+      const preferredMainId = visibleMainPanels[0]?.id;
+      if (preferredMainId && api.getPanel(preferredMainId)) return preferredMainId;
+      if (api.getPanel(configuredMainRefId)) return configuredMainRefId;
+      return getFirstExistingPanelId();
+    };
 
     const rails: { panels: RailPanelDescriptor[] | undefined; configKey: keyof typeof DEFAULT_SLOT_CONFIG }[] = [
       { panels: leftPanels, configKey: 'left' },
@@ -740,11 +773,12 @@ const DockLayoutRoot = forwardRef<DockLayoutRef, DockLayoutProps>(function DockL
       for (let i = 0; i < visible.length; i++) {
         const desc = visible[i];
         if (api.getPanel(desc.id)) continue;
-        const refId = i === 0 ? mainRefId : visible[0].id;
+        const refId = i === 0 ? resolveSideAnchor() : visible[0].id;
         const direction: 'left' | 'right' | 'below' | 'within' = i === 0
           ? (configKey === 'left' ? 'left' : configKey === 'right' ? 'right' : 'below')
           : 'within';
-        addPanel(desc, { referencePanel: refId, direction }, configKey);
+        const position = refId ? { referencePanel: refId, direction } : undefined;
+        addPanel(desc, position, configKey);
       }
     }
   }, [api, resolvedSlots]);

@@ -1,5 +1,8 @@
+import { existsSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
+const PNPM_WORKSPACE_FILE = 'pnpm-workspace.yaml';
 
 type LoopIndexEntry = {
   id?: string;
@@ -19,8 +22,21 @@ export function normalizeRelPath(input: string) {
   return String(input || '').replace(/\\/g, '/').replace(/^\.\/+/, '').trim();
 }
 
-export function resolveRepoRoot() {
-  return path.resolve(process.cwd(), '..', '..');
+/**
+ * Resolves the repository root by walking up from cwd until pnpm-workspace.yaml is found.
+ * Single source of truth for repo root; use this instead of inline path.resolve(cwd, '..', '..').
+ */
+export function resolveRepoRoot(cwd: string = process.cwd()): string {
+  const direct = path.resolve(cwd);
+  if (existsSync(path.join(direct, PNPM_WORKSPACE_FILE))) return direct;
+
+  const parent = path.resolve(direct, '..');
+  if (existsSync(path.join(parent, PNPM_WORKSPACE_FILE))) return parent;
+
+  const grandParent = path.resolve(direct, '..', '..');
+  if (existsSync(path.join(grandParent, PNPM_WORKSPACE_FILE))) return grandParent;
+
+  return direct;
 }
 
 export function isSafeRepoPath(filePath: string) {

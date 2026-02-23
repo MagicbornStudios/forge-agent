@@ -13,6 +13,8 @@ export async function runCodexStatus() {
       `missing: ${status.readiness.missing.length > 0 ? status.readiness.missing.join(', ') : '(none)'}`,
       `codex cli installed: ${status.readiness.cli.installed ? 'true' : 'false'}`,
       `codex version: ${status.readiness.cli.version || 'unknown'}`,
+      `codex cli source: ${status.readiness.cli.source || 'unknown'}`,
+      `codex invocation: ${status.readiness.cli.invocation?.display || status.readiness.cli.invocation?.command || 'unknown'}`,
       `codex login: ${status.readiness.login?.loggedIn ? `${status.readiness.login.authType}` : 'not-logged-in'}`,
       `server running: ${status.running ? 'true' : 'false'}`,
       status.runtime?.wsUrl ? `server ws: ${status.runtime.wsUrl}` : null,

@@ -43,6 +43,15 @@ pnpm forge-repo-studio doctor --json
 pnpm --filter @forge/repo-studio-app build
 ```
 
+Note: predev still blocks on dependency/runtime failures, but Codex login is no longer a startup blocker.
+
+If dev is blocked by used ports, run manual reclaim first (safe scope):
+
+```bash
+pnpm forge-repo-studio:processes
+pnpm forge-repo-studio:reclaim
+```
+
 After publish:
 
 ```bash
@@ -57,9 +66,12 @@ npx @forge/repo-studio open --view planning --mode headless
 - `forge-repo-studio commands-toggle <command-id> [--enable|--disable]`
 - `forge-repo-studio commands-view [--query ...] [--source ...] [--status ...] [--tab ...] [--sort ...]`
 - `forge-repo-studio codex-status`
+- `forge-repo-studio codex-login`
 - `forge-repo-studio codex-start [--ws-port ...] [--reuse|--no-reuse]`
 - `forge-repo-studio codex-stop`
 - `forge-repo-studio codex-exec --prompt "..."` (or stdin)
+- `forge-repo-studio processes [--scope repo-studio|repo] [--json] [--plain]`
+- `forge-repo-studio reclaim [--scope repo-studio|repo] [--dry-run] [--force] [--json] [--plain]`
 - `forge-repo-studio status`
 - `forge-repo-studio stop [--app-runtime|--package-runtime|--desktop-runtime]`
 - `forge-repo-studio run <command-id> [--confirm]`
@@ -67,6 +79,26 @@ npx @forge/repo-studio open --view planning --mode headless
 `forge-env portal` now reuses/launches RepoStudio via:
 
 - `forge-repo-studio open --view env --reuse`
+
+## Port Reclaim / Orphan Cleanup
+
+Manual cleanup commands are safe-by-default and non-destructive for normal dev startup.
+
+- Safe scope (`repo-studio`): reclaim RepoStudio/Codex-related processes and known ports.
+  - `pnpm forge-repo-studio:processes`
+  - `pnpm forge-repo-studio:reclaim -- --dry-run`
+  - `pnpm forge-repo-studio:reclaim`
+- Force scope (`repo`): repo-wide cleanup for repo-owned runtime processes.
+  - Preview: `pnpm forge-repo-studio:reclaim -- --scope repo --dry-run`
+  - Execute: `pnpm forge-repo-studio:reclaim:all`
+- Optional one-liner before dev:
+  - `pnpm dev:repo-studio:clean`
+
+Guardrails:
+
+- `pnpm dev:repo-studio` remains unchanged and does not auto-kill.
+- `--scope repo` requires `--force` unless `--dry-run` is set.
+- `forge-repo-studio stop` no longer kills untracked foreign port owners by default.
 
 ## Desktop Runtime
 
@@ -119,6 +151,7 @@ Multi-loop helpers:
 - Review Queue proposals persist in RepoStudio SQLite (`repo-proposals`); legacy `.repo-studio/proposals.json` is migration input + read-only fallback.
 - `routeMode: codex|local|proxy|openrouter` is supported.
 - `codex` mode enforces `chatgpt-strict` readiness by default (`codex login status` must report ChatGPT auth).
+- RepoStudio bundles Codex CLI through `@openai/codex` and prefers the onboard binary by default.
 
 ### Review Queue Trust Modes
 

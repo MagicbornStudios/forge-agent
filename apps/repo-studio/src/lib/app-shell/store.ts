@@ -8,6 +8,11 @@ import type {
   RepoRunRef,
   RepoWorkspaceId,
 } from '@/lib/types';
+import { REPO_WORKSPACE_IDS } from '@/lib/types';
+import {
+  getWorkspaceHiddenPanelIds,
+  getWorkspacePreset,
+} from './workspace-presets';
 
 export const REPO_STUDIO_LAYOUT_ID = 'repo-studio-main';
 
@@ -24,13 +29,24 @@ export type RepoStudioRouteState = {
   openWorkspaceIds: RepoWorkspaceId[];
 };
 
+type RepoStudioPersistedState = {
+  route?: RepoStudioRouteState;
+  dockLayouts?: Record<string, string>;
+  hiddenPanelIds?: string[];
+  workspaceHiddenPanelIds?: Partial<Record<RepoWorkspaceId, string[]>>;
+  commandView?: RepoCommandView;
+  activeLoopId?: string;
+  reviewQueue?: RepoReviewQueueState;
+  selectedRepoPath?: string | null;
+};
+
 type RepoStudioShellState = {
   route: RepoStudioRouteState;
   dockLayouts: Record<string, string>;
   settingsSidebarOpen: boolean;
   hiddenPanelIds: string[];
+  workspaceHiddenPanelIds: Partial<Record<RepoWorkspaceId, string[]>>;
   commandView: RepoCommandView;
-  attachedPlanningDocIds: string[];
   activeLoopId: string;
   reviewQueue: RepoReviewQueueState;
   activeRunId: string | null;
@@ -39,22 +55,25 @@ type RepoStudioShellState = {
 
   setActiveWorkspace: (workspaceId: RepoWorkspaceId) => void;
   setOpenWorkspaceIds: (workspaceIds: RepoWorkspaceId[]) => void;
+  openWorkspace: (workspaceId: RepoWorkspaceId) => void;
+  closeWorkspace: (workspaceId: RepoWorkspaceId) => void;
 
   setDockLayout: (layoutId: string, json: string) => void;
   clearDockLayout: (layoutId: string) => void;
 
   setSettingsSidebarOpen: (open: boolean) => void;
 
+  applyWorkspacePreset: (workspaceId: RepoWorkspaceId) => void;
+  setPanelVisibleForWorkspace: (workspaceId: RepoWorkspaceId, panelId: string, visible: boolean) => void;
+  restoreWorkspacePanels: (workspaceId: RepoWorkspaceId) => void;
   setPanelVisible: (panelId: string, visible: boolean) => void;
   restoreAllPanels: () => void;
   replaceHiddenPanelIds: (panelIds: string[]) => void;
+  replaceWorkspaceHiddenPanelIds: (map: Partial<Record<RepoWorkspaceId, string[]>>) => void;
 
   setCommandView: (next: Partial<RepoCommandView>) => void;
   replaceCommandView: (next: RepoCommandView) => void;
 
-  setAttachedPlanningDocIds: (docIds: string[]) => void;
-  attachPlanningDocId: (docId: string) => void;
-  detachPlanningDocId: (docId: string) => void;
   setActiveLoopId: (loopId: string) => void;
   setReviewQueueState: (next: Partial<RepoReviewQueueState>) => void;
 
@@ -64,20 +83,98 @@ type RepoStudioShellState = {
 
 const DEFAULT_ROUTE: RepoStudioRouteState = {
   activeWorkspaceId: 'planning',
-  openWorkspaceIds: [
-    'planning',
-    'env',
-    'commands',
-    'story',
-    'docs',
-    'git',
-    'loop-assistant',
-    'codex-assistant',
-    'diff',
-    'code',
-    'review-queue',
-  ],
+  openWorkspaceIds: ['planning'],
 };
+
+function isWorkspaceId(value: unknown): value is RepoWorkspaceId {
+  return REPO_WORKSPACE_IDS.includes(value as RepoWorkspaceId);
+}
+
+function normalizeWorkspaceList(workspaceIds: unknown[]): RepoWorkspaceId[] {
+  const list = [...new Set(
+    (workspaceIds || [])
+      .map((item) => String(item || '').trim())
+      .filter((item) => isWorkspaceId(item)),
+  )] as RepoWorkspaceId[];
+  return list.length > 0 ? list : (['planning'] as RepoWorkspaceId[]);
+}
+
+function normalizePanelIds(panelIds: unknown[]) {
+  return [...new Set(
+    (panelIds || [])
+      .map((item) => String(item || '').trim())
+      .filter(Boolean),
+  )];
+}
+
+function normalizeWorkspaceHiddenPanelIds(
+  value: unknown,
+): Partial<Record<RepoWorkspaceId, string[]>> {
+  if (!value || typeof value !== 'object') return {};
+  const source = value as Record<string, unknown>;
+  const next: Partial<Record<RepoWorkspaceId, string[]>> = {};
+  for (const workspaceId of REPO_WORKSPACE_IDS) {
+    if (!Array.isArray(source[workspaceId])) continue;
+    next[workspaceId] = normalizePanelIds(source[workspaceId] as unknown[]);
+  }
+  return next;
+}
+
+function ensureWorkspaceHiddenPanelIds(
+  map: Partial<Record<RepoWorkspaceId, string[]>>,
+  workspaceId: RepoWorkspaceId,
+) {
+  if (Array.isArray(map[workspaceId])) return map;
+  return {
+    ...map,
+    [workspaceId]: getWorkspaceHiddenPanelIds(workspaceId),
+  };
+}
+
+function getWorkspaceHiddenPanelIdsForRoute(
+  map: Partial<Record<RepoWorkspaceId, string[]>>,
+  workspaceId: RepoWorkspaceId,
+) {
+  return map[workspaceId] || getWorkspaceHiddenPanelIds(workspaceId);
+}
+
+export function migrateRepoStudioShellPersistedState(
+  persistedState: unknown,
+  version: number,
+): RepoStudioPersistedState {
+  const source = (persistedState && typeof persistedState === 'object'
+    ? persistedState
+    : {}) as RepoStudioPersistedState;
+
+  const route = source.route || DEFAULT_ROUTE;
+  const activeWorkspaceId = isWorkspaceId(route.activeWorkspaceId)
+    ? route.activeWorkspaceId
+    : 'planning';
+  const openWorkspaceIds: RepoWorkspaceId[] = normalizeWorkspaceList(route.openWorkspaceIds || [activeWorkspaceId]);
+
+  const workspaceHiddenPanelIds = normalizeWorkspaceHiddenPanelIds(source.workspaceHiddenPanelIds);
+  const mergedWorkspaceHiddenPanelIds: Partial<Record<RepoWorkspaceId, string[]>> = {
+    ...workspaceHiddenPanelIds,
+  };
+
+  if (version < 3 && Array.isArray(source.hiddenPanelIds) && source.hiddenPanelIds.length > 0) {
+    mergedWorkspaceHiddenPanelIds[activeWorkspaceId] = normalizePanelIds(source.hiddenPanelIds);
+  }
+
+  if (!Array.isArray(mergedWorkspaceHiddenPanelIds[activeWorkspaceId])) {
+    mergedWorkspaceHiddenPanelIds[activeWorkspaceId] = getWorkspaceHiddenPanelIds(activeWorkspaceId);
+  }
+
+  return {
+    ...source,
+    route: {
+      activeWorkspaceId,
+      openWorkspaceIds,
+    },
+    workspaceHiddenPanelIds: mergedWorkspaceHiddenPanelIds,
+    hiddenPanelIds: mergedWorkspaceHiddenPanelIds[activeWorkspaceId] || [],
+  };
+}
 
 export const useRepoStudioShellStore = create<RepoStudioShellState>()(
   persist(
@@ -85,9 +182,11 @@ export const useRepoStudioShellStore = create<RepoStudioShellState>()(
       route: DEFAULT_ROUTE,
       dockLayouts: {},
       settingsSidebarOpen: false,
-      hiddenPanelIds: [],
+      hiddenPanelIds: getWorkspaceHiddenPanelIds(DEFAULT_ROUTE.activeWorkspaceId),
+      workspaceHiddenPanelIds: {
+        [DEFAULT_ROUTE.activeWorkspaceId]: getWorkspaceHiddenPanelIds(DEFAULT_ROUTE.activeWorkspaceId),
+      },
       commandView: DEFAULT_COMMAND_VIEW,
-      attachedPlanningDocIds: [],
       activeLoopId: 'default',
       reviewQueue: {
         collapsed: false,
@@ -99,29 +198,88 @@ export const useRepoStudioShellStore = create<RepoStudioShellState>()(
 
       setActiveWorkspace: (workspaceId) => {
         set((state) => {
-          const open = state.route.openWorkspaceIds.includes(workspaceId)
+          const normalized = isWorkspaceId(workspaceId) ? workspaceId : 'planning';
+          const open = state.route.openWorkspaceIds.includes(normalized)
             ? state.route.openWorkspaceIds
-            : [...state.route.openWorkspaceIds, workspaceId];
+            : [...state.route.openWorkspaceIds, normalized];
+          const workspaceHiddenPanelIds = ensureWorkspaceHiddenPanelIds(
+            state.workspaceHiddenPanelIds,
+            normalized,
+          );
           return {
             route: {
-              activeWorkspaceId: workspaceId,
+              activeWorkspaceId: normalized,
               openWorkspaceIds: open,
             },
+            workspaceHiddenPanelIds,
+            hiddenPanelIds: getWorkspaceHiddenPanelIdsForRoute(workspaceHiddenPanelIds, normalized),
           };
         });
       },
 
       setOpenWorkspaceIds: (workspaceIds) => {
-        const normalized = [...new Set(workspaceIds)].filter(Boolean) as RepoWorkspaceId[];
-        if (normalized.length === 0) return;
-        set((state) => ({
-          route: {
-            activeWorkspaceId: normalized.includes(state.route.activeWorkspaceId)
-              ? state.route.activeWorkspaceId
-              : normalized[0],
-            openWorkspaceIds: normalized,
-          },
-        }));
+        const normalized = normalizeWorkspaceList(workspaceIds || []);
+        set((state) => {
+          const activeWorkspaceId: RepoWorkspaceId = normalized.includes(state.route.activeWorkspaceId)
+            ? state.route.activeWorkspaceId
+            : normalized[0];
+          const workspaceHiddenPanelIds = ensureWorkspaceHiddenPanelIds(
+            state.workspaceHiddenPanelIds,
+            activeWorkspaceId,
+          );
+          return {
+            route: {
+              activeWorkspaceId,
+              openWorkspaceIds: normalized,
+            },
+            workspaceHiddenPanelIds,
+            hiddenPanelIds: getWorkspaceHiddenPanelIdsForRoute(workspaceHiddenPanelIds, activeWorkspaceId),
+          };
+        });
+      },
+
+      openWorkspace: (workspaceId) => {
+        set((state) => {
+          const normalized = isWorkspaceId(workspaceId) ? workspaceId : 'planning';
+          const open = state.route.openWorkspaceIds.includes(normalized)
+            ? state.route.openWorkspaceIds
+            : [...state.route.openWorkspaceIds, normalized];
+          const workspaceHiddenPanelIds = ensureWorkspaceHiddenPanelIds(
+            state.workspaceHiddenPanelIds,
+            normalized,
+          );
+          return {
+            route: {
+              activeWorkspaceId: normalized,
+              openWorkspaceIds: open,
+            },
+            workspaceHiddenPanelIds,
+            hiddenPanelIds: getWorkspaceHiddenPanelIdsForRoute(workspaceHiddenPanelIds, normalized),
+          };
+        });
+      },
+
+      closeWorkspace: (workspaceId) => {
+        set((state) => {
+          const normalized = isWorkspaceId(workspaceId) ? workspaceId : 'planning';
+          const open = state.route.openWorkspaceIds.filter((item) => item !== normalized);
+          const nextOpen: RepoWorkspaceId[] = open.length > 0 ? open : ['planning'];
+          const activeWorkspaceId: RepoWorkspaceId = state.route.activeWorkspaceId === normalized
+            ? nextOpen[nextOpen.length - 1]
+            : state.route.activeWorkspaceId;
+          const workspaceHiddenPanelIds = ensureWorkspaceHiddenPanelIds(
+            state.workspaceHiddenPanelIds,
+            activeWorkspaceId,
+          );
+          return {
+            route: {
+              activeWorkspaceId,
+              openWorkspaceIds: nextOpen,
+            },
+            workspaceHiddenPanelIds,
+            hiddenPanelIds: getWorkspaceHiddenPanelIdsForRoute(workspaceHiddenPanelIds, activeWorkspaceId),
+          };
+        });
       },
 
       setDockLayout: (layoutId, json) => {
@@ -145,21 +303,100 @@ export const useRepoStudioShellStore = create<RepoStudioShellState>()(
 
       setSettingsSidebarOpen: (open) => set({ settingsSidebarOpen: open === true }),
 
-      setPanelVisible: (panelId, visible) => {
-        if (!panelId) return;
+      applyWorkspacePreset: (workspaceId) => {
         set((state) => {
-          const current = new Set(state.hiddenPanelIds);
-          if (visible) current.delete(panelId);
-          else current.add(panelId);
-          return { hiddenPanelIds: [...current].sort((a, b) => a.localeCompare(b)) };
+          const normalized = isWorkspaceId(workspaceId) ? workspaceId : state.route.activeWorkspaceId;
+          const hiddenPanelIds = getWorkspaceHiddenPanelIds(normalized);
+          const workspaceHiddenPanelIds = {
+            ...state.workspaceHiddenPanelIds,
+            [normalized]: hiddenPanelIds,
+          };
+          return {
+            workspaceHiddenPanelIds,
+            hiddenPanelIds: state.route.activeWorkspaceId === normalized
+              ? hiddenPanelIds
+              : state.hiddenPanelIds,
+          };
         });
       },
 
-      restoreAllPanels: () => set({ hiddenPanelIds: [] }),
+      setPanelVisibleForWorkspace: (workspaceId, panelId, visible) => {
+        if (!panelId) return;
+        set((state) => {
+          const normalizedWorkspace = isWorkspaceId(workspaceId)
+            ? workspaceId
+            : state.route.activeWorkspaceId;
+          const currentHidden = new Set(
+            getWorkspaceHiddenPanelIdsForRoute(state.workspaceHiddenPanelIds, normalizedWorkspace),
+          );
+          if (visible) currentHidden.delete(panelId);
+          else currentHidden.add(panelId);
+          const hiddenForWorkspace = [...currentHidden].sort((a, b) => a.localeCompare(b));
+          const workspaceHiddenPanelIds = {
+            ...state.workspaceHiddenPanelIds,
+            [normalizedWorkspace]: hiddenForWorkspace,
+          };
+          return {
+            workspaceHiddenPanelIds,
+            hiddenPanelIds: state.route.activeWorkspaceId === normalizedWorkspace
+              ? hiddenForWorkspace
+              : state.hiddenPanelIds,
+          };
+        });
+      },
+
+      restoreWorkspacePanels: (workspaceId) => {
+        set((state) => {
+          const normalizedWorkspace = isWorkspaceId(workspaceId)
+            ? workspaceId
+            : state.route.activeWorkspaceId;
+          const workspaceHiddenPanelIds = {
+            ...state.workspaceHiddenPanelIds,
+            [normalizedWorkspace]: [],
+          };
+          return {
+            workspaceHiddenPanelIds,
+            hiddenPanelIds: state.route.activeWorkspaceId === normalizedWorkspace
+              ? []
+              : state.hiddenPanelIds,
+          };
+        });
+      },
+
+      setPanelVisible: (panelId, visible) => {
+        const activeWorkspaceId = get().route.activeWorkspaceId;
+        get().setPanelVisibleForWorkspace(activeWorkspaceId, panelId, visible);
+      },
+
+      restoreAllPanels: () => {
+        const activeWorkspaceId = get().route.activeWorkspaceId;
+        get().restoreWorkspacePanels(activeWorkspaceId);
+      },
 
       replaceHiddenPanelIds: (panelIds) => {
-        const normalized = [...new Set((panelIds || []).map((item) => String(item).trim()).filter(Boolean))];
-        set({ hiddenPanelIds: normalized });
+        const normalized = normalizePanelIds(panelIds || []);
+        set((state) => ({
+          hiddenPanelIds: normalized,
+          workspaceHiddenPanelIds: {
+            ...state.workspaceHiddenPanelIds,
+            [state.route.activeWorkspaceId]: normalized,
+          },
+        }));
+      },
+
+      replaceWorkspaceHiddenPanelIds: (map) => {
+        const normalized = normalizeWorkspaceHiddenPanelIds(map);
+        set((state) => {
+          const activeWorkspaceId = state.route.activeWorkspaceId;
+          const workspaceHiddenPanelIds = ensureWorkspaceHiddenPanelIds(
+            normalized,
+            activeWorkspaceId,
+          );
+          return {
+            workspaceHiddenPanelIds,
+            hiddenPanelIds: getWorkspaceHiddenPanelIdsForRoute(workspaceHiddenPanelIds, activeWorkspaceId),
+          };
+        });
       },
 
       setCommandView: (next) => {
@@ -172,23 +409,6 @@ export const useRepoStudioShellStore = create<RepoStudioShellState>()(
       },
 
       replaceCommandView: (next) => set({ commandView: { ...DEFAULT_COMMAND_VIEW, ...next } }),
-
-      setAttachedPlanningDocIds: (docIds) =>
-        set({ attachedPlanningDocIds: [...new Set((docIds || []).filter(Boolean))] }),
-
-      attachPlanningDocId: (docId) => {
-        if (!docId) return;
-        const current = get().attachedPlanningDocIds;
-        if (current.includes(docId)) return;
-        set({ attachedPlanningDocIds: [...current, docId] });
-      },
-
-      detachPlanningDocId: (docId) => {
-        if (!docId) return;
-        set((state) => ({
-          attachedPlanningDocIds: state.attachedPlanningDocIds.filter((item) => item !== docId),
-        }));
-      },
 
       setActiveLoopId: (loopId) => {
         const normalized = String(loopId || '').trim().toLowerCase();
@@ -217,13 +437,14 @@ export const useRepoStudioShellStore = create<RepoStudioShellState>()(
     }),
     {
       name: 'forge:repo-studio-shell:v1',
-      version: 2,
+      version: 3,
+      migrate: (persistedState, version) => migrateRepoStudioShellPersistedState(persistedState, version),
       partialize: (state) => ({
         route: state.route,
         dockLayouts: state.dockLayouts,
         hiddenPanelIds: state.hiddenPanelIds,
+        workspaceHiddenPanelIds: state.workspaceHiddenPanelIds,
         commandView: state.commandView,
-        attachedPlanningDocIds: state.attachedPlanningDocIds,
         activeLoopId: state.activeLoopId,
         reviewQueue: state.reviewQueue,
         selectedRepoPath: state.selectedRepoPath,
@@ -231,3 +452,8 @@ export const useRepoStudioShellStore = create<RepoStudioShellState>()(
     },
   ),
 );
+
+export const REPO_WORKSPACE_MAIN_ANCHORS = REPO_WORKSPACE_IDS.reduce((acc, workspaceId) => {
+  acc[workspaceId] = getWorkspacePreset(workspaceId).mainAnchorPanelId;
+  return acc;
+}, {} as Record<RepoWorkspaceId, string>);

@@ -74,12 +74,58 @@ export type StopRunResponse = {
   run?: RepoRunPayload | null;
 };
 
+export type TerminalSessionStatus = {
+  sessionId: string;
+  running: boolean;
+  pid: number | null;
+  cwd: string;
+  shell: string;
+  degraded?: boolean;
+  fallbackReason?: string | null;
+  createdAt: string;
+  lastActivityAt: string;
+  exitCode: number | null;
+};
+
+export type TerminalSessionStartResponse = {
+  ok: boolean;
+  reused?: boolean;
+  session?: TerminalSessionStatus;
+  message?: string;
+};
+
+export type TerminalSessionInputResponse = {
+  ok: boolean;
+  message?: string;
+};
+
+export type TerminalSessionResizeResponse = {
+  ok: boolean;
+  message?: string;
+};
+
+export type TerminalSessionStopResponse = {
+  ok: boolean;
+  stopped?: boolean;
+  message?: string;
+  session?: TerminalSessionStatus | null;
+};
+
 export type DependencyHealth = {
   dockviewPackageResolved: boolean;
   dockviewCssResolved: boolean;
   sharedStylesResolved: boolean;
   cssPackagesResolved: boolean;
+  runtimePackagesResolved: boolean;
+  postcssConfigResolved?: boolean;
+  tailwindPostcssResolved?: boolean;
+  tailwindPipelineResolved?: boolean;
   cssPackageStatus: Array<{
+    packageName: string;
+    resolved: boolean;
+    resolvedPath: string | null;
+  }>;
+  runtimePackageStatus: Array<{
     packageName: string;
     resolved: boolean;
     resolvedPath: string | null;
@@ -89,6 +135,9 @@ export type DependencyHealth = {
 
 export type RuntimeDepsResponse = {
   ok: boolean;
+  severity?: 'ok' | 'warn' | 'fail';
+  desktopRuntimeReady?: boolean;
+  desktopStandaloneReady?: boolean;
   deps: DependencyHealth;
   desktop?: {
     electronInstalled?: boolean;
@@ -103,6 +152,74 @@ export type RuntimeDepsResponse = {
 export type RuntimeStopResponse = {
   ok: boolean;
   message?: string;
+  stdout?: string;
+  stderr?: string;
+};
+
+export type CodexCliInvocation = {
+  command?: string;
+  args?: string[];
+  source?: 'bundled' | 'configured' | string;
+  display?: string;
+  bundleMissing?: boolean;
+};
+
+export type CodexReadiness = {
+  ok?: boolean;
+  missing?: string[];
+  warnings?: string[];
+  cli?: {
+    installed?: boolean;
+    version?: string | null;
+    source?: 'bundled' | 'configured' | string;
+    invocation?: CodexCliInvocation | null;
+  };
+  login?: {
+    loggedIn?: boolean;
+    authType?: 'chatgpt' | 'other' | 'none' | 'unknown' | string;
+  };
+};
+
+export type CodexSessionStatusResponse = {
+  ok: boolean;
+  codex?: {
+    appServerReachable?: boolean;
+    protocolInitialized?: boolean;
+    activeThreadCount?: number;
+    activeTurnCount?: number;
+    execFallbackEnabled?: boolean;
+    threadId?: string | null;
+    sessionId?: string | null;
+    diagnostics?: string[];
+    readiness?: CodexReadiness | null;
+    transport?: 'app-server' | 'exec' | string;
+  };
+  message?: string;
+};
+
+export type CodexSessionStartResponse = {
+  ok: boolean;
+  sessionId?: string | null;
+  threadId?: string | null;
+  protocolInitialized?: boolean;
+  activeThreadCount?: number;
+  activeTurnCount?: number;
+  reused?: boolean;
+  readiness?: CodexReadiness | null;
+  message?: string;
+};
+
+export type CodexSessionStopResponse = {
+  ok: boolean;
+  stopped?: boolean;
+  message?: string;
+};
+
+export type CodexLoginResponse = {
+  ok: boolean;
+  message?: string;
+  authUrl?: string | null;
+  readiness?: CodexReadiness | null;
   stdout?: string;
   stderr?: string;
 };

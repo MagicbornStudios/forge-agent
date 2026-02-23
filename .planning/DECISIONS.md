@@ -73,3 +73,27 @@
 - [x] Phase 12 codex runtime transport is CLI app-server JSON-RPC first with explicit readiness evaluation (`cli/login/app-server`) and no SDK coupling in this phase.
 - [x] Interactive terminal UX for Forge Loop Phase 12 uses Ink with JSON mode fallback, so the same command can support human TUI operation and automation (`--json`).
 - [x] Stage command defaults remain prompt-pack safe; codex runner execution is opt-in via `--runner` or explicit runtime mode override.
+
+## 2026-02-22
+
+- [x] RepoStudio Codex runtime now treats `@openai/codex` as a bundled dependency and prefers bundled invocation by default (`assistant.codex.cliCommand` default path).
+- [x] RepoStudio doctor keeps Codex CLI installation as a hard readiness gate, but Codex login is non-blocking in default mode so `pnpm dev:repo-studio` can start while logged out.
+- [x] Strict auth-gated workflows use explicit doctor opt-in (`--require-codex-login`) instead of default predev blocking.
+- [x] RepoStudio Codex authentication is surfaced in-app (Codex Assistant setup card + `POST /api/repo/codex/login`) so sign-in can be started from UI without terminal-only onboarding.
+
+## 2026-02-23
+
+- [x] Repo Studio process cleanup policy is manual-only: `pnpm dev:repo-studio` remains non-destructive and does not auto-kill port owners.
+- [x] Cleanup is safe-by-default with explicit escalation: `reclaim` defaults to `repo-studio` scope; repo-wide cleanup requires `--scope repo --force` (dry-run allowed without force).
+- [x] Untracked port-owner termination in `stop` is ownership-gated: foreign processes are never killed implicitly; operators are directed to explicit reclaim commands for intentional destructive cleanup.
+- [x] Repo Studio CLI default output should be ANSI-rich for human readability, with deterministic `--json` and `--plain` modes for automation and no-color environments.
+- [x] Repo Studio runtime dependency semantics are diagnostic-first: missing desktop standalone artifacts do not hard-fail `/api/repo/runtime/deps`; route returns HTTP `200` with additive readiness flags (`desktopRuntimeReady`, `desktopStandaloneReady`) and `severity`.
+- [x] Repo Studio doctor treats `runtime: stopped` as expected predev state and always prints explicit quick actions (start commands, stop command when running, reclaim flow when listeners are detected).
+- [x] Terminal hyperlinks (OSC8) are enabled by default only in rich TTY mode and can be disabled explicitly with `forge-repo-studio doctor --no-links`; plain/json/no-color outputs remain link-free.
+- [x] Repo Studio style pipeline readiness is a hard startup gate: missing PostCSS/Tailwind compiler wiring (`postcss.config.*` or `@tailwindcss/postcss`) must fail doctor/predev until remediated.
+- [x] Repo Studio workspace model is preset-driven with focused tabs per workspace (Dockview retained) instead of global always-visible panel density.
+- [x] Assistant context model is `system prompt + @mentions` (v1 mentions scoped to planning docs); panel-level attach-context actions are removed.
+- [x] Codex setup/actions move to compact app-bar controls (sign-in/refresh/session toggle) and are no longer presented as a large assistant-panel setup card.
+- [x] Repo Studio terminal panel is an interactive repo-root shell session (`xterm` + server-side PTY session APIs), replacing static run-output rendering.
+- [x] Repo Studio Next build on Node 24 forces `output.hashFunction = 'sha256'` in app webpack config to avoid webpack `WasmHash` runtime crashes during `next build`.
+- [x] Terminal session startup is fail-soft: if `node-pty` spawn fails, API returns a degraded fallback session instead of `500`, preserving panel usability and test stability.

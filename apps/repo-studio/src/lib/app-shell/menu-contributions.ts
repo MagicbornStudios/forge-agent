@@ -5,15 +5,17 @@ import {
   type EditorMenubarItem,
   type EditorMenubarMenu,
 } from '@forge/shared/components/editor';
-import type { RepoWorkspaceId } from '@/lib/types';
+import { REPO_WORKSPACE_IDS, type RepoWorkspaceId } from '@/lib/types';
 
 type RepoMenuContext = {
   workspaceId: RepoWorkspaceId;
+  openWorkspaceIds: RepoWorkspaceId[];
   nextAction: string;
   onRefreshSnapshot: () => void;
   onRunEnvDoctor: () => void;
   onRunEnvReconcile: () => void;
   onFocusWorkspace: (workspaceId: RepoWorkspaceId, panelId?: string) => void;
+  onOpenWorkspace: (workspaceId: RepoWorkspaceId) => void;
   onCopyText: (text: string) => void;
   layoutViewItems: EditorMenubarItem[];
 };
@@ -128,12 +130,43 @@ const REPO_WORKSPACE_MENU_FACTORIES: Partial<Record<RepoWorkspaceId, RepoWorkspa
   }),
 };
 
+const WORKSPACE_LABELS: Record<RepoWorkspaceId, string> = {
+  planning: 'Planning',
+  env: 'Env',
+  commands: 'Commands',
+  story: 'Story',
+  docs: 'Docs',
+  git: 'Git',
+  'loop-assistant': 'Loop Assistant',
+  'codex-assistant': 'Codex Assistant',
+  diff: 'Diff',
+  code: 'Code',
+  'review-queue': 'Review Queue',
+};
+
+function buildWorkspaceSubmenu(context: RepoMenuContext): EditorMenubarItem[] {
+  return REPO_WORKSPACE_IDS.map((workspaceId) => {
+    const isOpen = context.openWorkspaceIds.includes(workspaceId);
+    return {
+      id: `workspace-${workspaceId}`,
+      label: `${isOpen ? 'Focus' : 'Open'} ${WORKSPACE_LABELS[workspaceId]}`,
+      onSelect: () => context.onOpenWorkspace(workspaceId),
+    };
+  });
+}
+
 export function buildRepoWorkspaceMenus(context: RepoMenuContext): EditorMenubarMenu[] {
   const factory = REPO_WORKSPACE_MENU_FACTORIES[context.workspaceId];
   const contribution = factory ? factory(context) : {};
 
   return createEditorMenubarMenus({
     file: [
+      {
+        id: 'file-workspaces',
+        label: 'Workspaces',
+        submenu: buildWorkspaceSubmenu(context),
+      },
+      { id: 'file-sep-workspaces', type: 'separator' },
       {
         id: 'file-refresh-workspace',
         label: 'Refresh Workspace Snapshot',
@@ -157,4 +190,3 @@ export function buildRepoWorkspaceMenus(context: RepoMenuContext): EditorMenubar
     extra: contribution.extra || [],
   });
 }
-

@@ -1,12 +1,7 @@
-import path from 'node:path';
-
 import { parsePlanningMarkdown, parsePlanningPlanDoc } from '../../../../../packages/repo-studio/src/core/parsers/planning.mjs';
-import { loadRepoStudioSnapshot, type PlanningDocEntry, type PlanningSnapshot, type RepoStudioSnapshot } from '@/lib/repo-data';
 import type { PlanningStructuredDoc, PlanningStructuredModelResponse } from '@/lib/api/types';
-
-function resolveRepoRoot() {
-  return path.resolve(process.cwd(), '..', '..');
-}
+import { loadRepoStudioSnapshot, type PlanningDocEntry, type PlanningSnapshot, type RepoStudioSnapshot } from '@/lib/repo-data';
+import { resolveRepoRoot } from '@/lib/repo-files';
 
 function toStructuredDoc(doc: PlanningDocEntry): PlanningStructuredDoc {
   const parsed = parsePlanningMarkdown(doc.content);

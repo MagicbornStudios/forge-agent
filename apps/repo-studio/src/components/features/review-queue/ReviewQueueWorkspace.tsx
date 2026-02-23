@@ -27,13 +27,11 @@ const MonacoEditor = dynamic(
 export interface ReviewQueueWorkspaceProps {
   activeLoopId?: string;
   onCopyText: (text: string) => void;
-  onAttachToAssistant: (label: string, content: string) => void;
 }
 
 export function ReviewQueueWorkspace({
   activeLoopId = 'default',
   onCopyText,
-  onAttachToAssistant,
 }: ReviewQueueWorkspaceProps) {
   const [proposals, setProposals] = React.useState<Proposal[]>([]);
   const [trustMode, setTrustMode] = React.useState<'require-approval' | 'auto-approve-all'>('require-approval');
@@ -170,25 +168,6 @@ export function ReviewQueueWorkspace({
     }
   }, [refresh]);
 
-  const attachSelected = React.useCallback(() => {
-    if (!selected) return;
-    const selectedPatchText = selectedPatch?.unifiedPatch || selected.diff || '(no diff payload)';
-    const targetPath = selectedPatch?.path || selectedFilePath || '(no file)';
-    onAttachToAssistant(`proposal:${selected.id}:${targetPath}`, [
-      '# Proposal Context',
-      '',
-      `id: ${selected.id}`,
-      `status: ${selected.status}`,
-      `kind: ${selected.kind}`,
-      `loop: ${selected.loopId}`,
-      `path: ${targetPath}`,
-      '',
-      '```diff',
-      selectedPatchText,
-      '```',
-    ].join('\n'));
-  }, [onAttachToAssistant, selected, selectedFilePath, selectedPatch]);
-
   const proposalBadgeVariant = trustMode === 'auto-approve-all' ? 'secondary' : 'outline';
   const patchText = selectedPatch?.unifiedPatch || selected?.diff || '(select a proposal and file to inspect patch)';
 
@@ -304,9 +283,6 @@ export function ReviewQueueWorkspace({
         </CardHeader>
         <CardContent className="flex min-h-0 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <Button size="sm" variant="outline" onClick={attachSelected} disabled={!selected}>
-              Attach To Assistant
-            </Button>
             <Button size="sm" variant="outline" onClick={() => onCopyText(patchText)} disabled={!selected}>
               Copy Patch
             </Button>

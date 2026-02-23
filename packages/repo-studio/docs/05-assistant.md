@@ -58,8 +58,11 @@ Run:
 codex login
 codex login status
 forge-repo-studio codex-status
+forge-repo-studio codex-login
 forge-env doctor --mode headless --runner codex --strict
 ```
+
+You can also authenticate directly from the `Codex Assistant` panel using the `Sign In` action in `Codex Setup`.
 
 Attach planning docs from the `Planning` tab with `Attach To Assistant`, then copy/paste the generated context block into either assistant editor as needed. Diff contexts can also be attached from the `Diff` workspace.
 
