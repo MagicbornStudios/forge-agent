@@ -63,3 +63,7 @@
 | FRG-1205 | 12 | 12-05 | In progress | Docs/tests/verification closeout and Phase 12 summary artifacts. |
 | FRG-1301 | 13 | 13-01 | Complete | Retrospective: Phase 13 in ROADMAP, AI runtimes tasks in TASK-REGISTRY, sync-legacy, STATUS/DECISIONS updated for phase-tracked work. |
 | FRG-1302 | 13 | 13-02 | Complete | Database workspace: embedded Drizzle Studio; remove custom SQL runner, better-sqlite3, POST /api/repo/db/query. |
+| FRG-1401 | 14 | 14-01 | Complete | Added shared canonical AssistantPanel and removed app-local AssistantRuntimeProvider/useChatRuntime wrappers from Studio/Repo Studio. |
+| FRG-1402 | 14 | 14-02 | Complete | Hard-cut Repo Studio assistant contracts to `assistantTarget`, inlined workspace panel JSX composition, and added companion CORS OPTIONS/headers. |
+| FRG-1403 | 14 | 14-03 | Complete | Added shared companion runtime store/switch/useCompanionAssistantUrl and migrated Studio to shared companion primitives. |
+| FRG-1404 | 14 | 14-04 | Complete | Removed `examples/consumer`, added `apps/consumer-studio`, and added AI/chat-first semantic guard scripts wired to lint/CI. |

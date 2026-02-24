@@ -172,3 +172,12 @@
 - [x] Repo Studio build failed after panel signature cleanup (`renderDatabaseDockPanel` expected 0 args but call site still passed `panelContext`).
   - Root cause: function signature changed in `components/workspaces/panels.tsx` but `DatabaseWorkspace` retained stale invocation.
   - Resolution: removed stale argument and cleaned workspace component destructuring so type-check/lint/build remain green.
+- [x] Assistant runtime wiring drifted into app-local wrappers (`RepoAssistantPanel`, `DialogueAssistantPanel`) and duplicated canonical behavior.
+  - Root cause: shared assistant runtime surface was not enforced, so app work introduced parallel wrapper implementations.
+  - Resolution: added shared `AssistantPanel` in `@forge/shared/components/assistant-ui`, migrated Studio/Repo Studio callers, and removed app-local runtime wrapper files.
+- [x] Repo Studio workspace panel composition regressed into `render*DockPanel` helper indirection.
+  - Root cause: workspace roots delegated panel JSX through `workspaces/panels.tsx`, making semantics noisy and harder to reason about per workspace.
+  - Resolution: deleted `workspaces/panels.tsx` and inlined `WorkspaceLayout.Panel` composition directly in every `*Workspace.tsx` file.
+- [x] Companion apps could not call Repo Studio assistant/health endpoints cross-origin without explicit CORS support.
+  - Root cause: routes lacked OPTIONS handlers and origin-scoped CORS response headers.
+  - Resolution: added localhost allowlisted companion CORS headers + OPTIONS handlers for `GET /api/repo/health` and `POST /api/assistant-chat`.

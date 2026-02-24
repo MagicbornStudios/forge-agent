@@ -1,4 +1,4 @@
-import fs from 'node:fs/promises';
+﻿import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 
@@ -312,7 +312,7 @@ function buildPublishDiff(entry: StoryPublishPreviewStoreEntry) {
 
 export async function queueStoryPublishPreview(input: {
   previewToken: string;
-  editorTarget?: string;
+  assistantTarget?: string;
   threadId?: string;
   turnId?: string;
 }) {
@@ -326,7 +326,7 @@ export async function queueStoryPublishPreview(input: {
 
   const proposal = await upsertPendingProposal({
     id: `story-publish:${preview.token}`,
-    editorTarget: String(input.editorTarget || 'loop-assistant'),
+    assistantTarget: String(input.assistantTarget || 'loop-assistant'),
     loopId: preview.loopId,
     domain: preview.domain,
     scopeRoots: [path.dirname(preview.path)],
@@ -513,3 +513,4 @@ export async function applyStoryPublishProposal(proposalId: string) {
     proposalId: proposal.id,
   };
 }
+

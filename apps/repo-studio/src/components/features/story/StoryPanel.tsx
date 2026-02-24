@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import dynamic from 'next/dynamic';
@@ -202,7 +202,7 @@ export function StoryPanel({
         loopId: activeLoopId,
         domain: 'story',
         scopeOverrideToken: scopeOverrideToken.trim() || undefined,
-        editorTarget: 'loop-assistant',
+        assistantTarget: 'loop-assistant',
       });
       if (!payload.ok) {
         setMessage(payload.message || 'Unable to queue publish proposal.');
@@ -487,4 +487,5 @@ export function StoryPanel({
     </div>
   );
 }
+
 

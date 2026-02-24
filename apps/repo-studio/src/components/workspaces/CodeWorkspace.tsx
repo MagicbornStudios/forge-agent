@@ -1,8 +1,12 @@
 'use client';
 
 import * as React from 'react';
+import { Bot, GitCompareArrows, TerminalSquare } from 'lucide-react';
 import { WorkspaceLayout } from '@forge/shared/components/editor';
-import { renderCodeDockPanel, renderCodexAssistantDockPanel, renderDiffDockPanel, renderGitDockPanel } from './panels';
+import { AssistantPanel } from '@/components/features/assistant/AssistantPanel';
+import { CodePanel } from '@/components/features/code/CodePanel';
+import { DiffPanel } from '@/components/features/diff/DiffPanel';
+import { GitPanel } from '@/components/features/git/GitPanel';
 import { createHiddenPanelSet, isPanelVisible, type RepoWorkspaceProps } from './types';
 
 export function CodeWorkspace({
@@ -26,16 +30,34 @@ export function CodeWorkspace({
       className="h-full"
     >
       <WorkspaceLayout.Main>
-        {isPanelVisible(hiddenPanels, 'code') ? renderCodeDockPanel(panelContext) : null}
+        {isPanelVisible(hiddenPanels, 'code') ? (
+          <WorkspaceLayout.Panel id="code" title="Code" icon={<TerminalSquare size={14} />}>
+            <CodePanel
+              activeLoopId={panelContext.activeLoopId}
+              onCopyText={panelContext.onCopyText}
+            />
+          </WorkspaceLayout.Panel>
+        ) : null}
       </WorkspaceLayout.Main>
       <WorkspaceLayout.Right>
-        {isPanelVisible(hiddenPanels, 'codex-assistant') ? renderCodexAssistantDockPanel() : null}
+        {isPanelVisible(hiddenPanels, 'codex-assistant') ? (
+          <WorkspaceLayout.Panel id="codex-assistant" title="Codex Assistant" icon={<Bot size={14} />}>
+            <AssistantPanel assistantTarget="codex-assistant" />
+          </WorkspaceLayout.Panel>
+        ) : null}
       </WorkspaceLayout.Right>
       <WorkspaceLayout.Bottom>
-        {isPanelVisible(hiddenPanels, 'diff') ? renderDiffDockPanel(panelContext) : null}
-        {isPanelVisible(hiddenPanels, 'git') ? renderGitDockPanel(panelContext) : null}
+        {isPanelVisible(hiddenPanels, 'diff') ? (
+          <WorkspaceLayout.Panel id="diff" title="Diff" icon={<GitCompareArrows size={14} />}>
+            <DiffPanel onCopyText={panelContext.onCopyText} />
+          </WorkspaceLayout.Panel>
+        ) : null}
+        {isPanelVisible(hiddenPanels, 'git') ? (
+          <WorkspaceLayout.Panel id="git" title="Git" icon={<GitCompareArrows size={14} />}>
+            <GitPanel onCopyText={panelContext.onCopyText} />
+          </WorkspaceLayout.Panel>
+        ) : null}
       </WorkspaceLayout.Bottom>
     </WorkspaceLayout>
   );
 }
-

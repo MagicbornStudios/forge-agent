@@ -1,3 +1,6 @@
 [submodule "vendor/twick"]
 	path = vendor/twick
 	url = https://github.com/MagicbornStudios/twick.git
+[submodule "vendor/get-shit-done"]
+	path = vendor/get-shit-done
+	url = https://github.com/MagicbornStudios/get-shit-done.git

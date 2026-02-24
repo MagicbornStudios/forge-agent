@@ -11,17 +11,24 @@ updated: 2026-02-07
 
 **Agent artifact index:** See [docs/18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx) for the full list of agent-only docs (agent-artifacts/core: STATUS, decisions, errors-and-attempts, tool-usage, compacting, standard-practices; all AGENTS.md). **Strategy and conventions:** [docs/19-coding-agent-strategy.mdx](docs/19-coding-agent-strategy.mdx). For **current state** and **failures**, read docs/agent-artifacts (index + core); for **granular "what can I do next?"** (small tasks by tier), see [task-registry](docs/agent-artifacts/core/task-registry.md) and [task-breakdown-system](docs/agent-artifacts/core/task-breakdown-system.md); for **known product/editor issues** (e.g. what's broken or locked), see [ISSUES.md](ISSUES.md); for **technical debt and refactors**, see [technical-debt-roadmap](docs/agent-artifacts/core/technical-debt-roadmap.md); for **area rules**, read this file and the relevant per-package AGENTS.md. Prefer **rg**/list_dir/Read to search and confirm - see [docs/agent-artifacts/core/tool-usage.md](docs/agent-artifacts/core/tool-usage.md). **Capabilities:** [SKILLS.md](SKILLS.md). **Human workflow and DoD:** [CONTRIBUTING.md](CONTRIBUTING.md) and [.github/pull_request_template.md](.github/pull_request_template.md).
 
-**Forge Loop lifecycle:** `.planning/` is the source of truth. Use `forge-loop` (`new-project`, `discuss-phase`, `plan-phase`, `execute-phase`, `verify-work`, `doctor`, `progress`, `sync-legacy`). Runtime is prompt-pack only (no provider SDK/API path required). Legacy files under `docs/agent-artifacts/core/*` are snapshot outputs, not primary planning storage. For GUI operations, prefer `forge-repo-studio` (`open`, `doctor`, `run`).
+**Forge Loop lifecycle:** `.planning/` is the source of truth. **Primary:** GSD (Codex) via `$gsd-*` skills—install with `pnpm gsd:install` (Codex-only). Use `forge-loop` for `doctor`, `progress`, `sync-legacy`. Phase execution is Codex + GSD skills only (no forge-loop phase CLI). `FORGE_LOOP_ID` unset → default loop (`.planning/`); set → `.planning/loops/<id>/`. Legacy files under `docs/agent-artifacts/core/*` are snapshot outputs. For GUI operations, prefer `forge-repo-studio` (`open`, `doctor`, `run`).
 
 ## Scoped edits / .tmp
 
 The `.tmp/` directory (and any path listed in .gitignore as agent-download/reference) is used by agents to download entire repos or component trees for reference. Do **not** edit, refactor, or lint files under `.tmp/`. It is not part of our codebase; search and code changes apply to `apps/`, `packages/`, `docs/`, and root config only.
 
+## AI/chat-first guardrail
+
+- Treat assistant/chat flows as the primary architecture surface.
+- Canonical runtime wrapper is shared: `@forge/shared/components/assistant-ui` `AssistantPanel`.
+- Do **not** add app-local wrappers that wire `AssistantRuntimeProvider`, `AssistantChatTransport`, or `useChatRuntime` in `apps/*`.
+- Companion runtime routing (Repo Studio detection + assistant URL resolution) must use shared workspace utilities, not app-local duplicates.
+
 ## Editor platform (shared)
 
 Owns **packages/shared/src/shared**: editor components, shared styles, and editor/selection/overlay/toolbar types (internal `shared/workspace`; consumed via `@forge/shared`).
 
-- **Loop**: Follow `forge-loop` lifecycle from `.planning` artifacts, run `forge-loop doctor` before major phase runs, then run `forge-loop sync-legacy` to update snapshot sections in `docs/agent-artifacts/core/*`. Use RepoStudio Env workspace for guided headless/env remediation when interactive.
+- **Loop**: Use GSD (Codex) `$gsd-*` skills for phases; run `forge-loop doctor` before major phase runs, then `forge-loop sync-legacy` to update snapshot sections in `docs/agent-artifacts/core/*`. Use RepoStudio Env workspace for guided headless/env remediation when interactive.
 - **Naming**: Use **EditorShell** for the declarative root (layout + slots). Do not introduce a separate "container" name for the same concept.
 - No imperative toolbar API; timeline is optional; no cross-domain imports in shared. Capabilities live in `packages/shared/src/shared/workspace/capabilities.ts` (contracts only).
 

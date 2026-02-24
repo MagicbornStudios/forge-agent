@@ -178,12 +178,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [contributor_workspaces/README.md](pa
 
 ---
 
-## Consumer example
+## Consumer studio reference
 
 ```bash
-pnpm --filter @forge/consumer-example dev
+pnpm --filter @forge/consumer-studio-app dev
 ```
 
-See `examples/consumer/README.md` for environment setup.
+See `apps/consumer-studio/` for the chat-only dev-kit reference app.
 
 

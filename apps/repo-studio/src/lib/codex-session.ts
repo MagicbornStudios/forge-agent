@@ -1,4 +1,4 @@
-import fs from 'node:fs/promises';
+﻿import fs from 'node:fs/promises';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { spawn, spawnSync, type ChildProcessWithoutNullStreams } from 'node:child_process';
@@ -73,7 +73,7 @@ export type CodexTurnStreamEvent =
 type CodexTurnState = {
   turnId: string;
   protocolTurnId: string | null;
-  editorTarget: string;
+  assistantTarget: string;
   loopId: string;
   domain: string;
   scopeRoots: string[];
@@ -425,7 +425,7 @@ async function handleApprovalRequest(session: CodexSessionState, message: JsonRp
   let proposal: RepoProposal;
   try {
     proposal = await upsertPendingProposal({
-      editorTarget: turn?.editorTarget || 'codex-assistant',
+      assistantTarget: turn?.assistantTarget || 'codex-assistant',
       loopId: turn?.loopId || 'default',
       domain: turn?.domain || '',
       scopeRoots: turn?.scopeRoots || [],
@@ -789,7 +789,7 @@ function safeTurnResult(turn: CodexTurnState) {
   return {
     turnId: turn.turnId,
     protocolTurnId: turn.protocolTurnId,
-    editorTarget: turn.editorTarget,
+    assistantTarget: turn.assistantTarget,
     loopId: turn.loopId,
     domain: turn.domain,
     scopeRoots: turn.scopeRoots,
@@ -862,7 +862,7 @@ export async function startCodexTurn(input: {
   prompt?: string;
   messages?: any[];
   loopId?: string;
-  editorTarget?: string;
+  assistantTarget?: string;
   domain?: string;
   scopeRoots?: string[];
   scopeOverrideToken?: string;
@@ -896,7 +896,7 @@ export async function startCodexTurn(input: {
   const turn: CodexTurnState = {
     turnId,
     protocolTurnId: null,
-    editorTarget: String(input.editorTarget || 'codex-assistant'),
+    assistantTarget: String(input.assistantTarget || 'codex-assistant'),
     loopId: String(input.loopId || 'default'),
     domain: String(input.domain || '').trim().toLowerCase(),
     scopeRoots: Array.isArray(input.scopeRoots)
@@ -934,7 +934,7 @@ export async function startCodexTurn(input: {
       ],
       prompt,
       metadata: {
-        editorTarget: turn.editorTarget,
+        assistantTarget: turn.assistantTarget,
         loopId: turn.loopId,
         domain: turn.domain,
         scopeRoots: turn.scopeRoots,
@@ -1106,3 +1106,4 @@ export async function rejectApprovalWithFailure(approvalToken: string, reason: s
   session.pendingApprovals.delete(token);
   await markProposalFailed(pending.proposalId, reason).catch(() => {});
 }
+

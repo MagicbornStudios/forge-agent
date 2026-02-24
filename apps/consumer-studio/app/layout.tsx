@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Forge Dev Kit Consumer Example',
-  description: 'Minimal Next.js app consuming @forge/dev-kit.',
+  title: 'Forge Consumer Studio',
+  description: 'Chat-first consumer studio built only with @forge/dev-kit.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -13,3 +13,4 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
+

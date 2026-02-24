@@ -1,27 +1,24 @@
 'use client';
 
 import * as React from 'react';
-import { RepoAssistantPanel } from '@/components/RepoAssistantPanel';
+import { AssistantPanel as SharedAssistantPanel } from '@forge/shared/components/assistant-ui';
 
 export interface AssistantPanelProps {
-  title: string;
-  editorTarget: 'loop-assistant' | 'codex-assistant';
+  assistantTarget: 'loop-assistant' | 'codex-assistant';
 }
 
 export function AssistantPanel({
-  title,
-  editorTarget,
+  assistantTarget,
 }: AssistantPanelProps) {
-  void title;
   const apiUrl = React.useMemo(() => {
     const params = new URLSearchParams();
-    params.set('editorTarget', editorTarget);
+    params.set('assistantTarget', assistantTarget);
     return `/api/assistant-chat?${params.toString()}`;
-  }, [editorTarget]);
+  }, [assistantTarget]);
 
   return (
     <div className="h-full min-h-0 flex flex-col overflow-auto">
-      <RepoAssistantPanel apiUrl={apiUrl} className="h-full min-h-0 flex-1" />
+      <SharedAssistantPanel apiUrl={apiUrl} className="h-full min-h-0 flex-1" />
     </div>
   );
 }

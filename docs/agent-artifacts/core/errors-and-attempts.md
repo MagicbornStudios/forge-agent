@@ -1526,6 +1526,46 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 
 ---
 
+## AI/chat-first hard-cut: canonical assistant + inline panel composition (2026-02-24)
+
+**Problems**:
+1. Assistant runtime wiring drifted into app-local wrappers (`RepoAssistantPanel`, `DialogueAssistantPanel`), causing duplicated behavior and semantic confusion.
+2. Repo Studio workspace composition regressed into render helper indirection (`render*DockPanel` via `workspaces/panels.tsx`).
+3. Repo Studio request contracts still used `editorTarget`, conflicting with the workspace/assistant semantic model.
+4. Consumer reference app lived under `examples/consumer` with local assistant API coupling instead of companion-runtime routing.
+
+**Causes**:
+- No hard guardrails enforced canonical shared assistant runtime surface.
+- Workspace panel trees were abstracted behind helper functions instead of declared where each workspace layout is defined.
+- Contract rename was incomplete across route/session/proposal/service/schema layers.
+- Consumer example architecture lagged behind AI/chat-first companion mode decisions.
+
+**Fix**:
+- Added shared canonical assistant runtime component:
+  - `packages/shared/src/shared/components/assistant-ui/AssistantPanel.tsx`
+  - migrated Studio and Repo Studio to use this shared panel directly.
+- Removed app-local assistant wrappers:
+  - deleted `apps/repo-studio/src/components/RepoAssistantPanel.tsx`
+  - deleted `apps/studio/components/workspaces/dialogue/DialogueAssistantPanel.tsx`
+- Hard-cut Repo Studio contracts to `assistantTarget`:
+  - assistant chat route, codex session, proposal contracts/repository, story publish services/routes, payload collection field.
+- Inlined `WorkspaceLayout.Panel` JSX in every Repo Studio `*Workspace.tsx` and deleted `apps/repo-studio/src/components/workspaces/panels.tsx`.
+- Added shared companion runtime primitives:
+  - `companion-runtime-store`, `CompanionRuntimeSwitch`, `useCompanionAssistantUrl`.
+  - migrated Studio to shared switch/url hook usage.
+- Added companion CORS support:
+  - `OPTIONS` + scoped CORS headers for `/api/repo/health` and `/api/assistant-chat`.
+- Removed `examples/consumer` and added `apps/consumer-studio` chat-only dev-kit app.
+
+**Guardrails / verification**:
+- Added scripts:
+  - `scripts/guard-assistant-canonical.mjs`
+  - `scripts/guard-workspace-semantics.mjs`
+- Wired guard scripts into root `lint` and CI workflow.
+- Updated AGENTS guidance to codify chat-first + shared assistant canonical policy.
+
+---
+
 *(Add new entries when new errors are found and fixed.)*
 
 <!-- forge-loop:generated:start -->

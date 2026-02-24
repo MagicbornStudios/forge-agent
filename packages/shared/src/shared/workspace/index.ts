@@ -1,4 +1,7 @@
 export * from './companion-runtime';
+export * from './companion-runtime-store';
+export * from './CompanionRuntimeSwitch';
+export * from './useCompanionAssistantUrl';
 export * from './selection';
 export * from './focus';
 export * from './modal';

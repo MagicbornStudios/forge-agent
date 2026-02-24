@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 
 import { buildStoryPublishPreview, queueStoryPublishPreview } from '@/lib/story/publish-service';
 
@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     loopId?: string;
     domain?: string;
     scopeOverrideToken?: string;
-    editorTarget?: string;
+    assistantTarget?: string;
     threadId?: string;
     turnId?: string;
   } = {};
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 
     const queued = await queueStoryPublishPreview({
       previewToken,
-      editorTarget: body.editorTarget,
+      assistantTarget: body.assistantTarget,
       threadId: body.threadId,
       turnId: body.turnId,
     });
@@ -63,3 +63,4 @@ export async function POST(request: Request) {
     }, { status: 500 });
   }
 }
+

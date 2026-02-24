@@ -3,41 +3,45 @@
 import * as React from 'react';
 import { AssistantRuntimeProvider } from '@assistant-ui/react';
 import { AssistantChatTransport, useChatRuntime } from '@assistant-ui/react-ai-sdk';
-import { Thread } from '@forge/shared/components/assistant-ui/thread';
-import { AssistantDevToolsBridge } from '@forge/shared/components/assistant-ui';
-import { ToolUIRegistry } from '@forge/shared/components/tool-ui/assistant-tools';
-import {
-  DomainToolsRenderer,
-  useDomainAssistant,
-  type DomainAssistantContract,
-} from '@forge/shared/assistant';
+import { cn } from '@forge/shared/lib/utils';
+import { DomainToolsRenderer, useDomainAssistant, type DomainAssistantContract } from '../../assistant';
+import { ToolUIRegistry } from '../tool-ui/assistant-tools';
+import { AssistantDevToolsBridge } from './devtools-bridge';
+import { Thread } from './thread';
 
-export interface RepoAssistantPanelProps {
+export interface AssistantPanelProps {
   apiUrl?: string;
   transportHeaders?: Record<string, string>;
+  transportCredentials?: RequestCredentials;
   composerLeading?: React.ReactNode;
   composerTrailing?: React.ReactNode;
   className?: string;
   contract?: DomainAssistantContract;
   toolsEnabled?: boolean;
+  extraToolUi?: React.ReactNode;
 }
 
-export function RepoAssistantPanel({
+export function AssistantPanel({
   apiUrl = '/api/assistant-chat',
   transportHeaders,
+  transportCredentials = 'include',
   composerLeading,
   composerTrailing,
   className,
   contract,
   toolsEnabled = false,
-}: RepoAssistantPanelProps) {
+  extraToolUi,
+}: AssistantPanelProps) {
   const transport = React.useMemo(
-    () => new AssistantChatTransport({
-      api: apiUrl,
-      ...(transportHeaders ? { headers: transportHeaders } : {}),
-    }),
-    [apiUrl, transportHeaders],
+    () =>
+      new AssistantChatTransport({
+        api: apiUrl,
+        credentials: transportCredentials,
+        ...(transportHeaders ? { headers: transportHeaders } : {}),
+      }),
+    [apiUrl, transportCredentials, transportHeaders],
   );
+
   const runtime = useChatRuntime({ transport });
 
   return (
@@ -45,16 +49,17 @@ export function RepoAssistantPanel({
       <AssistantDevToolsBridge />
       <ToolUIRegistry />
       {contract ? (
-        <RepoAssistantDomainTools contract={contract} toolsEnabled={toolsEnabled} />
+        <AssistantPanelDomainTools contract={contract} toolsEnabled={toolsEnabled} />
       ) : null}
-      <div className={`flex h-full min-h-0 flex-col ${className || ''}`}>
+      {extraToolUi}
+      <div className={cn('flex h-full min-h-0 flex-col', className)}>
         <Thread composerLeading={composerLeading} composerTrailing={composerTrailing} />
       </div>
     </AssistantRuntimeProvider>
   );
 }
 
-function RepoAssistantDomainTools({
+function AssistantPanelDomainTools({
   contract,
   toolsEnabled,
 }: {
@@ -64,3 +69,4 @@ function RepoAssistantDomainTools({
   useDomainAssistant(contract, { enabled: toolsEnabled });
   return <DomainToolsRenderer contract={contract} enabled={toolsEnabled} />;
 }
+

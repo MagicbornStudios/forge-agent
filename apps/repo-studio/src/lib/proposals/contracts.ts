@@ -1,10 +1,10 @@
-import { randomUUID } from 'node:crypto';
+﻿import { randomUUID } from 'node:crypto';
 
 export type RepoProposalStatus = 'pending' | 'applied' | 'rejected' | 'failed';
 
 export type RepoProposal = {
   id: string;
-  editorTarget: 'loop-assistant' | 'codex-assistant' | string;
+  assistantTarget: 'loop-assistant' | 'codex-assistant' | string;
   loopId: string;
   domain: string;
   scopeRoots: string[];
@@ -24,7 +24,7 @@ export type RepoProposal = {
 
 export type RepoProposalUpsertInput = {
   id?: string;
-  editorTarget: string;
+  assistantTarget: string;
   loopId: string;
   domain?: string;
   scopeRoots?: string[];
@@ -75,7 +75,7 @@ export function sanitizeMetadata(value: unknown): Record<string, unknown> | null
 export function sanitizeProposal(entry: Partial<RepoProposal>): RepoProposal {
   return {
     id: String(entry.id || randomUUID()),
-    editorTarget: String(entry.editorTarget || 'codex-assistant'),
+    assistantTarget: String(entry.assistantTarget || 'codex-assistant'),
     loopId: String(entry.loopId || 'default'),
     domain: String(entry.domain || '').trim().toLowerCase(),
     scopeRoots: sanitizeList(entry.scopeRoots),
@@ -103,4 +103,5 @@ export function transitionMessage(status: RepoProposalStatus) {
   if (status === 'rejected') return 'Proposal rejected.';
   return 'Proposal marked failed.';
 }
+
 

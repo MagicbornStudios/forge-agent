@@ -1,8 +1,10 @@
 'use client';
 
 import * as React from 'react';
+import { BookOpen, Bot } from 'lucide-react';
 import { WorkspaceLayout } from '@forge/shared/components/editor';
-import { renderLoopAssistantDockPanel, renderPlanningDockPanel } from './panels';
+import { AssistantPanel } from '@/components/features/assistant/AssistantPanel';
+import { PlanningPanel } from '@/components/features/planning/PlanningPanel';
 import { createHiddenPanelSet, isPanelVisible, type RepoWorkspaceProps } from './types';
 
 export function LoopAssistantWorkspace({
@@ -26,10 +28,29 @@ export function LoopAssistantWorkspace({
       className="h-full"
     >
       <WorkspaceLayout.Main>
-        {isPanelVisible(hiddenPanels, 'planning') ? renderPlanningDockPanel(panelContext) : null}
-        {isPanelVisible(hiddenPanels, 'loop-assistant') ? renderLoopAssistantDockPanel() : null}
+        {isPanelVisible(hiddenPanels, 'planning') ? (
+          <WorkspaceLayout.Panel id="planning" title="Planning" icon={<BookOpen size={14} />}>
+            <PlanningPanel
+              planning={panelContext.planningSnapshot}
+              loops={panelContext.loopEntries}
+              activeLoopId={panelContext.activeLoopId}
+              switchingLoop={panelContext.switchingLoop}
+              selectedDocId={panelContext.selectedDocId}
+              onSelectDoc={panelContext.onSelectDoc}
+              onSwitchLoop={panelContext.onSwitchLoop}
+              onCopyMentionToken={panelContext.onCopyMentionToken}
+              onCopyText={panelContext.onCopyText}
+              onOpenAssistant={panelContext.onOpenAssistant}
+              selectedDocContent={panelContext.selectedDocContent}
+            />
+          </WorkspaceLayout.Panel>
+        ) : null}
+        {isPanelVisible(hiddenPanels, 'loop-assistant') ? (
+          <WorkspaceLayout.Panel id="loop-assistant" title="Loop Assistant" icon={<Bot size={14} />}>
+            <AssistantPanel assistantTarget="loop-assistant" />
+          </WorkspaceLayout.Panel>
+        ) : null}
       </WorkspaceLayout.Main>
     </WorkspaceLayout>
   );
 }
-

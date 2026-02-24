@@ -1,6 +1,5 @@
 export * from './shared/components/app';
 export * from './shared/components/assistant-ui';
-export * from './shared/components/docs';
 export * from './shared/components/editor';
 export * from './shared/components/gating';
 export * from './shared/components/media';

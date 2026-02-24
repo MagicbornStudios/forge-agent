@@ -15,6 +15,7 @@
     "test:review-queue": "node --import tsx --test \"__tests__/review-queue/*.test.mjs\"",
     "check:direct-fetch": "node scripts/check-direct-fetch.mjs",
     "check:direct-fetch:strict": "node scripts/check-direct-fetch.mjs --strict",
+    "db:migrate:assistant-target": "node scripts/migrate-assistant-target.mjs",
     "db:pull": "drizzle-kit pull",
     "db:studio": "drizzle-kit studio --port=4983"
   },

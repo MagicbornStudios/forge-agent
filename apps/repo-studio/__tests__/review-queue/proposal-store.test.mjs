@@ -1,4 +1,4 @@
-import assert from 'node:assert/strict';
+﻿import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import test from 'node:test';
@@ -71,7 +71,7 @@ test('legacy proposal store is readable and approval-token lookup is stable', as
     proposals: [
       {
         id: 'legacy-proposal-1',
-        editorTarget: 'codex-assistant',
+        assistantTarget: 'codex-assistant',
         loopId: 'default',
         domain: 'story',
         scopeRoots: ['content/story'],
@@ -99,4 +99,5 @@ test('legacy proposal store is readable and approval-token lookup is stable', as
   assert.equal(byToken?.id, 'legacy-proposal-1');
   assert.equal(byToken?.status, 'pending');
 });
+
 

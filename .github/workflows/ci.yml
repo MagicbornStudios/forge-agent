@@ -28,6 +28,11 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      - name: Semantic Guards
+        run: |
+          pnpm guard:assistant-canonical
+          pnpm guard:workspace-semantics
+
       - name: RepoStudio App Build
         run: pnpm --filter @forge/repo-studio-app build
 

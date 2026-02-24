@@ -1,4 +1,4 @@
-import { createUIMessageStream, createUIMessageStreamResponse } from 'ai';
+﻿import { createUIMessageStream, createUIMessageStreamResponse } from 'ai';
 
 import { resolveRepoRoot } from '@/lib/repo-files';
 import { loadRepoStudioSnapshot } from '@/lib/repo-data';
@@ -77,7 +77,7 @@ function loopAssistantReply(input: {
   ].join('\n');
 }
 
-export async function runLocalLoopAssistant(input: { body: any; editorTarget: string }) {
+export async function runLocalLoopAssistant(input: { body: any; assistantTarget: string }) {
   const repoRoot = resolveRepoRoot();
   const requestedLoopId = String(input.body?.loopId || '').trim().toLowerCase() || undefined;
   const snapshot = await loadRepoStudioSnapshot(repoRoot, {
@@ -99,7 +99,7 @@ export async function runLocalLoopAssistant(input: { body: any; editorTarget: st
       writer.write({
         type: 'start',
         messageMetadata: {
-          editorTarget: input.editorTarget,
+          assistantTarget: input.assistantTarget,
           loopId: snapshot.planning.loopId,
         },
       });
@@ -114,7 +114,7 @@ export async function runLocalLoopAssistant(input: { body: any; editorTarget: st
         type: 'finish',
         finishReason: 'stop',
         messageMetadata: {
-          editorTarget: input.editorTarget,
+          assistantTarget: input.assistantTarget,
           loopId: snapshot.planning.loopId,
         },
       });
@@ -123,4 +123,5 @@ export async function runLocalLoopAssistant(input: { body: any; editorTarget: st
 
   return createUIMessageStreamResponse({ stream });
 }
+
 

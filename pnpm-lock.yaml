@@ -27,6 +27,49 @@ importers:
         specifier: ^5.30.0
         version: 5.33.0(encoding@0.1.13)(typanion@3.14.0)
 
+  apps/consumer-studio:
+    dependencies:
+      '@forge/dev-kit':
+        specifier: workspace:*
+        version: link:../../packages/dev-kit
+      next:
+        specifier: 15.5.9
+        version: 15.5.9(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.77.4)
+      react:
+        specifier: ^19.2.1
+        version: 19.2.4
+      react-dom:
+        specifier: ^19.2.1
+        version: 19.2.4(react@19.2.4)
+    devDependencies:
+      '@tailwindcss/postcss':
+        specifier: ^4.1.18
+        version: 4.1.18
+      '@types/node':
+        specifier: ^22
+        version: 22.19.8
+      '@types/react':
+        specifier: 19.2.11
+        version: 19.2.11
+      '@types/react-dom':
+        specifier: 19.2.3
+        version: 19.2.3(@types/react@19.2.11)
+      eslint:
+        specifier: ^9
+        version: 9.39.2(jiti@2.6.1)
+      eslint-config-next:
+        specifier: 15.5.9
+        version: 15.5.9(eslint@9.39.2(jiti@2.6.1))(typescript@5.8.3)
+      postcss:
+        specifier: ^8
+        version: 8.4.49
+      tailwindcss:
+        specifier: ^4.0.0
+        version: 4.1.18
+      typescript:
+        specifier: ^5
+        version: 5.8.3
+
   apps/docs:
     dependencies:
       '@forge/shared':
@@ -732,55 +775,6 @@ importers:
       swagger-ui-react:
         specifier: ^5.31.0
         version: 5.31.0(@types/react@19.2.11)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      tailwindcss:
-        specifier: ^4.0.0
-        version: 4.1.18
-      typescript:
-        specifier: ^5
-        version: 5.9.3
-
-  examples/consumer:
-    dependencies:
-      '@ai-sdk/openai':
-        specifier: ^3.0.25
-        version: 3.0.25(zod@4.3.6)
-      '@forge/dev-kit':
-        specifier: workspace:*
-        version: link:../../packages/dev-kit
-      next:
-        specifier: 15.5.9
-        version: 15.5.9(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.77.4)
-      openai:
-        specifier: ^5.23.2
-        version: 5.23.2(ws@8.19.0)(zod@4.3.6)
-      react:
-        specifier: ^19.2.1
-        version: 19.2.4
-      react-dom:
-        specifier: ^19.2.1
-        version: 19.2.4(react@19.2.4)
-    devDependencies:
-      '@tailwindcss/postcss':
-        specifier: ^4.1.18
-        version: 4.1.18
-      '@types/node':
-        specifier: ^22
-        version: 22.19.8
-      '@types/react':
-        specifier: 19.2.11
-        version: 19.2.11
-      '@types/react-dom':
-        specifier: 19.2.3
-        version: 19.2.3(@types/react@19.2.11)
-      eslint:
-        specifier: ^9
-        version: 9.39.2(jiti@2.6.1)
-      eslint-config-next:
-        specifier: 15.5.9
-        version: 15.5.9(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
-      postcss:
-        specifier: ^8
-        version: 8.5.6
       tailwindcss:
         specifier: ^4.0.0
         version: 4.1.18

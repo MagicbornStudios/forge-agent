@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { createUIMessageStream, createUIMessageStreamResponse } from 'ai';
 
-import { isCompanionRequest } from '@/lib/companion-auth';
+import { companionCorsHeaders, isCompanionRequest } from '@/lib/companion-auth';
 import { runRepoStudioCli } from '@/lib/cli-runner';
 import { runLocalLoopAssistant } from '@/lib/loop-assistant-chat';
 import { resolveLoopAssistantEndpoint } from '@/lib/loop-assistant-runtime';
@@ -52,13 +52,12 @@ function extractPrompt(body: any) {
   return '';
 }
 
-function editorFromRequest(url: URL, body: any, config: RepoStudioConfig) {
-  const queryEditorTarget = String(url.searchParams.get('editorTarget') || '').trim().toLowerCase();
-  const queryEditorLegacy = String(url.searchParams.get('editor') || '').trim().toLowerCase();
-  const bodyEditor = String(body?.editorTarget || '').trim().toLowerCase();
-  const configEditor = String(config.assistant?.defaultEditor || 'loop-assistant').trim().toLowerCase();
-  const editor = queryEditorTarget || queryEditorLegacy || bodyEditor || configEditor;
-  if (editor === 'codex-assistant') return 'codex-assistant';
+function assistantTargetFromRequest(url: URL, body: any, config: RepoStudioConfig) {
+  const queryAssistantTarget = String(url.searchParams.get('assistantTarget') || '').trim().toLowerCase();
+  const bodyAssistantTarget = String(body?.assistantTarget || '').trim().toLowerCase();
+  const configAssistantTarget = String(config.assistant?.defaultEditor || 'loop-assistant').trim().toLowerCase();
+  const assistantTarget = queryAssistantTarget || bodyAssistantTarget || configAssistantTarget;
+  if (assistantTarget === 'codex-assistant') return 'codex-assistant';
   return 'loop-assistant';
 }
 
@@ -89,12 +88,12 @@ function normalizeLoopId(value: unknown) {
   return normalized || 'default';
 }
 
-function assistantPromptKey(editorTarget: 'loop-assistant' | 'codex-assistant') {
-  return editorTarget === 'codex-assistant' ? 'codexAssistant' : 'loopAssistant';
+function assistantPromptKey(assistantTarget: 'loop-assistant' | 'codex-assistant') {
+  return assistantTarget === 'codex-assistant' ? 'codexAssistant' : 'loopAssistant';
 }
 
 async function resolveAssistantSystemPrompt(input: {
-  editorTarget: 'loop-assistant' | 'codex-assistant';
+  assistantTarget: 'loop-assistant' | 'codex-assistant';
   workspaceId?: string;
   loopId: string;
 }) {
@@ -112,7 +111,7 @@ async function resolveAssistantSystemPrompt(input: {
     const byLoop = prompts.byLoop && typeof prompts.byLoop === 'object'
       ? prompts.byLoop as Record<string, any>
       : {};
-    const promptKey = assistantPromptKey(input.editorTarget);
+    const promptKey = assistantPromptKey(input.assistantTarget);
     const byLoopPrompt = String(byLoop?.[input.loopId]?.[promptKey] || '').trim();
     if (byLoopPrompt) return byLoopPrompt;
     const fallbackPrompt = String(prompts?.[promptKey] || '').trim();
@@ -176,12 +175,12 @@ function buildEnrichedPrompt(input: {
 
 async function buildAssistantRequestContext(input: {
   body: any;
-  editorTarget: 'loop-assistant' | 'codex-assistant';
+  assistantTarget: 'loop-assistant' | 'codex-assistant';
 }) {
   const loopId = normalizeLoopId(input.body?.loopId);
   const userPrompt = extractPrompt(input.body);
   const systemPrompt = await resolveAssistantSystemPrompt({
-    editorTarget: input.editorTarget,
+    assistantTarget: input.assistantTarget,
     workspaceId: String(input.body?.workspaceId || 'planning'),
     loopId,
   });
@@ -221,7 +220,7 @@ async function buildAssistantRequestContext(input: {
   };
 }
 
-function streamFromCodexTurn(turnId: string, editorTarget: string) {
+function streamFromCodexTurn(turnId: string, assistantTarget: string) {
   const partId = `codex-${turnId}`;
 
   return createUIMessageStream({
@@ -229,7 +228,7 @@ function streamFromCodexTurn(turnId: string, editorTarget: string) {
       writer.write({
         type: 'start',
         messageMetadata: {
-          editorTarget,
+          assistantTarget,
           turnId,
         },
       });
@@ -289,7 +288,7 @@ function streamFromCodexTurn(turnId: string, editorTarget: string) {
         type: 'finish',
         finishReason,
         messageMetadata: {
-          editorTarget,
+          assistantTarget,
           turnId,
         },
       });
@@ -299,7 +298,7 @@ function streamFromCodexTurn(turnId: string, editorTarget: string) {
 
 function streamFromExecResult(input: {
   message: string;
-  editorTarget: string;
+  assistantTarget: string;
   mode: string;
   usedExecFallback: boolean;
 }) {
@@ -309,7 +308,7 @@ function streamFromExecResult(input: {
       writer.write({
         type: 'start',
         messageMetadata: {
-          editorTarget: input.editorTarget,
+          assistantTarget: input.assistantTarget,
           mode: input.mode,
           usedExecFallback: input.usedExecFallback,
         },
@@ -325,7 +324,7 @@ function streamFromExecResult(input: {
         type: 'finish',
         finishReason: 'stop',
         messageMetadata: {
-          editorTarget: input.editorTarget,
+          assistantTarget: input.assistantTarget,
           mode: input.mode,
           usedExecFallback: input.usedExecFallback,
         },
@@ -338,7 +337,7 @@ async function runCodexPath(input: {
   config: RepoStudioConfig;
   url: URL;
   body: any;
-  editorTarget: string;
+  assistantTarget: string;
   prompt: string;
   loopId: string;
 }) {
@@ -366,7 +365,7 @@ async function runCodexPath(input: {
       prompt,
       messages: input.body?.messages,
       loopId: input.loopId,
-      editorTarget: input.editorTarget,
+      assistantTarget: input.assistantTarget,
       domain: String(input.body?.domain || '').trim().toLowerCase(),
       scopeOverrideToken: String(input.body?.scopeOverrideToken || '').trim(),
       scopeRoots: (await resolveScopeGuardContext({
@@ -377,7 +376,7 @@ async function runCodexPath(input: {
     });
 
     if (turn.ok) {
-      const stream = streamFromCodexTurn(String(turn.turnId), input.editorTarget);
+      const stream = streamFromCodexTurn(String(turn.turnId), input.assistantTarget);
       return createUIMessageStreamResponse({ stream });
     }
 
@@ -405,14 +404,35 @@ async function runCodexPath(input: {
 
   const stream = streamFromExecResult({
     message: String(exec.payload?.message || 'Codex completed.'),
-    editorTarget: input.editorTarget,
+    assistantTarget: input.assistantTarget,
     mode: transport,
     usedExecFallback: true,
   });
   return createUIMessageStreamResponse({ stream });
 }
 
-export async function POST(request: Request) {
+function applyCompanionCors(request: Request, response: Response): Response {
+  const headers = companionCorsHeaders(request, 'POST, OPTIONS');
+  if (Object.keys(headers).length === 0) return response;
+  const merged = new Headers(response.headers);
+  for (const [key, value] of Object.entries(headers)) {
+    merged.set(key, value);
+  }
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: merged,
+  });
+}
+
+export async function OPTIONS(request: Request) {
+  return new Response(null, {
+    status: 204,
+    headers: companionCorsHeaders(request, 'POST, OPTIONS'),
+  });
+}
+
+async function handlePost(request: Request) {
   const config = await readRepoStudioConfig();
   const assistantEnabled = config.assistant?.enabled !== false;
   // When Open Router path runs here, use isCompanionRequest(request) to skip Payload user auth for companion apps.
@@ -427,19 +447,19 @@ export async function POST(request: Request) {
   const url = new URL(request.url);
   const rawBody = await request.text();
   const parsedBody = parseBody(rawBody);
-  const editorTarget = editorFromRequest(url, parsedBody, config);
+  const assistantTarget = assistantTargetFromRequest(url, parsedBody, config);
   const requestContext = await buildAssistantRequestContext({
     body: parsedBody,
-    editorTarget,
+    assistantTarget,
   });
   const requestBody = requestContext.body;
 
-  if (editorTarget === 'codex-assistant') {
+  if (assistantTarget === 'codex-assistant') {
     return runCodexPath({
       config,
       url,
       body: requestBody,
-      editorTarget: 'codex-assistant',
+      assistantTarget: 'codex-assistant',
       prompt: requestContext.prompt,
       loopId: requestContext.loopId,
     });
@@ -459,7 +479,7 @@ export async function POST(request: Request) {
   if (loopRoute.local === true || !loopRoute.endpoint) {
     return runLocalLoopAssistant({
       body: requestBody,
-      editorTarget: 'loop-assistant',
+      assistantTarget: 'loop-assistant',
     });
   }
 
@@ -479,3 +499,9 @@ export async function POST(request: Request) {
     },
   });
 }
+
+export async function POST(request: Request) {
+  const response = await handlePost(request);
+  return applyCompanionCors(request, response);
+}
+

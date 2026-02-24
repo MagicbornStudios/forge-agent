@@ -23,19 +23,20 @@ import {
   useCreateProject,
 } from '@/lib/data/hooks';
 import { useAppShellStore } from '@/lib/app-shell/store';
-import { useAssistantChatUrl } from '@/lib/app-shell/useAssistantChatUrl';
+import { useCompanionAssistantUrl } from '@forge/shared';
 import { EDITOR_VIEWPORT_IDS } from '@/lib/app-shell/editor-metadata';
 import { CHAT_PANEL_ID } from '@/lib/workspace-registry/constants';
-import { DialogueAssistantPanel } from '@/components/workspaces/dialogue/DialogueAssistantPanel';
+import { AssistantPanel } from '@forge/shared/components/assistant-ui';
 import { YarnPanel, YARN_PANEL_ID } from '@/components/workspaces/dialogue/YarnPanel';
 import { ModelSwitcher } from '@/components/model-switcher';
 import { useWorkspacePanelVisibility } from '@/lib/app-shell/useWorkspacePanelVisibility';
 import { useSettingsStore } from '@/lib/settings/store';
 import { isLangGraphEnabledClient } from '@/lib/feature-flags';
 import { useAIHighlight, type AIHighlightPayload } from '@forge/shared/assistant';
-import { useForgeAssistantContract } from '@forge/domain-forge/assistant';
+import { ForgePlanExecuteProvider, ForgePlanToolUI, useForgeAssistantContract } from '@forge/domain-forge/assistant';
 import { planStepToOp } from '@forge/domain-forge/copilot/plan-utils';
 import { useCreateForgePlan, useForgeStoryBuilder } from '@/lib/data/hooks';
+import { API_ROUTES } from '@/lib/api-client/routes';
 import {
   EditorShell,
   EditorToolbar,
@@ -1262,17 +1263,21 @@ export function DialogueWorkspace() {
       </div>
     );
 
-  const assistantChatUrl = useAssistantChatUrl();
+  const assistantChatUrl = useCompanionAssistantUrl({ fallbackUrl: API_ROUTES.ASSISTANT_CHAT });
   const chatContent =
     showChatPanel === false ? undefined : (
       <div className="h-full min-h-0">
-        <DialogueAssistantPanel
-          apiUrl={assistantChatUrl}
+        <AssistantPanel
+          apiUrl={assistantChatUrl ?? undefined}
           contract={toolsEnabled ? forgeAssistantContract : undefined}
           toolsEnabled={toolsEnabled}
-          executePlan={toolsEnabled ? executePlan : undefined}
           transportHeaders={assistantTransportHeaders}
           composerTrailing={<ModelSwitcher provider="assistantUi" variant="composer" />}
+          extraToolUi={toolsEnabled && executePlan ? (
+            <ForgePlanExecuteProvider executePlan={executePlan}>
+              <ForgePlanToolUI />
+            </ForgePlanExecuteProvider>
+          ) : null}
         />
       </div>
     );

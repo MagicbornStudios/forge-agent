@@ -109,6 +109,11 @@
 - [x] Assistant runtime/request contracts are workspace-first: transport header is `x-forge-ai-workspace-id`, session locator/runtime metadata use `workspaceId`, and payload session field is `workspace`.
 - [x] Settings scope is workspace-first end-to-end: `'workspace'` replaced `'editor'` in store/UI/API/schema flows, with migration script coverage for historical records.
 - [x] Payload type generation resolves Payload adapters from the Studio workspace package root (not root-level direct imports), preventing module/export resolution failures during `pnpm payload:types`.
+- [x] AI/chat-first hard-cut: assistant runtime wiring is canonicalized in shared `AssistantPanel`; app-local AssistantRuntimeProvider wrappers are not allowed in `apps/*`.
+- [x] Repo Studio assistant routing contract is `assistantTarget` end-to-end (query/body/session/proposal/schema); `editorTarget` is retired from active contracts.
+- [x] Repo Studio workspace panel composition is inline JSX per workspace root (`*Workspace.tsx`), with no `render*DockPanel` helper indirection.
+- [x] Consumer reference surface is now app-level `apps/consumer-studio` (chat-only, companion runtime driven); `examples/consumer` is removed from workspace packages.
+- [x] AI/chat semantic guardrails are enforced in automation (`guard-assistant-canonical`, `guard-workspace-semantics`) and wired into root lint + CI.
 
 ## 2026-02-23 (AI runtimes and companion mode)
 

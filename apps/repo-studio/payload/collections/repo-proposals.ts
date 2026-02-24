@@ -1,4 +1,4 @@
-import type { CollectionConfig } from 'payload';
+﻿import type { CollectionConfig } from 'payload';
 
 export const RepoProposals: CollectionConfig = {
   slug: 'repo-proposals',
@@ -16,7 +16,7 @@ export const RepoProposals: CollectionConfig = {
       index: true,
     },
     {
-      name: 'editorTarget',
+      name: 'assistantTarget',
       type: 'text',
       required: true,
       index: true,
@@ -102,4 +102,5 @@ export const RepoProposals: CollectionConfig = {
     },
   ],
 };
+
 

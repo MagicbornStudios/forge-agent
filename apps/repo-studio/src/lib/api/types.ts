@@ -1,4 +1,4 @@
-export type RepoMode = 'local' | 'preview' | 'production' | 'headless';
+﻿export type RepoMode = 'local' | 'preview' | 'production' | 'headless';
 export type RepoScope = 'workspace' | 'loop';
 export type RepoCommandSource = 'root-scripts' | 'workspace-scripts' | 'forge-builtins';
 export type RepoEnvScope = 'root' | 'app' | 'package' | 'vendor';
@@ -672,7 +672,7 @@ export type DiffFilePayload = {
 
 export type Proposal = {
   id: string;
-  editorTarget: string;
+  assistantTarget: string;
   loopId: string;
   kind: string;
   summary: string;
@@ -747,3 +747,4 @@ export type RepoSearchResponse = {
   truncated?: boolean;
   message?: string;
 };
+

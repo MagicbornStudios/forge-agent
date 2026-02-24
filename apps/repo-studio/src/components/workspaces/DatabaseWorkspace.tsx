@@ -1,8 +1,9 @@
 'use client';
 
 import * as React from 'react';
+import { Database } from 'lucide-react';
 import { WorkspaceLayout } from '@forge/shared/components/editor';
-import { renderDatabaseDockPanel } from './panels';
+import { DatabasePanel } from '@/components/features/database/DatabasePanel';
 import { createHiddenPanelSet, isPanelVisible, type RepoWorkspaceProps } from './types';
 
 export function DatabaseWorkspace({
@@ -25,7 +26,11 @@ export function DatabaseWorkspace({
       className="h-full"
     >
       <WorkspaceLayout.Main>
-        {isPanelVisible(hiddenPanels, 'database') ? renderDatabaseDockPanel() : null}
+        {isPanelVisible(hiddenPanels, 'database') ? (
+          <WorkspaceLayout.Panel id="database" title="Database" icon={<Database size={14} />}>
+            <DatabasePanel />
+          </WorkspaceLayout.Panel>
+        ) : null}
       </WorkspaceLayout.Main>
     </WorkspaceLayout>
   );

@@ -1,14 +1,14 @@
-# Assistant
+﻿# Assistant
 
 RepoStudio exposes two assistant editors:
 
 - `loop-assistant` for loop orchestration and planning operations
 - `codex-assistant` for code/repo operations
 
-Both use the same config contract from `.repo-studio/config.json`, but routing is split by `editorTarget`:
+Both use the same config contract from `.repo-studio/config.json`, but routing is split by `assistantTarget`:
 
-- `editorTarget=loop-assistant`: non-Codex shared runtime path (or proxy if explicitly configured).
-- `editorTarget=codex-assistant`: Codex path (app-server transport primary, exec fallback optional).
+- `assistantTarget=loop-assistant`: non-Codex shared runtime path (or proxy if explicitly configured).
+- `assistantTarget=codex-assistant`: Codex path (app-server transport primary, exec fallback optional).
 
 ## Config
 
@@ -88,3 +88,4 @@ Review Queue patch APIs:
 
 - `GET /api/repo/proposals/diff-files?proposalId=<id>`
 - `GET /api/repo/proposals/diff-file?proposalId=<id>&path=<repo-relative>`
+

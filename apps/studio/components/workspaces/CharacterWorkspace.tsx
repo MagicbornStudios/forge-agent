@@ -20,11 +20,12 @@ import { useAIHighlight } from '@forge/shared/assistant';
 
 // AppShell
 import { useAppShellStore } from '@/lib/app-shell/store';
-import { useAssistantChatUrl } from '@/lib/app-shell/useAssistantChatUrl';
+import { useCompanionAssistantUrl } from '@forge/shared';
 import { EDITOR_VIEWPORT_IDS } from '@/lib/app-shell/editor-metadata';
 import { CHAT_PANEL_ID } from '@/lib/workspace-registry/constants';
-import { DialogueAssistantPanel } from '@/components/workspaces/dialogue/DialogueAssistantPanel';
+import { AssistantPanel } from '@forge/shared/components/assistant-ui';
 import { ModelSwitcher } from '@/components/model-switcher';
+import { API_ROUTES } from '@/lib/api-client/routes';
 import { useWorkspacePanelVisibility } from '@/lib/app-shell/useWorkspacePanelVisibility';
 import { useSettingsStore } from '@/lib/settings/store';
 import { isLangGraphEnabledClient } from '@/lib/feature-flags';
@@ -125,7 +126,7 @@ export function CharacterWorkspace() {
   const workspaceId = 'character';
   const viewportId = EDITOR_VIEWPORT_IDS.character;
   const activeProjectId = useAppShellStore((s) => s.activeProjectId);
-  const assistantChatUrl = useAssistantChatUrl();
+  const assistantChatUrl = useCompanionAssistantUrl({ fallbackUrl: API_ROUTES.ASSISTANT_CHAT });
   const langGraphEnabled = isLangGraphEnabledClient();
 
   // Settings
@@ -594,8 +595,8 @@ export function CharacterWorkspace() {
               </WorkspaceLayout.Panel>
               <WorkspaceLayout.Panel id={CHAT_PANEL_ID} title="Chat" icon={<MessageCircle size={14} />}>
                 <div className="h-full min-h-0">
-                  <DialogueAssistantPanel
-                    apiUrl={assistantChatUrl}
+                  <AssistantPanel
+                    apiUrl={assistantChatUrl ?? undefined}
                     contract={toolsEnabled ? characterAssistantContract : undefined}
                     toolsEnabled={toolsEnabled}
                     transportHeaders={assistantTransportHeaders}

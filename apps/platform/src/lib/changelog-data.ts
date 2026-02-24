@@ -49,7 +49,7 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
       'Twick Studio skeleton in VideoEditor (LivePlayerProvider, TimelineProvider).',
       'Agent-engine workflow runtime, SSE route, useWorkflowRun streaming hook.',
       'Workflow streaming in Dialogue inspector (plan + patch + review).',
-      'EditorApp + AppProviders; examples/consumer for @forge/dev-kit.',
+      'Studio shell primitives + apps/consumer-studio chat-only reference for @forge/dev-kit.',
       'Platform site: apps/platform with landing, docs, login, account, and billing.',
     ],
   },

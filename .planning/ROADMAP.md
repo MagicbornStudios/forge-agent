@@ -8,7 +8,7 @@ Operational roadmap for Forge Loop lifecycle delivery in RepoStudio, aligned to 
 - `forge_env_analysis/`
 - `ide_navigation_analysis/`
 
-Phase 12 implementation is in final closeout (`12-05`). Phase 13 (AI runtimes correction and Database workspace) completed.
+Phase 12 implementation is in final closeout (`12-05`). Phase 13 (AI runtimes correction and Database workspace) completed. Phase 14 (AI/chat-first hard-cut + consumer studio) is active.
 
 ## Phases
 
@@ -25,6 +25,7 @@ Phase 12 implementation is in final closeout (`12-05`). Phase 13 (AI runtimes co
 - [x] **Phase 11: Review Queue persistence and diff UX** - Move proposals to SQLite source-of-truth, add one-file Monaco diff review, and enforce scope-safe global trust-mode auto-apply
 - [x] **Phase 12: Codex-interactive Ralph Loop CLI** - Add provider-based interactive CLI runtime with Codex app-server primary, prompt-pack fallback, and run-event telemetry
 - [x] **Phase 13: AI runtimes correction and Database workspace** - Register AI runtimes/companion work in the loop, fix Database workspace to use embedded Drizzle Studio, and sync legacy artifacts
+- [ ] **Phase 14: AI/chat-first hard-cut and consumer studio reference** - Canonical shared assistant surface, inline workspace panel composition, `assistantTarget` contracts, companion runtime reuse, and chat-only consumer app
 
 ## Phase Details
 
@@ -186,6 +187,18 @@ Plans:
 - [x] 13-01: Retrospective — Add Phase 13 to ROADMAP, add completed AI runtimes tasks to TASK-REGISTRY, run sync-legacy, update STATUS and DECISIONS
 - [x] 13-02: Database workspace — Replace custom SQL runner with embedded Drizzle Studio; remove better-sqlite3 and POST /api/repo/db/query
 
+### Phase 14: AI/chat-first hard-cut and consumer studio reference
+**Goal:** Enforce assistant-first architecture contracts, remove wrapper duplication, inline Repo Studio workspace panel composition, and ship chat-only consumer app reference.
+**Depends on:** Phase 13
+**Requirements:** (Phase 14 corrective + semantic hard-cut)
+**Plans:** 4 plans
+
+Plans:
+- [x] 14-01: Shared canonical AssistantPanel + remove app-local assistant runtime wrappers
+- [x] 14-02: Repo Studio inline workspace panel composition + `assistantTarget` contract hard-cut + companion CORS
+- [x] 14-03: Shared companion runtime switch/store/url hook + Studio adoption
+- [x] 14-04: Remove `examples/consumer`, add `apps/consumer-studio`, add AI/chat-first semantic guard scripts
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -203,3 +216,4 @@ Plans:
 | 11. Review Queue persistence and diff UX | 4/4 | Complete | 2026-02-17 |
 | 12. Codex-interactive Ralph Loop CLI | 4/5 | In progress | - |
 | 13. AI runtimes correction and Database workspace | 2/2 | Complete | 2026-02-23 |
+| 14. AI/chat-first hard-cut and consumer studio reference | 4/4 | Complete | 2026-02-24 |

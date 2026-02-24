@@ -19,6 +19,38 @@ function getAllowedOrigins(): Set<string> {
   );
 }
 
+function isLocalhostOrigin(origin: string): boolean {
+  try {
+    const parsed = new URL(origin);
+    const host = parsed.hostname.toLowerCase();
+    return host === 'localhost' || host === '127.0.0.1' || host === '::1';
+  } catch {
+    return false;
+  }
+}
+
+function resolveCorsOrigin(request: Request): string | null {
+  const origin = request.headers.get('origin')?.trim();
+  if (!origin) return null;
+  const normalizedOrigin = origin.toLowerCase();
+  const allowed = getAllowedOrigins();
+  if (!allowed.has(normalizedOrigin)) return null;
+  if (!isLocalhostOrigin(normalizedOrigin)) return null;
+  return origin;
+}
+
+export function companionCorsHeaders(request: Request, methods: string): Record<string, string> {
+  const origin = resolveCorsOrigin(request);
+  if (!origin) return {};
+  return {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Allow-Methods': methods,
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-forge-companion-secret',
+    Vary: 'Origin',
+  };
+}
+
 /**
  * Returns true when the request is from a trusted companion (e.g. Studio).
  * - Same-origin (no Origin header or Origin matches request host).

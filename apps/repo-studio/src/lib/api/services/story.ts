@@ -1,4 +1,4 @@
-import { getJson, postJson } from '@/lib/api/http';
+﻿import { getJson, postJson } from '@/lib/api/http';
 import type {
   StoryMutationPayload,
   StoryPublishApplyResponse,
@@ -114,7 +114,7 @@ export async function queueStoryPublish(input: {
   loopId?: string;
   domain?: string;
   scopeOverrideToken?: string;
-  editorTarget?: string;
+  assistantTarget?: string;
 }) {
   return postJson<StoryPublishQueueResponse>('/api/repo/story/publish/queue', {
     ...input,
@@ -134,3 +134,4 @@ export async function applyStoryPublish(input: {
     fallbackMessage: 'Unable to apply story publish proposal.',
   });
 }
+

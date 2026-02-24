@@ -1,8 +1,10 @@
 'use client';
 
 import * as React from 'react';
+import { BookOpen } from 'lucide-react';
 import { WorkspaceLayout } from '@forge/shared/components/editor';
-import { renderDocsDockPanel, renderPlanningDockPanel } from './panels';
+import { DocsPanel } from '@/components/features/docs/DocsPanel';
+import { PlanningPanel } from '@/components/features/planning/PlanningPanel';
 import { createHiddenPanelSet, isPanelVisible, type RepoWorkspaceProps } from './types';
 
 export function DocsWorkspace({
@@ -26,10 +28,29 @@ export function DocsWorkspace({
       className="h-full"
     >
       <WorkspaceLayout.Main>
-        {isPanelVisible(hiddenPanels, 'planning') ? renderPlanningDockPanel(panelContext) : null}
-        {isPanelVisible(hiddenPanels, 'docs') ? renderDocsDockPanel() : null}
+        {isPanelVisible(hiddenPanels, 'planning') ? (
+          <WorkspaceLayout.Panel id="planning" title="Planning" icon={<BookOpen size={14} />}>
+            <PlanningPanel
+              planning={panelContext.planningSnapshot}
+              loops={panelContext.loopEntries}
+              activeLoopId={panelContext.activeLoopId}
+              switchingLoop={panelContext.switchingLoop}
+              selectedDocId={panelContext.selectedDocId}
+              onSelectDoc={panelContext.onSelectDoc}
+              onSwitchLoop={panelContext.onSwitchLoop}
+              onCopyMentionToken={panelContext.onCopyMentionToken}
+              onCopyText={panelContext.onCopyText}
+              onOpenAssistant={panelContext.onOpenAssistant}
+              selectedDocContent={panelContext.selectedDocContent}
+            />
+          </WorkspaceLayout.Panel>
+        ) : null}
+        {isPanelVisible(hiddenPanels, 'docs') ? (
+          <WorkspaceLayout.Panel id="docs" title="Docs" icon={<BookOpen size={14} />}>
+            <DocsPanel />
+          </WorkspaceLayout.Panel>
+        ) : null}
       </WorkspaceLayout.Main>
     </WorkspaceLayout>
   );
 }
-

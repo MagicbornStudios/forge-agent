@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 
 import { startCodexTurn } from '@/lib/codex-session';
 import { resolveScopeGuardContext } from '@/lib/scope-guard';
@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     prompt?: string;
     messages?: any[];
     loopId?: string;
-    editorTarget?: string;
+    assistantTarget?: string;
     domain?: string;
     scopeOverrideToken?: string;
   } = {};
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     prompt: body.prompt,
     messages: body.messages,
     loopId: body.loopId,
-    editorTarget: body.editorTarget,
+    assistantTarget: body.assistantTarget,
     domain: scope.domain,
     scopeRoots: scope.allowedRoots,
     scopeOverrideToken: body.scopeOverrideToken,
@@ -49,3 +49,4 @@ export async function POST(request: Request) {
     },
   }, { status: ok ? 200 : 500 });
 }
+

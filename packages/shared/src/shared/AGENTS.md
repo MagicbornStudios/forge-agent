@@ -6,7 +6,9 @@ Workspace Platform Engineer: owns `packages/shared/src/shared` (editor component
 
 ## Conventions
 
-- **Public API:** Use **Editor\*** components only (`EditorShell`, `DockLayout`, `EditorToolbar`, etc.). **Workspace\*** UI components have been removed; Editor* + DockLayout are the only shell. Types (Selection, ToolbarGroup, InspectorSection, OverlaySpec, etc.) live in `shared/workspace` and are re-exported for editor and copilot use.
+- **Public layout API:** Use `WorkspaceLayout` + `WorkspacePanel` for docked panel composition.
+- **Workspace semantics:** Workspace = tab/root surface. Panel = content unit inside workspace rails.
+- **Assistant semantics:** shared `AssistantPanel` (`shared/components/assistant-ui/AssistantPanel.tsx`) is canonical for runtime wiring.
 
 ## Workspace (internal types only)
 
@@ -17,15 +19,17 @@ Workspace Platform Engineer: owns `packages/shared/src/shared` (editor component
 - **Capabilities** — `WorkspaceCapabilities` interface; editors implement, chat calls. No imperative UI refs.
 - **Workspace UI spec** — Declarative slots: `header`, `toolbar`, `left`, `main`, `right`, `statusBar`, `bottom`, `overlays`.
 - **Modal** — Legacy `ModalRoute` / `ModalRegistry`; prefer OverlaySpec + EditorOverlaySurface for new code.
-- **Editor shell**: Declarative, slot-based. Recommended: use `EditorShell.Header`, `.Toolbar`, `.Layout`, `.StatusBar`, `.Overlay`, `.Settings` so anatomy is explicit; raw children (legacy) remain supported. See `components/editor/README.md` for slot map and how to build an editor.
-- **Dock layout (rails)**: Left, main, right, bottom are **rails**; each rail can have multiple **panel tabs**. **UI-first:** Use `WorkspaceLayout.Left`/`.Main`/`.Right`/`.Bottom` with `WorkspaceLayout.Panel` children (`id`, `title`, `icon?`). Pass icon as `React.ReactNode`. No store-driven registration. **WorkspaceContextProvider** provides `editorId` only; **EditorRail**, **EditorPanel**, **EditorLayout** are deprecated. Config-driven `leftPanels`/`mainPanels`/etc. and legacy props remain for backward compat. See `components/editor/README.md`. Always provide `viewportId` + `viewportType` via the `viewport` prop.
+- **Editor shell**: Declarative, slot-based. Recommended: use `EditorShell.Header`, `.Toolbar`, `.Layout`, `.StatusBar`, `.Overlay`, `.Settings` so anatomy is explicit.
+- **Workspace layout (rails)**: Left, main, right, bottom are rails. Use inline `WorkspaceLayout.Left`/`.Main`/`.Right`/`.Bottom` with `WorkspaceLayout.Panel` children (`id`, `title`, `icon?`).
+- **Deprecated registration primitives**: `EditorRail`, `EditorPanel`, `PanelRegistrationContext` are legacy and should not be introduced in new work.
+- **No render-helper panel factories**: compose workspace panels inline where the workspace is defined.
 - **Atomic design**: shadcn atoms live in `packages/ui/src/components/ui/*`; shared editor UI composes those atoms into molecules.
 - **Styles**: Single source in `packages/shared/src/shared/styles/`. Themes are data-driven (`data-theme` on `<html>` or editor root). Do not duplicate theme tokens elsewhere.
 - **Density**: Editor UI is compact by default. Use tokenized spacing (`--control-*`, `--panel-padding`, `--tab-height`) and set `data-density` on `EditorShell` for overrides.
 - **No cross-domain imports**: Shared should not import from app routes or domain-specific code (e.g. Dialogue, Character). UI atoms are imported from `@forge/ui`.
 - **Editor UI primitives**: Use `EditorButton`, `PanelTabs`, and `EditorTooltip` for tooltip-enabled UI.
 - **Media components**: Reusable `MediaCard` and `GenerateMediaModal` live under `shared/components/media` for entity media slots.
-- **Assistant UI + tool UI**: Strategy editor components live under `shared/components/assistant-ui` and `shared/components/tool-ui`.
+- **Assistant UI + tool UI**: runtime wiring belongs in `shared/components/assistant-ui/AssistantPanel.tsx`; tool surfaces live under `shared/components/tool-ui`.
 
 ## Adding a new slot or panel
 

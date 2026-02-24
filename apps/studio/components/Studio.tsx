@@ -15,12 +15,12 @@ import { CreateListingSheet } from '@/components/listings/CreateListingSheet';
 import { useAppSettingsMenuItems } from '@/lib/settings/useAppSettingsMenuItems';
 import { Toaster } from '@forge/ui/sonner';
 import { SidebarTrigger } from '@forge/ui/sidebar';
+import { CompanionRuntimeSwitch } from '@forge/shared';
 import { useSettingsStore } from '@/lib/settings/store';
 import { useWorkspaceRegistryStore } from '@/lib/workspace-registry/workspace-registry';
 import { useMenuRegistry } from '@/lib/workspace-registry/workspace-menu-registry';
 import { useAppShellStore } from '@/lib/app-shell/store';
 import { MessageCircle, Settings, Users } from 'lucide-react';
-import { RepoStudioRuntimeSwitch } from '@/components/RepoStudioRuntimeSwitch';
 
 const STUDIO_MENUBAR_TARGET = 'studio-menubar';
 
@@ -215,7 +215,7 @@ export function Studio() {
           </StudioApp.Tabs.Main>
 
           <StudioApp.Tabs.Right>
-            <RepoStudioRuntimeSwitch />
+            <CompanionRuntimeSwitch />
             <SidebarTrigger
               className="h-[var(--control-height-sm)] w-[var(--control-height-sm)] border border-border/60 bg-background text-muted-foreground shadow-[var(--shadow-xs)] hover:bg-accent/40 hover:text-foreground"
               aria-label="Toggle Settings"

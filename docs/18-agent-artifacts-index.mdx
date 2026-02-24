@@ -9,8 +9,8 @@ Files for AI/coding agents. Keep accurate and greppable.
 ## Agent quick start
 
 - **Next:** Read [Coding agent strategy](19-coding-agent-strategy).
-- **Loop:** `forge-loop new-project -> discuss-phase -> plan-phase -> execute-phase -> verify-work -> doctor -> progress -> sync-legacy`.
-- **Runtime:** prompt-pack only (no embedded provider SDK/API execution path).
+- **Loop:** GSD (Codex) via `$gsd-*` skills for phases; `pnpm gsd:install` to install. Use `forge-loop` for `doctor`, `progress`, `sync-legacy`. `FORGE_LOOP_ID` unset → default (`.planning/`).
+- **Runtime:** Codex + GSD skills for planning/phase execution; prompt-pack optional.
 - **Headless gate:** validate env readiness with `forge-env doctor --mode headless --strict`.
 - **GUI command center:** `forge-repo-studio open --view env` for env triage, allowlisted commands, and loop status.
 

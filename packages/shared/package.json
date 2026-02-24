@@ -3,14 +3,15 @@
   "private": false,
   "version": "0.1.1",
   "types": "dist/index.d.ts",
-  "main": "dist/index.cjs.js",
-  "module": "dist/index.esm.js",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.esm.js",
-      "require": "./dist/index.cjs.js"
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
     },
+    "./components/docs": "./src/shared/components/docs/index.ts",
     "./styles/editor": "./dist/styles/editor.css",
     "./assistant": "./src/shared/assistant/index.ts"
   },

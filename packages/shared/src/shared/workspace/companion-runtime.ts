@@ -3,6 +3,24 @@
 import * as React from 'react';
 
 const REPO_STUDIO_HEALTH_PATH = '/api/repo/health';
+export const DEFAULT_REPO_STUDIO_BASE_URL = 'http://localhost:3010';
+
+export function resolveCompanionRuntimeBaseUrl(baseUrl?: string | null): string | null {
+  const explicit = typeof baseUrl === 'string' ? baseUrl.trim() : '';
+  if (explicit) return explicit;
+
+  const envUrl =
+    typeof process.env.NEXT_PUBLIC_REPO_STUDIO_APP_URL === 'string'
+      ? process.env.NEXT_PUBLIC_REPO_STUDIO_APP_URL.trim()
+      : '';
+  if (envUrl) return envUrl;
+
+  if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'production') {
+    return DEFAULT_REPO_STUDIO_BASE_URL;
+  }
+
+  return null;
+}
 
 export interface CompanionRuntimeDetectionResult {
   /** True when the companion (e.g. Repo Studio) health endpoint returned 200. */
@@ -21,19 +39,23 @@ export interface CompanionRuntimeDetectionResult {
 export function useCompanionRuntimeDetection(
   baseUrl: string | undefined | null,
 ): CompanionRuntimeDetectionResult {
+  const resolvedBaseUrl = React.useMemo(
+    () => resolveCompanionRuntimeBaseUrl(baseUrl),
+    [baseUrl],
+  );
   const [available, setAvailable] = React.useState(false);
-  const [checking, setChecking] = React.useState(!!baseUrl);
+  const [checking, setChecking] = React.useState(!!resolvedBaseUrl);
   const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    if (!baseUrl || typeof baseUrl !== 'string') {
+    if (!resolvedBaseUrl || typeof resolvedBaseUrl !== 'string') {
       setAvailable(false);
       setChecking(false);
       setError(null);
       return;
     }
 
-    const url = baseUrl.replace(/\/$/, '') + REPO_STUDIO_HEALTH_PATH;
+    const url = resolvedBaseUrl.replace(/\/$/, '') + REPO_STUDIO_HEALTH_PATH;
     setChecking(true);
     setError(null);
 
@@ -54,7 +76,7 @@ export function useCompanionRuntimeDetection(
       });
 
     return () => controller.abort();
-  }, [baseUrl]);
+  }, [resolvedBaseUrl]);
 
   return { available, checking, error };
 }

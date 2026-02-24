@@ -2,14 +2,14 @@
 
 import * as React from 'react';
 import { Loader2 } from 'lucide-react';
+import { AppProviders } from '@forge/shared';
 import {
-  AppProviders,
   BlockView,
   getShowcaseDemo,
   getShowcaseEntry,
   isInternalOnlyShowcaseId,
   isShowcaseEntryId,
-} from '@forge/shared';
+} from '@forge/shared/components/docs';
 
 class DemoErrorBoundary extends React.Component<
   {

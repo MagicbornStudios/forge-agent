@@ -1,4 +1,4 @@
-import {
+﻿import {
   compareByDateDesc,
   nowIso,
   sanitizeProposal,
@@ -15,7 +15,7 @@ const PROPOSALS_COLLECTION = 'repo-proposals';
 type PayloadProposalDoc = {
   id?: string;
   proposalId?: string;
-  editorTarget?: string;
+  assistantTarget?: string;
   loopId?: string;
   domain?: string;
   scopeRoots?: unknown;
@@ -44,7 +44,7 @@ function toProposal(record: PayloadProposalDoc): RepoProposal | null {
   if (!proposalId) return null;
   return sanitizeProposal({
     id: proposalId,
-    editorTarget: record.editorTarget,
+    assistantTarget: record.assistantTarget,
     loopId: record.loopId,
     domain: record.domain,
     scopeRoots: sanitizeStringList(record.scopeRoots),
@@ -68,7 +68,7 @@ function toProposal(record: PayloadProposalDoc): RepoProposal | null {
 function toPayloadData(proposal: RepoProposal) {
   return {
     proposalId: proposal.id,
-    editorTarget: proposal.editorTarget,
+    assistantTarget: proposal.assistantTarget,
     loopId: proposal.loopId,
     domain: proposal.domain,
     scopeRoots: proposal.scopeRoots,
@@ -227,7 +227,7 @@ export async function upsertSqlitePendingProposal(input: RepoProposalUpsertInput
 
   const next = sanitizeProposal({
     id: existing?.id || input.id,
-    editorTarget: input.editorTarget,
+    assistantTarget: input.assistantTarget,
     loopId: input.loopId,
     domain: input.domain,
     scopeRoots: input.scopeRoots,
@@ -288,4 +288,5 @@ export async function transitionSqliteProposal(
     noop: false,
   };
 }
+
 

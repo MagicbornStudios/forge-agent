@@ -23,5 +23,7 @@ export {
   ComposerAttachments,
   ComposerAddAttachment,
 } from './attachment';
+export { AssistantPanel } from './AssistantPanel';
+export type { AssistantPanelProps } from './AssistantPanel';
 export { CodebaseAgentStrategyWorkspace } from './CodebaseAgentStrategyWorkspace';
 export { AssistantDevToolsBridge } from './devtools-bridge';
