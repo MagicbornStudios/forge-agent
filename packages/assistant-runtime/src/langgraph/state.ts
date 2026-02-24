@@ -1,7 +1,7 @@
 import type { AssistantContextBundle } from '../context';
 import type {
   AssistantDomain,
-  AssistantEditorId,
+  AssistantWorkspaceId,
   AssistantSessionRecord,
   SessionLocator,
 } from '../sessions/types';
@@ -16,7 +16,7 @@ export interface ChatRequestMetadata {
   userId: number;
   projectId: number;
   domain: AssistantDomain;
-  editorId: AssistantEditorId;
+  workspaceId: AssistantWorkspaceId;
   viewportId?: string;
 }
 

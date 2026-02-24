@@ -8,7 +8,7 @@ Operational roadmap for Forge Loop lifecycle delivery in RepoStudio, aligned to 
 - `forge_env_analysis/`
 - `ide_navigation_analysis/`
 
-Phase 12 implementation is in final closeout (`12-05`).
+Phase 12 implementation is in final closeout (`12-05`). Phase 13 (AI runtimes correction and Database workspace) completed.
 
 ## Phases
 
@@ -24,6 +24,7 @@ Phase 12 implementation is in final closeout (`12-05`).
 - [x] **Phase 10: RepoStudio build and runtime guardrails** - Prevent CSS/dependency regressions with verify-work, doctor, dev prechecks, and CI gates
 - [x] **Phase 11: Review Queue persistence and diff UX** - Move proposals to SQLite source-of-truth, add one-file Monaco diff review, and enforce scope-safe global trust-mode auto-apply
 - [x] **Phase 12: Codex-interactive Ralph Loop CLI** - Add provider-based interactive CLI runtime with Codex app-server primary, prompt-pack fallback, and run-event telemetry
+- [x] **Phase 13: AI runtimes correction and Database workspace** - Register AI runtimes/companion work in the loop, fix Database workspace to use embedded Drizzle Studio, and sync legacy artifacts
 
 ## Phase Details
 
@@ -175,6 +176,16 @@ Plans:
 - [x] 12-04: Stage command integration (`discuss|plan|execute`) with runner semantics
 - [ ] 12-05: Docs/tests/verification closeout and phase summary artifacts
 
+### Phase 13: AI runtimes correction and Database workspace
+**Goal:** Register AI runtimes/companion work in the loop, fix Database workspace to use embedded Drizzle Studio, and sync legacy artifacts.
+**Depends on:** Phase 12
+**Requirements:** (Phase 13 corrective)
+**Plans:** 2 plans
+
+Plans:
+- [x] 13-01: Retrospective — Add Phase 13 to ROADMAP, add completed AI runtimes tasks to TASK-REGISTRY, run sync-legacy, update STATUS and DECISIONS
+- [x] 13-02: Database workspace — Replace custom SQL runner with embedded Drizzle Studio; remove better-sqlite3 and POST /api/repo/db/query
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -191,3 +202,4 @@ Plans:
 | 10. RepoStudio build and runtime guardrails | 4/4 | Complete | 2026-02-17 |
 | 11. Review Queue persistence and diff UX | 4/4 | Complete | 2026-02-17 |
 | 12. Codex-interactive Ralph Loop CLI | 4/5 | In progress | - |
+| 13. AI runtimes correction and Database workspace | 2/2 | Complete | 2026-02-23 |

@@ -1,11 +1,11 @@
 'use client';
 
-import { AppShell } from '@/components/AppShell';
+import { StudioRoot } from '@/components/StudioRoot';
 import { AppProviders } from '@/components/AppProviders';
 export default function Home() {
   return (
     <AppProviders copilotDefaultOpen>
-      <AppShell />
+      <StudioRoot />
     </AppProviders>
   );
 }

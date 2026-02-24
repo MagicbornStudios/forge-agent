@@ -1,4 +1,5 @@
 @import "../../../packages/shared/src/shared/styles/editor-surface.css";
+@import "./repo-studio-context-panels.css";
 @import "@xterm/xterm/css/xterm.css";
 @import "tailwindcss";
 

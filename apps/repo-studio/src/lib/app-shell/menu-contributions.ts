@@ -6,6 +6,7 @@ import {
   type EditorMenubarMenu,
 } from '@forge/shared/components/editor';
 import { REPO_WORKSPACE_IDS, type RepoWorkspaceId } from '@/lib/types';
+import { REPO_WORKSPACE_LABELS } from './workspace-layout-definitions';
 
 type RepoMenuContext = {
   workspaceId: RepoWorkspaceId;
@@ -92,6 +93,17 @@ const REPO_WORKSPACE_MENU_FACTORIES: Partial<Record<RepoWorkspaceId, RepoWorkspa
       focusItem('view-focus-codex-assistant', 'Focus Codex Assistant', context, 'codex-assistant', 'codex-assistant'),
     ],
   }),
+  docs: (context) => ({
+    view: [
+      focusItem('view-focus-docs-panel', 'Focus Docs Panel', context, 'docs', 'docs'),
+      focusItem('view-focus-planning-panel', 'Focus Planning Panel', context, 'planning', 'planning'),
+    ],
+  }),
+  database: (context) => ({
+    view: [
+      focusItem('view-focus-database-panel', 'Focus Database', context, 'database', 'database'),
+    ],
+  }),
   git: (context) => ({
     view: [
       focusItem('view-focus-git-panel', 'Focus Git Panel', context, 'git', 'git'),
@@ -102,12 +114,6 @@ const REPO_WORKSPACE_MENU_FACTORIES: Partial<Record<RepoWorkspaceId, RepoWorkspa
     view: [
       focusItem('view-focus-diff-panel', 'Focus Diff Panel', context, 'diff', 'diff'),
       focusItem('view-focus-review-queue-panel', 'Focus Review Queue', context, 'review-queue', 'review-queue'),
-    ],
-  }),
-  docs: (context) => ({
-    view: [
-      focusItem('view-focus-docs-panel', 'Focus Docs Panel', context, 'docs', 'docs'),
-      focusItem('view-focus-planning-panel', 'Focus Planning Panel', context, 'planning', 'planning'),
     ],
   }),
   'loop-assistant': (context) => ({
@@ -130,26 +136,12 @@ const REPO_WORKSPACE_MENU_FACTORIES: Partial<Record<RepoWorkspaceId, RepoWorkspa
   }),
 };
 
-const WORKSPACE_LABELS: Record<RepoWorkspaceId, string> = {
-  planning: 'Planning',
-  env: 'Env',
-  commands: 'Commands',
-  story: 'Story',
-  docs: 'Docs',
-  git: 'Git',
-  'loop-assistant': 'Loop Assistant',
-  'codex-assistant': 'Codex Assistant',
-  diff: 'Diff',
-  code: 'Code',
-  'review-queue': 'Review Queue',
-};
-
 function buildWorkspaceSubmenu(context: RepoMenuContext): EditorMenubarItem[] {
   return REPO_WORKSPACE_IDS.map((workspaceId) => {
     const isOpen = context.openWorkspaceIds.includes(workspaceId);
     return {
       id: `workspace-${workspaceId}`,
-      label: `${isOpen ? 'Focus' : 'Open'} ${WORKSPACE_LABELS[workspaceId]}`,
+      label: `${isOpen ? 'Focus' : 'Open'} ${REPO_WORKSPACE_LABELS[workspaceId]}`,
       onSelect: () => context.onOpenWorkspace(workspaceId),
     };
   });

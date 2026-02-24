@@ -152,3 +152,23 @@
 - [x] Repo Studio build type-check failed from implicit-any callbacks in shared docs sidebar (`DocsSidebar.tsx`).
   - Root cause: strict TS checks flagged untyped callback parameters in `.some(...)` filters.
   - Resolution: typed callback params as `Node` and revalidated `pnpm --filter @forge/repo-studio-app build`.
+
+## 2026-02-24
+
+- [x] Repo Studio workspace tabs still behaved like one global panel canvas, causing panel overload and brittle preset coupling.
+  - Root cause: `RepoStudioShell` mounted a single `EditorDockLayout` and used store-driven preset visibility (`workspace-presets` + `useRepoPanelVisibility`) instead of workspace-scoped layouts.
+  - Resolution: replaced preset model with one-layout-per-workspace composition (`components/layouts/*Layout.tsx`), per-workspace layout ids, and workspace-scoped panel visibility + restore behavior.
+- [x] Legacy single-layout persistence and hidden-panel payloads produced inconsistent post-migration state.
+  - Root cause: persisted data assumed one layout key (`repo-studio-main`) and global hidden panel semantics.
+  - Resolution: added store migration/version bump to map legacy layout JSON into active workspace layout id, sanitize hidden panels by workspace definition, and enforce at least one visible main panel.
+- [x] Shared layout precedence was ambiguous between declarative slots and array props.
+  - Root cause: `EditorDockLayout` implementation still favored `leftPanels/mainPanels/...` over slot-collected panels.
+  - Resolution: inverted precedence so slot children win, and marked array props as deprecated compatibility-only surface.
+
+- [x] `pnpm payload:types` failed after semantic renames with module resolution errors from root generator script (`@payloadcms/db-postgres` not found, then payload export path not exported).
+  - Root cause: `scripts/generate-payload-types.mjs` imported Payload adapters and `generateTypes` from root package resolution paths that are not guaranteed/exported under workspace-local installs.
+  - Resolution: updated generator to resolve/import dependencies from the Studio workspace package context via `createRequire`, lazily import the active DB adapter, and resolve Payload package root from the installed entry path before loading `dist/bin/generateTypes.js`.
+
+- [x] Repo Studio build failed after panel signature cleanup (`renderDatabaseDockPanel` expected 0 args but call site still passed `panelContext`).
+  - Root cause: function signature changed in `components/workspaces/panels.tsx` but `DatabaseWorkspace` retained stale invocation.
+  - Resolution: removed stale argument and cleaned workspace component destructuring so type-check/lint/build remain green.

@@ -13,7 +13,7 @@ import { AppSettingsPanelContent } from './AppSettingsPanelContent';
 export interface AppSettingsSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  activeEditorId?: string | null;
+  activeWorkspaceId?: string | null;
   activeProjectId?: string | null;
   viewportId?: string;
 }
@@ -21,7 +21,7 @@ export interface AppSettingsSheetProps {
 export function AppSettingsSheet({
   open,
   onOpenChange,
-  activeEditorId,
+  activeWorkspaceId,
   activeProjectId,
   viewportId = 'main',
 }: AppSettingsSheetProps) {
@@ -34,11 +34,11 @@ export function AppSettingsSheet({
         <SheetHeader>
           <SheetTitle>Settings</SheetTitle>
           <SheetDescription>
-            App and user defaults; project and editor overrides when in context.
+            App and user defaults; project and workspace overrides when in context.
           </SheetDescription>
         </SheetHeader>
         <AppSettingsPanelContent
-          activeEditorId={activeEditorId}
+          activeWorkspaceId={activeWorkspaceId}
           activeProjectId={activeProjectId}
           viewportId={viewportId}
           className="mt-4 flex-1 min-h-0"

@@ -15,7 +15,7 @@ export const SettingsOverrides: CollectionConfig = {
       required: true,
       options: [
         { label: 'App', value: 'app' },
-        { label: 'Editor', value: 'editor' },
+        { label: 'Workspace', value: 'workspace' },
         { label: 'Viewport', value: 'viewport' },
         { label: 'Project', value: 'project' },
       ],
@@ -24,7 +24,7 @@ export const SettingsOverrides: CollectionConfig = {
       name: 'scopeId',
       type: 'text',
       admin: {
-        description: 'Null for app; editorId for editor; editorId:viewportId for viewport.',
+        description: 'Null for app; workspaceId for workspace; workspaceId:viewportId for viewport.',
       },
     },
     {

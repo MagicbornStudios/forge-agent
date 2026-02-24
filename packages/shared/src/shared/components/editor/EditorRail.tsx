@@ -4,7 +4,7 @@ import * as React from 'react';
 import { usePanelRegistration } from './PanelRegistrationContext';
 import type { RailSide } from './PanelRegistrationContext';
 import { EditorPanel } from './EditorPanel';
-import type { RailPanelDescriptor } from './EditorDockLayout';
+import type { RailPanelDescriptor } from './WorkspaceLayout';
 import type { DockLayoutSlotIconKey } from './DockviewSlotTab';
 
 export interface EditorRailProps {
@@ -37,9 +37,9 @@ function extractDescriptors(children: React.ReactNode): RailPanelDescriptor[] {
 }
 
 /**
- * @deprecated Use EditorDockLayout.Left/Main/Right with EditorDockLayout.Panel children instead.
+ * @deprecated Use WorkspaceLayout.Left/Main/Right with WorkspaceLayout.Panel children instead.
  * Registers EditorPanel children with the layout registry. No-op when used with simplified
- * EditorLayoutProvider (no setRailPanels). Must be used within EditorLayoutProvider.
+ * WorkspaceContextProvider (no setRailPanels). Must be used within WorkspaceContextProvider.
  */
 export function EditorRail({ side, children }: EditorRailProps) {
   const ctx = usePanelRegistration();

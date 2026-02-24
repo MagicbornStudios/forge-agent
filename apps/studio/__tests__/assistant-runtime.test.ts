@@ -13,7 +13,7 @@ describe('assistant-runtime', () => {
       userId: 42,
       projectId: 7,
       domain: 'forge' as const,
-      editorId: 'dialogue' as const,
+      workspaceId: 'dialogue' as const,
     };
 
     expect(buildSessionKey(locator)).toBe('session:42:dialogue:7');

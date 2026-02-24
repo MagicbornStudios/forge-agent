@@ -10,32 +10,27 @@
 //   EditorHeader       <- title bar  (.Left, .Center, .Right)
 //   EditorToolbar      <- toolbar    (.Left, .Center, .Right, .Menubar, .Button ...)
 //   EditorReviewBar    <- AI change review (revert / accept)
-//   EditorDockLayout   <- resizable panel layout; slots .Left | .Main | .Right | .Bottom or props (DockLayout alias deprecated)
-//     EditorDockPanel <- single panel (title, tabs, lock, scroll) (DockPanel alias deprecated)
+//   WorkspaceLayout   <- resizable panel layout; slots .Left | .Main | .Right | .Bottom
+//     WorkspacePanel <- single panel (title, tabs, lock, scroll)
 //       PanelTabs      <- tab bar within a panel
 //     ViewportMeta     <- editor viewport metadata wrapper
 //   EditorStatusBar    <- bottom status bar
 //   EditorOverlaySurface <- modal overlay surface
 // ---------------------------------------------------------------------------
 
-// Layout primitives (Editor* canonical; DockLayout/DockPanel deprecated aliases)
-export {
-  EditorDockLayout,
-  DockLayout,
-  RIGHT_INSPECTOR_PANEL_ID,
-  RIGHT_SETTINGS_PANEL_ID,
-} from './EditorDockLayout';
+// Layout primitives
+export { WorkspaceLayout } from './WorkspaceLayout';
 export type {
-  DockLayoutProps,
-  DockLayoutViewport,
-  DockLayoutSlotConfig,
-  DockLayoutRef,
-  DockLayoutPanelProps,
+  WorkspaceLayoutProps,
+  WorkspaceLayoutViewport,
+  WorkspaceLayoutSlotConfig,
+  WorkspaceLayoutRef,
+  WorkspaceLayoutPanelProps,
   RailPanelDescriptor,
-} from './EditorDockLayout';
+} from './WorkspaceLayout';
 
-export { EditorDockPanel, DockPanel } from './EditorDockPanel';
-export type { DockPanelProps } from './EditorDockPanel';
+export { WorkspacePanel } from './WorkspacePanel';
+export type { WorkspacePanelProps } from './WorkspacePanel';
 
 export { PanelTabs, PanelTab } from './PanelTabs';
 export type { PanelTabDef, PanelTabProps, PanelTabsProps } from './PanelTabs';
@@ -46,8 +41,8 @@ export type { SettingsTabDef, SettingsTabsProps } from './SettingsTabs';
 export { ViewportMeta } from './ViewportMeta';
 export type { ViewportMetaProps } from './ViewportMeta';
 
-export { DockSidebar } from './DockSidebar';
-export type { DockSidebarProps } from './DockSidebar';
+export { DockSidebar as WorkspaceSidebar } from './DockSidebar';
+export type { DockSidebarProps as WorkspaceSidebarProps } from './DockSidebar';
 
 export { EditorButton } from './EditorButton';
 export type { EditorButtonProps } from './EditorButton';
@@ -147,7 +142,7 @@ export {
 } from './SettingsTriggerContext';
 export type { SettingsTriggerContextValue, SettingsTriggerProviderProps } from './SettingsTriggerContext';
 
-// Declarative panel registration (use inside EditorLayoutProvider from Studio)
+// Declarative panel registration (use inside WorkspaceContextProvider from Studio)
 export { EditorRail } from './EditorRail';
 export type { EditorRailProps } from './EditorRail';
 export { EditorPanel } from './EditorPanel';

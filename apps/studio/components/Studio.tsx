@@ -16,27 +16,28 @@ import { useAppSettingsMenuItems } from '@/lib/settings/useAppSettingsMenuItems'
 import { Toaster } from '@forge/ui/sonner';
 import { SidebarTrigger } from '@forge/ui/sidebar';
 import { useSettingsStore } from '@/lib/settings/store';
-import { useEditorRegistryStore } from '@/lib/editor-registry/editor-registry';
-import { useMenuRegistry } from '@/lib/editor-registry/menu-registry';
-import { useEditorStore } from '@/lib/app-shell/store';
+import { useWorkspaceRegistryStore } from '@/lib/workspace-registry/workspace-registry';
+import { useMenuRegistry } from '@/lib/workspace-registry/workspace-menu-registry';
+import { useAppShellStore } from '@/lib/app-shell/store';
 import { MessageCircle, Settings, Users } from 'lucide-react';
+import { RepoStudioRuntimeSwitch } from '@/components/RepoStudioRuntimeSwitch';
 
 const STUDIO_MENUBAR_TARGET = 'studio-menubar';
 
 function UnifiedMenubar({
   onOpenCreateListing,
   openProjectSwitcher,
-  openDialogueEditor,
-  openCharacterEditor,
+  openDialogueWorkspace,
+  openCharacterWorkspace,
   mergeEditorMenus = true,
 }: {
   onOpenCreateListing: () => void;
   openProjectSwitcher?: () => void;
-  openDialogueEditor: () => void;
-  openCharacterEditor: () => void;
+  openDialogueWorkspace: () => void;
+  openCharacterWorkspace: () => void;
   mergeEditorMenus?: boolean;
 }) {
-  const activeWorkspaceId = useEditorStore((s) => s.route.activeWorkspaceId);
+  const activeWorkspaceId = useAppShellStore((s) => s.route.activeWorkspaceId);
   const editorMenus = useMenuRegistry(
     mergeEditorMenus ? STUDIO_MENUBAR_TARGET : undefined,
     mergeEditorMenus ? activeWorkspaceId : null
@@ -48,8 +49,8 @@ function UnifiedMenubar({
       id: 'file-editors',
       label: 'Editors',
       submenu: [
-        { id: 'file-open-dialogue-editor', label: 'Dialogue', onSelect: openDialogueEditor },
-        { id: 'file-open-character-editor', label: 'Character', onSelect: openCharacterEditor },
+        { id: 'file-open-dialogue-editor', label: 'Dialogue', onSelect: openDialogueWorkspace },
+        { id: 'file-open-character-editor', label: 'Character', onSelect: openCharacterWorkspace },
       ],
     };
     const stripEdgeSeparators = (items: EditorMenubarItem[]): EditorMenubarItem[] => {
@@ -95,14 +96,14 @@ function UnifiedMenubar({
     editorMenus,
     appSettingsItems,
     openProjectSwitcher,
-    openDialogueEditor,
-    openCharacterEditor,
+    openDialogueWorkspace,
+    openCharacterWorkspace,
   ]);
   return <EditorMenubar menus={merged} />;
 }
 
 function ActiveEditorContent({ activeWorkspaceId }: { activeWorkspaceId: string }) {
-  const descriptor = useEditorRegistryStore((s) => s.editors[activeWorkspaceId]);
+  const descriptor = useWorkspaceRegistryStore((s) => s.workspaces[activeWorkspaceId]);
   const Component = descriptor?.component;
   if (!Component) return null;
   return <Component />;
@@ -120,10 +121,10 @@ export function Studio() {
     setActiveWorkspace,
     openWorkspace,
     closeWorkspace,
-  } = useEditorStore();
-  const appSettingsSheetOpen = useEditorStore((s) => s.appSettingsSheetOpen);
-  const setAppSettingsSheetOpen = useEditorStore((s) => s.setAppSettingsSheetOpen);
-  const settingsViewportId = useEditorStore((s) => s.settingsViewportId);
+  } = useAppShellStore();
+  const appSettingsSheetOpen = useAppShellStore((s) => s.appSettingsSheetOpen);
+  const setAppSettingsSheetOpen = useAppShellStore((s) => s.setAppSettingsSheetOpen);
+  const settingsViewportId = useAppShellStore((s) => s.settingsViewportId);
   const { activeWorkspaceId, openWorkspaceIds } = route;
 
   const [projectSwitcherOpen, setProjectSwitcherOpen] = React.useState(false);
@@ -151,8 +152,8 @@ export function Studio() {
               <UnifiedMenubar
                 onOpenCreateListing={() => setCreateListingOpen(true)}
                 openProjectSwitcher={() => setProjectSwitcherOpen(true)}
-                openDialogueEditor={() => openWorkspace('dialogue')}
-                openCharacterEditor={() => openWorkspace('character')}
+                openDialogueWorkspace={() => openWorkspace('dialogue')}
+                openCharacterWorkspace={() => openWorkspace('character')}
               />
               <ProjectSwitcher
                 projects={projectsQuery.data ?? []}
@@ -192,7 +193,7 @@ export function Studio() {
 
           <StudioApp.Tabs.Main>
             {visibleWorkspaceIds.map((id) => {
-              const descriptor = useEditorRegistryStore.getState().getEditor(id);
+              const descriptor = useWorkspaceRegistryStore.getState().getWorkspace(id);
               const Icon = descriptor?.icon ?? (id === 'dialogue' ? MessageCircle : Users);
               const label = descriptor?.label ?? id;
               return (
@@ -214,6 +215,7 @@ export function Studio() {
           </StudioApp.Tabs.Main>
 
           <StudioApp.Tabs.Right>
+            <RepoStudioRuntimeSwitch />
             <SidebarTrigger
               className="h-[var(--control-height-sm)] w-[var(--control-height-sm)] border border-border/60 bg-background text-muted-foreground shadow-[var(--shadow-xs)] hover:bg-accent/40 hover:text-foreground"
               aria-label="Toggle Settings"
@@ -230,7 +232,7 @@ export function Studio() {
         <AppSettingsSheet
           open={appSettingsSheetOpen}
           onOpenChange={setAppSettingsSheetOpen}
-          activeEditorId={activeWorkspaceId}
+          activeWorkspaceId={activeWorkspaceId}
           activeProjectId={activeProjectId != null ? String(activeProjectId) : null}
           viewportId={settingsViewportId ?? 'main'}
         />

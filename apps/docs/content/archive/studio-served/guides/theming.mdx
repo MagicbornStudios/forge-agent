@@ -167,7 +167,7 @@ Forge uses a **CSS variable-based theming system** that provides:
 Editors can have independent theme settings:
 
 ```typescript
-// From CharacterEditor.tsx
+// From CharacterWorkspace.tsx
 const editorTheme = useSettingsStore((s) =>
   s.getSettingValue('ui.theme', { editorId: 'character' })
 ) as string | undefined;
@@ -373,10 +373,10 @@ Scope styles to specific editors or viewports:
 
 ## Real Examples from Editors
 
-### DialogueEditor Theme Integration
+### DialogueWorkspace Theme Integration
 
 ```typescript
-// From DialogueEditor.tsx
+// From DialogueWorkspace.tsx
 const editorTheme = useSettingsStore((s) =>
   s.getSettingValue('ui.theme', { editorId: 'dialogue' })
 ) as string | undefined;
@@ -597,7 +597,7 @@ const sidebarTabs: PanelTabDef[] = [
   },
 ];
 
-<EditorDockPanel panelId="left" tabs={sidebarTabs} />
+<WorkspacePanel panelId="left" tabs={sidebarTabs} />
 ```
 
 ---

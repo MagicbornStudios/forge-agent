@@ -40,13 +40,13 @@ export interface PanelSettingsProps {
 /**
  * PanelSettings — a popover for per-panel settings.
  *
- * Designed to be placed in an `EditorDockPanel`'s `headerActions` slot.
+ * Designed to be placed in an `WorkspacePanel`'s `headerActions` slot.
  * Renders a gear icon button that opens a popover with panel-specific
  * settings (e.g. show minimap, auto-layout, lock editor).
  *
  * @example
  * ```tsx
- * <EditorDockPanel
+ * <WorkspacePanel
  *   panelId="graph-editor"
  *   title="Graph"
  *   headerActions={
@@ -57,7 +57,7 @@ export interface PanelSettingsProps {
  *   }
  * >
  *   ...
- * </EditorDockPanel>
+ * </WorkspacePanel>
  * ```
  */
 export function PanelSettings({ settings, panelId, className }: PanelSettingsProps) {

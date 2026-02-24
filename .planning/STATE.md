@@ -5,7 +5,7 @@
 Phase: 12
 Plan: 12-05
 Status: In progress
-Last activity: 2026-02-24T01:32:00.000Z - Completed Repo Studio UX/stability closeout: Node 24 build hash workaround, terminal PTY fallback hardening, strict type fixes, and full repo-studio verification pass (tests + build + doctor)
+Last activity: 2026-02-24T21:15:00.000Z - Completed semantic hard-cut follow-up (workspace-first naming/contracts, payload typegen resolver hardening, Studio/Repo Studio verification, and legacy snapshot sync)
 
 ## Execution
 

@@ -10,12 +10,12 @@ export type { SettingsDefaults };
 export interface SettingsConfig {
   appDefaults: SettingsDefaults;
   projectDefaults: SettingsDefaults;
-  editorDefaults: Record<string, SettingsDefaults>;
+  workspaceDefaults: Record<string, SettingsDefaults>;
   viewportDefaults: Record<string, SettingsDefaults>;
 }
 
-/** Minimal editor-scoped overrides (v1: not yet in tree; see settings codegen doc). */
-const EDITOR_DEFAULTS_OVERRIDES: Record<string, SettingsDefaults> = {
+/** Minimal workspace-scoped overrides (v1: not yet in tree; see settings codegen doc). */
+const WORKSPACE_DEFAULTS_OVERRIDES: Record<string, SettingsDefaults> = {
   dialogue: { "ai.agentName": "Dialogue Agent" },
   character: { "ai.agentName": "Character Agent" },
 };
@@ -41,18 +41,18 @@ const PROJECT_DEFAULTS_OVERRIDES: SettingsDefaults = {};
 export const SETTINGS_CONFIG: SettingsConfig = {
   appDefaults: APP_DEFAULTS,
   projectDefaults: PROJECT_DEFAULTS_OVERRIDES,
-  editorDefaults: EDITOR_DEFAULTS_OVERRIDES,
+  workspaceDefaults: WORKSPACE_DEFAULTS_OVERRIDES,
   viewportDefaults: mergeViewportDefaults(VIEWPORT_DEFAULTS),
 };
 
-export function getEditorDefaults(editorId?: string) {
-  if (!editorId) return {};
-  return SETTINGS_CONFIG.editorDefaults[editorId] ?? {};
+export function getWorkspaceDefaults(workspaceId?: string) {
+  if (!workspaceId) return {};
+  return SETTINGS_CONFIG.workspaceDefaults[workspaceId] ?? {};
 }
 
-export function getViewportDefaults(editorId?: string, viewportId?: string): SettingsDefaults {
-  if (!editorId || !viewportId) return {};
-  const base = getViewportDefaultsGenerated(editorId, viewportId);
-  const overrides = VIEWPORT_DEFAULTS_OVERRIDES[`${editorId}:${viewportId}`];
+export function getViewportDefaults(workspaceId?: string, viewportId?: string): SettingsDefaults {
+  if (!workspaceId || !viewportId) return {};
+  const base = getViewportDefaultsGenerated(workspaceId, viewportId);
+  const overrides = VIEWPORT_DEFAULTS_OVERRIDES[`${workspaceId}:${viewportId}`];
   return overrides ? { ...base, ...overrides } : base;
 }

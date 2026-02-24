@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { APP_THEMES } from '@/components/providers/AppThemeProvider';
 import { useMe } from '@/lib/data/hooks';
 import { useOpenSettingsSheet } from '@/lib/contexts/OpenSettingsSheetContext';
-import { useEditorStore } from '@/lib/app-shell/store';
+import { useAppShellStore } from '@/lib/app-shell/store';
 import { useEntitlements, CAPABILITIES } from '@forge/shared/entitlements';
 
 const THEME_LABELS: Record<(typeof APP_THEMES)[number], string> = {
@@ -52,8 +52,8 @@ function getDisplayName(name: string | null | undefined, email: string | null | 
 
 export function useAppSettingsMenuItems(options: { onOpenCreateListing: () => void }): EditorMenubarItem[] {
   const openAppSettingsSheet = useOpenSettingsSheet();
-  const settingsSidebarOpen = useEditorStore((s) => s.settingsSidebarOpen);
-  const appSettingsSheetOpen = useEditorStore((s) => s.appSettingsSheetOpen);
+  const settingsSidebarOpen = useAppShellStore((s) => s.settingsSidebarOpen);
+  const appSettingsSheetOpen = useAppShellStore((s) => s.appSettingsSheetOpen);
   const theme = useSettingsStore((s) => s.getSettingValue('ui.theme')) as string | undefined;
   const density = useSettingsStore((s) => s.getSettingValue('ui.density')) as string | undefined;
   const setSetting = useSettingsStore((s) => s.setSetting);
@@ -113,7 +113,7 @@ export function useAppSettingsMenuItems(options: { onOpenCreateListing: () => vo
   }, []);
 
   const handleSettingsMenuToggle = useCallback(() => {
-    const state = useEditorStore.getState();
+    const state = useAppShellStore.getState();
     if (state.settingsSidebarOpen || state.appSettingsSheetOpen) {
       state.setSettingsSidebarOpen(false);
       state.setAppSettingsSheetOpen(false);

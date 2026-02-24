@@ -125,19 +125,19 @@ EditorShell
 │       ├── Model switcher
 │       └── Action buttons
 ├── EditorReviewBar (conditional)
-├── EditorDockLayout
+├── WorkspaceLayout
 │   ├── Left Rail (Navigator/Library)
-│   │   └── EditorDockPanel
+│   │   └── WorkspacePanel
 │   │       └── PanelTabs (multi-mode)
 │   ├── Main (Viewport)
-│   │   └── EditorDockPanel
+│   │   └── WorkspacePanel
 │   │       └── Canvas/Flow/Timeline
 │   ├── Right Rail (Inspector/Chat)
-│   │   └── EditorDockPanel
+│   │   └── WorkspacePanel
 │   │       ├── EditorInspector (properties)
 │   │       └── DialogueAssistantPanel (AI)
 │   └── Bottom Rail (optional)
-│       └── EditorDockPanel
+│       └── WorkspacePanel
 │           └── Workflow panel
 ├── EditorStatusBar
 └── EditorOverlaySurface
@@ -227,7 +227,7 @@ interface EditorStoreState {
 ```
 User Action
   ↓
-Event Handler (CharacterEditor)
+Event Handler (CharacterWorkspace)
   ↓
 Domain Store Mutation (useCharacterStore)
   ↓
@@ -242,7 +242,7 @@ Query Invalidation (React Query)
 Store Sync (useEffect)
 ```
 
-Example from CharacterEditor:
+Example from CharacterWorkspace:
 
 ```tsx
 const handleUpdateCharacter = useCallback(
@@ -478,7 +478,7 @@ forge-agent/
 
 ```tsx
 // Shared components
-import { EditorShell, EditorDockLayout } from '@forge/dev-kit';
+import { EditorShell, WorkspaceLayout } from '@forge/dev-kit';
 
 // UI primitives
 import { Button, Input, Dialog } from '@forge/dev-kit/ui';

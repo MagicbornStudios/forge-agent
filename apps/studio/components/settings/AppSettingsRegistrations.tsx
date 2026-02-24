@@ -93,7 +93,7 @@ export function AppSettingsRegistrations() {
           fieldKey="ui.density"
           label="Density"
           type="select"
-          description="Compact is optimized for editor surfaces and dense tool UIs."
+          description="Compact is optimized for workspace surfaces and dense tool UIs."
           options={DENSITY_OPTIONS}
           default="compact"
         >
@@ -123,11 +123,11 @@ export function AppSettingsRegistrations() {
         </SettingsField>
       </SettingsSection>
       <SettingsSection sectionId="other" title="Other">
-        <SettingsField fieldKey="editor.locked" label="Editor locked" type="toggle" default={false}>
+        <SettingsField fieldKey="editor.locked" label="Workspace locked" type="toggle" default={false}>
           <Switch />
         </SettingsField>
       </SettingsSection>
-      <SettingsSection sectionId="panels" title="Panels" description="Panel visibility per editor.">
+      <SettingsSection sectionId="panels" title="Panels" description="Panel visibility per workspace.">
         <SettingsField fieldKey="panel.visible.dialogue-left" label="Dialogue left panel" type="toggle" default={true}>
           <Switch />
         </SettingsField>

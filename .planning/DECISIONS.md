@@ -97,3 +97,25 @@
 - [x] Repo Studio terminal panel is an interactive repo-root shell session (`xterm` + server-side PTY session APIs), replacing static run-output rendering.
 - [x] Repo Studio Next build on Node 24 forces `output.hashFunction = 'sha256'` in app webpack config to avoid webpack `WasmHash` runtime crashes during `next build`.
 - [x] Terminal session startup is fail-soft: if `node-pty` spawn fails, API returns a degraded fallback session instead of `500`, preserving panel usability and test stability.
+
+## 2026-02-24
+
+- [x] Repo Studio workspace model is now `workspace = layout`: each workspace tab mounts its own `EditorDockLayout` instead of one global layout with preset filtering.
+- [x] Naming contract is now unambiguous: tab-level containers use `*Layout`; panel content exports use `*Panel` (with temporary `*Workspace` aliases retained for compatibility during migration).
+- [x] Workspace visibility remains per-workspace show/hide + restore, but presets are removed; hidden-panel state is sanitized per workspace definition and never allows all main panels to be hidden.
+- [x] Layout persistence is now per-workspace (`repo-<workspaceId>`) with migration from legacy single key `repo-studio-main` into the active workspace layout.
+- [x] Shared `EditorDockLayout` keeps array props for compatibility, but slot children are canonical and now take precedence when both are provided.
+- [x] Semantic hard-cut follow-up completed: shared layout primitives are now `WorkspaceLayout` + `WorkspacePanel`, strategy surface is `CodebaseAgentStrategyWorkspace`, and Studio root export is `StudioRoot` (legacy names removed from active code paths).
+- [x] Assistant runtime/request contracts are workspace-first: transport header is `x-forge-ai-workspace-id`, session locator/runtime metadata use `workspaceId`, and payload session field is `workspace`.
+- [x] Settings scope is workspace-first end-to-end: `'workspace'` replaced `'editor'` in store/UI/API/schema flows, with migration script coverage for historical records.
+- [x] Payload type generation resolves Payload adapters from the Studio workspace package root (not root-level direct imports), preventing module/export resolution failures during `pnpm payload:types`.
+
+## 2026-02-23 (AI runtimes and companion mode)
+
+- [x] **Two distinct AI routes (no merging):** (1) **Open Router assistant** — tools, general chat, dialogue nodes, domain tools; uses Open Router (streamText, model registry, persistence). (2) **Codex** — coding agent; works on files via Codex SDK; never uses Open Router. Codex is implemented only in Repo Studio (`editorTarget=codex-assistant`); Open Router path is in Studio and will be shareable. No code path shall mix Codex with Open Router.
+- [x] Studios may use Codex for mass/file work (e.g. create folder, point Codex at it) without requiring a full git repo; Codex is exposed as a reusable capability (Repo Studio hosts it; other studios call Repo Studio when using it as runtime).
+- [x] Repo Studio as optional runtime: detection via a health/readiness endpoint; opt-in toggle (hidden until detected); shared hook/component for ping + "useRemoteRuntime" state so any studio can reuse the runtime.
+- [x] Companion mode: when request is from a detected companion (allowed origin/localhost), Repo Studio does not perform Payload user auth; trusted caller. Sessions and AI-related data when companion live in Repo Studio's internal DB (agent-sessions + repo-settings-overrides for model persistence).
+- [x] Database workspace in Repo Studio: SQL-capable viewer (Drizzle Studio style) for Payload SQLite; run SQL in a dedicated workspace tab.
+- [x] 401 fix for Dialogue assistant: ensure transport sends credentials; LocalDevAuthGate ready before first assistant request; optional local-dev bypass (synthetic admin auth when `NEXT_PUBLIC_LOCAL_DEV_AUTO_ADMIN=1`).
+- [x] AI runtimes and Database workspace work are tracked under **Phase 13** (forge-loop); similar work must use discuss → plan → execute → verify → sync-legacy. Database workspace in Repo Studio uses embedded Drizzle Studio (Payload-recommended); custom SQL runner and better-sqlite3 removed.

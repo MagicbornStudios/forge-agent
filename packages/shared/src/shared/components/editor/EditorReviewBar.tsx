@@ -22,7 +22,7 @@ export interface EditorReviewBarProps {
  * EditorReviewBar — a plan/commit review bar for AI-generated changes.
  *
  * Replaces `WorkspaceReviewBar`. Renders between the `EditorToolbar`
- * and the `DockLayout` when there are pending AI changes to review.
+ * and the `WorkspaceLayout` when there are pending AI changes to review.
  *
  * @example
  * ```tsx

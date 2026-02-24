@@ -1,0 +1,41 @@
+/* ==========================================================================
+   Repo Studio: per-panel context accents (data-context-panel)
+   Panel container gets data-context-panel from WorkspaceLayout SlotPanel.
+   Uses --domain-* from themes; panels get distinct color at a glance.
+   ========================================================================== */
+
+[data-context-panel="planning"] {
+  --context-accent: var(--domain-forge);
+}
+
+[data-context-panel="story"] {
+  --context-accent: var(--domain-writer);
+}
+
+[data-context-panel="env"] {
+  --context-accent: var(--domain-video);
+}
+
+[data-context-panel="loop-assistant"],
+[data-context-panel="codex-assistant"] {
+  --context-accent: var(--domain-ai);
+}
+
+[data-context-panel="commands"],
+[data-context-panel="loop-cadence"] {
+  --context-accent: var(--domain-forge);
+}
+
+[data-context-panel="terminal"] {
+  --context-accent: var(--domain-video);
+}
+
+[data-context-panel="diff"],
+[data-context-panel="git"],
+[data-context-panel="code"] {
+  --context-accent: var(--domain-forge);
+}
+
+[data-context-panel="review-queue"] {
+  --context-accent: var(--domain-character);
+}

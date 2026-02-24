@@ -34,7 +34,7 @@ function parseSession(docInput: unknown): AssistantSessionRecord {
   const user = asNumber(doc.user) ?? 0;
   const project = asNumber(doc.project);
   const domain = (asString(doc.domain) ?? 'app') as AssistantSessionRecord['domain'];
-  const editor = (asString(doc.editor) ?? 'app') as AssistantSessionRecord['editor'];
+  const workspace = (asString(doc.workspace) ?? asString(doc.editor) ?? 'app') as AssistantSessionRecord['workspace'];
 
   return {
     id: asNumber(doc.id) ?? 0,
@@ -43,7 +43,7 @@ function parseSession(docInput: unknown): AssistantSessionRecord {
     user,
     project,
     domain,
-    editor,
+    workspace,
     summary: asString(doc.summary),
     events: doc.events,
     checkpoint: (doc.checkpoint as SessionCheckpoint | null | undefined) ?? null,
@@ -90,7 +90,7 @@ export class PayloadSessionStore implements SessionStore {
         user: locator.userId,
         project: locator.projectId,
         domain: locator.domain,
-        editor: locator.editorId,
+        workspace: locator.workspaceId,
         sessionKey,
         threadId: buildThreadId(locator),
         summary: '',

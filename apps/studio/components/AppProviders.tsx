@@ -21,7 +21,7 @@ import {
 import { Button } from '@forge/ui/button';
 import { AppSettingsPanelContent } from '@/components/settings/AppSettingsPanelContent';
 import { SETTINGS_SCOPE_COLORS } from '@/lib/app-shell/editor-metadata';
-import { useEditorStore } from '@/lib/app-shell/store';
+import { useAppShellStore } from '@/lib/app-shell/store';
 import { cn } from '@forge/shared/lib/utils';
 import { X } from 'lucide-react';
 
@@ -51,14 +51,14 @@ function MainWithSettingsMargin({ children }: { children: React.ReactNode }) {
 
 /** CopilotKit removed; BypassProvider supplies CopilotSidebarContext for legacy useCopilotSidebar consumers (e.g. devtools). */
 export function AppProviders({ children }: AppProvidersProps) {
-  const settingsSidebarOpen = useEditorStore((s) => s.settingsSidebarOpen);
-  const setSettingsSidebarOpen = useEditorStore((s) => s.setSettingsSidebarOpen);
-  const requestOpenSettings = useEditorStore((s) => s.requestOpenSettings);
-  const setRequestOpenSettings = useEditorStore((s) => s.setRequestOpenSettings);
-  const activeWorkspaceId = useEditorStore((s) => s.route.activeWorkspaceId);
-  const activeProjectId = useEditorStore((s) => s.activeProjectId);
-  const settingsViewportId = useEditorStore((s) => s.settingsViewportId);
-  const settingsActiveTab = useEditorStore((s) => s.settingsActiveTab);
+  const settingsSidebarOpen = useAppShellStore((s) => s.settingsSidebarOpen);
+  const setSettingsSidebarOpen = useAppShellStore((s) => s.setSettingsSidebarOpen);
+  const requestOpenSettings = useAppShellStore((s) => s.requestOpenSettings);
+  const setRequestOpenSettings = useAppShellStore((s) => s.setRequestOpenSettings);
+  const activeWorkspaceId = useAppShellStore((s) => s.route.activeWorkspaceId);
+  const activeProjectId = useAppShellStore((s) => s.activeProjectId);
+  const settingsViewportId = useAppShellStore((s) => s.settingsViewportId);
+  const settingsActiveTab = useAppShellStore((s) => s.settingsActiveTab);
 
   React.useEffect(() => {
     if (!requestOpenSettings) return;
@@ -131,7 +131,7 @@ export function AppProviders({ children }: AppProvidersProps) {
                                     : 'Settings'}
                                 </h2>
                                 <p className="text-xs text-muted-foreground mt-0.5">
-                                  App and editor defaults; viewport settings when in context.
+                                  App and workspace defaults; viewport settings when in context.
                                 </p>
                               </div>
                               <Button
@@ -148,7 +148,7 @@ export function AppProviders({ children }: AppProvidersProps) {
                           </SidebarHeader>
                           <SidebarContent className="flex-1 min-h-0">
                             <AppSettingsPanelContent
-                              activeEditorId={activeWorkspaceId}
+                              activeWorkspaceId={activeWorkspaceId}
                               activeProjectId={
                                 activeProjectId != null ? String(activeProjectId) : null
                               }

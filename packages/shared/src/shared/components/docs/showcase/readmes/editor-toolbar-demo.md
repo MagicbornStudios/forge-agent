@@ -217,9 +217,9 @@ Project switcher:
 />
 ```
 
-## Real-World Example: CharacterEditor
+## Real-World Example: CharacterWorkspace
 
-From `apps/studio/components/editors/CharacterEditor.tsx`:
+From `apps/studio/components/editors/CharacterWorkspace.tsx`:
 
 ```tsx
 <EditorToolbar className="bg-sidebar border-b border-sidebar-border">
@@ -251,9 +251,9 @@ From `apps/studio/components/editors/CharacterEditor.tsx`:
 </EditorToolbar>
 ```
 
-## Real-World Example: DialogueEditor
+## Real-World Example: DialogueWorkspace
 
-From `apps/studio/components/editors/DialogueEditor.tsx`:
+From `apps/studio/components/editors/DialogueWorkspace.tsx`:
 
 ```tsx
 const fileMenuItems = useMemo(

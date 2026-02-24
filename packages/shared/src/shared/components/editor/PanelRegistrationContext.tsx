@@ -5,7 +5,7 @@ import * as React from 'react';
 export type RailSide = 'left' | 'main' | 'right' | 'bottom';
 
 export interface PanelRegistrationContextValue {
-  editorId: string;
+  workspaceId: string;
 }
 
 const PanelRegistrationContext = React.createContext<PanelRegistrationContextValue | null>(null);
@@ -13,7 +13,7 @@ const PanelRegistrationContext = React.createContext<PanelRegistrationContextVal
 export function usePanelRegistration(): PanelRegistrationContextValue {
   const ctx = React.useContext(PanelRegistrationContext);
   if (ctx == null) {
-    throw new Error('Must be used within EditorLayoutProvider');
+    throw new Error('Must be used within WorkspaceContextProvider');
   }
   return ctx;
 }

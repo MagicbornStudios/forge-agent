@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createUIMessageStream, createUIMessageStreamResponse } from 'ai';
 
+import { isCompanionRequest } from '@/lib/companion-auth';
 import { runRepoStudioCli } from '@/lib/cli-runner';
 import { runLocalLoopAssistant } from '@/lib/loop-assistant-chat';
 import { resolveLoopAssistantEndpoint } from '@/lib/loop-assistant-runtime';
@@ -414,6 +415,8 @@ async function runCodexPath(input: {
 export async function POST(request: Request) {
   const config = await readRepoStudioConfig();
   const assistantEnabled = config.assistant?.enabled !== false;
+  // When Open Router path runs here, use isCompanionRequest(request) to skip Payload user auth for companion apps.
+  void isCompanionRequest(request);
   if (!assistantEnabled) {
     return NextResponse.json(
       { error: 'Assistant is disabled in .repo-studio/config.json.' },

@@ -159,7 +159,7 @@ export const ROADMAP_ITEMS: RoadmapItem[] = [
     status: 'shipped',
     statusLabel: 'Shipped',
     description:
-      'CodebaseAgentStrategyEditor with streaming chat, plan cards, and tool-ui components for coding agent workflows.',
+      'CodebaseAgentStrategyWorkspace with streaming chat, plan cards, and tool-ui components for coding agent workflows.',
   },
 ];
 

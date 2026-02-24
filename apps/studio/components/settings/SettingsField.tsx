@@ -11,20 +11,20 @@ import { Item, ItemActions, ItemContent } from '@forge/ui/item';
 import { Button } from '@forge/ui/button';
 import { Undo2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useSettingsRegistration } from '@/lib/editor-registry/SettingsRegistrationContext';
+import { useSettingsRegistration } from '@/lib/workspace-registry/SettingsRegistrationContext';
 import { useSettingsStore } from '@/lib/settings/store';
 import type { SettingsFieldType } from './types';
 
 function scopeIds(
-  scope: 'app' | 'project' | 'editor' | 'viewport',
+  scope: 'app' | 'project' | 'workspace' | 'viewport',
   scopeId: string | null
-): { editorId?: string; viewportId?: string; projectId?: string } {
+): { workspaceId?: string; viewportId?: string; projectId?: string } {
   if (scope === 'app' || !scopeId) return {};
   if (scope === 'viewport') {
-    const [editorId, viewportId] = scopeId.split(':');
-    return { editorId, viewportId };
+    const [workspaceId, viewportId] = scopeId.split(':');
+    return { workspaceId, viewportId };
   }
-  if (scope === 'editor') return { editorId: scopeId };
+  if (scope === 'workspace') return { workspaceId: scopeId };
   if (scope === 'project') return { projectId: scopeId };
   return {};
 }
@@ -94,14 +94,14 @@ export function SettingsField({
   const canReset = scope !== 'app' && isOverride;
   const inheritedLabel =
     scope === 'viewport'
-      ? source === 'editor'
-        ? 'Inherited from editor'
+      ? source === 'workspace'
+        ? 'Inherited from workspace'
         : source === 'app'
           ? 'Inherited from app'
           : source === 'project'
             ? 'Inherited from project'
             : null
-      : scope === 'editor'
+      : scope === 'workspace'
         ? source === 'app'
           ? 'Inherited from app'
           : source === 'project'

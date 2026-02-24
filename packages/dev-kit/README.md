@@ -7,8 +7,8 @@ Re-exports `@forge/shared`, `@forge/agent-engine`, and `@forge/ui` for building 
 When building an editor, follow the **slot-first** structure so placement is obvious:
 
 - **App level:** Use `EditorApp.Tabs.Menubar` for the menubar (File, View, …) and `EditorApp.Tabs.Actions` for project switcher and editor tab buttons. Build menus with **createEditorMenubarMenus({ file, view?, edit?, state?, settings?, help? })** and contribute them via your app’s menubar contribution hook.
-- **Editor level:** Use `EditorShell` with slots: `.Toolbar`, `.Layout` (with **EditorDockLayout** and **EditorDockPanel**), `.StatusBar`, and `.Settings`. Put **EditorSettingsTrigger** in `.Settings`; provide `openSettings` via **SettingsTriggerProvider** in your app so the gear opens the **app settings sheet** (one surface for all settings).
-- **Layout:** Use **EditorDockLayout.Left / .Main / .Right / .Bottom** slot children for the panel layout. The default bottom slot is **Assistant** (chat/assistant UI).
+- **Editor level:** Use `EditorShell` with slots: `.Toolbar`, `.Layout` (with **WorkspaceLayout** and **WorkspacePanel**), `.StatusBar`, and `.Settings`. Put **EditorSettingsTrigger** in `.Settings`; provide `openSettings` via **SettingsTriggerProvider** in your app so the gear opens the **app settings sheet** (one surface for all settings).
+- **Layout:** Use **WorkspaceLayout.Left / .Main / .Right / .Bottom** slot children for the panel layout. The default bottom slot is **Assistant** (chat/assistant UI).
 
 ## Menu and placement (where to put things)
 

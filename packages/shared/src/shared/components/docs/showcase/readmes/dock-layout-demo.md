@@ -1,10 +1,10 @@
-# DockLayout (EditorDockLayout) Complete Reference
+# DockLayout (WorkspaceLayout) Complete Reference
 
 The resizable panel layout system for editors. Built on [dockview](https://github.com/mathuo/dockview), provides 2-pane, 3-pane, and 4-pane layouts with persistence, viewport scoping, and dynamic panel management.
 
 ## Overview
 
-`EditorDockLayout` is the **layout engine** for editors. It replaces the old grid-based `WorkspaceLayoutGrid` with a powerful dockview-based system that supports:
+`WorkspaceLayout` is the **layout engine** for editors. It replaces the old grid-based `WorkspaceLayoutGrid` with a powerful dockview-based system that supports:
 
 - **Resizable panels** with drag-to-resize
 - **Layout persistence** via localStorage or controlled state
@@ -28,22 +28,22 @@ import type { DockLayoutRef } from '@forge/dev-kit';
 ## Basic Usage: 2-Pane Layout
 
 ```tsx
-<EditorDockLayout
+<WorkspaceLayout
   layoutId="my-editor"
   leftDefaultSize={20}
 >
-  <EditorDockLayout.Left>
-    <EditorDockPanel panelId="nav" title="Navigator">
+  <WorkspaceLayout.Left>
+    <WorkspacePanel panelId="nav" title="Navigator">
       {/* Left sidebar content */}
-    </EditorDockPanel>
-  </EditorDockLayout.Left>
+    </WorkspacePanel>
+  </WorkspaceLayout.Left>
 
-  <EditorDockLayout.Main>
-    <EditorDockPanel panelId="viewport" title="Viewport">
+  <WorkspaceLayout.Main>
+    <WorkspacePanel panelId="viewport" title="Viewport">
       {/* Main viewport */}
-    </EditorDockPanel>
-  </EditorDockLayout.Main>
-</EditorDockLayout>
+    </WorkspacePanel>
+  </WorkspaceLayout.Main>
+</WorkspaceLayout>
 ```
 
 ## Props API
@@ -79,64 +79,64 @@ import type { DockLayoutRef } from '@forge/dev-kit';
 ### 3-Pane Layout: Left | Main | Right
 
 ```tsx
-<EditorDockLayout
+<WorkspaceLayout
   layoutId="three-pane"
   leftDefaultSize={20}
   rightDefaultSize={25}
 >
-  <EditorDockLayout.Left>
-    <EditorDockPanel panelId="navigator" title="Navigator">
+  <WorkspaceLayout.Left>
+    <WorkspacePanel panelId="navigator" title="Navigator">
       {/* Navigator content */}
-    </EditorDockPanel>
-  </EditorDockLayout.Left>
+    </WorkspacePanel>
+  </WorkspaceLayout.Left>
 
-  <EditorDockLayout.Main>
-    <EditorDockPanel panelId="viewport" title="Viewport" scrollable={false}>
+  <WorkspaceLayout.Main>
+    <WorkspacePanel panelId="viewport" title="Viewport" scrollable={false}>
       {/* Canvas/Flow viewport */}
-    </EditorDockPanel>
-  </EditorDockLayout.Main>
+    </WorkspacePanel>
+  </WorkspaceLayout.Main>
 
-  <EditorDockLayout.Right>
-    <EditorDockPanel panelId="inspector" title="Inspector">
+  <WorkspaceLayout.Right>
+    <WorkspacePanel panelId="inspector" title="Inspector">
       {/* Property inspector */}
-    </EditorDockPanel>
-  </EditorDockLayout.Right>
-</EditorDockLayout>
+    </WorkspacePanel>
+  </WorkspaceLayout.Right>
+</WorkspaceLayout>
 ```
 
 ### 4-Pane Layout: Left | Main | Right | Bottom
 
 ```tsx
-<EditorDockLayout
+<WorkspaceLayout
   layoutId="four-pane"
   leftDefaultSize={20}
   rightDefaultSize={25}
   bottomDefaultSize={30}
 >
-  <EditorDockLayout.Left>
-    <EditorDockPanel panelId="files" title="Files">
+  <WorkspaceLayout.Left>
+    <WorkspacePanel panelId="files" title="Files">
       {/* File tree */}
-    </EditorDockPanel>
-  </EditorDockLayout.Left>
+    </WorkspacePanel>
+  </WorkspaceLayout.Left>
 
-  <EditorDockLayout.Main>
-    <EditorDockPanel panelId="editor" title="Editor" scrollable={false}>
+  <WorkspaceLayout.Main>
+    <WorkspacePanel panelId="editor" title="Editor" scrollable={false}>
       {/* Code editor */}
-    </EditorDockPanel>
-  </EditorDockLayout.Main>
+    </WorkspacePanel>
+  </WorkspaceLayout.Main>
 
-  <EditorDockLayout.Right>
-    <EditorDockPanel panelId="outline" title="Outline">
+  <WorkspaceLayout.Right>
+    <WorkspacePanel panelId="outline" title="Outline">
       {/* Document outline */}
-    </EditorDockPanel>
-  </EditorDockLayout.Right>
+    </WorkspacePanel>
+  </WorkspaceLayout.Right>
 
-  <EditorDockLayout.Bottom>
-    <EditorDockPanel panelId="terminal" title="Terminal">
+  <WorkspaceLayout.Bottom>
+    <WorkspacePanel panelId="terminal" title="Terminal">
       {/* Terminal panel */}
-    </EditorDockPanel>
-  </EditorDockLayout.Bottom>
-</EditorDockLayout>
+    </WorkspacePanel>
+  </WorkspaceLayout.Bottom>
+</WorkspaceLayout>
 ```
 
 ## Multi-Panel Rails (Config-Driven)
@@ -144,45 +144,45 @@ import type { DockLayoutRef } from '@forge/dev-kit';
 When a rail has multiple panels, they render as tabs. Use `.Panel` components within slots:
 
 ```tsx
-<EditorDockLayout
+<WorkspaceLayout
   layoutId="multi-panel"
   leftDefaultSize={20}
   rightDefaultSize={25}
 >
-  <EditorDockLayout.Left>
-    <EditorDockLayout.Panel id="graphs" title="Graphs" icon={<BookOpen size={14} />}>
+  <WorkspaceLayout.Left>
+    <WorkspaceLayout.Panel id="graphs" title="Graphs" icon={<BookOpen size={14} />}>
       {/* Graphs list */}
-    </EditorDockLayout.Panel>
-    <EditorDockLayout.Panel id="nodes" title="Nodes" icon={<Boxes size={14} />}>
+    </WorkspaceLayout.Panel>
+    <WorkspaceLayout.Panel id="nodes" title="Nodes" icon={<Boxes size={14} />}>
       {/* Node palette */}
-    </EditorDockLayout.Panel>
-    <EditorDockLayout.Panel id="assets" title="Assets" icon={<Image size={14} />}>
+    </WorkspaceLayout.Panel>
+    <WorkspaceLayout.Panel id="assets" title="Assets" icon={<Image size={14} />}>
       {/* Asset library */}
-    </EditorDockLayout.Panel>
-  </EditorDockLayout.Left>
+    </WorkspaceLayout.Panel>
+  </WorkspaceLayout.Left>
 
-  <EditorDockLayout.Main>
-    <EditorDockPanel panelId="main" title="Main">
+  <WorkspaceLayout.Main>
+    <WorkspacePanel panelId="main" title="Main">
       {/* Main content */}
-    </EditorDockPanel>
-  </EditorDockLayout.Main>
+    </WorkspacePanel>
+  </WorkspaceLayout.Main>
 
-  <EditorDockLayout.Right>
-    <EditorDockLayout.Panel id="inspector" title="Inspector" icon={<ScanSearch size={14} />}>
+  <WorkspaceLayout.Right>
+    <WorkspaceLayout.Panel id="inspector" title="Inspector" icon={<ScanSearch size={14} />}>
       {/* Property inspector */}
-    </EditorDockLayout.Panel>
-    <EditorDockLayout.Panel id="chat" title="Chat" icon={<MessageCircle size={14} />}>
+    </WorkspaceLayout.Panel>
+    <WorkspaceLayout.Panel id="chat" title="Chat" icon={<MessageCircle size={14} />}>
       {/* AI chat */}
-    </EditorDockLayout.Panel>
-  </EditorDockLayout.Right>
-</EditorDockLayout>
+    </WorkspaceLayout.Panel>
+  </WorkspaceLayout.Right>
+</WorkspaceLayout>
 ```
 
 **First panel in each rail** is placed adjacent to main. **Subsequent panels** render as tabs within that rail.
 
-## Real-World Example: CharacterEditor
+## Real-World Example: CharacterWorkspace
 
-From `apps/studio/components/editors/CharacterEditor.tsx`:
+From `apps/studio/components/editors/CharacterWorkspace.tsx`:
 
 ```tsx
 const layoutRef = useRef<DockLayoutRef>(null);
@@ -197,7 +197,7 @@ const handlePanelClosed = useCallback(
 );
 
 return (
-  <EditorDockLayout
+  <WorkspaceLayout
     ref={layoutRef}
     layoutId={CHARACTER_LAYOUT_ID}
     viewport={{ viewportId, viewportType: 'react-flow' }}
@@ -206,9 +206,9 @@ return (
     rightDefaultSize={25}
     onPanelClosed={handlePanelClosed}
   >
-    <EditorDockLayout.Left>
-      <EditorDockLayout.Panel id="left" title="Characters" icon={<BookOpen size={14} />}>
-        <EditorDockPanel panelId="character-navigator" title="Characters" scrollable={false} hideTitleBar>
+    <WorkspaceLayout.Left>
+      <WorkspaceLayout.Panel id="left" title="Characters" icon={<BookOpen size={14} />}>
+        <WorkspacePanel panelId="character-navigator" title="Characters" scrollable={false} hideTitleBar>
           <CharacterSidebar
             characters={characters}
             relationships={relationships}
@@ -216,66 +216,66 @@ return (
             onSelectCharacter={(id) => setActiveCharacter(id)}
             onCreateCharacter={() => openOverlay('create-character')}
           />
-        </EditorDockPanel>
-      </EditorDockLayout.Panel>
-    </EditorDockLayout.Left>
+        </WorkspacePanel>
+      </WorkspaceLayout.Panel>
+    </WorkspaceLayout.Left>
 
-    <EditorDockLayout.Main>
-      <EditorDockLayout.Panel id="main" title="Graph" icon={<LayoutDashboard size={14} />}>
+    <WorkspaceLayout.Main>
+      <WorkspaceLayout.Panel id="main" title="Graph" icon={<LayoutDashboard size={14} />}>
         <RelationshipGraphEditor
           characters={characters}
           relationships={relationships}
           activeCharacterId={activeCharacterId}
           onCharacterSelect={(id) => setActiveCharacter(id)}
         />
-      </EditorDockLayout.Panel>
-    </EditorDockLayout.Main>
+      </WorkspaceLayout.Panel>
+    </WorkspaceLayout.Main>
 
-    <EditorDockLayout.Right>
-      <EditorDockLayout.Panel id="right" title="Properties" icon={<ScanSearch size={14} />}>
-        <EditorDockPanel panelId="character-properties" title="Properties" scrollable hideTitleBar>
+    <WorkspaceLayout.Right>
+      <WorkspaceLayout.Panel id="right" title="Properties" icon={<ScanSearch size={14} />}>
+        <WorkspacePanel panelId="character-properties" title="Properties" scrollable hideTitleBar>
           <ActiveCharacterPanel
             character={activeChar}
             onUpdate={handleUpdateCharacter}
           />
-        </EditorDockPanel>
-      </EditorDockLayout.Panel>
-      <EditorDockLayout.Panel id="chat" title="Chat" icon={<MessageCircle size={14} />}>
+        </WorkspacePanel>
+      </WorkspaceLayout.Panel>
+      <WorkspaceLayout.Panel id="chat" title="Chat" icon={<MessageCircle size={14} />}>
         <div className="h-full min-h-0">
           <DialogueAssistantPanel
             contract={characterAssistantContract}
             toolsEnabled={toolsEnabled}
           />
         </div>
-      </EditorDockLayout.Panel>
-    </EditorDockLayout.Right>
-  </EditorDockLayout>
+      </WorkspaceLayout.Panel>
+    </WorkspaceLayout.Right>
+  </WorkspaceLayout>
 );
 ```
 
-## Real-World Example: DialogueEditor (Dual Viewports)
+## Real-World Example: DialogueWorkspace (Dual Viewports)
 
-From `apps/studio/components/editors/DialogueEditor.tsx`:
+From `apps/studio/components/editors/DialogueWorkspace.tsx`:
 
 Shows two graph viewports (narrative + storylet) in the main panel:
 
 ```tsx
-<EditorDockLayout
+<WorkspaceLayout
   ref={layoutRef}
   layoutId="dialogue-mode"
   viewport={{ viewportId, viewportType: 'react-flow' }}
   slots={{ left: { title: 'Library' }, main: { title: 'Dialogue Graphs' } }}
   onPanelClosed={handlePanelClosed}
 >
-  <EditorDockLayout.Left>
-    <EditorDockLayout.Panel id="left" title="Library" icon={<BookOpen size={14} />}>
-      <EditorDockPanel panelId="dialogue-left" title="Library" tabs={sidebarTabs} hideTitleBar />
-    </EditorDockLayout.Panel>
-  </EditorDockLayout.Left>
+  <WorkspaceLayout.Left>
+    <WorkspaceLayout.Panel id="left" title="Library" icon={<BookOpen size={14} />}>
+      <WorkspacePanel panelId="dialogue-left" title="Library" tabs={sidebarTabs} hideTitleBar />
+    </WorkspaceLayout.Panel>
+  </WorkspaceLayout.Left>
 
-  <EditorDockLayout.Main>
-    <EditorDockLayout.Panel id="main" title="Dialogue Graphs" icon={<LayoutDashboard size={14} />}>
-      <EditorDockPanel panelId="dialogue-main" title="Dialogue Graphs" hideTitleBar scrollable={false}>
+  <WorkspaceLayout.Main>
+    <WorkspaceLayout.Panel id="main" title="Dialogue Graphs" icon={<LayoutDashboard size={14} />}>
+      <WorkspacePanel panelId="dialogue-main" title="Dialogue Graphs" hideTitleBar scrollable={false}>
         <div className="flex h-full w-full flex-col gap-[var(--control-gap)] p-[var(--panel-padding)]">
           <ForgeGraphPanel
             scope="narrative"
@@ -292,26 +292,26 @@ Shows two graph viewports (narrative + storylet) in the main panel:
             onFocus={() => setActiveScope('storylet')}
           />
         </div>
-      </EditorDockPanel>
-    </EditorDockLayout.Panel>
-  </EditorDockLayout.Main>
+      </WorkspacePanel>
+    </WorkspaceLayout.Panel>
+  </WorkspaceLayout.Main>
 
-  <EditorDockLayout.Right>
-    <EditorDockLayout.Panel id="right" title="Inspector" icon={<ScanSearch size={14} />}>
-      <EditorDockPanel panelId="dialogue-right" hideTitleBar>
+  <WorkspaceLayout.Right>
+    <WorkspaceLayout.Panel id="right" title="Inspector" icon={<ScanSearch size={14} />}>
+      <WorkspacePanel panelId="dialogue-right" hideTitleBar>
         <EditorInspector selection={activeSelection} sections={inspectorSections} />
-      </EditorDockPanel>
-    </EditorDockLayout.Panel>
-    <EditorDockLayout.Panel id="chat" title="Chat" icon={<MessageCircle size={14} />}>
+      </WorkspacePanel>
+    </WorkspaceLayout.Panel>
+    <WorkspaceLayout.Panel id="chat" title="Chat" icon={<MessageCircle size={14} />}>
       <div className="h-full min-h-0">
         <DialogueAssistantPanel
           contract={forgeAssistantContract}
           toolsEnabled={toolsEnabled}
         />
       </div>
-    </EditorDockLayout.Panel>
-  </EditorDockLayout.Right>
-</EditorDockLayout>
+    </WorkspaceLayout.Panel>
+  </WorkspaceLayout.Right>
+</WorkspaceLayout>
 ```
 
 ## Layout Persistence
@@ -321,9 +321,9 @@ Shows two graph viewports (narrative + storylet) in the main panel:
 When `layoutId` is set, layout is automatically persisted to `localStorage`:
 
 ```tsx
-<EditorDockLayout layoutId="my-editor">
+<WorkspaceLayout layoutId="my-editor">
   {/* ... */}
-</EditorDockLayout>
+</WorkspaceLayout>
 ```
 
 Key: `dockview-my-editor`
@@ -347,14 +347,14 @@ const handleClearLayout = useCallback(() => {
   deleteFromDB('layout-my-editor');
 }, []);
 
-<EditorDockLayout
+<WorkspaceLayout
   layoutId="my-editor"
   layoutJson={layoutJson}
   onLayoutChange={handleLayoutChange}
   clearLayout={handleClearLayout}
 >
   {/* ... */}
-</EditorDockLayout>
+</WorkspaceLayout>
 ```
 
 ## Reset Layout (Imperative API)
@@ -369,9 +369,9 @@ const handleResetLayout = () => {
   layoutRef.current?.resetLayout();
 };
 
-<EditorDockLayout ref={layoutRef} layoutId="my-editor">
+<WorkspaceLayout ref={layoutRef} layoutId="my-editor">
   {/* ... */}
-</EditorDockLayout>
+</WorkspaceLayout>
 ```
 
 This clears persisted layout and restores default panels.
@@ -381,7 +381,7 @@ This clears persisted layout and restores default panels.
 Set viewport metadata for settings resolution:
 
 ```tsx
-<EditorDockLayout
+<WorkspaceLayout
   layoutId="dialogue"
   viewport={{
     viewportId: 'narrative',
@@ -390,7 +390,7 @@ Set viewport metadata for settings resolution:
   }}
 >
   {/* ... */}
-</EditorDockLayout>
+</WorkspaceLayout>
 ```
 
 Sets these `data-*` attributes on root element:
@@ -423,19 +423,19 @@ Hide panels without destroying their state:
 ```tsx
 const [showLeft, setShowLeft] = useState(true);
 
-<EditorDockLayout layoutId="my-editor">
+<WorkspaceLayout layoutId="my-editor">
   {showLeft && (
-    <EditorDockLayout.Left>
-      <EditorDockPanel panelId="nav" title="Navigator">
+    <WorkspaceLayout.Left>
+      <WorkspacePanel panelId="nav" title="Navigator">
         {/* ... */}
-      </EditorDockPanel>
-    </EditorDockLayout.Left>
+      </WorkspacePanel>
+    </WorkspaceLayout.Left>
   )}
 
-  <EditorDockLayout.Main>
+  <WorkspaceLayout.Main>
     {/* ... */}
-  </EditorDockLayout.Main>
-</EditorDockLayout>
+  </WorkspaceLayout.Main>
+</WorkspaceLayout>
 ```
 
 **Panel removal is detected** and the panel is closed in dockview. When you re-render with the panel, it's added back.
@@ -447,7 +447,7 @@ const [showLeft, setShowLeft] = useState(true);
 All size props are percentages (0-100):
 
 ```tsx
-<EditorDockLayout
+<WorkspaceLayout
   leftDefaultSize={15}   // 15% of viewport width
   leftMinSize={10}       // Min 10% width
   rightDefaultSize={30}  // 30% of viewport width
@@ -456,7 +456,7 @@ All size props are percentages (0-100):
   bottomMinSize={15}     // Min 15% height
 >
   {/* ... */}
-</EditorDockLayout>
+</WorkspaceLayout>
 ```
 
 ### Size Constraints
@@ -471,7 +471,7 @@ All size props are percentages (0-100):
 Configure tab appearance per slot:
 
 ```tsx
-<EditorDockLayout
+<WorkspaceLayout
   layoutId="my-editor"
   slots={{
     left: {
@@ -489,7 +489,7 @@ Configure tab appearance per slot:
   }}
 >
   {/* ... */}
-</EditorDockLayout>
+</WorkspaceLayout>
 ```
 
 These are **fallback configs**. If using `.Panel` components, their `title` and `icon` override these.
@@ -535,19 +535,19 @@ const [leftVisible, setLeftVisible] = useState(true);
   </EditorToolbar.Left>
 </EditorToolbar>
 
-<EditorDockLayout layoutId="collapsible">
+<WorkspaceLayout layoutId="collapsible">
   {leftVisible && (
-    <EditorDockLayout.Left>
-      <EditorDockPanel panelId="nav" title="Navigator">
+    <WorkspaceLayout.Left>
+      <WorkspacePanel panelId="nav" title="Navigator">
         {/* ... */}
-      </EditorDockPanel>
-    </EditorDockLayout.Left>
+      </WorkspacePanel>
+    </WorkspaceLayout.Left>
   )}
 
-  <EditorDockLayout.Main>
+  <WorkspaceLayout.Main>
     {/* ... */}
-  </EditorDockLayout.Main>
-</EditorDockLayout>
+  </WorkspaceLayout.Main>
+</WorkspaceLayout>
 ```
 
 ### Pattern: View Menu Integration
@@ -598,23 +598,23 @@ const showRightPanel = useSettingsStore((s) =>
   s.getSettingValue('panel.visible.right', { editorId: 'my-editor' })
 ) as boolean | undefined;
 
-<EditorDockLayout layoutId="my-editor">
+<WorkspaceLayout layoutId="my-editor">
   {showLeftPanel !== false && (
-    <EditorDockLayout.Left>
+    <WorkspaceLayout.Left>
       {/* ... */}
-    </EditorDockLayout.Left>
+    </WorkspaceLayout.Left>
   )}
 
-  <EditorDockLayout.Main>
+  <WorkspaceLayout.Main>
     {/* ... */}
-  </EditorDockLayout.Main>
+  </WorkspaceLayout.Main>
 
   {showRightPanel !== false && (
-    <EditorDockLayout.Right>
+    <WorkspaceLayout.Right>
       {/* ... */}
-    </EditorDockLayout.Right>
+    </WorkspaceLayout.Right>
   )}
-</EditorDockLayout>
+</WorkspaceLayout>
 ```
 
 ## Performance Considerations
@@ -626,7 +626,7 @@ const showRightPanel = useSettingsStore((s) =>
 
 ## Related Components
 
-- [EditorDockPanel](./dock-panel) — Individual panel wrapper
+- [WorkspacePanel](./dock-panel) — Individual panel wrapper
 - [PanelTabs](./panel-tabs.mdx) — Tab system for multi-panel rails
 - [EditorInspector](./editor-inspector.mdx) — Selection-driven property panel
 
@@ -636,7 +636,7 @@ Location: `packages/shared/src/shared/components/editor/DockLayout.tsx`
 
 ## Migration from WorkspaceLayoutGrid
 
-| Old (WorkspaceLayoutGrid) | New (EditorDockLayout) |
+| Old (WorkspaceLayoutGrid) | New (WorkspaceLayout) |
 |---------------------------|------------------------|
 | Fixed grid (1-4 columns) | Resizable panels with drag |
 | No persistence | Automatic localStorage + controlled |

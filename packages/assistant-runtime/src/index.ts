@@ -49,7 +49,7 @@ export {
   buildSessionKey,
   buildThreadId,
   type AssistantDomain,
-  type AssistantEditorId,
+  type AssistantWorkspaceId,
   type AssistantSessionRecord,
   type SessionCheckpoint,
   type SessionLocator,

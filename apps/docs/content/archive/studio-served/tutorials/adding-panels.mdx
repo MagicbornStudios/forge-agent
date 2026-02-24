@@ -118,8 +118,8 @@ Add a resizable left panel with tabs for different views.
 
 ```tsx
 import {
-  EditorDockPanel,
-  EditorDockLayout,
+  WorkspacePanel,
+  WorkspaceLayout,
   PanelTabs,
   type PanelTabDef,
   type DockLayoutRef,
@@ -188,9 +188,9 @@ export function MyEditor() {
         </div>
       </EditorToolbar>
 
-      <EditorDockLayout ref={layoutRef}>
+      <WorkspaceLayout ref={layoutRef}>
         {/* Left Navigator */}
-        <EditorDockPanel
+        <WorkspacePanel
           id="left-nav"
           title="Navigator"
           side="left"
@@ -198,7 +198,7 @@ export function MyEditor() {
           collapsible
         >
           <PanelTabs tabs={navigatorTabs} defaultTabId="items" />
-        </EditorDockPanel>
+        </WorkspacePanel>
 
         {/* Canvas (center) */}
         <div className="flex-1 bg-editor p-8">
@@ -236,7 +236,7 @@ export function MyEditor() {
             <p className="text-sm text-muted-foreground">No selection</p>
           )}
         </EditorInspector>
-      </EditorDockLayout>
+      </WorkspaceLayout>
 
       <EditorStatusBar>
         <span className="text-xs">Ready</span>
@@ -247,8 +247,8 @@ export function MyEditor() {
 ```
 
 **New Features:**
-- `EditorDockLayout` - Container for dockable panels
-- `EditorDockPanel` - Resizable left panel
+- `WorkspaceLayout` - Container for dockable panels
+- `WorkspacePanel` - Resizable left panel
 - `PanelTabs` - Tab system with icons
 - Navigator with Items and Palette tabs
 
@@ -313,7 +313,7 @@ const inspectorTabs: PanelTabDef[] = [
 ];
 
 // Replace EditorInspector with:
-<EditorDockPanel
+<WorkspacePanel
   id="right-inspector"
   title="Inspector"
   side="right"
@@ -321,7 +321,7 @@ const inspectorTabs: PanelTabDef[] = [
   collapsible
 >
   <PanelTabs tabs={inspectorTabs} defaultTabId="properties" />
-</EditorDockPanel>
+</WorkspacePanel>
 ```
 
 ---
@@ -368,8 +368,8 @@ const outputTabs: PanelTabDef[] = [
   },
 ];
 
-// Add after canvas, before closing EditorDockLayout:
-<EditorDockPanel
+// Add after canvas, before closing WorkspaceLayout:
+<WorkspacePanel
   id="bottom-output"
   title="Output"
   side="bottom"
@@ -377,7 +377,7 @@ const outputTabs: PanelTabDef[] = [
   collapsible
 >
   <PanelTabs tabs={outputTabs} defaultTabId="console" />
-</EditorDockPanel>
+</WorkspacePanel>
 ```
 
 ---
@@ -429,11 +429,11 @@ function MyEditor() {
         </div>
       </EditorToolbar>
 
-      <EditorDockLayout ref={layoutRef}>
+      <WorkspaceLayout ref={layoutRef}>
         {isPanelVisible('left-nav') && (
-          <EditorDockPanel id="left-nav" title="Navigator" side="left" defaultSize={280}>
+          <WorkspacePanel id="left-nav" title="Navigator" side="left" defaultSize={280}>
             <PanelTabs tabs={navigatorTabs} />
-          </EditorDockPanel>
+          </WorkspacePanel>
         )}
 
         {/* Canvas */}
@@ -442,17 +442,17 @@ function MyEditor() {
         </div>
 
         {isPanelVisible('right-inspector') && (
-          <EditorDockPanel id="right-inspector" title="Inspector" side="right" defaultSize={320}>
+          <WorkspacePanel id="right-inspector" title="Inspector" side="right" defaultSize={320}>
             <PanelTabs tabs={inspectorTabs} />
-          </EditorDockPanel>
+          </WorkspacePanel>
         )}
 
         {isPanelVisible('bottom-output') && (
-          <EditorDockPanel id="bottom-output" title="Output" side="bottom" defaultSize={200}>
+          <WorkspacePanel id="bottom-output" title="Output" side="bottom" defaultSize={200}>
             <PanelTabs tabs={outputTabs} />
-          </EditorDockPanel>
+          </WorkspacePanel>
         )}
-      </EditorDockLayout>
+      </WorkspaceLayout>
 
       <EditorStatusBar>
         <span className="text-xs">Ready</span>
@@ -476,8 +476,8 @@ import {
   EditorShell,
   EditorToolbar,
   EditorStatusBar,
-  EditorDockLayout,
-  EditorDockPanel,
+  WorkspaceLayout,
+  WorkspacePanel,
   PanelTabs,
   type PanelTabDef,
   type Selection,
@@ -678,9 +678,9 @@ export function MyEditor() {
         </div>
       </EditorToolbar>
 
-      <EditorDockLayout ref={layoutRef}>
+      <WorkspaceLayout ref={layoutRef}>
         {isPanelVisible('left-nav') && (
-          <EditorDockPanel
+          <WorkspacePanel
             id="left-nav"
             title="Navigator"
             side="left"
@@ -688,7 +688,7 @@ export function MyEditor() {
             collapsible
           >
             <PanelTabs tabs={navigatorTabs} defaultTabId="items" />
-          </EditorDockPanel>
+          </WorkspacePanel>
         )}
 
         <div className="flex-1 bg-editor p-8">
@@ -708,7 +708,7 @@ export function MyEditor() {
         </div>
 
         {isPanelVisible('right-inspector') && (
-          <EditorDockPanel
+          <WorkspacePanel
             id="right-inspector"
             title="Inspector"
             side="right"
@@ -716,11 +716,11 @@ export function MyEditor() {
             collapsible
           >
             <PanelTabs tabs={inspectorTabs} defaultTabId="properties" />
-          </EditorDockPanel>
+          </WorkspacePanel>
         )}
 
         {isPanelVisible('bottom-output') && (
-          <EditorDockPanel
+          <WorkspacePanel
             id="bottom-output"
             title="Output"
             side="bottom"
@@ -728,9 +728,9 @@ export function MyEditor() {
             collapsible
           >
             <PanelTabs tabs={outputTabs} defaultTabId="console" />
-          </EditorDockPanel>
+          </WorkspacePanel>
         )}
-      </EditorDockLayout>
+      </WorkspaceLayout>
 
       <EditorStatusBar>
         <span className="text-xs">Ready</span>

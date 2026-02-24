@@ -31,8 +31,8 @@ export const SHOWCASE_CATALOG_DATA = {
       description:
         'Editor platform compositions from @forge/shared used to construct full application surfaces.',
       entries: [
-        { id: 'dock-layout-demo', title: 'EditorDockLayout', summary: 'Composable left/main/right/bottom layout with dock panel helpers.', demoId: 'dock-layout-demo', previewHeight: 620, code: { files: [PLACEHOLDER_CODE] } },
-        { id: 'dock-panel-demo', title: 'EditorDockPanel', summary: 'Individual panel wrapper within EditorDockLayout with title bar, scrolling, and tabs.', demoId: 'dock-panel-demo', code: { files: [PLACEHOLDER_CODE] } },
+        { id: 'dock-layout-demo', title: 'WorkspaceLayout', summary: 'Composable left/main/right/bottom layout with dock panel helpers.', demoId: 'dock-layout-demo', previewHeight: 620, code: { files: [PLACEHOLDER_CODE] } },
+        { id: 'dock-panel-demo', title: 'WorkspacePanel', summary: 'Individual panel wrapper within WorkspaceLayout with title bar, scrolling, and tabs.', demoId: 'dock-panel-demo', code: { files: [PLACEHOLDER_CODE] } },
         { id: 'editor-toolbar-demo', title: 'EditorToolbar', summary: 'Toolbar groups and actions for top-of-editor command surfaces.', demoId: 'editor-toolbar-demo', code: { files: [PLACEHOLDER_CODE] } },
         { id: 'editor-inspector-demo', title: 'EditorInspector', summary: 'Selection-driven properties panel with conditional sections.', demoId: 'editor-inspector-demo', code: { files: [PLACEHOLDER_CODE] } },
         { id: 'editor-overlay-demo', title: 'EditorOverlaySurface', summary: 'Declarative modal system for overlays, dialogs, and popovers.', demoId: 'editor-overlay-demo', code: { files: [PLACEHOLDER_CODE] } },

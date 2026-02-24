@@ -16,12 +16,12 @@ and clearer naming.
 
 ## Docking + layout (rails and composable panels)
 
-- **Rails** — Left, main, right, and bottom are **rails**; each rail can have one or more **panel tabs** (Dockview-level tabs). Content of each tab is one **EditorDockPanel** (or equivalent), which can be leaf content, inner tabs via `PanelTabs`, or (future) nested panels.
-- **UI-first panel layout (recommended):** Compose **EditorDockLayout.Left** / `.Main` / `.Right` / `.Bottom` slot children with **EditorDockLayout.Panel** children. Pass `icon` as `React.ReactNode`. No store, no effects; panels are collected in render. **EditorLayoutProvider**(editorId) provides `editorId` only; View menu and `useEditorPanelVisibility` use `EDITOR_PANEL_SPECS` for panel toggles.
-- **Shared panel content:** Shared panels (e.g. Chat) are implemented once; editors add an **EditorDockLayout.Panel** with a **stable id** (e.g. `CHAT_PANEL_ID`). Visibility key: `panel.visible.{editorId}-{panelId}`. See decisions.md "Shared panel content and editor-scoped contributions."
-- `EditorDockLayout` - dockable panel layout. **Slot + Panel children** (recommended) or **config-driven rails** via `leftPanels`, `mainPanels`, `rightPanels`, `bottomPanels` (arrays of `RailPanelDescriptor`: `{ id, title, iconKey?, content }`). First panel in each array is placed on that side; rest are sibling tabs (`direction: 'within'`). When a rail’s panels array is omitted, legacy props apply: `left`, `main`, `right`, `rightInspector`+`rightSettings`, `bottom`. Declarative slots (`EditorDockLayout.Left`, `.Main`, `.Right`, `.Bottom`) or props; slot children override props. Built on **Dockview** for drag-to-reorder, floating panels, and tab grouping. Layout is persisted to `localStorage['dockview-{layoutId}']` when `layoutId` is set. Use `ref.current.resetLayout()` to restore default. **EditorRail**, **EditorPanel**, **EditorLayout** are deprecated. (`DockLayout` is a deprecated alias.)
-- `EditorDockPanel` - single panel (header, tabs, lock overlay, scroll). Use as the content for each rail panel tab. (`DockPanel` is a deprecated alias.)
-- `PanelTabs` - tabs within an EditorDockPanel (e.g. Library: Graphs | Nodes).
+- **Rails** — Left, main, right, and bottom are **rails**; each rail can have one or more **panel tabs** (Dockview-level tabs). Content of each tab is one **WorkspacePanel** (or equivalent), which can be leaf content, inner tabs via `PanelTabs`, or (future) nested panels.
+- **UI-first panel layout (recommended):** Compose **WorkspaceLayout.Left** / `.Main` / `.Right` / `.Bottom` slot children with **WorkspaceLayout.Panel** children. Pass `icon` as `React.ReactNode`. No store, no effects; panels are collected in render. **WorkspaceContextProvider**(editorId) provides `editorId` only; View menu and `useEditorPanelVisibility` use `EDITOR_PANEL_SPECS` for panel toggles.
+- **Shared panel content:** Shared panels (e.g. Chat) are implemented once; editors add an **WorkspaceLayout.Panel** with a **stable id** (e.g. `CHAT_PANEL_ID`). Visibility key: `panel.visible.{editorId}-{panelId}`. See decisions.md "Shared panel content and editor-scoped contributions."
+- `WorkspaceLayout` - dockable panel layout. **Slot + Panel children** are canonical. Legacy config rails via `leftPanels`, `mainPanels`, `rightPanels`, `bottomPanels` remain for backward compatibility (deprecated). First panel in each array is placed on that side; rest are sibling tabs (`direction: 'within'`). When a rail’s panels array is omitted, legacy props apply: `left`, `main`, `right`, `rightInspector`+`rightSettings`, `bottom`. Declarative slots (`WorkspaceLayout.Left`, `.Main`, `.Right`, `.Bottom`) always override prop-based rail descriptors. Built on **Dockview** for drag-to-reorder, floating panels, and tab grouping. Layout is persisted to `localStorage['dockview-{layoutId}']` when `layoutId` is set. Use `ref.current.resetLayout()` to restore default. **EditorRail**, **EditorPanel**, **EditorLayout** are deprecated. (`DockLayout` is a deprecated alias.)
+- `WorkspacePanel` - single panel (header, tabs, lock overlay, scroll). Use as the content for each rail panel tab. (`DockPanel` is a deprecated alias.)
+- `PanelTabs` - tabs within an WorkspacePanel (e.g. Library: Graphs | Nodes).
 - `ViewportMeta` - metadata wrapper for editor surfaces.
 
 ## Utilities
@@ -43,28 +43,28 @@ Optional `data-context-node-type` (e.g. on graph or panel) refines the accent (e
 
 ## App menubar (Unreal-style)
 
-The app tab row expects a **menubar**; put it in **EditorApp.Tabs.Menubar**. Build menus with **createEditorMenubarMenus({ file, view, edit?, state? })** so order is consistent (File, View, Edit, State). If **state** items are provided, they are merged into the **File** menu (after a separator) and the top-level State menu is omitted. Contribute the result via your app’s **useAppMenubarContribution(menus)**; the app merges editor menus with shared menus (e.g. Settings) and renders **EditorMenubar** in the tab row. Studio is the single entrypoint; menus and editors use registries (EditorMenubarContribution → menu registry, editor descriptor → editor registry). See decisions.md "Studio as single entrypoint and unified registry pattern".
+The app tab row expects a **menubar**; put it in **EditorApp.Tabs.Menubar**. Build menus with **createEditorMenubarMenus({ file, view, edit?, state? })** so order is consistent (File, View, Edit, State). If **state** items are provided, they are merged into the **File** menu (after a separator) and the top-level State menu is omitted. Contribute the result via your app’s **useAppMenubarContribution(menus)**; the app merges editor menus with shared menus (e.g. Settings) and renders **EditorMenubar** in the tab row. Studio is the single entrypoint; menus and editors use registries (WorkspaceMenubarContribution → menu registry, editor descriptor → editor registry). See decisions.md "Studio as single entrypoint and unified registry pattern".
 
 **Extending the menubar:**
 
 - **Shared (app-level) menus:** Built in the shell component that renders the unified menubar. To add a new shared menu or item, extend the merged menu array (e.g. add a menu object before/after Settings) or extend the hook that supplies shared items (e.g. `useAppSettingsMenuItems`) to return more `EditorMenubarItem` entries.
 - **Editor-contributed menus (declarative):** Each editor calls `useAppMenubarContribution(menubarMenus)` with an array of `EditorMenubarMenu` (`id`, `label`, `items`). To add a new editor menu or item: in that editor, add an entry to the `menubarMenus` array (e.g. `{ id: 'tools', label: 'Tools', items: toolsMenuItems }`) or append to an existing menu’s `items` array. Types: `EditorMenubarMenu`, `EditorMenubarItem` from this package (see `toolbar/EditorMenubar.tsx`).
-- **New editor:** Use EditorLayoutProvider + EditorMenubarContribution + EditorMenubarMenuSlot (or useAppMenubarContribution(menus)) with its File/View/State (or equivalent) menus; the app bar shows shared menus plus that editor’s menus when the editor is active. State items are folded into File by `createEditorMenubarMenus`.
+- **New editor:** Use WorkspaceContextProvider + WorkspaceMenubarContribution + WorkspaceMenubarMenuSlot (or useAppMenubarContribution(menus)) with its File/View/State (or equivalent) menus; the app bar shows shared menus plus that editor’s menus when the editor is active. State items are folded into File by `createEditorMenubarMenus`.
 
 ## Migration notes
 
-**Workspace\*** UI components have been removed; **Editor\*** + EditorDockLayout are the only shell. Types (Selection, InspectorSection, ToolbarGroup, OverlaySpec, etc.) live in `shared/workspace` and are consumed by Editor*; there is a single home for these types (no duplicates in editor).
+**Workspace\*** UI components have been removed; **Editor\*** + WorkspaceLayout are the only shell. Types (Selection, InspectorSection, ToolbarGroup, OverlaySpec, etc.) live in `shared/workspace` and are consumed by Editor*; there is a single home for these types (no duplicates in editor).
 
 ## Example
 
-**Declarative slots (recommended):** Use `EditorDockLayout.Left` / `.Main` / `.Right` and `EditorShell.Toolbar` / `.Layout` / `.StatusBar` so the layout is visible at a glance.
+**Declarative slots (recommended):** Use `WorkspaceLayout.Left` / `.Main` / `.Right` and `EditorShell.Toolbar` / `.Layout` / `.StatusBar` so the layout is visible at a glance.
 
 ```tsx
 import {
   EditorShell,
   EditorToolbar,
-  EditorDockLayout,
-  EditorDockPanel,
+  WorkspaceLayout,
+  WorkspacePanel,
   EditorStatusBar,
 } from '@forge/shared/components/editor';
 import { BookOpen, LayoutDashboard, ScanSearch } from 'lucide-react';
@@ -78,26 +78,26 @@ export function ExampleEditor() {
         </EditorToolbar>
       </EditorShell.Toolbar>
       <EditorShell.Layout>
-        <EditorDockLayout
+        <WorkspaceLayout
           viewport={{ viewportId: 'example', viewportType: 'custom' }}
           layoutId="example"
         >
-          <EditorDockLayout.Left>
-            <EditorDockLayout.Panel id="left" title="Library" icon={<BookOpen size={14} />}>
-              <EditorDockPanel panelId="left">Content</EditorDockPanel>
-            </EditorDockLayout.Panel>
-          </EditorDockLayout.Left>
-          <EditorDockLayout.Main>
-            <EditorDockLayout.Panel id="main" title="Main" icon={<LayoutDashboard size={14} />}>
-              <EditorDockPanel panelId="main" scrollable={false}>Main</EditorDockPanel>
-            </EditorDockLayout.Panel>
-          </EditorDockLayout.Main>
-          <EditorDockLayout.Right>
-            <EditorDockLayout.Panel id="right" title="Inspector" icon={<ScanSearch size={14} />}>
-              <EditorDockPanel panelId="right">Inspector</EditorDockPanel>
-            </EditorDockLayout.Panel>
-          </EditorDockLayout.Right>
-        </EditorDockLayout>
+          <WorkspaceLayout.Left>
+            <WorkspaceLayout.Panel id="left" title="Library" icon={<BookOpen size={14} />}>
+              <WorkspacePanel panelId="left">Content</WorkspacePanel>
+            </WorkspaceLayout.Panel>
+          </WorkspaceLayout.Left>
+          <WorkspaceLayout.Main>
+            <WorkspaceLayout.Panel id="main" title="Main" icon={<LayoutDashboard size={14} />}>
+              <WorkspacePanel panelId="main" scrollable={false}>Main</WorkspacePanel>
+            </WorkspaceLayout.Panel>
+          </WorkspaceLayout.Main>
+          <WorkspaceLayout.Right>
+            <WorkspaceLayout.Panel id="right" title="Inspector" icon={<ScanSearch size={14} />}>
+              <WorkspacePanel panelId="right">Inspector</WorkspacePanel>
+            </WorkspaceLayout.Panel>
+          </WorkspaceLayout.Right>
+        </WorkspaceLayout>
       </EditorShell.Layout>
       <EditorShell.StatusBar>Ready</EditorShell.StatusBar>
     </EditorShell>
@@ -105,14 +105,14 @@ export function ExampleEditor() {
 }
 ```
 
-**Props / raw children (legacy):** You can still use `EditorDockLayout` with `left=`, `main=`, `right=`, `bottom=` and `EditorShell` with raw children. Slots are the recommended declarative API.
+**Props / raw children (legacy):** You can still use `WorkspaceLayout` with `left=`, `main=`, `right=`, `bottom=` and `EditorShell` with raw children. Slots are the recommended declarative API.
 
 ## Recommended editor scaffold (one blessed path)
 
 Use this structure so placement is obvious and the app bar contract is satisfied:
 
 1. **App level:** `EditorApp` → `EditorApp.Tabs` with **EditorApp.Tabs.Menubar** (File, View, … + app Settings) and **EditorApp.Tabs.Actions** (project switcher, editor tab buttons). Build menus with **createEditorMenubarMenus({ file, view?, edit?, state? })** and contribute via your app’s `useAppMenubarContribution(menus)`.
-2. **Editor level:** `EditorShell` with slots: **.Toolbar** (EditorToolbar), **.Layout** (EditorDockLayout with .Left / .Main / .Right / .Bottom and EditorDockPanel), **.StatusBar** (EditorStatusBar), **.Settings** (default: **EditorSettingsTrigger**; provide `openSettings` via **SettingsTriggerProvider** in your app).
-3. **Layout:** Prefer **EditorDockLayout.Left / .Main / .Right / .Bottom** slot children over props.
+2. **Editor level:** `EditorShell` with slots: **.Toolbar** (EditorToolbar), **.Layout** (WorkspaceLayout with .Left / .Main / .Right / .Bottom and WorkspacePanel), **.StatusBar** (EditorStatusBar), **.Settings** (default: **EditorSettingsTrigger**; provide `openSettings` via **SettingsTriggerProvider** in your app).
+3. **Layout:** Prefer **WorkspaceLayout.Left / .Main / .Right / .Bottom** slot children over props.
 
 Raw children and prop-based APIs remain supported but are legacy; slot-based usage is the recommended path. Dev-kit consumers should follow this scaffold.

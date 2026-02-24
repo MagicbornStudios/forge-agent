@@ -8,8 +8,8 @@ import {
   FieldSet,
 } from '@forge/ui/field';
 import { ItemGroup, ItemSeparator } from '@forge/ui/item';
-import { useSettingsRegistration } from '@/lib/editor-registry/SettingsRegistrationContext';
-import { useSettingsRegistryStore } from '@/lib/editor-registry/settings-registry';
+import { useSettingsRegistration } from '@/lib/workspace-registry/SettingsRegistrationContext';
+import { useSettingsRegistryStore } from '@/lib/workspace-registry/settings-registry';
 import { SETTINGS_SCOPE_COLORS } from '@/lib/app-shell/editor-metadata';
 import type { SettingsSection as SettingsSectionType, SettingsField as SettingsFieldType } from './types';
 import { SettingsField } from './SettingsField';
@@ -79,8 +79,8 @@ export function SettingsSection({
       ? 'App'
       : scope === 'project'
         ? 'Project'
-        : scope === 'editor'
-          ? 'Editor'
+        : scope === 'workspace'
+          ? 'Workspace'
           : scope === 'viewport'
             ? 'Viewport'
             : scope;

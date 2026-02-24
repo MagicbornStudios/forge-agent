@@ -3,8 +3,8 @@
 import * as React from 'react';
 import * as UI from '@forge/ui';
 import {
-  EditorDockLayout,
-  EditorDockPanel,
+  WorkspaceLayout,
+  WorkspacePanel,
   EditorOverlaySurface,
   EditorSettingsTrigger,
   EditorShell,
@@ -63,9 +63,9 @@ export function MockEditorWorkspace({
       </EditorShell.Settings>
 
       <EditorShell.Layout>
-        <EditorDockLayout layoutId={`studio-workbench-${editorId}`} className="h-full">
-          <EditorDockLayout.Left>
-            <EditorDockPanel panelId={`${editorId}-navigator`} title="Navigator">
+        <WorkspaceLayout layoutId={`studio-workbench-${editorId}`} className="h-full">
+          <WorkspaceLayout.Left>
+            <WorkspacePanel panelId={`${editorId}-navigator`} title="Navigator">
               <div className="space-y-2 text-xs">
                 {beatList.map((beat) => (
                   <div
@@ -76,22 +76,22 @@ export function MockEditorWorkspace({
                   </div>
                 ))}
               </div>
-            </EditorDockPanel>
-          </EditorDockLayout.Left>
+            </WorkspacePanel>
+          </WorkspaceLayout.Left>
 
-          <EditorDockLayout.Main>
-            <EditorDockPanel panelId={`${editorId}-viewport`} title="Viewport" scrollable={false}>
+          <WorkspaceLayout.Main>
+            <WorkspacePanel panelId={`${editorId}-viewport`} title="Viewport" scrollable={false}>
               <div className="flex h-full min-h-[240px] items-center justify-center rounded-md border border-dashed border-border/70 bg-muted/20 px-6 text-center text-sm text-muted-foreground">
                 {editorId === 'dialogue'
                   ? 'Dialogue timeline and nodes render here'
                   : 'Character profile graph and notes render here'}
               </div>
-            </EditorDockPanel>
-          </EditorDockLayout.Main>
+            </WorkspacePanel>
+          </WorkspaceLayout.Main>
 
           {showInspector ? (
-            <EditorDockLayout.Right>
-              <EditorDockPanel panelId={`${editorId}-settings`} title="Settings Contribution" scrollable={false}>
+            <WorkspaceLayout.Right>
+              <WorkspacePanel panelId={`${editorId}-settings`} title="Settings Contribution" scrollable={false}>
                 <div className="h-full p-3">
                   <SettingsTabs
                     tabs={settingsTabs}
@@ -100,13 +100,13 @@ export function MockEditorWorkspace({
                     tabsListClassName="grid h-auto grid-cols-3"
                   />
                 </div>
-              </EditorDockPanel>
-            </EditorDockLayout.Right>
+              </WorkspacePanel>
+            </WorkspaceLayout.Right>
           ) : null}
 
           {showAssistant ? (
-            <EditorDockLayout.Bottom>
-              <EditorDockPanel panelId={`${editorId}-assistant`} title="Assistant">
+            <WorkspaceLayout.Bottom>
+              <WorkspacePanel panelId={`${editorId}-assistant`} title="Assistant">
                 <div className="space-y-2 text-xs text-muted-foreground">
                   <p>
                     <span className="font-medium text-foreground">Planner:</span> Suggest tightening transitions between
@@ -117,10 +117,10 @@ export function MockEditorWorkspace({
                     project.
                   </p>
                 </div>
-              </EditorDockPanel>
-            </EditorDockLayout.Bottom>
+              </WorkspacePanel>
+            </WorkspaceLayout.Bottom>
           ) : null}
-        </EditorDockLayout>
+        </WorkspaceLayout>
       </EditorShell.Layout>
 
       <EditorShell.StatusBar>

@@ -41,10 +41,18 @@ interface AppShellState {
   settingsViewportId: string | null;
   /** Settings Sidebar (right rail) open. Not persisted. */
   settingsSidebarOpen: boolean;
-  /** Active settings tab (app|user|project|editor|viewport). Used for sidebar title/scope indicator. Not persisted. */
-  settingsActiveTab: 'app' | 'user' | 'project' | 'editor' | 'viewport' | null;
+  /** Active settings tab (app|user|project|workspace|viewport). Used for sidebar title/scope indicator. Not persisted. */
+  settingsActiveTab: 'app' | 'user' | 'project' | 'workspace' | 'viewport' | null;
   /** Dock layout JSON by layoutId (Dockview). Persisted. */
   dockLayouts: Record<string, string>;
+  /** Repo Studio as optional AI runtime: base URL when detected (e.g. http://localhost:3010). Not persisted. */
+  repoStudioBaseUrl: string | null;
+  /** Repo Studio health ping succeeded; runtime is available. Not persisted. */
+  repoStudioAvailable: boolean;
+  /** User opted in to use Repo Studio for AI (assistant-chat, etc.). Persisted. */
+  useRepoStudioRuntime: boolean;
+  /** When true and useRepoStudioRuntime, use Codex (coding agent) instead of Open Router assistant. Not persisted. */
+  useCodexAssistant: boolean;
   setRoute: (route: Partial<Pick<AppShellRoute, 'activeWorkspaceId' | 'openWorkspaceIds'>>) => void;
   setActiveProjectId: (id: number | null) => void;
   setLastDialogueProjectId: (id: number | null) => void;
@@ -61,9 +69,13 @@ interface AppShellState {
   setRequestOpenSettings: (value: boolean) => void;
   setSettingsViewportId: (id: string | null) => void;
   setSettingsSidebarOpen: (open: boolean) => void;
-  setSettingsActiveTab: (tab: 'app' | 'user' | 'project' | 'editor' | 'viewport' | null) => void;
+  setSettingsActiveTab: (tab: 'app' | 'user' | 'project' | 'workspace' | 'viewport' | null) => void;
   setDockLayout: (layoutId: string, json: string) => void;
   clearDockLayout: (layoutId: string) => void;
+  setRepoStudioBaseUrl: (url: string | null) => void;
+  setRepoStudioAvailable: (available: boolean) => void;
+  setUseRepoStudioRuntime: (use: boolean) => void;
+  setUseCodexAssistant: (use: boolean) => void;
 }
 
 const DEFAULT_OPEN: EditorId[] = [DEFAULT_EDITOR_ID];
@@ -117,6 +129,10 @@ export const useAppShellStore = create<AppShellState>()(
         settingsSidebarOpen: false,
         settingsActiveTab: null,
         dockLayouts: {},
+        repoStudioBaseUrl: null,
+        repoStudioAvailable: false,
+        useRepoStudioRuntime: false,
+        useCodexAssistant: false,
 
         setRoute: (route) => {
           set((state) => {
@@ -248,6 +264,27 @@ export const useAppShellStore = create<AppShellState>()(
             delete state.dockLayouts[layoutId];
           });
         },
+
+        setRepoStudioBaseUrl: (url) => {
+          set((state) => {
+            state.repoStudioBaseUrl = url;
+          });
+        },
+        setRepoStudioAvailable: (available) => {
+          set((state) => {
+            state.repoStudioAvailable = available;
+          });
+        },
+        setUseRepoStudioRuntime: (use) => {
+          set((state) => {
+            state.useRepoStudioRuntime = use;
+          });
+        },
+        setUseCodexAssistant: (use) => {
+          set((state) => {
+            state.useCodexAssistant = use;
+          });
+        },
       })),
       {
         name: APP_SESSION_KEY,
@@ -258,6 +295,7 @@ export const useAppShellStore = create<AppShellState>()(
           lastDialogueProjectId: s.lastDialogueProjectId,
           lastCharacterProjectId: s.lastCharacterProjectId,
           dockLayouts: s.dockLayouts,
+          useRepoStudioRuntime: s.useRepoStudioRuntime,
         }),
         migrate: (persisted) => {
           const state = (persisted ?? {}) as PersistedAppState;
@@ -287,6 +325,7 @@ export const useAppShellStore = create<AppShellState>()(
             appSettingsSheetOpen: false,
             requestOpenSettings: false,
             dockLayouts: state.dockLayouts ?? {},
+            useRepoStudioRuntime: (state as { useRepoStudioRuntime?: boolean }).useRepoStudioRuntime ?? false,
           } as AppShellState;
         },
         skipHydration: true,
@@ -295,6 +334,3 @@ export const useAppShellStore = create<AppShellState>()(
     { name: 'AppShell' },
   ),
 );
-
-/** Preferred alias for Editor naming. */
-export const useEditorStore = useAppShellStore;

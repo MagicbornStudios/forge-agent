@@ -62,7 +62,7 @@ export const VIEWPORT_DEFAULTS: Record<string, SettingsDefaults> = {
   }
 };
 
-export function getViewportDefaults(editorId: string, viewportId: string): SettingsDefaults {
-  const key = `${editorId}:${viewportId}`;
+export function getViewportDefaults(workspaceId: string, viewportId: string): SettingsDefaults {
+  const key = `${workspaceId}:${viewportId}`;
   return VIEWPORT_DEFAULTS[key] ?? {};
 }

@@ -31,7 +31,7 @@ import type { SettingsSection, SettingsField } from "./types";
 export interface SettingsPanelProps {
   scope: SettingsScope;
   sections: SettingsSection[];
-  editorId?: string;
+  workspaceId?: string;
   viewportId?: string;
   projectId?: string;
   /** Optional icon per section id (e.g. ai-core → Bot). Rendered in section header. */
@@ -142,7 +142,7 @@ function FieldControl({
 export function SettingsPanel({
   scope,
   sections,
-  editorId,
+  workspaceId,
   viewportId,
   projectId,
   sectionIcons,
@@ -156,7 +156,7 @@ export function SettingsPanel({
     getSettingSource,
   } = useSettingsStore();
 
-  const ids = { editorId, viewportId, projectId };
+  const ids = { workspaceId, viewportId, projectId };
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -183,14 +183,14 @@ export function SettingsPanel({
                   const canReset = scope !== "app" && isOverride;
                   const inheritedLabel =
                     scope === "viewport"
-                      ? source === "editor"
-                        ? "Inherited from editor"
+                      ? source === "workspace"
+                        ? "Inherited from workspace"
                         : source === "app"
                           ? "Inherited from app"
                           : source === "project"
                             ? "Inherited from project"
                             : null
-                      : scope === "editor"
+                      : scope === "workspace"
                         ? source === "app"
                           ? "Inherited from app"
                           : source === "project"

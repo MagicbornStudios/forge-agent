@@ -14,13 +14,17 @@ import { getOpenRouterModels } from '@/lib/openrouter-models';
 import { getPersistedModelIdForProvider } from '@/lib/model-router/persistence';
 import { resolveModelIdFromRegistry } from '@/lib/model-router/selection';
 import { recordAiUsageEvent } from '@/lib/server/ai-usage';
-import { requireAiRequestAuth } from '@/lib/server/api-keys';
-import { isLangGraphEnabledServer } from '@/lib/env';
+import { requireAiRequestAuth, type AiRequestAuthContext } from '@/lib/server/api-keys';
+import {
+  isLangGraphEnabledServer,
+  isLocalDevAutoAdminEnabled,
+  getLocalDevAutoAdminCredentials,
+} from '@/lib/env';
 import {
   createAssistantChatOrchestrator,
   PayloadSessionStore,
   type AssistantDomain,
-  type AssistantEditorId,
+  type AssistantWorkspaceId,
 } from '@forge/assistant-runtime';
 
 const log = getLogger('assistant-chat');
@@ -48,7 +52,7 @@ const config = getOpenRouterConfig();
 
 const ASSISTANT_HEADERS = {
   domain: 'x-forge-ai-domain',
-  editorId: 'x-forge-ai-editor-id',
+  workspaceId: 'x-forge-ai-workspace-id',
   projectId: 'x-forge-ai-project-id',
   viewportId: 'x-forge-ai-viewport-id',
 } as const;
@@ -109,7 +113,7 @@ function toDomain(value: string | null): AssistantDomain | null {
   return null;
 }
 
-function toEditorId(value: string | null): AssistantEditorId | null {
+function toWorkspaceId(value: string | null): AssistantWorkspaceId | null {
   if (value == null) return null;
   if (value === 'dialogue' || value === 'character' || value === 'writer' || value === 'app') {
     return value;
@@ -117,7 +121,7 @@ function toEditorId(value: string | null): AssistantEditorId | null {
   return null;
 }
 
-function inferEditorIdFromDomain(domain: AssistantDomain): AssistantEditorId {
+function inferWorkspaceIdFromDomain(domain: AssistantDomain): AssistantWorkspaceId {
   if (domain === 'forge') return 'dialogue';
   if (domain === 'character') return 'character';
   if (domain === 'writer') return 'writer';
@@ -244,8 +248,8 @@ async function buildLangGraphSystemAddendum(input: {
     return null;
   }
 
-  const editorHeader = input.req.headers.get(ASSISTANT_HEADERS.editorId);
-  const editorId = toEditorId(editorHeader) ?? inferEditorIdFromDomain(domain);
+  const workspaceHeader = input.req.headers.get(ASSISTANT_HEADERS.workspaceId);
+  const workspaceId = toWorkspaceId(workspaceHeader) ?? inferWorkspaceIdFromDomain(domain);
   const viewportId = asString(input.req.headers.get(ASSISTANT_HEADERS.viewportId)) ?? undefined;
 
   const messages = Array.isArray(input.body.messages) ? input.body.messages : [];
@@ -263,7 +267,7 @@ async function buildLangGraphSystemAddendum(input: {
     metadata: {
       userId: input.userId,
       domain,
-      editorId,
+      workspaceId,
       projectId,
       viewportId,
     },
@@ -322,7 +326,26 @@ export async function POST(req: Request) {
   }
 
   const payloadClient = await getPayload({ config: payloadConfig });
-  const authContext = await requireAiRequestAuth(payloadClient, req, 'ai.chat');
+  let authContext: AiRequestAuthContext | null = await requireAiRequestAuth(payloadClient, req, 'ai.chat');
+  if (!authContext && isLocalDevAutoAdminEnabled()) {
+    const { email } = getLocalDevAutoAdminCredentials();
+    const users = await payloadClient.find({
+      collection: 'users',
+      where: { email: { equals: email } },
+      limit: 1,
+      depth: 0,
+    });
+    const admin = users.docs[0] as { id: number } | undefined;
+    if (admin?.id) {
+      authContext = {
+        authType: 'session',
+        userId: admin.id,
+        organizationId: null,
+        apiKeyId: null,
+        scopes: ['ai.*'],
+      };
+    }
+  }
   if (!authContext) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,

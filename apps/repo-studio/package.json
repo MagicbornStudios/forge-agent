@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack -p 3010",
+    "dev": "concurrently \"next dev --turbopack -p 3010\" \"drizzle-kit studio --port=4983\"",
+    "dev:next": "next dev --turbopack -p 3010",
     "build": "next build",
     "start": "next start -p 3010",
     "lint": "next lint --max-warnings 0",
@@ -13,7 +14,9 @@
     "test:repo-search": "node --import tsx --test \"__tests__/repo-search/*.test.mjs\"",
     "test:review-queue": "node --import tsx --test \"__tests__/review-queue/*.test.mjs\"",
     "check:direct-fetch": "node scripts/check-direct-fetch.mjs",
-    "check:direct-fetch:strict": "node scripts/check-direct-fetch.mjs --strict"
+    "check:direct-fetch:strict": "node scripts/check-direct-fetch.mjs --strict",
+    "db:pull": "drizzle-kit pull",
+    "db:studio": "drizzle-kit studio --port=4983"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
@@ -38,6 +41,9 @@
     "zustand": "^5.0.9"
   },
   "devDependencies": {
+    "concurrently": "^9.0.0",
+    "drizzle-kit": "^0.30.0",
+    "drizzle-orm": "^0.38.0",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^22",
     "@types/react": "^19",

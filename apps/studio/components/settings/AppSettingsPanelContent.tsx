@@ -37,11 +37,11 @@ import {
   SETTINGS_SCOPE_COLORS,
   VIEWPORT_ACCENT_COLORS,
 } from '@/lib/app-shell/editor-metadata';
-import { useEditorStore } from '@/lib/app-shell/store';
+import { useAppShellStore } from '@/lib/app-shell/store';
 import type { SettingsSection } from './types';
 
 export interface AppSettingsPanelContentProps {
-  activeEditorId?: string | null;
+  activeWorkspaceId?: string | null;
   activeProjectId?: string | null;
   viewportId?: string;
   className?: string;
@@ -49,7 +49,7 @@ export interface AppSettingsPanelContentProps {
   controlledCategory?: AppSettingsPanelContentControlledCategory;
 }
 
-type TabId = 'app' | 'user' | 'project' | 'editor' | 'viewport';
+type TabId = 'app' | 'user' | 'project' | 'workspace' | 'viewport';
 export type AppUserCategoryId = 'ai' | 'appearance' | 'panels' | 'other';
 
 export interface AppSettingsPanelContentControlledCategory {
@@ -65,8 +65,8 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   other: <Settings className={iconSize} />,
   'project-ai': <Bot className={iconSize} />,
   'project-ui': <Palette className={iconSize} />,
-  'editor-ai': <Bot className={iconSize} />,
-  'editor-ui': <Palette className={iconSize} />,
+  'workspace-ai': <Bot className={iconSize} />,
+  'workspace-ui': <Palette className={iconSize} />,
   'viewport-ai': <Bot className={iconSize} />,
   'viewport-ui': <Palette className={iconSize} />,
 };
@@ -96,36 +96,36 @@ const FIELD_ICONS: Record<string, React.ReactNode> = {
   'graph.layoutAlgorithm': <Network className={iconSize} />,
 };
 
-/** No project/editor registration in tree yet; empty until we add scope registration. */
+/** No project/workspace registration in tree yet; empty until we add scope registration. */
 const PROJECT_SECTIONS_PLACEHOLDER: SettingsSection[] = [];
-const EDITOR_SECTIONS_PLACEHOLDER: SettingsSection[] = [];
+const WORKSPACE_SECTIONS_PLACEHOLDER: SettingsSection[] = [];
 
 function ViewportSettingsContent({
-  activeEditorId,
+  activeWorkspaceId,
   viewportId,
 }: {
-  activeEditorId: string;
+  activeWorkspaceId: string;
   viewportId: string;
 }) {
   const accentColor =
-    VIEWPORT_ACCENT_COLORS[`${activeEditorId}:${viewportId}`] ?? 'var(--context-accent)';
+    VIEWPORT_ACCENT_COLORS[`${activeWorkspaceId}:${viewportId}`] ?? 'var(--context-accent)';
   const contextLabel =
-    activeEditorId === 'dialogue'
+    activeWorkspaceId === 'dialogue'
       ? viewportId === 'narrative'
         ? 'Narrative graph'
         : viewportId === 'storylet'
           ? 'Storylet graph'
           : viewportId
-      : activeEditorId === 'character'
+      : activeWorkspaceId === 'character'
         ? 'Character graph'
-        : `${activeEditorId}: ${viewportId}`;
+        : `${activeWorkspaceId}: ${viewportId}`;
 
   return (
     <div className="flex flex-col gap-[var(--control-gap)]">
       <p className="text-xs text-muted-foreground">
         Context: <span className="font-medium text-foreground">{contextLabel}</span>
       </p>
-      <ViewportSettingsProvider editorId={activeEditorId} viewportId={viewportId}>
+      <ViewportSettingsProvider workspaceId={activeWorkspaceId} viewportId={viewportId}>
         <GraphViewportSettings accentBorderColor={accentColor} />
       </ViewportSettingsProvider>
     </div>
@@ -134,29 +134,29 @@ function ViewportSettingsContent({
 
 function getScopeAndId(
   tab: TabId,
-  activeEditorId?: string | null,
+  activeWorkspaceId?: string | null,
   activeProjectId?: string | null,
   viewportId?: string
 ): { scope: SettingsScope; scopeId: string | null } {
   if (tab === 'app' || tab === 'user') return { scope: 'app', scopeId: null };
   if (tab === 'project' && activeProjectId) return { scope: 'project', scopeId: activeProjectId };
-  if (tab === 'editor' && activeEditorId) return { scope: 'editor', scopeId: activeEditorId };
-  if (tab === 'viewport' && activeEditorId && viewportId) {
-    return { scope: 'viewport', scopeId: `${activeEditorId}:${viewportId}` };
+  if (tab === 'workspace' && activeWorkspaceId) return { scope: 'workspace', scopeId: activeWorkspaceId };
+  if (tab === 'viewport' && activeWorkspaceId && viewportId) {
+    return { scope: 'viewport', scopeId: `${activeWorkspaceId}:${viewportId}` };
   }
   return { scope: 'app', scopeId: null };
 }
 
 export function AppSettingsPanelContent({
-  activeEditorId,
+  activeWorkspaceId,
   activeProjectId,
   viewportId = 'main',
   className,
   controlledCategory,
 }: AppSettingsPanelContentProps) {
   const getOverridesForScope = useSettingsStore((s) => s.getOverridesForScope);
-  const settingsSidebarOpen = useEditorStore((s) => s.settingsSidebarOpen);
-  const setSettingsActiveTab = useEditorStore((s) => s.setSettingsActiveTab);
+  const settingsSidebarOpen = useAppShellStore((s) => s.settingsSidebarOpen);
+  const setSettingsActiveTab = useAppShellStore((s) => s.setSettingsActiveTab);
   const [activeTab, setActiveTab] = React.useState<TabId>('app');
   const [saving, setSaving] = React.useState(false);
 
@@ -179,7 +179,7 @@ export function AppSettingsPanelContent({
   const handleSave = React.useCallback(async () => {
     const { scope, scopeId } = getScopeAndId(
       activeTab,
-      activeEditorId,
+      activeWorkspaceId,
       activeProjectId,
       viewportId
     );
@@ -190,10 +190,10 @@ export function AppSettingsPanelContent({
     const ids =
       scope === SETTINGS_SCOPE.PROJECT
         ? { projectId: scopeId ?? undefined }
-        : scope === SETTINGS_SCOPE.EDITOR
-          ? { editorId: scopeId ?? undefined }
+        : scope === SETTINGS_SCOPE.WORKSPACE
+          ? { workspaceId: scopeId ?? undefined }
           : scope === SETTINGS_SCOPE.VIEWPORT
-            ? { editorId: activeEditorId ?? undefined, viewportId }
+            ? { workspaceId: activeWorkspaceId ?? undefined, viewportId }
             : undefined;
     const settings = getOverridesForScope(scope, ids);
     setSaving(true);
@@ -215,15 +215,15 @@ export function AppSettingsPanelContent({
     }
   }, [
     activeTab,
-    activeEditorId,
+    activeWorkspaceId,
     activeProjectId,
     viewportId,
     getOverridesForScope,
   ]);
 
   const showProject = activeProjectId != null;
-  const showEditor = activeEditorId != null;
-  const showViewport = activeEditorId != null;
+  const showWorkspace = activeWorkspaceId != null;
+  const showViewport = activeWorkspaceId != null;
 
   const topLevelTabs = React.useMemo<SettingsTabDef[]>(() => {
     const tabs: SettingsTabDef[] = [
@@ -264,16 +264,16 @@ export function AppSettingsPanelContent({
           ) : null,
       },
       {
-        id: 'editor',
-        label: 'Editor',
+        id: 'workspace',
+        label: 'Workspace',
         icon: <Monitor className="size-[var(--icon-size)]" />,
-        disabled: !showEditor,
+        disabled: !showWorkspace,
         content:
-          activeEditorId != null ? (
+          activeWorkspaceId != null ? (
             <SettingsPanel
-              scope={SETTINGS_SCOPE.EDITOR}
-              sections={EDITOR_SECTIONS_PLACEHOLDER}
-              editorId={activeEditorId}
+              scope={SETTINGS_SCOPE.WORKSPACE}
+              sections={WORKSPACE_SECTIONS_PLACEHOLDER}
+              workspaceId={activeWorkspaceId}
               sectionIcons={SECTION_ICONS}
             />
           ) : null,
@@ -284,9 +284,9 @@ export function AppSettingsPanelContent({
         icon: <Layout className="size-[var(--icon-size)]" />,
         disabled: !showViewport,
         content:
-          activeEditorId != null && viewportId ? (
+          activeWorkspaceId != null && viewportId ? (
             <ViewportSettingsContent
-              activeEditorId={activeEditorId}
+              activeWorkspaceId={activeWorkspaceId}
               viewportId={viewportId}
             />
           ) : null,
@@ -295,10 +295,10 @@ export function AppSettingsPanelContent({
     return tabs;
   }, [
     showProject,
-    showEditor,
+    showWorkspace,
     showViewport,
     activeProjectId,
-    activeEditorId,
+    activeWorkspaceId,
     viewportId,
   ]);
 

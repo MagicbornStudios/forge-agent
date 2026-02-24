@@ -1,8 +1,8 @@
-Individual panel wrapper within `EditorDockLayout`. Provides title bars, scrolling, tabs, and lock overlays.
+Individual panel wrapper within `WorkspaceLayout`. Provides title bars, scrolling, tabs, and lock overlays.
 
 ## Overview
 
-`EditorDockPanel` wraps content within a `EditorDockLayout` slot. It handles:
+`WorkspacePanel` wraps content within a `WorkspaceLayout` slot. It handles:
 
 - **Title bars** with icons and actions (optional)
 - **ScrollArea integration** for scrollable content
@@ -10,7 +10,7 @@ Individual panel wrapper within `EditorDockLayout`. Provides title bars, scrolli
 - **Lock overlays** during AI operations
 - **Panel identity** via `panelId` for settings scoping
 
-Use `EditorDockPanel` as the direct child of `EditorDockLayout` slots, or nest it within `.Panel` descriptors.
+Use `WorkspacePanel` as the direct child of `WorkspaceLayout` slots, or nest it within `.Panel` descriptors.
 
 ## Installation
 
@@ -26,9 +26,9 @@ Import:
 ## Basic Usage
 
 ```tsx
-<EditorDockPanel panelId="inspector" title="Inspector" icon={<ScanSearch size={14} />}>
+<WorkspacePanel panelId="inspector" title="Inspector" icon={<ScanSearch size={14} />}>
   <PropertyEditor selection={selection} />
-</EditorDockPanel>
+</WorkspacePanel>
 ```
 
 ## Props API
@@ -55,7 +55,7 @@ Import:
 ### With Title Bar
 
 ```tsx
-<EditorDockPanel
+<WorkspacePanel
   panelId="properties"
   title="Properties"
   icon={<Settings size={14} />}
@@ -66,7 +66,7 @@ Import:
   }
 >
   {/* Content */}
-</EditorDockPanel>
+</WorkspacePanel>
 ```
 
 ### Without Title Bar (Common)
@@ -74,15 +74,15 @@ Import:
 When panel identity is shown in dockview tabs, hide the title bar:
 
 ```tsx
-<EditorDockLayout>
-  <EditorDockLayout.Left>
-    <EditorDockLayout.Panel id="nav" title="Navigator" icon={<BookOpen size={14} />}>
-      <EditorDockPanel panelId="nav-content" hideTitleBar>
+<WorkspaceLayout>
+  <WorkspaceLayout.Left>
+    <WorkspaceLayout.Panel id="nav" title="Navigator" icon={<BookOpen size={14} />}>
+      <WorkspacePanel panelId="nav-content" hideTitleBar>
         {/* Navigator content — title shown in dockview tab */}
-      </EditorDockPanel>
-    </EditorDockLayout.Panel>
-  </EditorDockLayout.Left>
-</EditorDockLayout>
+      </WorkspacePanel>
+    </WorkspaceLayout.Panel>
+  </WorkspaceLayout.Left>
+</WorkspaceLayout>
 ```
 
 ## Scrollable vs Non-Scrollable
@@ -92,7 +92,7 @@ When panel identity is shown in dockview tabs, hide the title bar:
 For property editors, lists, forms:
 
 ```tsx
-<EditorDockPanel panelId="inspector" title="Inspector" scrollable>
+<WorkspacePanel panelId="inspector" title="Inspector" scrollable>
   <div className="space-y-4">
     <PropertyGroup title="Transform">
       <Input label="X" value={x} onChange={setX} />
@@ -102,7 +102,7 @@ For property editors, lists, forms:
       <ColorPicker label="Fill" value={fill} onChange={setFill} />
     </PropertyGroup>
   </div>
-</EditorDockPanel>
+</WorkspacePanel>
 ```
 
 **Wrapped in `ScrollArea`** with padding applied automatically.
@@ -112,7 +112,7 @@ For property editors, lists, forms:
 For React Flow, Canvas, CodeMirror:
 
 ```tsx
-<EditorDockPanel panelId="viewport" title="Viewport" scrollable={false}>
+<WorkspacePanel panelId="viewport" title="Viewport" scrollable={false}>
   <ReactFlow
     nodes={nodes}
     edges={edges}
@@ -122,7 +122,7 @@ For React Flow, Canvas, CodeMirror:
     <Background />
     <Controls />
   </ReactFlow>
-</EditorDockPanel>
+</WorkspacePanel>
 ```
 
 **No ScrollArea** — content manages its own overflow.
@@ -132,7 +132,7 @@ For React Flow, Canvas, CodeMirror:
 When `tabs` is provided, renders `PanelTabs`:
 
 ```tsx
-<EditorDockPanel
+<WorkspacePanel
   panelId="sidebar"
   tabs={[
     {
@@ -167,7 +167,7 @@ Lock panel during AI operations:
 ```tsx
 const [isApplying, setIsApplying] = useState(false);
 
-<EditorDockPanel
+<WorkspacePanel
   panelId="main"
   title="Main"
   scrollable={false}
@@ -178,17 +178,17 @@ const [isApplying, setIsApplying] = useState(false);
   }}
 >
   <GraphEditor graph={graph} />
-</EditorDockPanel>
+</WorkspacePanel>
 ```
 
 `LockedOverlay` prevents interaction and shows spinner + message.
 
-## Real-World Example: CharacterEditor Navigator
+## Real-World Example: CharacterWorkspace Navigator
 
-From `apps/studio/components/editors/CharacterEditor.tsx`:
+From `apps/studio/components/editors/CharacterWorkspace.tsx`:
 
 ```tsx
-<EditorDockPanel panelId="character-navigator" title="Characters" scrollable={false} hideTitleBar>
+<WorkspacePanel panelId="character-navigator" title="Characters" scrollable={false} hideTitleBar>
   <CharacterSidebar
     characters={characters}
     relationships={relationships}
@@ -206,34 +206,34 @@ From `apps/studio/components/editors/CharacterEditor.tsx`:
     onDeleteRelationship={handleDeleteRelationship}
     onCreateCharacter={() => openOverlay('create-character')}
   />
-</EditorDockPanel>
+</WorkspacePanel>
 ```
 
 - `scrollable={false}` — `CharacterSidebar` manages its own scroll
 - `hideTitleBar` — Title shown in dockview tab
 - `panelId` sets `data-panel-id="character-navigator"` for styling
 
-## Real-World Example: DialogueEditor Inspector
+## Real-World Example: DialogueWorkspace Inspector
 
-From `apps/studio/components/editors/DialogueEditor.tsx`:
+From `apps/studio/components/editors/DialogueWorkspace.tsx`:
 
 ```tsx
-<EditorDockPanel panelId="dialogue-right" hideTitleBar className="h-full">
+<WorkspacePanel panelId="dialogue-right" hideTitleBar className="h-full">
   <EditorInspector selection={activeSelection} sections={inspectorSections} />
-</EditorDockPanel>
+</WorkspacePanel>
 ```
 
 - `hideTitleBar` — Title shown in dockview tab
 - `EditorInspector` handles scroll internally
 
-## Real-World Example: DialogueEditor Main (Locked)
+## Real-World Example: DialogueWorkspace Main (Locked)
 
-From `apps/studio/components/editors/DialogueEditor.tsx`:
+From `apps/studio/components/editors/DialogueWorkspace.tsx`:
 
 ```tsx
 const isEditorLocked = editorLock.locked || globalLocked === true;
 
-<EditorDockPanel
+<WorkspacePanel
   panelId="dialogue-main"
   title="Dialogue Graphs"
   hideTitleBar
@@ -244,7 +244,7 @@ const isEditorLocked = editorLock.locked || globalLocked === true;
   }}
 >
   {mainContent}
-</EditorDockPanel>
+</WorkspacePanel>
 ```
 
 Uses `usePanelLock()` hook to manage lock state during AI operations.
@@ -306,7 +306,7 @@ Target with CSS:
 ### Pattern: Property Inspector with Sections
 
 ```tsx
-<EditorDockPanel panelId="inspector" title="Inspector" icon={<ScanSearch />} scrollable>
+<WorkspacePanel panelId="inspector" title="Inspector" icon={<ScanSearch />} scrollable>
   {selection ? (
     <div className="space-y-4">
       <PropertySection title="Transform">
@@ -323,13 +323,13 @@ Target with CSS:
       No selection
     </div>
   )}
-</EditorDockPanel>
+</WorkspacePanel>
 ```
 
 ### Pattern: File Navigator with Search
 
 ```tsx
-<EditorDockPanel
+<WorkspacePanel
   panelId="files"
   title="Files"
   icon={<FileText />}
@@ -348,13 +348,13 @@ Target with CSS:
     />
     <FileTree files={filteredFiles} onSelect={handleSelect} />
   </div>
-</EditorDockPanel>
+</WorkspacePanel>
 ```
 
 ### Pattern: Multi-Tab Sidebar
 
 ```tsx
-<EditorDockPanel
+<WorkspacePanel
   panelId="sidebar"
   tabs={[
     {
@@ -386,7 +386,7 @@ Target with CSS:
 ### Pattern: Viewport with Controls
 
 ```tsx
-<EditorDockPanel
+<WorkspacePanel
   panelId="viewport"
   title="Viewport"
   headerActions={
@@ -405,7 +405,7 @@ Target with CSS:
   scrollable={false}
 >
   <Canvas nodes={nodes} edges={edges} />
-</EditorDockPanel>
+</WorkspacePanel>
 ```
 
 ### Pattern: Locked During Operation
@@ -422,7 +422,7 @@ const handleApplyChanges = async () => {
   }
 };
 
-<EditorDockPanel
+<WorkspacePanel
   panelId="editor"
   title="Editor"
   scrollable={false}
@@ -433,7 +433,7 @@ const handleApplyChanges = async () => {
   }}
 >
   <CodeEditor code={code} onChange={setCode} />
-</EditorDockPanel>
+</WorkspacePanel>
 ```
 
 ## Styling
@@ -456,22 +456,22 @@ Title bar uses CSS variables:
 Scrollable content auto-applies padding:
 
 ```tsx
-<EditorDockPanel panelId="props" scrollable>
+<WorkspacePanel panelId="props" scrollable>
   {/* Content gets wrapped in: */}
   {/* <ScrollArea> */}
   {/*   <div className="p-[var(--panel-padding)]"> */}
   {/*     {children} */}
   {/*   </div> */}
   {/* </ScrollArea> */}
-</EditorDockPanel>
+</WorkspacePanel>
 ```
 
 Override padding:
 
 ```tsx
-<EditorDockPanel panelId="props" scrollable className="[&_.scroll-area>div]:p-0">
+<WorkspacePanel panelId="props" scrollable className="[&_.scroll-area>div]:p-0">
   {/* No padding — full control */}
-</EditorDockPanel>
+</WorkspacePanel>
 ```
 
 ## Performance
@@ -487,9 +487,9 @@ const ExpensivePanel = React.memo(function ExpensivePanel({ data }: { data: Data
   return <div>{/* ... */}</div>;
 });
 
-<EditorDockPanel panelId="expensive" title="Expensive" scrollable>
+<WorkspacePanel panelId="expensive" title="Expensive" scrollable>
   <ExpensivePanel data={data} />
-</EditorDockPanel>
+</WorkspacePanel>
 ```
 
 ## Accessibility
@@ -501,7 +501,7 @@ const ExpensivePanel = React.memo(function ExpensivePanel({ data }: { data: Data
 
 ## Related Components
 
-- [EditorDockLayout](./dock-layout) — Parent layout system
+- [WorkspaceLayout](./dock-layout) — Parent layout system
 - [PanelTabs](./panel-tabs.mdx) — Tab system for multi-mode panels
 - [EditorInspector](./editor-inspector.mdx) — Selection-driven inspector
 

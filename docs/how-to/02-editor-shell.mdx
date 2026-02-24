@@ -14,8 +14,8 @@ From `packages/shared/src/shared/components/editor/`:
 |-----------|---------|
 | EditorShell | Root; `editorId`, `title`, `domain`, `theme`, `density` |
 | EditorToolbar | `.Left`, `.Right`, `.Center`, `.Group`, `.Button`, `.Menubar` |
-| EditorDockLayout | Slots: `.Left`, `.Main`, `.Right`, `.Bottom` |
-| EditorDockPanel | Panel wrapper; title, tabs, scrollable |
+| WorkspaceLayout | Slots: `.Left`, `.Main`, `.Right`, `.Bottom` |
+| WorkspacePanel | Panel wrapper; title, tabs, scrollable |
 | EditorStatusBar | Footer strip |
 | EditorOverlaySurface | `overlays`, `activeOverlay`, `onDismiss` |
 
@@ -26,24 +26,24 @@ From `packages/shared/src/shared/components/editor/`:
   <EditorToolbar>
     <EditorToolbar.Left><span>My Editor</span></EditorToolbar.Left>
   </EditorToolbar>
-  <EditorDockLayout layoutId="my-layout">
-    <EditorDockLayout.Main>
-      <EditorDockPanel panelId="main" title="Main">
+  <WorkspaceLayout layoutId="my-layout">
+    <WorkspaceLayout.Main>
+      <WorkspacePanel panelId="main" title="Main">
         Main content
-      </EditorDockPanel>
-    </EditorDockLayout.Main>
-  </EditorDockLayout>
+      </WorkspacePanel>
+    </WorkspaceLayout.Main>
+  </WorkspaceLayout>
   <EditorStatusBar>Ready</EditorStatusBar>
   <EditorOverlaySurface overlays={[]} activeOverlay={null} onDismiss={() => {}} />
 </EditorShell>
 ```
 
-Reference: `apps/studio/components/editors/DialogueEditor.tsx`, `CharacterEditor.tsx`.
+Reference: `apps/studio/components/workspaces/DialogueWorkspace.tsx`, `apps/studio/components/workspaces/CharacterWorkspace.tsx`.
 
 **Next:** [03 - Styling and theming](03-styling)
 
 <Callout variant="note" title="For coding agents">
-File refs: `packages/shared/src/shared/components/editor/EditorShell.tsx`, `packages/shared/src/shared/components/editor/DockLayout.tsx`, `apps/studio/components/editors/DialogueEditor.tsx`
+File refs: `packages/shared/src/shared/components/editor/EditorShell.tsx`, `packages/shared/src/shared/components/editor/WorkspaceLayout.tsx`, `apps/studio/components/workspaces/DialogueWorkspace.tsx`
 Related: components/01-editor-shell, components/02-dock-layout
-Do not: Use WorkspaceShell or legacy workspace components
+Do not: Use deprecated dock naming (`EditorDockLayout`, `EditorDockPanel`) in new code
 </Callout>

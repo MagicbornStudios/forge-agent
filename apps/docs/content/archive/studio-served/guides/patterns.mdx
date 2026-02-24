@@ -38,11 +38,11 @@ Slots provide **flexible composition points** without prop drilling. Use slots w
 - You want to avoid deeply nested prop chains
 - Child components should be decoupled from parent implementation
 
-### EditorDockLayout Slots
+### WorkspaceLayout Slots
 
 ```typescript
-// From DialogueEditor.tsx - Real production code
-<EditorDockLayout
+// From DialogueWorkspace.tsx - Real production code
+<WorkspaceLayout
   layoutId="dialogue-mode"
   viewport={{ viewportId, viewportType: 'react-flow' }}
   slots={{
@@ -52,29 +52,29 @@ Slots provide **flexible composition points** without prop drilling. Use slots w
   onPanelClosed={handlePanelClosed}
 >
   {/* Left slot */}
-  <EditorDockLayout.Left>
-    <EditorDockLayout.Panel id="left" title="Library" icon={<BookOpen size={14} />}>
+  <WorkspaceLayout.Left>
+    <WorkspaceLayout.Panel id="left" title="Library" icon={<BookOpen size={14} />}>
       {leftPanel}
-    </EditorDockLayout.Panel>
-  </EditorDockLayout.Left>
+    </WorkspaceLayout.Panel>
+  </WorkspaceLayout.Left>
 
   {/* Main slot */}
-  <EditorDockLayout.Main>
-    <EditorDockLayout.Panel id="main" title="Dialogue Graphs" icon={<LayoutDashboard size={14} />}>
+  <WorkspaceLayout.Main>
+    <WorkspaceLayout.Panel id="main" title="Dialogue Graphs" icon={<LayoutDashboard size={14} />}>
       {mainContent}
-    </EditorDockLayout.Panel>
-  </EditorDockLayout.Main>
+    </WorkspaceLayout.Panel>
+  </WorkspaceLayout.Main>
 
   {/* Right slot - Multiple panels */}
-  <EditorDockLayout.Right>
-    <EditorDockLayout.Panel id="right" title="Inspector" icon={<ScanSearch size={14} />}>
+  <WorkspaceLayout.Right>
+    <WorkspaceLayout.Panel id="right" title="Inspector" icon={<ScanSearch size={14} />}>
       {inspectorContent}
-    </EditorDockLayout.Panel>
-    <EditorDockLayout.Panel id={CHAT_PANEL_ID} title="Chat" icon={<MessageCircle size={14} />}>
+    </WorkspaceLayout.Panel>
+    <WorkspaceLayout.Panel id={CHAT_PANEL_ID} title="Chat" icon={<MessageCircle size={14} />}>
       {chatContent}
-    </EditorDockLayout.Panel>
-  </EditorDockLayout.Right>
-</EditorDockLayout>
+    </WorkspaceLayout.Panel>
+  </WorkspaceLayout.Right>
+</WorkspaceLayout>
 ```
 
 ### Benefits
@@ -122,7 +122,7 @@ interface EditorLayoutProps {
 ### Example: Toolbar Menus (Character Editor)
 
 ```typescript
-// From CharacterEditor.tsx
+// From CharacterWorkspace.tsx
 const fileMenuItems = useMemo(
   () => [
     {
@@ -173,10 +173,10 @@ const viewMenuItems = useMemo(
 );
 
 // Render from config
-<EditorMenubarContribution>
-  <EditorMenubarMenuSlot id="file" label="File" items={fileMenuItems} />
-  <EditorMenubarMenuSlot id="view" label="View" items={viewMenuItems} />
-</EditorMenubarContribution>
+<WorkspaceMenubarContribution>
+  <WorkspaceMenubarMenuSlot id="file" label="File" items={fileMenuItems} />
+  <WorkspaceMenubarMenuSlot id="view" label="View" items={viewMenuItems} />
+</WorkspaceMenubarContribution>
 ```
 
 ### Benefits
@@ -236,7 +236,7 @@ const actions = useMemo<ActionConfig[]>(
 Parent owns state, child receives props and callbacks.
 
 ```typescript
-// From DialogueEditor.tsx - Controlled selection
+// From DialogueWorkspace.tsx - Controlled selection
 const [selectedNarrativeNodeIds, setSelectedNarrativeNodeIds] = useState<string[]>([]);
 const [selectedNarrativeEdgeIds, setSelectedNarrativeEdgeIds] = useState<string[]>([]);
 
@@ -294,7 +294,7 @@ function MyComponent({ onValueChange }: Props, ref: ForwardedRef<MyHandle>) {
 ### Hybrid Pattern (Best of Both)
 
 ```typescript
-// From CharacterEditor.tsx - viewport ref for imperative control
+// From CharacterWorkspace.tsx - viewport ref for imperative control
 const viewportRef = useRef<CharacterViewportHandle | null>(null);
 
 // Controlled selection
@@ -499,7 +499,7 @@ Is this server data?
 Show the feature but make it non-interactive.
 
 ```typescript
-// From CharacterEditor.tsx - Tools gated by entitlements
+// From CharacterWorkspace.tsx - Tools gated by entitlements
 const entitlements = useEntitlements();
 const toolsEnabled =
   toolsEnabledSetting !== false &&
@@ -517,7 +517,7 @@ const toolsEnabled =
 Don't render the feature at all.
 
 ```typescript
-// From DialogueEditor.tsx - Conditional panel rendering
+// From DialogueWorkspace.tsx - Conditional panel rendering
 const showChatPanel = useSettingsStore((s) =>
   s.getSettingValue('panel.visible.dialogue-chat', { editorId, viewportId })
 ) as boolean | undefined;
@@ -666,10 +666,10 @@ function DetailView() {
 Only when state needs to be available to deeply nested children without prop drilling.
 
 ```typescript
-// EditorLayoutProvider - provides layout context to descendants
+// WorkspaceContextProvider - provides layout context to descendants
 const EditorLayoutContext = React.createContext<EditorLayoutContextValue | null>(null);
 
-export function EditorLayoutProvider({ editorId, viewportId, children }: Props) {
+export function WorkspaceContextProvider({ editorId, viewportId, children }: Props) {
   const value = useMemo(
     () => ({ editorId, viewportId }),
     [editorId, viewportId]
@@ -724,7 +724,7 @@ export const NodePaletteItem = React.memo(function NodePaletteItem({
 **When**: Expensive computation that should only run when dependencies change
 
 ```typescript
-// From DialogueEditor.tsx - expensive menu generation
+// From DialogueWorkspace.tsx - expensive menu generation
 const viewMenuItems = useMemo(
   () => {
     const layoutSubmenu = panelSpecs.map((spec) => ({
@@ -747,7 +747,7 @@ const viewMenuItems = useMemo(
 **When**: Passing callbacks to memoized children
 
 ```typescript
-// From DialogueEditor.tsx - stable callback references
+// From DialogueWorkspace.tsx - stable callback references
 const handleNarrativeSelectionChange = useCallback(
   (nodeIds: string[], edgeIds: string[]) => {
     setActiveScope('narrative');
@@ -883,7 +883,7 @@ export class ErrorBoundary extends Component<Props, State> {
 function App() {
   return (
     <ErrorBoundary fallback={<EditorErrorFallback />}>
-      <DialogueEditor />
+      <DialogueWorkspace />
     </ErrorBoundary>
   );
 }
@@ -891,13 +891,13 @@ function App() {
 // Or wrap specific panels
 function Editor() {
   return (
-    <EditorDockLayout>
-      <EditorDockLayout.Left>
+    <WorkspaceLayout>
+      <WorkspaceLayout.Left>
         <ErrorBoundary fallback={<PanelError name="Navigator" />}>
           <NavigatorPanel />
         </ErrorBoundary>
-      </EditorDockLayout.Left>
-    </EditorDockLayout>
+      </WorkspaceLayout.Left>
+    </WorkspaceLayout>
   );
 }
 ```
@@ -977,7 +977,7 @@ function CharacterList() {
 ### Pattern: Optimistic Create
 
 ```typescript
-// From CharacterEditor.tsx pattern
+// From CharacterWorkspace.tsx pattern
 const createCharacterMutation = useCreateCharacter();
 
 const handleCreateCharacter = useCallback(
@@ -1050,7 +1050,7 @@ const handleUpdateCharacter = useCallback(
 ### Example 1: Dual-Viewport Editor (Dialogue)
 
 ```typescript
-// From DialogueEditor.tsx - managing two graph viewports
+// From DialogueWorkspace.tsx - managing two graph viewports
 const [activeScope, setActiveScope] = useState<'narrative' | 'storylet'>('narrative');
 const [selectedNarrativeNodeIds, setSelectedNarrativeNodeIds] = useState<string[]>([]);
 const [selectedStoryletNodeIds, setSelectedStoryletNodeIds] = useState<string[]>([]);
@@ -1091,7 +1091,7 @@ const handleNarrativeSelectionChange = useCallback(
 ### Example 2: Panel Visibility Management
 
 ```typescript
-// From DialogueEditor.tsx - coordinated panel visibility
+// From DialogueWorkspace.tsx - coordinated panel visibility
 const showLeftPanel = useSettingsStore((s) =>
   s.getSettingValue('panel.visible.dialogue-left', { editorId, viewportId })
 ) as boolean | undefined;
@@ -1102,22 +1102,22 @@ const showRightPanel = useSettingsStore((s) =>
 
 // Panels conditionally rendered based on settings
 const leftPanel = showLeftPanel === false ? undefined : (
-  <EditorDockPanel panelId="dialogue-left" title="Library">
+  <WorkspacePanel panelId="dialogue-left" title="Library">
     <ForgeGraphList />
-  </EditorDockPanel>
+  </WorkspacePanel>
 );
 
 const rightPanel = showRightPanel === false ? undefined : (
-  <EditorDockPanel panelId="dialogue-right" title="Inspector">
+  <WorkspacePanel panelId="dialogue-right" title="Inspector">
     <EditorInspector />
-  </EditorDockPanel>
+  </WorkspacePanel>
 );
 ```
 
 ### Example 3: Modal Overlay System
 
 ```typescript
-// From CharacterEditor.tsx - declarative overlay system
+// From CharacterWorkspace.tsx - declarative overlay system
 const [activeOverlay, setActiveOverlay] = useState<ActiveOverlay | null>(null);
 
 const openOverlay = useCallback((id: string, payload?: Record<string, unknown>) => {

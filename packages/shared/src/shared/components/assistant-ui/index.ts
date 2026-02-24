@@ -23,5 +23,5 @@ export {
   ComposerAttachments,
   ComposerAddAttachment,
 } from './attachment';
-export { CodebaseAgentStrategyEditor } from './CodebaseAgentStrategyEditor';
+export { CodebaseAgentStrategyWorkspace } from './CodebaseAgentStrategyWorkspace';
 export { AssistantDevToolsBridge } from './devtools-bridge';

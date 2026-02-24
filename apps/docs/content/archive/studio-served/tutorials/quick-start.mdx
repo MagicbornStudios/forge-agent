@@ -37,8 +37,8 @@ import { useState } from 'react';
 import {
   EditorShell,
   EditorToolbar,
-  EditorDockLayout,
-  EditorDockPanel,
+  WorkspaceLayout,
+  WorkspacePanel,
   EditorStatusBar,
   EditorOverlaySurface,
 } from '@forge/dev-kit';
@@ -89,7 +89,7 @@ export function TaskEditor() {
 
 ## Step 2: Add the Layout (3 minutes)
 
-Replace the placeholder content with `EditorDockLayout`:
+Replace the placeholder content with `WorkspaceLayout`:
 
 ```tsx
 'use client';
@@ -98,8 +98,8 @@ import { useState } from 'react';
 import {
   EditorShell,
   EditorToolbar,
-  EditorDockLayout,
-  EditorDockPanel,
+  WorkspaceLayout,
+  WorkspacePanel,
   EditorStatusBar,
   EditorOverlaySurface,
 } from '@forge/dev-kit';
@@ -146,15 +146,15 @@ export function TaskEditor() {
         </EditorToolbar.Right>
       </EditorToolbar>
 
-      <EditorDockLayout
+      <WorkspaceLayout
         layoutId="tasks-editor"
         leftDefaultSize={20}
         rightDefaultSize={25}
       >
         {/* Left: Task List */}
-        <EditorDockLayout.Left>
-          <EditorDockLayout.Panel id="list" title="Tasks" icon={<ListTodo size={14} />}>
-            <EditorDockPanel panelId="task-list" hideTitleBar scrollable>
+        <WorkspaceLayout.Left>
+          <WorkspaceLayout.Panel id="list" title="Tasks" icon={<ListTodo size={14} />}>
+            <WorkspacePanel panelId="task-list" hideTitleBar scrollable>
               <div className="space-y-1">
                 {tasks.map((task) => (
                   <Button
@@ -168,14 +168,14 @@ export function TaskEditor() {
                   </Button>
                 ))}
               </div>
-            </EditorDockPanel>
-          </EditorDockLayout.Panel>
-        </EditorDockLayout.Left>
+            </WorkspacePanel>
+          </WorkspaceLayout.Panel>
+        </WorkspaceLayout.Left>
 
         {/* Main: Task Editor */}
-        <EditorDockLayout.Main>
-          <EditorDockLayout.Panel id="editor" title="Editor" icon={<FileEdit size={14} />}>
-            <EditorDockPanel panelId="task-editor" hideTitleBar scrollable={false}>
+        <WorkspaceLayout.Main>
+          <WorkspaceLayout.Panel id="editor" title="Editor" icon={<FileEdit size={14} />}>
+            <WorkspacePanel panelId="task-editor" hideTitleBar scrollable={false}>
               {activeTask ? (
                 <div className="flex flex-col h-full p-4">
                   <Card className="p-4">
@@ -188,14 +188,14 @@ export function TaskEditor() {
                   <p className="text-muted-foreground">Select a task</p>
                 </div>
               )}
-            </EditorDockPanel>
-          </EditorDockLayout.Panel>
-        </EditorDockLayout.Main>
+            </WorkspacePanel>
+          </WorkspaceLayout.Panel>
+        </WorkspaceLayout.Main>
 
         {/* Right: Properties */}
-        <EditorDockLayout.Right>
-          <EditorDockLayout.Panel id="props" title="Properties" icon={<ScanSearch size={14} />}>
-            <EditorDockPanel panelId="task-props" hideTitleBar scrollable>
+        <WorkspaceLayout.Right>
+          <WorkspaceLayout.Panel id="props" title="Properties" icon={<ScanSearch size={14} />}>
+            <WorkspacePanel panelId="task-props" hideTitleBar scrollable>
               {activeTask ? (
                 <div className="space-y-4">
                   <div>
@@ -210,10 +210,10 @@ export function TaskEditor() {
               ) : (
                 <p className="text-xs text-muted-foreground">No task selected</p>
               )}
-            </EditorDockPanel>
-          </EditorDockLayout.Panel>
-        </EditorDockLayout.Right>
-      </EditorDockLayout>
+            </WorkspacePanel>
+          </WorkspaceLayout.Panel>
+        </WorkspaceLayout.Right>
+      </WorkspaceLayout>
 
       <EditorStatusBar>
         {activeTask ? `Editing: ${activeTask.title}` : 'Ready'}
@@ -244,8 +244,8 @@ import { useState, useCallback } from 'react';
 import {
   EditorShell,
   EditorToolbar,
-  EditorDockLayout,
-  EditorDockPanel,
+  WorkspaceLayout,
+  WorkspacePanel,
   EditorStatusBar,
   EditorOverlaySurface,
 } from '@forge/dev-kit';
@@ -334,15 +334,15 @@ export function TaskEditor() {
         </EditorToolbar.Right>
       </EditorToolbar>
 
-      <EditorDockLayout
+      <WorkspaceLayout
         layoutId="tasks-editor"
         leftDefaultSize={20}
         rightDefaultSize={25}
       >
         {/* Left: Task List */}
-        <EditorDockLayout.Left>
-          <EditorDockLayout.Panel id="list" title="Tasks" icon={<ListTodo size={14} />}>
-            <EditorDockPanel panelId="task-list" hideTitleBar scrollable>
+        <WorkspaceLayout.Left>
+          <WorkspaceLayout.Panel id="list" title="Tasks" icon={<ListTodo size={14} />}>
+            <WorkspacePanel panelId="task-list" hideTitleBar scrollable>
               <div className="space-y-1">
                 {tasks.map((task) => (
                   <div key={task.id} className="flex items-center gap-1">
@@ -364,14 +364,14 @@ export function TaskEditor() {
                   </div>
                 ))}
               </div>
-            </EditorDockPanel>
-          </EditorDockLayout.Panel>
-        </EditorDockLayout.Left>
+            </WorkspacePanel>
+          </WorkspaceLayout.Panel>
+        </WorkspaceLayout.Left>
 
         {/* Main: Task Editor */}
-        <EditorDockLayout.Main>
-          <EditorDockLayout.Panel id="editor" title="Editor" icon={<FileEdit size={14} />}>
-            <EditorDockPanel panelId="task-editor" hideTitleBar scrollable>
+        <WorkspaceLayout.Main>
+          <WorkspaceLayout.Panel id="editor" title="Editor" icon={<FileEdit size={14} />}>
+            <WorkspacePanel panelId="task-editor" hideTitleBar scrollable>
               {activeTask ? (
                 <div className="space-y-4">
                   <div>
@@ -409,14 +409,14 @@ export function TaskEditor() {
                   <p className="text-muted-foreground">Select a task</p>
                 </div>
               )}
-            </EditorDockPanel>
-          </EditorDockLayout.Panel>
-        </EditorDockLayout.Main>
+            </WorkspacePanel>
+          </WorkspaceLayout.Panel>
+        </WorkspaceLayout.Main>
 
         {/* Right: Properties */}
-        <EditorDockLayout.Right>
-          <EditorDockLayout.Panel id="props" title="Properties" icon={<ScanSearch size={14} />}>
-            <EditorDockPanel panelId="task-props" hideTitleBar scrollable>
+        <WorkspaceLayout.Right>
+          <WorkspaceLayout.Panel id="props" title="Properties" icon={<ScanSearch size={14} />}>
+            <WorkspacePanel panelId="task-props" hideTitleBar scrollable>
               {activeTask ? (
                 <div className="space-y-4">
                   <div>
@@ -435,10 +435,10 @@ export function TaskEditor() {
               ) : (
                 <p className="text-xs text-muted-foreground">No task selected</p>
               )}
-            </EditorDockPanel>
-          </EditorDockLayout.Panel>
-        </EditorDockLayout.Right>
-      </EditorDockLayout>
+            </WorkspacePanel>
+          </WorkspaceLayout.Panel>
+        </WorkspaceLayout.Right>
+      </WorkspaceLayout>
 
       <EditorStatusBar>
         {activeTask ? `Editing: ${activeTask.title}` : 'Ready'}
@@ -554,23 +554,23 @@ export function TaskEditor() {
     >
       {/* ... toolbar */}
 
-      <EditorDockLayout layoutId="tasks-editor">
+      <WorkspaceLayout layoutId="tasks-editor">
         {showLeftPanel !== false && (
-          <EditorDockLayout.Left>
+          <WorkspaceLayout.Left>
             {/* ... left panel */}
-          </EditorDockLayout.Left>
+          </WorkspaceLayout.Left>
         )}
 
-        <EditorDockLayout.Main>
+        <WorkspaceLayout.Main>
           {/* ... main panel */}
-        </EditorDockLayout.Main>
+        </WorkspaceLayout.Main>
 
         {showRightPanel !== false && (
-          <EditorDockLayout.Right>
+          <WorkspaceLayout.Right>
             {/* ... right panel */}
-          </EditorDockLayout.Right>
+          </WorkspaceLayout.Right>
         )}
-      </EditorDockLayout>
+      </WorkspaceLayout>
 
       {/* ... status bar, overlays */}
     </EditorShell>
@@ -614,8 +614,8 @@ The full editor is ~250 lines and includes:
 ## Key Takeaways
 
 1. **EditorShell** — Root container with theme/density/domain
-2. **EditorDockLayout** — Resizable panel layout system
-3. **EditorDockPanel** — Individual panel wrapper
+2. **WorkspaceLayout** — Resizable panel layout system
+3. **WorkspacePanel** — Individual panel wrapper
 4. **EditorOverlaySurface** — Modal dialog system
 5. **Settings store** — Centralized settings with scope resolution
 

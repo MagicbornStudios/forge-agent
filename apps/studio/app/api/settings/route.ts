@@ -25,7 +25,7 @@ const log = getLogger('settings');
  *           schema:
  *             type: object
  *             properties:
- *               scope: { type: string, enum: [app, project, editor, viewport] }
+ *               scope: { type: string, enum: [app, project, workspace, viewport] }
  *               scopeId: { type: string, nullable: true }
  *               settings: { type: object }
  *     responses:
@@ -74,24 +74,22 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { scope, scopeId, settings } = body;
     const resolvedScope =
-      scope === 'workspace'
-        ? 'editor'
-        : scope === 'editor' && typeof scopeId === 'string' && scopeId.includes(':')
-          ? 'viewport'
-          : scope;
+      scope === 'workspace' && typeof scopeId === 'string' && scopeId.includes(':')
+        ? 'viewport'
+        : scope;
 
     if (!resolvedScope) {
       return NextResponse.json({ error: 'scope is required' }, { status: 400 });
     }
-    if (!['app', 'project', 'editor', 'viewport'].includes(resolvedScope)) {
-      return NextResponse.json({ error: 'scope must be app, project, editor, or viewport' }, { status: 400 });
+    if (!['app', 'project', 'workspace', 'viewport'].includes(resolvedScope)) {
+      return NextResponse.json({ error: 'scope must be app, project, workspace, or viewport' }, { status: 400 });
     }
     if (
       resolvedScope !== 'app' &&
       (scopeId === undefined || scopeId === null || scopeId === '')
     ) {
       return NextResponse.json(
-        { error: 'scope "project", "editor", or "viewport" requires scopeId' },
+        { error: 'scope "project", "workspace", or "viewport" requires scopeId' },
         { status: 400 }
       );
     }

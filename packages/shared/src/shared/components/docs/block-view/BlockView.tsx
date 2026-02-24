@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Code2, Eye, X } from 'lucide-react';
 import { cn } from '@forge/ui/lib/utils';
-import { EditorDockPanel, EditorButton } from '../../editor';
+import { WorkspacePanel, EditorButton } from '../../editor';
 import { BlockViewCodePanel } from './BlockViewCodePanel';
 import { BlockViewPreviewPanel } from './BlockViewPreviewPanel';
 import type { BlockViewMode, BlockViewProps } from './types';
@@ -56,7 +56,7 @@ export function BlockView({
       )}
       style={{ '--height': cssHeight } as React.CSSProperties}
     >
-      <EditorDockPanel
+      <WorkspacePanel
         panelId={`block-view-${id}`}
         title={title}
         hideTitleBar={true}
@@ -78,15 +78,15 @@ export function BlockView({
         onTabChange={(next) => setMode(next as BlockViewMode)}
         className="flex-1 min-h-[var(--height,640px)]"
       >
-        <EditorDockPanel.Tab id="preview" label="Preview" icon={<Eye className="size-3.5" />}>
+        <WorkspacePanel.Tab id="preview" label="Preview" icon={<Eye className="size-3.5" />}>
           <BlockViewPreviewPanel
             preview={preview}
             viewport={viewport}
             refreshKey={refreshKey}
             visible={true}
           />
-        </EditorDockPanel.Tab>
-        <EditorDockPanel.Tab id="code" label="Code" icon={<Code2 className="size-3.5" />}>
+        </WorkspacePanel.Tab>
+        <WorkspacePanel.Tab id="code" label="Code" icon={<Code2 className="size-3.5" />}>
           <BlockViewCodePanel
             files={files}
             activeFile={activeFile}
@@ -94,8 +94,8 @@ export function BlockView({
             onCopied={onCopied}
             visible={true}
           />
-        </EditorDockPanel.Tab>
-      </EditorDockPanel>
+        </WorkspacePanel.Tab>
+      </WorkspacePanel>
     </section>
   );
 }

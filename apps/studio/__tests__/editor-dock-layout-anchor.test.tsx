@@ -1,6 +1,6 @@
 import React from 'react';
 import TestRenderer, { act } from 'react-test-renderer';
-import { EditorDockLayout } from '@forge/shared/components/editor';
+import { WorkspaceLayout } from '@forge/shared/components/editor';
 
 jest.mock('dockview', () => {
   const React = require('react');
@@ -87,7 +87,7 @@ function getDockviewMock() {
   return (require('dockview') as { __dockviewMock: any }).__dockviewMock;
 }
 
-describe('EditorDockLayout anchor recovery', () => {
+describe('WorkspaceLayout anchor recovery', () => {
   let storage = new Map<string, string>();
   let consoleErrorSpy: jest.SpyInstance;
   const originalConsoleError = console.error;
@@ -138,18 +138,18 @@ describe('EditorDockLayout anchor recovery', () => {
 
     act(() => {
       TestRenderer.create(
-        <EditorDockLayout layoutId="anchor-hide-main">
-          <EditorDockLayout.Main>
-            <EditorDockLayout.Panel id="main" title="Main">
+        <WorkspaceLayout layoutId="anchor-hide-main">
+          <WorkspaceLayout.Main>
+            <WorkspaceLayout.Panel id="main" title="Main">
               {undefined}
-            </EditorDockLayout.Panel>
-          </EditorDockLayout.Main>
-          <EditorDockLayout.Right>
-            <EditorDockLayout.Panel id="right" title="Inspector">
+            </WorkspaceLayout.Panel>
+          </WorkspaceLayout.Main>
+          <WorkspaceLayout.Right>
+            <WorkspaceLayout.Panel id="right" title="Inspector">
               <div>Inspector</div>
-            </EditorDockLayout.Panel>
-          </EditorDockLayout.Right>
-        </EditorDockLayout>
+            </WorkspaceLayout.Panel>
+          </WorkspaceLayout.Right>
+        </WorkspaceLayout>
       );
     });
     await flushEffects();
@@ -170,18 +170,18 @@ describe('EditorDockLayout anchor recovery', () => {
 
     act(() => {
       TestRenderer.create(
-        <EditorDockLayout layoutId="anchor-main-visible">
-          <EditorDockLayout.Main>
-            <EditorDockLayout.Panel id="main" title="Main">
+        <WorkspaceLayout layoutId="anchor-main-visible">
+          <WorkspaceLayout.Main>
+            <WorkspaceLayout.Panel id="main" title="Main">
               <div>Main</div>
-            </EditorDockLayout.Panel>
-          </EditorDockLayout.Main>
-          <EditorDockLayout.Right>
-            <EditorDockLayout.Panel id="right" title="Inspector">
+            </WorkspaceLayout.Panel>
+          </WorkspaceLayout.Main>
+          <WorkspaceLayout.Right>
+            <WorkspaceLayout.Panel id="right" title="Inspector">
               <div>Inspector</div>
-            </EditorDockLayout.Panel>
-          </EditorDockLayout.Right>
-        </EditorDockLayout>
+            </WorkspaceLayout.Panel>
+          </WorkspaceLayout.Right>
+        </WorkspaceLayout>
       );
     });
     await flushEffects();

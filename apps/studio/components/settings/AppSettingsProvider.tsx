@@ -3,7 +3,7 @@
 import * as React from 'react';
 import {
   SettingsRegistrationContextProvider,
-} from '@/lib/editor-registry/SettingsRegistrationContext';
+} from '@/lib/workspace-registry/SettingsRegistrationContext';
 
 export interface AppSettingsProviderProps {
   children: React.ReactNode;

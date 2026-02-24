@@ -45,7 +45,7 @@ export const CharacterListItem = React.memo(
 Cache expensive computations:
 
 ```typescript
-// From DialogueEditor.tsx
+// From DialogueWorkspace.tsx
 const viewMenuItems = useMemo(
   () => {
     const panelIcons: Record<string, React.ReactNode> = {
@@ -71,7 +71,7 @@ const viewMenuItems = useMemo(
 Stabilize callback references:
 
 ```typescript
-// From CharacterEditor.tsx
+// From CharacterWorkspace.tsx
 const handleCreateCharacter = useCallback(
   async (data: CharacterUpsertPayload): Promise<CharacterDoc> => {
     const result = await createCharMutation.mutateAsync({ ...data, project: projectId! });
@@ -199,15 +199,15 @@ function InfiniteScrollList() {
 ```typescript
 import { lazy, Suspense } from 'react';
 
-const DialogueEditor = lazy(() => import('@/components/editors/DialogueEditor'));
-const CharacterEditor = lazy(() => import('@/components/editors/CharacterEditor'));
+const DialogueWorkspace = lazy(() => import('@/components/editors/DialogueWorkspace'));
+const CharacterWorkspace = lazy(() => import('@/components/editors/CharacterWorkspace'));
 
 function App() {
   return (
     <Suspense fallback={<EditorLoadingSkeleton />}>
       <Router>
-        <Route path="/dialogue" element={<DialogueEditor />} />
-        <Route path="/character" element={<CharacterEditor />} />
+        <Route path="/dialogue" element={<DialogueWorkspace />} />
+        <Route path="/character" element={<CharacterWorkspace />} />
       </Router>
     </Suspense>
   );
@@ -300,7 +300,7 @@ console.log(`Graph render took ${measurements[0].duration}ms`);
 
 ## Real-World Optimizations
 
-### From DialogueEditor
+### From DialogueWorkspace
 
 ```typescript
 // Memoize expensive menu generation
@@ -333,7 +333,7 @@ const narrativeSelection = useForgeSelection(
 );
 ```
 
-### From CharacterEditor
+### From CharacterWorkspace
 
 ```typescript
 // Memoize character selection

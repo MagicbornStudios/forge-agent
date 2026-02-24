@@ -164,12 +164,12 @@ function ControlledPanelTabs() {
 
 ## Real Examples
 
-### DialogueEditor Navigator
+### DialogueWorkspace Navigator
 
-From `C:\Users\benja\Documents\forge-agent\apps\studio\components\editors\DialogueEditor.tsx`:
+From `C:\Users\benja\Documents\forge-agent\apps\studio\components\editors\DialogueWorkspace.tsx`:
 
 ```tsx
-function DialogueEditor() {
+function DialogueWorkspace() {
   const leftPanelTabs: PanelTabDef[] = [
     {
       id: 'narratives',
@@ -219,14 +219,14 @@ function DialogueEditor() {
   ];
 
   return (
-    <EditorDockPanel
+    <WorkspacePanel
       id="left-nav"
       title="Navigator"
       side="left"
       defaultSize={280}
     >
       <PanelTabs tabs={leftPanelTabs} defaultTabId="narratives" />
-    </EditorDockPanel>
+    </WorkspacePanel>
   );
 }
 ```
@@ -257,14 +257,14 @@ function InspectorPanel() {
   ];
 
   return (
-    <EditorDockPanel
+    <WorkspacePanel
       id="right-inspector"
       title="Inspector"
       side="right"
       defaultSize={320}
     >
       <PanelTabs tabs={tabs} defaultTabId="properties" />
-    </EditorDockPanel>
+    </WorkspacePanel>
   );
 }
 ```
@@ -297,14 +297,14 @@ function OutputPanel() {
   ];
 
   return (
-    <EditorDockPanel
+    <WorkspacePanel
       id="bottom-output"
       title="Output"
       side="bottom"
       defaultSize={200}
     >
       <PanelTabs tabs={tabs} defaultTabId="console" />
-    </EditorDockPanel>
+    </WorkspacePanel>
   );
 }
 ```

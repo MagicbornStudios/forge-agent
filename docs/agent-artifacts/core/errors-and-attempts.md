@@ -307,6 +307,40 @@ when `apps/repo-studio/app/globals.css` imports packages not installed in `apps/
 
 ---
 
+## Dialogue assistant (Studio) returning standard response instead of Open Router
+
+**Problem**: The Dialogue assistant in Studio (Dialogue editor) can appear to return a standard or canned response instead of streaming real model output from Open Router. The assistant must use the same AI infrastructure (Open Router) and stream real responses; any fallback to a non-Open-Router path or a generic message is unacceptable.
+
+**Trace (review when debugging)**:
+- **Client**: `DialogueAssistantPanel` uses `API_ROUTES.ASSISTANT_CHAT` and `transportHeaders` from `DialogueEditor` (`x-forge-ai-domain`, `x-forge-ai-editor-id`, `x-forge-ai-viewport-id`, `x-forge-ai-project-id` when LangGraph enabled). Transport is `AssistantChatTransport` from `@assistant-ui/react-ai-sdk`; requests go to Studio’s `/api/assistant-chat`.
+- **Server**: `apps/studio/app/api/assistant-chat/route.ts` uses `getOpenRouterConfig()` (module load; requires `OPENROUTER_API_KEY`), `requireAiRequestAuth` (401 if missing), model from `getPersistedModelIdForProvider(req, 'assistantUi')` and `resolveModelIdFromRegistry(selectedModel, registry)`. If registry is empty or model invalid, fallback may apply. Then `streamAssistantResponse` (OpenAI SDK + `config.baseUrl`) streams. Early returns: 503 if no API key, 401 if unauth, 400 if invalid JSON.
+
+**Things to check when the assistant does not use Open Router**:
+- Env: `OPENROUTER_API_KEY` and `OPENROUTER_BASE_URL` (e.g. `pnpm env:setup --app studio`). If the key is missing at module load, the route returns 503 and the client may show a generic error or placeholder.
+- Auth: Unauthorized (401) causes a JSON error response; the client might surface it as a “standard” message.
+- Model resolution: Empty OpenRouter registry or invalid persisted model ID can trigger fallback; ensure `resolveModelIdFromRegistry` returns a valid model and that the model list loads (`GET /api/model-settings`).
+- Do not bypass the Open Router path for chat; do not return a non-stream JSON body for normal chat requests when auth and config are valid.
+
+**Guardrail**:
+- When changing **assistant panels** (e.g. Repo Studio chat-only UI, tooltips, shared `Thread` or transport), do **not** change Studio’s Dialogue assistant transport URL, headers, or provider wiring unless the change is explicitly to fix Open Router. Repo Studio uses a different app and route; keep `API_ROUTES.ASSISTANT_CHAT` and `DialogueAssistantPanel` wiring unchanged for Studio.
+- After any change that touches shared assistant UI or the assistant-chat route, **verify** that the Studio Dialogue assistant still streams real model responses (e.g. open Dialogue editor, send a message, confirm streamed reply from the selected model).
+
+---
+
+## Dialogue assistant 401 (Unauthorized) with seeded admin and auto-login
+
+**Problem**: Dialogue assistant returned 401 even when Studio seeds an admin and LocalDevAuthGate auto-logs in. The client might show a generic error instead of streaming.
+
+**Root cause**: (1) AssistantChatTransport did not send cookies by default. (2) No fallback when session/API key was missing in local dev.
+
+**Fix (2026-02-23)**:
+- In `DialogueAssistantPanel`, set `credentials: 'include'` on `AssistantChatTransport`.
+- In `/api/assistant-chat`, when `requireAiRequestAuth` returns null and `isLocalDevAutoAdminEnabled()` is true, look up the seeded admin by `getLocalDevAutoAdminCredentials().email` and create a synthetic `AiRequestAuthContext` so the request proceeds.
+
+**Guardrail**: Do not remove the local-dev bypass without providing another path for headless/local testing.
+
+---
+
 ## Studio CSS import failure: `Can't resolve '@forge/shared/styles/editor'`
 
 **Problem**: Studio build/dev failed while evaluating `apps/studio/app/globals.css` because `@forge/shared/styles/editor` resolved to `packages/shared/dist/styles/editor.css`, but that file is generated only when `@forge/shared` build runs.
@@ -1414,6 +1448,81 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 **Guardrails**:
 - Re-ran API tests to confirm terminal route behavior in fallback scenarios.
 - Re-ran full Repo Studio app build to ensure strict type + build pipeline stays green.
+
+---
+
+## Repo Studio workspace-as-layout migration (2026-02-24)
+
+**Problems**:
+1. Workspace tabs still behaved like one global Dockview instance with preset-based hide/show state.
+2. Panel naming was ambiguous (`*Workspace` used for panel content while tabs also represented workspaces).
+3. Legacy persistence state (`repo-studio-main` + global hidden panels) caused migration drift when moving to workspace-scoped layouts.
+
+**Causes**:
+- `RepoStudioShell` mounted one large `EditorDockLayout` and conditionally rendered all panels via visibility map (`workspace-presets` + `useRepoPanelVisibility`).
+- `EditorDockLayout` still prioritized array rail props over declarative slot-collected panels.
+- Store migration logic was tied to preset defaults, not workspace layout definitions.
+
+**Fix**:
+- Introduced workspace layout definitions (`workspace-layout-definitions.ts`) and explicit one-layout-per-workspace components under `components/layouts/*Layout.tsx`.
+- Refactored shell to mount active workspace layout with per-workspace layout ids (`repo-<workspaceId>`) and workspace-scoped panel specs/visibility.
+- Removed preset and legacy visibility helpers (`workspace-presets.ts`, `useRepoPanelVisibility.ts`) and migrated store to version 4 with:
+  - legacy layout key migration (`repo-studio-main` -> active workspace layout id),
+  - hidden-panel sanitization by workspace panel set,
+  - guard to keep at least one main panel visible.
+- Normalized naming to `*Layout` (tab-level) + `*Panel` (panel content exports), with temporary aliases for compatibility.
+- Updated shared `EditorDockLayout` precedence so slot children override array props; documented array props as deprecated compatibility surface.
+
+**Guardrails**:
+- Added shell regression tests:
+  - `apps/repo-studio/__tests__/shell/workspace-layout-definitions.test.mjs`
+  - `apps/repo-studio/__tests__/shell/workspace-store-migration.test.mjs`
+  - `apps/repo-studio/__tests__/shell/workspace-visibility.test.mjs`
+- Verified with:
+  - `pnpm --filter @forge/repo-studio-app exec node --import tsx --test \"__tests__/shell/*.test.mjs\"`
+  - `pnpm --filter @forge/repo-studio-app test:api`
+  - `pnpm --filter @forge/repo-studio-app test:styles`
+  - `pnpm --filter @forge/repo-studio-app build`
+  - `pnpm --filter @forge/studio test`
+  - `pnpm --filter @forge/studio build`
+  - `pnpm forge-repo-studio doctor`
+
+---
+
+## Semantic hard-cut follow-up: workspace-first contracts + payload typegen resolver (2026-02-24)
+
+**Problems**:
+1. Semantic migration left mixed compatibility behavior in settings/assistant contracts (`editor` fallbacks still accepted in some paths).
+2. `pnpm payload:types` failed from root generator path resolution:
+   - `ERR_MODULE_NOT_FOUND` for `@payloadcms/db-postgres`
+   - `ERR_PACKAGE_PATH_NOT_EXPORTED` for Payload internals.
+3. Repo Studio build regressed after function signature cleanup (`renderDatabaseDockPanel` call-site mismatch).
+
+**Causes**:
+- Payload type generator imported adapters and internals via root-level static imports/export paths that were not valid under workspace package resolution and package `exports` constraints.
+- One workspace call site was not updated after panel helper signature simplification.
+- Settings API/store still carried `editor -> workspace` compatibility normalization after hard-cut naming decision.
+
+**Fix**:
+- Enforced workspace-first settings contracts:
+  - removed `scope === 'editor'` mapping in `apps/studio/app/api/settings/route.ts`,
+  - removed `editor` normalization branch in `apps/studio/lib/settings/store.ts`.
+- Hardened payload type generator (`scripts/generate-payload-types.mjs`):
+  - resolve/import from `apps/studio` package context via `createRequire`,
+  - lazily import only active DB adapter (postgres/sqlite),
+  - resolve Payload package root from installed entry path and load `dist/bin/generateTypes.js` by absolute file path.
+- Fixed Repo Studio signature drift:
+  - updated `DatabaseWorkspace` to call `renderDatabaseDockPanel()` without stale args.
+- Removed legacy rail-prop test path in Studio dock anchor regression test and kept slot-based assertions only.
+
+**Guardrails / verification**:
+- `pnpm payload:types`
+- `pnpm --filter @forge/shared build`
+- `pnpm --filter @forge/studio test`
+- `pnpm --filter @forge/studio build`
+- `pnpm --filter @forge/repo-studio-app test:api`
+- `pnpm --filter @forge/repo-studio-app build`
+- `pnpm forge-repo-studio doctor`
 
 ---
 

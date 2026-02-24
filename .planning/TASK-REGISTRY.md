@@ -61,3 +61,5 @@
 | FRG-1203 | 12 | 12-03 | Complete | Add `forge-loop interactive` Ink TUI command for single-loop sequential Ralph flow execution. |
 | FRG-1204 | 12 | 12-04 | Complete | Wire stage commands to runner resolver and codex task-result semantics while preserving prompt-pack behavior. |
 | FRG-1205 | 12 | 12-05 | In progress | Docs/tests/verification closeout and Phase 12 summary artifacts. |
+| FRG-1301 | 13 | 13-01 | Complete | Retrospective: Phase 13 in ROADMAP, AI runtimes tasks in TASK-REGISTRY, sync-legacy, STATUS/DECISIONS updated for phase-tracked work. |
+| FRG-1302 | 13 | 13-02 | Complete | Database workspace: embedded Drizzle Studio; remove custom SQL runner, better-sqlite3, POST /api/repo/db/query. |

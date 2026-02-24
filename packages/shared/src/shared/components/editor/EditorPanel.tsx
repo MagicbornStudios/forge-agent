@@ -10,13 +10,13 @@ export interface EditorPanelProps {
   title: string;
   /** Optional icon key for the tab. */
   iconKey?: DockLayoutSlotIconKey;
-  /** Panel content (e.g. EditorDockPanel wrapping Inspector). */
+  /** Panel content (e.g. WorkspacePanel wrapping Inspector). */
   children?: React.ReactNode;
 }
 
 /**
  * Declarative panel for use inside EditorRail. Registers this panel with the layout registry;
- * content is rendered by the dock layout. Must be used within EditorLayoutProvider.
+ * content is rendered by the dock layout. Must be used within WorkspaceContextProvider.
  */
 export const EditorPanel = React.forwardRef<HTMLDivElement, EditorPanelProps>(function EditorPanel(
   { children },

@@ -115,7 +115,7 @@ function hasAnyShellSlot(children: React.ReactNode): boolean {
  * ```tsx
  * <EditorShell editorId="dialogue" title="Dialogue" domain="dialogue">
  *   <EditorShell.Toolbar>...</EditorShell.Toolbar>
- *   <EditorShell.Layout><EditorDockLayout>...</EditorDockLayout></EditorShell.Layout>
+ *   <EditorShell.Layout><WorkspaceLayout>...</WorkspaceLayout></EditorShell.Layout>
  *   <EditorShell.StatusBar>Ready</EditorShell.StatusBar>
  * </EditorShell>
  * ```

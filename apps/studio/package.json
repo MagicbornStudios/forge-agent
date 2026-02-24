@@ -14,6 +14,7 @@
     "payload": "payload",
     "db:migrate": "node scripts/payload-migrate.mjs migrate",
     "db:migrate:create": "node scripts/payload-migrate.mjs migrate:create --skipEmpty --forceAcceptWarning",
+    "db:migrate:workspace-terminology": "node scripts/migrate-workspace-terminology.mjs",
     "payload:types": "node ../../scripts/generate-payload-types.mjs",
     "generate-spec": "node scripts/generate-openapi.mjs",
     "generate-client": "pnpm run generate-spec && openapi -i ./openapi.json -o ./lib/api-client -c fetch",

@@ -13,7 +13,7 @@ import { AppSettingsProvider } from '@/components/settings/AppSettingsProvider';
 import { AppSettingsRegistrations } from '@/components/settings/AppSettingsRegistrations';
 import { ViewportSettingsProvider } from '@/components/settings/ViewportSettingsProvider';
 import { GraphViewportSettings } from '@/components/settings/GraphViewportSettings';
-import { useSettingsRegistryStore } from '@/lib/editor-registry/settings-registry';
+import { useSettingsRegistryStore } from '@/lib/workspace-registry/settings-registry';
 import type { SettingsSection } from '@/components/settings/types';
 
 const VIEWPORT_KEYS = ['dialogue:narrative', 'dialogue:storylet', 'character:main'] as const;
@@ -51,8 +51,8 @@ export const APP_DEFAULTS: SettingsDefaults = ${appStr};
 
 export const VIEWPORT_DEFAULTS: Record<string, SettingsDefaults> = ${viewportStr};
 
-export function getViewportDefaults(editorId: string, viewportId: string): SettingsDefaults {
-  const key = \`\${editorId}:\${viewportId}\`;
+export function getViewportDefaults(workspaceId: string, viewportId: string): SettingsDefaults {
+  const key = \`\${workspaceId}:\${viewportId}\`;
   return VIEWPORT_DEFAULTS[key] ?? {};
 }
 `;
@@ -71,9 +71,9 @@ describe('Settings codegen', () => {
             <AppSettingsRegistrations />
           </AppSettingsProvider>
           {VIEWPORT_KEYS.map((key) => {
-            const [editorId, viewportId] = key.split(':');
+            const [workspaceId, viewportId] = key.split(':');
             return (
-              <ViewportSettingsProvider key={key} editorId={editorId} viewportId={viewportId}>
+              <ViewportSettingsProvider key={key} workspaceId={workspaceId} viewportId={viewportId}>
                 <GraphViewportSettings />
               </ViewportSettingsProvider>
             );

@@ -8,7 +8,7 @@ import {
   EditorHeader,
   EditorToolbar,
   EditorStatusBar,
-  CodebaseAgentStrategyEditor,
+  CodebaseAgentStrategyWorkspace,
 } from '@forge/dev-kit';
 
 export default function Home() {
@@ -47,7 +47,7 @@ export default function Home() {
             </EditorToolbar>
 
             <div className="flex-1 min-h-0">
-              <CodebaseAgentStrategyEditor apiUrl="/api/assistant-chat" />
+              <CodebaseAgentStrategyWorkspace apiUrl="/api/assistant-chat" />
             </div>
 
             <EditorStatusBar>Connected to /api/assistant-chat</EditorStatusBar>

@@ -1,4 +1,9 @@
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1']);
+
+/** Base URL for Repo Studio when used as optional AI runtime (e.g. http://localhost:3010). Empty = not configured. */
+export function getRepoStudioAppUrl(): string {
+  return process.env.NEXT_PUBLIC_REPO_STUDIO_APP_URL?.trim() || '';
+}
 const DEFAULT_OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 const DEFAULT_OPENROUTER_TIMEOUT_MS = 60000;
 const LOCAL_DOCS_FALLBACK_URL = 'http://localhost:3002/docs';

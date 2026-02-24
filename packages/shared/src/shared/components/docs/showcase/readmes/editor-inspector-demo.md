@@ -284,7 +284,7 @@ function SimpleEditor() {
 
 ## Real Examples
 
-### DialogueEditor Inspector
+### DialogueWorkspace Inspector
 
 From `C:\Users\benja\Documents\forge-agent\apps\studio\components\forge\dialogue-inspector-sections.tsx`:
 
@@ -420,7 +420,7 @@ export const dialogueInspectorSections: InspectorSection[] = [
 ### Usage in Editor
 
 ```tsx
-function DialogueEditor() {
+function DialogueWorkspace() {
   const [selection, setSelection] = useState<Selection>({ type: 'none' });
 
   return (
@@ -437,7 +437,7 @@ function DialogueEditor() {
 
 ---
 
-### CharacterEditor Inspector
+### CharacterWorkspace Inspector
 
 ```typescript
 const characterInspectorSections: InspectorSection[] = [

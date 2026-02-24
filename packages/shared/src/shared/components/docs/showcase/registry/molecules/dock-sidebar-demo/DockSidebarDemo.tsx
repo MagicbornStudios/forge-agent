@@ -1,7 +1,7 @@
 'use client';
 
 import {
-  DockSidebar,
+  WorkspaceSidebar,
   SidebarContent,
   SidebarHeader,
   SidebarMenu,
@@ -14,7 +14,7 @@ export function DockSidebarDemo() {
   return (
     <ShowcaseDemoSurface className="h-[280px] p-0">
       <div className="h-full rounded-md border border-border/70">
-        <DockSidebar>
+        <WorkspaceSidebar>
           <SidebarHeader>
             <span className="text-xs font-semibold">Dock Sidebar</span>
           </SidebarHeader>
@@ -28,7 +28,7 @@ export function DockSidebarDemo() {
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarContent>
-        </DockSidebar>
+        </WorkspaceSidebar>
       </div>
     </ShowcaseDemoSurface>
   );

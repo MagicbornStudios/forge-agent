@@ -6,6 +6,7 @@ import { sqliteAdapter } from '@payloadcms/db-sqlite';
 import { RepoBlocks } from './payload/collections/repo-blocks';
 import { RepoPages } from './payload/collections/repo-pages';
 import { RepoProposals } from './payload/collections/repo-proposals';
+import { RepoAgentSessions } from './payload/collections/repo-agent-sessions';
 import { RepoSettingsOverrides } from './payload/collections/repo-settings-overrides';
 import {
   ensureSqliteParentDir,
@@ -36,7 +37,7 @@ try {
 const sqliteUrl = sqlite.databaseUri;
 
 export default buildConfig({
-  collections: [RepoSettingsOverrides, RepoPages, RepoBlocks, RepoProposals],
+  collections: [RepoSettingsOverrides, RepoPages, RepoBlocks, RepoProposals, RepoAgentSessions],
   secret: process.env.REPO_STUDIO_PAYLOAD_SECRET || process.env.PAYLOAD_SECRET || 'repo-studio-secret-change-me',
   db: sqliteAdapter({
     client: {

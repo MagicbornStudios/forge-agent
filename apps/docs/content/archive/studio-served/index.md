@@ -17,7 +17,7 @@ npm install @forge/dev-kit
 ### Your First Editor
 
 ```typescript
-import { EditorShell, EditorToolbar, EditorDockLayout, EditorDockPanel, EditorStatusBar } from '@forge/dev-kit';
+import { EditorShell, EditorToolbar, WorkspaceLayout, WorkspacePanel, EditorStatusBar } from '@forge/dev-kit';
 import { Button } from '@forge/dev-kit/ui';
 
 export function TaskEditor() {
@@ -32,13 +32,13 @@ export function TaskEditor() {
         </EditorToolbar.Right>
       </EditorToolbar>
 
-      <EditorDockLayout layoutId="tasks-layout">
-        <EditorDockLayout.Main>
-          <EditorDockPanel id="main" title="Tasks">
+      <WorkspaceLayout layoutId="tasks-layout">
+        <WorkspaceLayout.Main>
+          <WorkspacePanel id="main" title="Tasks">
             {/* Your content here */}
-          </EditorDockPanel>
-        </EditorDockLayout.Main>
-      </EditorDockLayout>
+          </WorkspacePanel>
+        </WorkspaceLayout.Main>
+      </WorkspaceLayout>
 
       <EditorStatusBar>Ready</EditorStatusBar>
     </EditorShell>

@@ -489,9 +489,9 @@ export interface Relationship {
  */
 export interface SettingsOverride {
   id: number;
-  scope: 'app' | 'editor' | 'viewport' | 'project';
+  scope: 'app' | 'workspace' | 'viewport' | 'project';
   /**
-   * Null for app; editorId for editor; editorId:viewportId for viewport.
+   * Null for app; workspaceId for workspace; workspaceId:viewportId for viewport.
    */
   scopeId?: string | null;
   /**
@@ -515,7 +515,7 @@ export interface SettingsOverride {
   createdAt: string;
 }
 /**
- * Durable LangGraph checkpoints keyed by user/editor/project.
+ * Durable LangGraph checkpoints keyed by user/workspace/project.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "agent-sessions".
@@ -524,7 +524,7 @@ export interface AgentSession {
   id: number;
   user: number | User;
   project: number | Project;
-  editor: 'dialogue' | 'character' | 'writer' | 'app';
+  workspace: 'dialogue' | 'character' | 'writer' | 'app';
   domain: 'forge' | 'character' | 'writer' | 'video' | 'app';
   sessionKey: string;
   threadId: string;
@@ -783,7 +783,17 @@ export interface ApiKey {
   keyLast4: string;
   secretSalt: string;
   secretHash: string;
-  scopes: ('ai.*' | 'ai.chat' | 'ai.plan' | 'ai.structured' | 'ai.image')[];
+  scopes: (
+    | 'ai.*'
+    | 'ai.chat'
+    | 'ai.plan'
+    | 'ai.structured'
+    | 'ai.image'
+    | 'repo-studio.*'
+    | 'repo-studio.connect'
+    | 'repo-studio.read'
+    | 'repo-studio.write'
+  )[];
   user: number | User;
   organization: number | Organization;
   /**
@@ -1198,7 +1208,7 @@ export interface SettingsOverridesSelect<T extends boolean = true> {
 export interface AgentSessionsSelect<T extends boolean = true> {
   user?: T;
   project?: T;
-  editor?: T;
+  workspace?: T;
   domain?: T;
   sessionKey?: T;
   threadId?: T;

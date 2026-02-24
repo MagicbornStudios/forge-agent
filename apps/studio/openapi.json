@@ -173,7 +173,7 @@
                     "enum": [
                       "app",
                       "project",
-                      "editor",
+                      "workspace",
                       "viewport"
                     ]
                   },

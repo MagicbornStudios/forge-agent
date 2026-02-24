@@ -2,22 +2,22 @@
 
 import * as React from "react";
 import { SettingsPanel } from "./SettingsPanel";
-import { useSettingsRegistrySections } from "@/lib/editor-registry/settings-registry";
+import { useSettingsRegistrySections } from "@/lib/workspace-registry/settings-registry";
 
 export function ViewportSettingsPanel({
-  editorId,
+  workspaceId,
   viewportId,
 }: {
-  editorId: string;
+  workspaceId: string;
   viewportId: string;
 }) {
-  const scopeId = `${editorId}:${viewportId}`;
+  const scopeId = `${workspaceId}:${viewportId}`;
   const sections = useSettingsRegistrySections("viewport", scopeId);
   return (
     <SettingsPanel
       scope="viewport"
       sections={sections}
-      editorId={editorId}
+      workspaceId={workspaceId}
       viewportId={viewportId}
     />
   );

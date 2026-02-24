@@ -18,7 +18,7 @@ Workspace Platform Engineer: owns `packages/shared/src/shared` (editor component
 - **Workspace UI spec** — Declarative slots: `header`, `toolbar`, `left`, `main`, `right`, `statusBar`, `bottom`, `overlays`.
 - **Modal** — Legacy `ModalRoute` / `ModalRegistry`; prefer OverlaySpec + EditorOverlaySurface for new code.
 - **Editor shell**: Declarative, slot-based. Recommended: use `EditorShell.Header`, `.Toolbar`, `.Layout`, `.StatusBar`, `.Overlay`, `.Settings` so anatomy is explicit; raw children (legacy) remain supported. See `components/editor/README.md` for slot map and how to build an editor.
-- **Dock layout (rails)**: Left, main, right, bottom are **rails**; each rail can have multiple **panel tabs**. **UI-first:** Use `EditorDockLayout.Left`/`.Main`/`.Right`/`.Bottom` with `EditorDockLayout.Panel` children (`id`, `title`, `icon?`). Pass icon as `React.ReactNode`. No store-driven registration. **EditorLayoutProvider** provides `editorId` only; **EditorRail**, **EditorPanel**, **EditorLayout** are deprecated. Config-driven `leftPanels`/`mainPanels`/etc. and legacy props remain for backward compat. See `components/editor/README.md`. Always provide `viewportId` + `viewportType` via the `viewport` prop.
+- **Dock layout (rails)**: Left, main, right, bottom are **rails**; each rail can have multiple **panel tabs**. **UI-first:** Use `WorkspaceLayout.Left`/`.Main`/`.Right`/`.Bottom` with `WorkspaceLayout.Panel` children (`id`, `title`, `icon?`). Pass icon as `React.ReactNode`. No store-driven registration. **WorkspaceContextProvider** provides `editorId` only; **EditorRail**, **EditorPanel**, **EditorLayout** are deprecated. Config-driven `leftPanels`/`mainPanels`/etc. and legacy props remain for backward compat. See `components/editor/README.md`. Always provide `viewportId` + `viewportType` via the `viewport` prop.
 - **Atomic design**: shadcn atoms live in `packages/ui/src/components/ui/*`; shared editor UI composes those atoms into molecules.
 - **Styles**: Single source in `packages/shared/src/shared/styles/`. Themes are data-driven (`data-theme` on `<html>` or editor root). Do not duplicate theme tokens elsewhere.
 - **Density**: Editor UI is compact by default. Use tokenized spacing (`--control-*`, `--panel-padding`, `--tab-height`) and set `data-density` on `EditorShell` for overrides.
@@ -29,7 +29,7 @@ Workspace Platform Engineer: owns `packages/shared/src/shared` (editor component
 
 ## Adding a new slot or panel
 
-Recommended composition is slot-based (`EditorShell.*`, `EditorApp.Tabs.Menubar`/`.Actions`, `EditorDockLayout.*`); raw children and prop-based APIs remain supported for backward compatibility. Follow the "Recommended editor scaffold" in `components/editor/README.md` (and dev-kit docs when present). Extend the editor types and `DockLayout` (or equivalent) in `packages/shared/src/shared/components/editor/`. Document the new slot in `components/editor/README.md`. Do not add one-off layouts per domain.
+Recommended composition is slot-based (`EditorShell.*`, `EditorApp.Tabs.Menubar`/`.Actions`, `WorkspaceLayout.*`); raw children and prop-based APIs remain supported for backward compatibility. Follow the "Recommended editor scaffold" in `components/editor/README.md` (and dev-kit docs when present). Extend the editor types and `DockLayout` (or equivalent) in `packages/shared/src/shared/components/editor/`. Document the new slot in `components/editor/README.md`. Do not add one-off layouts per domain.
 
 ## Unified editor / Assistant
 

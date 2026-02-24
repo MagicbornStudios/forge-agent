@@ -42,8 +42,8 @@ The dev-kit includes everything you need:
 import {
   EditorShell,
   EditorToolbar,
-  EditorDockLayout,
-  EditorDockPanel,
+  WorkspaceLayout,
+  WorkspacePanel,
   EditorStatusBar,
   EditorInspector,
   EditorOverlaySurface,
@@ -53,8 +53,8 @@ import {
 **Available Components:**
 - EditorShell - Root container with theming
 - EditorToolbar - Customizable toolbar
-- EditorDockLayout - VSCode-style panels
-- EditorDockPanel - Individual panel wrapper
+- WorkspaceLayout - VSCode-style panels
+- WorkspacePanel - Individual panel wrapper
 - EditorStatusBar - Bottom status bar
 - EditorInspector - Properties panel
 - EditorOverlaySurface - Modal system
@@ -111,8 +111,8 @@ All components are fully typed with comprehensive JSDoc comments.
 // Import editor components
 import {
   EditorShell,
-  EditorDockLayout,
-  EditorDockPanel,
+  WorkspaceLayout,
+  WorkspacePanel,
   EditorToolbar,
   EditorStatusBar,
 } from '@forge/dev-kit';
@@ -188,7 +188,7 @@ npm install @forge/dev-kit
 ### Quick Start
 
 ```typescript
-import { EditorShell, EditorDockLayout } from '@forge/dev-kit';
+import { EditorShell, WorkspaceLayout } from '@forge/dev-kit';
 import { Button, Card } from '@forge/dev-kit/ui';
 
 export function MyEditor() {

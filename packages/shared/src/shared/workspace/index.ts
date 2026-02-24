@@ -1,3 +1,4 @@
+export * from './companion-runtime';
 export * from './selection';
 export * from './focus';
 export * from './modal';

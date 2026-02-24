@@ -175,14 +175,14 @@ function MyEditor() {
 
 ## Real Examples
 
-### DialogueEditor Overlays
+### DialogueWorkspace Overlays
 
-From `C:\Users\benja\Documents\forge-agent\apps\studio\components\editors\DialogueEditor.tsx`:
+From `C:\Users\benja\Documents\forge-agent\apps\studio\components\editors\DialogueWorkspace.tsx`:
 
 ```tsx
 const CREATE_NODE_OVERLAY_ID = 'create-node';
 
-function DialogueEditor() {
+function DialogueWorkspace() {
   const [activeOverlay, setActiveOverlay] = useState<ActiveOverlay | null>(null);
   const [graph, setGraph] = useState<ForgeGraphDoc | null>(null);
 

@@ -8,7 +8,7 @@ Convenience package that re-exports **@forge/dev-kit** and **@forge/agent-engine
 
 1. **Install:** `pnpm add @forge/dev-kit`. If using a private registry, set `.npmrc` with `@forge:registry=<your-registry-url>`.
 2. **One style import:** In your app CSS (e.g. `globals.css`), add `@import '@forge/dev-kit/styles/editor';` — do not import dockview directly.
-3. **Minimal snippet:** Wrap your app with `AppProviders`, render `EditorApp` and your editor (e.g. `CodebaseAgentStrategyEditor`). See [components: Editor shell](/docs/components/editor-shell) and the consumer example in the repo.
+3. **Minimal snippet:** Wrap your app with `AppProviders`, render `EditorApp` and your editor (e.g. `CodebaseAgentStrategyWorkspace`). See [components: Editor shell](/docs/components/editor-shell) and the consumer example in the repo.
 
 ## Editor styles
 

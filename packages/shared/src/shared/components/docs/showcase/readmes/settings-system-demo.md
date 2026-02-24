@@ -1034,9 +1034,9 @@ After:  project["ai.agentName"] = undefined → inherits from app
 
 ## Real Examples
 
-### DialogueEditor Settings
+### DialogueWorkspace Settings
 
-From `C:\Users\benja\Documents\forge-agent\apps\studio\components\editors\DialogueEditor.tsx`:
+From `C:\Users\benja\Documents\forge-agent\apps\studio\components\editors\DialogueWorkspace.tsx`:
 
 #### Reading Viewport Settings
 

@@ -5,8 +5,11 @@ const nextConfig: NextConfig = {
   transpilePackages: ['@forge/shared', '@forge/ui'],
   webpack: (config) => {
     config.output = config.output || {};
-    // Node 24 can fail in webpack's WasmHash path; force a stable non-wasm hash function.
-    config.output.hashFunction = 'sha256';
+    // Optional fallback for environments that need a non-wasm hash path.
+    // Disabled by default because forcing sha256 can break webpack hashing in some builds.
+    if (process.env.REPO_STUDIO_FORCE_STABLE_HASH === '1') {
+      config.output.hashFunction = 'sha256';
+    }
     return config;
   },
   serverExternalPackages: [

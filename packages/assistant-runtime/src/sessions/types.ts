@@ -1,12 +1,12 @@
 export type AssistantDomain = 'forge' | 'character' | 'writer' | 'video' | 'app';
 
-export type AssistantEditorId = 'dialogue' | 'character' | 'writer' | 'app';
+export type AssistantWorkspaceId = 'dialogue' | 'character' | 'writer' | 'app';
 
 export interface SessionLocator {
   userId: number;
   projectId: number | null;
   domain: AssistantDomain;
-  editorId: AssistantEditorId;
+  workspaceId: AssistantWorkspaceId;
 }
 
 export interface SessionCheckpoint {
@@ -25,7 +25,7 @@ export interface AssistantSessionRecord {
   user: number;
   project: number | null;
   domain: AssistantDomain;
-  editor: AssistantEditorId;
+  workspace: AssistantWorkspaceId;
   summary?: string | null;
   events?: unknown;
   checkpoint?: SessionCheckpoint | null;
@@ -49,7 +49,7 @@ export interface SessionStore {
 
 export function buildSessionKey(locator: SessionLocator): string {
   const projectPart = locator.projectId == null ? 'none' : String(locator.projectId);
-  return `session:${locator.userId}:${locator.editorId}:${projectPart}`;
+  return `session:${locator.userId}:${locator.workspaceId}:${projectPart}`;
 }
 
 export function buildThreadId(locator: SessionLocator): string {

@@ -31,7 +31,7 @@ export interface PanelTabProps {
   children?: React.ReactNode;
 }
 
-/** Tab marker component for declarative PanelTabs children. Exported so declaration emit can reference it (EditorDockPanel.Tab). */
+/** Tab marker component for declarative PanelTabs children. Exported so declaration emit can reference it (WorkspacePanel.Tab). */
 export function PanelTab(_props: PanelTabProps) {
   return null;
 }
@@ -77,7 +77,7 @@ export interface PanelTabsProps {
 }
 
 /**
- * PanelTabs — tab bar + content within a single `DockPanel`.
+ * PanelTabs — tab bar + content within a single `WorkspacePanel`.
  *
  * Built on shadcn `Tabs` (Radix UI). Replaces both the `GraphSidebar`
  * (app-level custom ToggleGroup) and `WorkspaceTabGroup` (shared) with

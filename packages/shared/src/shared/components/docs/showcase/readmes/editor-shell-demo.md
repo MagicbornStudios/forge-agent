@@ -66,7 +66,7 @@ When using slot components, content renders in **fixed order** with layout appli
   </EditorShell.Toolbar>
 
   <EditorShell.Layout>
-    <EditorDockLayout>...</EditorDockLayout>
+    <WorkspaceLayout>...</WorkspaceLayout>
   </EditorShell.Layout>
 
   <EditorShell.StatusBar>
@@ -100,7 +100,7 @@ Slots render in this order:
 Example showing a complete task management editor:
 
 ```tsx
-import { EditorShell, EditorToolbar, EditorDockLayout, EditorDockPanel, EditorStatusBar } from '@forge/dev-kit';
+import { EditorShell, EditorToolbar, WorkspaceLayout, WorkspacePanel, EditorStatusBar } from '@forge/dev-kit';
 export function TaskEditor() {
   const [tasks, setTasks] = useState([]);
   const [activeTask, setActiveTask] = useState(null);
@@ -124,29 +124,29 @@ export function TaskEditor() {
         </EditorToolbar.Right>
       </EditorToolbar>
 
-      <EditorDockLayout
+      <WorkspaceLayout
         layoutId="tasks-layout"
         leftDefaultSize={20}
         rightDefaultSize={25}
       >
-        <EditorDockLayout.Left>
-          <EditorDockPanel panelId="task-list" title="Tasks">
+        <WorkspaceLayout.Left>
+          <WorkspacePanel panelId="task-list" title="Tasks">
             {/* Task list */}
-          </EditorDockPanel>
-        </EditorDockLayout.Left>
+          </WorkspacePanel>
+        </WorkspaceLayout.Left>
 
-        <EditorDockLayout.Main>
-          <EditorDockPanel panelId="task-editor" title="Editor">
+        <WorkspaceLayout.Main>
+          <WorkspacePanel panelId="task-editor" title="Editor">
             {/* Task editor */}
-          </EditorDockPanel>
-        </EditorDockLayout.Main>
+          </WorkspacePanel>
+        </WorkspaceLayout.Main>
 
-        <EditorDockLayout.Right>
-          <EditorDockPanel panelId="task-props" title="Properties">
+        <WorkspaceLayout.Right>
+          <WorkspacePanel panelId="task-props" title="Properties">
             {/* Properties panel */}
-          </EditorDockPanel>
-        </EditorDockLayout.Right>
-      </EditorDockLayout>
+          </WorkspacePanel>
+        </WorkspaceLayout.Right>
+      </WorkspaceLayout>
 
       <EditorStatusBar>
         {activeTask ? `Editing: ${activeTask.title}` : 'Ready'}
@@ -253,7 +253,7 @@ function MyEditor() {
   </EditorShell.Toolbar>
 
   <EditorShell.Layout>
-    <EditorDockLayout>...</EditorDockLayout>
+    <WorkspaceLayout>...</WorkspaceLayout>
   </EditorShell.Layout>
 
   {/* Conditionally render status bar */}
@@ -275,16 +275,16 @@ For multi-viewport editors (like Dialogue with narrative + storylet):
   title="Dialogue"
   domain="dialogue"
 >
-  <EditorDockLayout>
-    <EditorDockLayout.Main>
+  <WorkspaceLayout>
+    <WorkspaceLayout.Main>
       <div data-editor-scope="narrative">
         {/* Narrative viewport */}
       </div>
       <div data-editor-scope="storylet">
         {/* Storylet viewport */}
       </div>
-    </EditorDockLayout.Main>
-  </EditorDockLayout>
+    </WorkspaceLayout.Main>
+  </WorkspaceLayout>
 </EditorShell>
 ```
 
@@ -362,23 +362,23 @@ export interface EditorShellProps {
     onAccept={onAccept}
   />
 
-  <EditorDockLayout layoutId="full-editor" leftDefaultSize={20} rightDefaultSize={25}>
-    <EditorDockLayout.Left>
-      <EditorDockPanel panelId="nav" title="Navigator">
+  <WorkspaceLayout layoutId="full-editor" leftDefaultSize={20} rightDefaultSize={25}>
+    <WorkspaceLayout.Left>
+      <WorkspacePanel panelId="nav" title="Navigator">
         {/* Navigator content */}
-      </EditorDockPanel>
-    </EditorDockLayout.Left>
-    <EditorDockLayout.Main>
-      <EditorDockPanel panelId="main" title="Main">
+      </WorkspacePanel>
+    </WorkspaceLayout.Left>
+    <WorkspaceLayout.Main>
+      <WorkspacePanel panelId="main" title="Main">
         {/* Main viewport */}
-      </EditorDockPanel>
-    </EditorDockLayout.Main>
-    <EditorDockLayout.Right>
-      <EditorDockPanel panelId="props" title="Properties">
+      </WorkspacePanel>
+    </WorkspaceLayout.Main>
+    <WorkspaceLayout.Right>
+      <WorkspacePanel panelId="props" title="Properties">
         <EditorInspector selection={selection} sections={sections} />
-      </EditorDockPanel>
-    </EditorDockLayout.Right>
-  </EditorDockLayout>
+      </WorkspacePanel>
+    </WorkspaceLayout.Right>
+  </WorkspaceLayout>
 
   <EditorStatusBar>
     {isDirty ? 'Unsaved changes' : 'Ready'}
@@ -395,7 +395,7 @@ export interface EditorShellProps {
 ## Related Components
 
 - [EditorToolbar](./editor-toolbar) — Toolbar with menubar, buttons, separators
-- [EditorDockLayout](./dock-layout) — Resizable panel layout
+- [WorkspaceLayout](./dock-layout) — Resizable panel layout
 - [EditorStatusBar](./editor-status-bar.mdx) — Bottom status strip
 - [EditorOverlaySurface](./editor-overlay-surface.mdx) — Modal system
 - [EditorReviewBar](./editor-review-bar.mdx) — Change review bar for AI edits

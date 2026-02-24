@@ -4,6 +4,7 @@ export const REPO_WORKSPACE_IDS = [
   'commands',
   'story',
   'docs',
+  'database',
   'git',
   'loop-assistant',
   'codex-assistant',

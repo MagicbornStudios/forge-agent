@@ -554,8 +554,8 @@ import React, { useCallback, useState } from 'react';
 import {
   EditorShell,
   EditorToolbar,
-  EditorDockLayout,
-  EditorDockPanel,
+  WorkspaceLayout,
+  WorkspacePanel,
   EditorStatusBar,
 } from '@forge/dev-kit';
 import { useAIHighlight } from '@forge/dev-kit/assistant';
@@ -627,9 +627,9 @@ export function TaskEditor() {
         </EditorToolbar.Left>
       </EditorToolbar>
 
-      <EditorDockLayout layoutId="task-layout">
-        <EditorDockLayout.Main>
-          <EditorDockPanel id="main" title="Tasks">
+      <WorkspaceLayout layoutId="task-layout">
+        <WorkspaceLayout.Main>
+          <WorkspacePanel id="main" title="Tasks">
             <div className="p-4 space-y-2">
               {tasks.map(task => (
                 <div
@@ -647,18 +647,18 @@ export function TaskEditor() {
                 </div>
               ))}
             </div>
-          </EditorDockPanel>
-        </EditorDockLayout.Main>
+          </WorkspacePanel>
+        </WorkspaceLayout.Main>
 
-        <EditorDockLayout.Right>
-          <EditorDockPanel id="chat" title="AI Assistant">
+        <WorkspaceLayout.Right>
+          <WorkspacePanel id="chat" title="AI Assistant">
             <DialogueAssistantPanel
               contract={taskAssistantContract}
               toolsEnabled={true}
             />
-          </EditorDockPanel>
-        </EditorDockLayout.Right>
-      </EditorDockLayout>
+          </WorkspacePanel>
+        </WorkspaceLayout.Right>
+      </WorkspaceLayout>
 
       <EditorStatusBar>
         {tasks.length > 0 ? `${tasks.length} task(s)` : 'No tasks'}

@@ -16,10 +16,10 @@ export interface PanelLockState {
 }
 
 /**
- * usePanelLock — manages the lock state of a `DockPanel`.
+ * usePanelLock — manages the lock state of a `WorkspacePanel`.
  *
  * When a panel is locked (e.g. during AI patch application), the
- * `DockPanel` component shows a `LockedOverlay` and prevents user
+ * `WorkspacePanel` component shows a `LockedOverlay` and prevents user
  * interaction with the panel content.
  *
  * @example
@@ -38,14 +38,14 @@ export interface PanelLockState {
  *   };
  *
  *   return (
- *     <DockPanel
+ *     <WorkspacePanel
  *       panelId="editor"
  *       locked={editorLock.locked}
  *       lockedProps={{ description: editorLock.reason ?? undefined }}
  *       scrollable={false}
  *     >
  *       <GraphEditor ... />
- *     </DockPanel>
+ *     </WorkspacePanel>
  *   );
  * }
  * ```

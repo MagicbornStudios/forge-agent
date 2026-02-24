@@ -28,7 +28,7 @@ export const AgentSessions: CollectionConfig = {
   slug: 'agent-sessions',
   admin: {
     useAsTitle: 'sessionKey',
-    description: 'Durable LangGraph checkpoints keyed by user/editor/project.',
+    description: 'Durable LangGraph checkpoints keyed by user/workspace/project.',
   },
   access: {
     read: selfOrAdminAccess,
@@ -67,7 +67,7 @@ export const AgentSessions: CollectionConfig = {
       index: true,
     },
     {
-      name: 'editor',
+      name: 'workspace',
       type: 'select',
       required: true,
       options: [

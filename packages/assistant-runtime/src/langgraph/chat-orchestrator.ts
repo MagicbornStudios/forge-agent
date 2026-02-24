@@ -153,7 +153,7 @@ export function createAssistantChatOrchestrator(input: {
       userId: orchestratorInput.metadata.userId,
       projectId: orchestratorInput.metadata.projectId,
       domain: orchestratorInput.metadata.domain,
-      editorId: orchestratorInput.metadata.editorId,
+      workspaceId: orchestratorInput.metadata.workspaceId,
     } as const;
 
     const session = await input.sessionStore.getOrCreateSession(locator);

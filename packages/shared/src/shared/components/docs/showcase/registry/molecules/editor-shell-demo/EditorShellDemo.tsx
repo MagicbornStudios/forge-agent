@@ -2,8 +2,8 @@
 
 import * as UI from '@forge/ui';
 import {
-  EditorDockLayout,
-  EditorDockPanel,
+  WorkspaceLayout,
+  WorkspacePanel,
   EditorShell,
   EditorStatusBar,
   EditorToolbar,
@@ -27,20 +27,20 @@ export function EditorShellDemo() {
           </EditorToolbar>
         </EditorShell.Toolbar>
         <EditorShell.Layout>
-          <EditorDockLayout layoutId="demo-layout">
-            <EditorDockLayout.Left>
-              <EditorDockPanel panelId="left" title="Navigator">
+          <WorkspaceLayout layoutId="demo-layout">
+            <WorkspaceLayout.Left>
+              <WorkspacePanel panelId="left" title="Navigator">
                 <div className="p-3 text-xs text-muted-foreground">Left rail content</div>
-              </EditorDockPanel>
-            </EditorDockLayout.Left>
-            <EditorDockLayout.Main>
-              <EditorDockPanel panelId="main" title="Viewport" scrollable={false}>
+              </WorkspacePanel>
+            </WorkspaceLayout.Left>
+            <WorkspaceLayout.Main>
+              <WorkspacePanel panelId="main" title="Viewport" scrollable={false}>
                 <div className="flex h-full min-h-[180px] items-center justify-center rounded-md border border-dashed text-xs text-muted-foreground">
                   Main content area
                 </div>
-              </EditorDockPanel>
-            </EditorDockLayout.Main>
-          </EditorDockLayout>
+              </WorkspacePanel>
+            </WorkspaceLayout.Main>
+          </WorkspaceLayout>
         </EditorShell.Layout>
         <EditorShell.StatusBar>
           <EditorStatusBar>Ready</EditorStatusBar>
