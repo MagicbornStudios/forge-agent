@@ -100,3 +100,32 @@ When touching editors (Dialogue, Character, Video, Strategy): use the shared she
 
 - **Constants:** Editor ids, API paths, and query keys must use constants, not magic strings. See [docs/agent-artifacts/core/standard-practices.md](docs/agent-artifacts/core/standard-practices.md) § Constants, enums, and DRY.
 - **Env keys:** When adding a new env variable, update the active `forge-env` profile (`.forge-env/config.json` and `packages/forge-env/src/lib/forge-agent-manifest.mjs` for forge-agent defaults), then run `pnpm forge-env:reconcile -- --write --sync-examples`. Validate with `pnpm forge-env:doctor -- --mode headless --strict`, and use `pnpm forge-repo-studio open --view env` for GUI inspection. Do not hand-edit generated `.env.example` outputs.
+
+## Cursor Cloud specific instructions
+
+### Services overview
+
+| Service | Port | Start command | Notes |
+|---------|------|---------------|-------|
+| Studio (main app) | 3000 | `FORGE_SKIP_ENV_BOOTSTRAP=1 pnpm --filter @forge/studio dev` | Next.js + Payload CMS with embedded SQLite |
+| Docs | 3002 | `pnpm dev:docs` | Optional — Fumadocs MDX site |
+| Platform | 3001 | `pnpm dev:platform` | Optional — marketing/SaaS surface |
+
+### Running the Studio dev server
+
+- Set `FORGE_SKIP_ENV_BOOTSTRAP=1` when starting `pnpm dev` or `pnpm dev:studio` to avoid the interactive env portal opening in a browser.
+- Minimum `.env.local` for `apps/studio`: `PAYLOAD_SECRET` (any random string), `NEXT_PUBLIC_LOCAL_DEV_AUTO_ADMIN=1`, `SEED_ADMIN_EMAIL`/`SEED_ADMIN_PASSWORD`. Auto-admin creates `admin@forge.local / admin12345` on first run.
+- The SQLite database is auto-created at `apps/studio/data/payload.db` on first startup. No external database needed for local dev.
+- `@forge/yarn-converter` must be built (`pnpm --filter @forge/yarn-converter build`) before Studio compiles — it exports from `dist/`.
+
+### Lint, test, build
+
+- **Lint:** `pnpm lint` runs guard scripts + css-doctor + ESLint for docs/platform/studio. Individual app lint: `pnpm --filter @forge/studio lint`.
+- **Test:** `pnpm test` (runs Jest suite in studio — 8 suites, 24 tests).
+- **Build:** `pnpm build` (studio production build).
+
+### Known pre-existing issues
+
+- `pnpm css:doctor` fails for studio due to `tw-animate-css` needing to be in `apps/studio/package.json` (same pattern as the repo-studio fix documented in `.planning/ERRORS.md`).
+- `pnpm hydration:doctor` fails because `typescript` is not a root workspace dependency (only in sub-packages). Not blocking for dev.
+- `apps/studio/components/media/ConnectedGenerateMediaModal` is referenced in character editor components but does not exist in the repo. A stub is needed for the dev server to compile the main page.
