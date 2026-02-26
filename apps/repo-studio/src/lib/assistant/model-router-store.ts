@@ -39,6 +39,12 @@ function createRuntimeCatalog(runtime: AssistantRuntime): RuntimeCatalog {
   };
 }
 
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 export const useRepoAssistantModelStore = create<ModelRouterState>()(
   devtools(
     immer((set, get) => ({
@@ -53,11 +59,19 @@ export const useRepoAssistantModelStore = create<ModelRouterState>()(
           state.catalogs[runtime].error = '';
         });
         try {
-          const payload = await fetchModelCatalog({
+          let payload = await fetchModelCatalog({
             runtime,
             workspaceId: input.workspaceId,
             loopId: input.loopId,
           });
+          if (runtime === 'forge' && payload.ok !== true) {
+            await sleep(1200);
+            payload = await fetchModelCatalog({
+              runtime,
+              workspaceId: input.workspaceId,
+              loopId: input.loopId,
+            });
+          }
           set((state) => {
             state.catalogs[runtime].loading = false;
             state.catalogs[runtime].warning = String(payload.warning || '');

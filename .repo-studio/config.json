@@ -30,10 +30,9 @@
       "env",
       "commands",
       "story",
-      "docs",
+      "database",
       "git",
-      "loop-assistant",
-      "codex-assistant",
+      "assistant",
       "diff",
       "code",
       "review-queue"
@@ -48,17 +47,14 @@
   },
   "assistant": {
     "enabled": true,
-    "defaultEditor": "loop-assistant",
-    "editors": [
-      "loop-assistant",
-      "codex-assistant"
+    "defaultTarget": "forge",
+    "targets": [
+      "forge",
+      "codex"
     ],
-    "routeMode": "codex",
-    "routePath": "/api/assistant-chat",
     "routes": {
-      "loop": {
-        "mode": "shared-runtime",
-        "routePath": "/api/assistant-chat"
+      "forge": {
+        "mode": "openrouter"
       },
       "codex": {
         "mode": "codex",
@@ -66,9 +62,14 @@
         "execFallbackAllowed": false
       }
     },
-    "defaultModel": "gpt-5",
-    "attachContextMaxFiles": 6,
-    "attachContextMaxChars": 16000,
+    "forge": {
+      "aboutMe": {
+        "name": "",
+        "role": "",
+        "email": "",
+        "summary": ""
+      }
+    },
     "codex": {
       "enabled": true,
       "cliCommand": "codex",

@@ -201,10 +201,29 @@ export function WorkspaceViewport({
     </div>
   );
 
+  const tabBarRef = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    const el = tabBarRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) return;
+      const { scrollWidth, clientWidth } = el;
+      if (scrollWidth <= clientWidth) return;
+      e.preventDefault();
+      el.scrollLeft += e.deltaY;
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, []);
+
   return (
     <div className={cn('flex h-full min-h-0 flex-col', className)} data-context-panel="viewport">
       <div className="flex h-[var(--tab-height)] shrink-0 items-center gap-0 border-b border-border bg-muted/50">
-        <div className="flex min-w-0 flex-1 items-center overflow-x-auto overflow-y-hidden">
+        <div
+          ref={tabBarRef}
+          className="flex min-w-0 flex-1 items-center overflow-x-auto overflow-y-hidden"
+          style={{ scrollBehavior: 'auto' }}
+        >
           {openIds.map((id) => {
             const panel = panelMap.get(id);
             if (!panel) return null;

@@ -1,15 +1,24 @@
 ﻿import { NextResponse } from 'next/server';
-import { createUIMessageStream, createUIMessageStreamResponse } from 'ai';
+import {
+  convertToModelMessages,
+  createUIMessageStream,
+  createUIMessageStreamResponse,
+  jsonSchema,
+  streamText,
+  tool,
+  type ToolSet,
+} from 'ai';
+import { createOpenAI } from '@ai-sdk/openai';
 
 import { companionCorsHeaders, isCompanionRequest } from '@/lib/companion-auth';
 import { runRepoStudioCli } from '@/lib/cli-runner';
-import { runLocalForgeAssistant } from '@/lib/forge-assistant-chat';
 import { resolveForgeAssistantEndpoint } from '@/lib/forge-assistant-runtime';
 import { resolvePlanningMentionContext } from '@/lib/assistant/mention-context';
 import { loadRepoStudioSnapshot } from '@/lib/repo-data';
 import { resolveRepoRoot } from '@/lib/repo-files';
 import { getRepoSettingsSnapshot } from '@/lib/settings/repository';
 import {
+  legacyAssistantConfigIssues,
   readRepoStudioConfig,
   resolveCodexAssistantRoute,
   type RepoStudioConfig,
@@ -22,6 +31,56 @@ import {
   type CodexTurnStreamEvent,
 } from '@/lib/codex-session';
 import { resolveScopeGuardContext } from '@/lib/scope-guard';
+
+type ToolSchema = {
+  description?: string;
+  parameters: Record<string, unknown>;
+};
+
+type ToolSchemaRecord = Record<string, ToolSchema>;
+
+const OPENROUTER_DEFAULT_MODEL = 'openai/gpt-oss-120b:free';
+const OPENROUTER_DEFAULT_BASE_URL = 'https://openrouter.ai/api/v1';
+const OPENROUTER_DEFAULT_TIMEOUT_MS = 30000;
+
+const OPENROUTER_HEADERS = {
+  'HTTP-Referer': 'https://forge-agent-poc.local',
+  'X-Title': 'Forge Repo Studio',
+};
+
+function parseTimeout(value: string, fallback: number) {
+  const parsed = Number.parseInt(String(value || ''), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function buildOpenRouterConfig() {
+  return {
+    apiKey: String(process.env.OPENROUTER_API_KEY || '').trim(),
+    baseUrl: String(process.env.OPENROUTER_BASE_URL || OPENROUTER_DEFAULT_BASE_URL).trim() || OPENROUTER_DEFAULT_BASE_URL,
+    timeoutMs: parseTimeout(String(process.env.OPENROUTER_TIMEOUT_MS || OPENROUTER_DEFAULT_TIMEOUT_MS), OPENROUTER_DEFAULT_TIMEOUT_MS),
+  };
+}
+
+function buildToolSet(schema: ToolSchemaRecord | undefined | null): ToolSet {
+  if (!schema || typeof schema !== 'object') return {};
+
+  const toolSet: ToolSet = {};
+
+  for (const [name, def] of Object.entries(schema)) {
+    if (!def || typeof def !== 'object') continue;
+    const parameters = (def as ToolSchema).parameters;
+    if (!parameters || typeof parameters !== 'object') continue;
+    const description = typeof (def as ToolSchema).description === 'string'
+      ? (def as ToolSchema).description
+      : undefined;
+    toolSet[name] = tool({
+      description,
+      inputSchema: jsonSchema(parameters),
+    });
+  }
+
+  return toolSet;
+}
 
 function parseBody(rawBody: string) {
   try {
@@ -442,6 +501,87 @@ async function runCodexPath(input: {
   return createUIMessageStreamResponse({ stream });
 }
 
+async function runForgeOpenRouterPath(input: {
+  request: Request;
+  body: any;
+  requestedModel: string;
+}) {
+  const openRouter = buildOpenRouterConfig();
+  if (!openRouter.apiKey) {
+    return NextResponse.json(
+      {
+        ok: false,
+        code: 'FORGE_OPENROUTER_UNAVAILABLE',
+        error: 'Forge OpenRouter runtime unavailable: OPENROUTER_API_KEY is not configured.',
+      },
+      { status: 503 },
+    );
+  }
+
+  const tools = buildToolSet((input.body?.tools || undefined) as ToolSchemaRecord | undefined);
+  const fallbackPrompt = extractPrompt(input.body);
+  const messages = Array.isArray(input.body?.messages) ? input.body.messages : [];
+  const resolvedMessages = messages.length > 0
+    ? messages
+    : (fallbackPrompt ? [{ role: 'user', content: fallbackPrompt }] : []);
+  if (resolvedMessages.length === 0) {
+    return NextResponse.json(
+      { ok: false, error: 'No user prompt found for Forge execution.' },
+      { status: 400 },
+    );
+  }
+  const callSettings = input.body?.callSettings && typeof input.body.callSettings === 'object'
+    ? input.body.callSettings as Record<string, unknown>
+    : {};
+  const systemPrompt = typeof input.body?.system === 'string' ? input.body.system : undefined;
+  const resolvedModel = String(input.requestedModel || OPENROUTER_DEFAULT_MODEL).trim() || OPENROUTER_DEFAULT_MODEL;
+
+  const aiMessages = await convertToModelMessages(resolvedMessages as any, {
+    tools,
+    ignoreIncompleteToolCalls: true,
+  });
+
+  const openai = createOpenAI({
+    apiKey: openRouter.apiKey,
+    baseURL: openRouter.baseUrl,
+    headers: OPENROUTER_HEADERS,
+  });
+
+  const maxTokensValue =
+    typeof callSettings.maxTokens === 'number'
+      ? callSettings.maxTokens
+      : typeof callSettings.maxOutputTokens === 'number'
+        ? callSettings.maxOutputTokens
+        : undefined;
+
+  const streamResult = streamText({
+    model: openai.chat(resolvedModel),
+    messages: aiMessages,
+    ...(systemPrompt ? { system: systemPrompt } : {}),
+    ...(Object.keys(tools).length > 0 ? { tools } : {}),
+    ...(typeof callSettings.temperature === 'number' ? { temperature: callSettings.temperature } : {}),
+    ...(typeof callSettings.topP === 'number' ? { topP: callSettings.topP } : {}),
+    ...(typeof callSettings.topK === 'number' ? { topK: callSettings.topK } : {}),
+    ...(typeof callSettings.presencePenalty === 'number'
+      ? { presencePenalty: callSettings.presencePenalty }
+      : {}),
+    ...(typeof callSettings.frequencyPenalty === 'number'
+      ? { frequencyPenalty: callSettings.frequencyPenalty }
+      : {}),
+    ...(typeof callSettings.seed === 'number' ? { seed: callSettings.seed } : {}),
+    ...(typeof maxTokensValue === 'number' ? { maxOutputTokens: maxTokensValue } : {}),
+    headers: {
+      ...OPENROUTER_HEADERS,
+      ...(callSettings.headers && typeof callSettings.headers === 'object'
+        ? callSettings.headers as Record<string, string | undefined>
+        : {}),
+    },
+    abortSignal: AbortSignal.timeout(openRouter.timeoutMs),
+  });
+
+  return streamResult.toUIMessageStreamResponse();
+}
+
 function applyCompanionCors(request: Request, response: Response): Response {
   const headers = companionCorsHeaders(request, 'POST, OPTIONS');
   if (Object.keys(headers).length === 0) return response;
@@ -472,6 +612,16 @@ async function handlePost(request: Request) {
     return NextResponse.json(
       { error: 'Assistant is disabled in .repo-studio/config.json.' },
       { status: 403 },
+    );
+  }
+  const legacyConfigIssues = legacyAssistantConfigIssues(config);
+  if (legacyConfigIssues.length > 0) {
+    return NextResponse.json(
+      {
+        error: 'Legacy assistant config keys detected. Update .repo-studio/config.json to forge/codex canonical keys.',
+        issues: legacyConfigIssues,
+      },
+      { status: 400 },
     );
   }
 
@@ -513,10 +663,11 @@ async function handlePost(request: Request) {
     );
   }
 
-  if (forgeRoute.local === true || !forgeRoute.endpoint) {
-    return runLocalForgeAssistant({
+  if (!forgeRoute.endpoint) {
+    return runForgeOpenRouterPath({
+      request,
       body: requestBody,
-      assistantTarget: 'forge',
+      requestedModel,
     });
   }
 
@@ -527,6 +678,7 @@ async function handlePost(request: Request) {
       accept: request.headers.get('accept') || '*/*',
     },
     body: JSON.stringify(requestBody),
+    signal: AbortSignal.timeout(45000),
   });
 
   return new Response(upstream.body, {

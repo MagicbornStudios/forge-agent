@@ -1,9 +1,15 @@
 'use client';
 
 import * as React from 'react';
+import dynamic from 'next/dynamic';
 import { Bot, ClipboardCopy, FileText } from 'lucide-react';
 import { Button } from '@forge/ui/button';
 import type { PlanningSnapshot } from '@/lib/repo-data';
+
+const MonacoEditor = dynamic(
+  () => import('@monaco-editor/react').then((module) => module.default),
+  { ssr: false },
+);
 
 export interface PlanningDocPagePanelProps {
   docId: string;
@@ -38,25 +44,20 @@ export function PlanningDocPagePanel({
         <span className="truncate text-xs font-medium" title={doc.filePath}>
           {doc.filePath}
         </span>
-        <div className="ml-auto flex gap-1">
-          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={onOpenAssistant}>
-            <Bot size={12} className="mr-1" />
-            Assistant
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-7 text-xs"
-            onClick={() => onCopyText(doc.content)}
-          >
-            <ClipboardCopy size={12} className="mr-1" />
-            Copy
-          </Button>
-        </div>
       </div>
-      <pre className="min-h-0 flex-1 overflow-auto p-3 text-xs">
-        {doc.content || '(empty)'}
-      </pre>
+      <div className="min-h-0 flex-1 overflow-hidden">
+        <MonacoEditor
+          language="markdown"
+          theme="vs-dark"
+          value={doc.content || '(empty)'}
+          options={{
+            readOnly: true,
+            minimap: { enabled: false },
+            wordWrap: 'on',
+            automaticLayout: true,
+          }}
+        />
+      </div>
     </div>
   );
 }

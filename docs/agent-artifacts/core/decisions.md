@@ -79,6 +79,22 @@ Runtime env boundaries are centralized in app env helpers:
 
 ---
 
+## Viewport tab bar wheel scroll (Repo Studio)
+
+**Decision:** The WorkspaceViewport tab bar (Planning/Story doc tabs) maps vertical mouse wheel to horizontal scroll so many open tabs can be scrolled with the wheel. We use a **native** `addEventListener('wheel', handler, { passive: false })` in a useEffect (with cleanup), not React's `onWheel`. We do not add a third-party package; the tab bar is custom content inside a Dockview panel, so Dockview does not control it.
+
+**Rationale:** React's synthetic `onWheel` is registered as passive by the browser, so `preventDefault()` inside it is ignored and triggers "Unable to preventDefault inside passive event listener invocation." Only a non-passive native listener allows us to prevent default and scroll the tab bar horizontally. No small, focused npm package was worth adding for this; the in-house effect is minimal and maintainable.
+
+---
+
+## Planning doc viewer: Monaco + headless-tree (Repo Studio)
+
+**Decision:** Planning doc viewport tab content uses **Monaco Editor** in read-only mode with `language="markdown"` for syntax highlighting (no lighter option such as react-markdown + shiki). The Documents panel doc list is a **hierarchical tree** built from `planning.docs` file paths using **@headless-tree/core** and **@headless-tree/react**; tree data from `buildPlanningDocTreeData(docs)` (folder id = path prefix, file id = doc.id); minimal Tree/TreeItem/TreeItemLabel UI in repo-studio with Folder/File icons and leaf click opening the doc in the main viewport.
+
+**Rationale:** Monaco is already used for Story and Diff markdown; read-only markdown in the planning tab keeps behavior consistent. Headless-tree provides accessible, keyboard-friendly tree with a small API surface; building the tree from paths avoids a separate filesystem API and keeps the list in sync with planning snapshot.
+
+---
+
 ## Org-scoped storage metering and enterprise request intake
 
 **Decision:** Organization billing context now includes storage and enterprise entitlements. We added:

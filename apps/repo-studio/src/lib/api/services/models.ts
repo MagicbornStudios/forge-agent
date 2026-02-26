@@ -17,7 +17,7 @@ export async function fetchModelCatalog(input: {
   });
   return getJson<RepoModelsCatalogResponse>(`/api/repo/models?${params.toString()}`, {
     fallbackMessage: `Unable to load ${input.runtime} model catalog.`,
-    timeoutMs: input.runtime === 'codex' ? 30000 : 15000,
+    timeoutMs: input.runtime === 'codex' ? 30000 : 30000,
   });
 }
 

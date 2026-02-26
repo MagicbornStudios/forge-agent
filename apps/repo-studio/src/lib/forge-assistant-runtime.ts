@@ -1,4 +1,8 @@
-import type { RepoStudioConfig } from '@/lib/repo-studio-config';
+import {
+  legacyAssistantConfigIssues,
+  resolveForgeAssistantRoute,
+  type RepoStudioConfig,
+} from '@/lib/repo-studio-config';
 
 const ENV_PROXY_KEYS = [
   'REPOSTUDIO_ASSISTANT_PROXY_URL',
@@ -15,60 +19,68 @@ function firstEnvProxyUrl() {
 }
 
 export function resolveForgeAssistantEndpoint(config: RepoStudioConfig) {
-  const route = config?.assistant?.routes?.forge;
-  const mode = String(route?.mode || 'shared-runtime').trim().toLowerCase() || 'shared-runtime';
-  const routePath = String(route?.routePath || config?.assistant?.routePath || '').trim();
+  const issues = legacyAssistantConfigIssues(config);
+  if (issues.length > 0) {
+    return {
+      ok: false,
+      mode: 'invalid',
+      endpoint: '',
+      message: [
+        'Legacy Repo Studio assistant config detected.',
+        ...issues,
+      ].join(' '),
+    };
+  }
+
+  const route = resolveForgeAssistantRoute(config);
+  const mode = String(route.mode || 'openrouter').trim().toLowerCase() || 'openrouter';
+  const routePath = String(route.routePath || '').trim();
   const envFallback = firstEnvProxyUrl();
 
-  if (mode === 'shared-runtime' || mode === 'local') {
+  if (mode === 'openrouter') {
     return {
       ok: true,
       mode,
       endpoint: '',
-      local: true,
-      message: 'Using local shared-runtime forge assistant.',
+      message: 'Using built-in OpenRouter forge assistant runtime.',
     };
   }
 
-  if (/^https?:\/\//i.test(routePath)) {
+  if (mode !== 'proxy') {
     return {
-      ok: true,
-      mode,
-      endpoint: routePath,
-      local: false,
-      message: 'Using configured forge assistant endpoint.',
-    };
-  }
-
-  if (routePath.startsWith('/')) {
-    return {
-      ok: true,
+      ok: false,
       mode,
       endpoint: '',
-      local: true,
-      message: `Using local forge assistant route (${routePath}).`,
+      message: 'Invalid assistant.routes.forge.mode. Allowed values: "openrouter" or "proxy".',
     };
   }
 
-  if (envFallback) {
+  const endpoint = /^https?:\/\//i.test(routePath) ? routePath : envFallback;
+  if (!endpoint) {
     return {
-      ok: true,
+      ok: false,
       mode,
-      endpoint: envFallback,
-      local: false,
-      message: `Using environment forge assistant endpoint (${ENV_PROXY_KEYS.join(', ')}).`,
+      endpoint: '',
+      message: [
+        'Forge proxy mode requires an absolute assistant.routes.forge.routePath (http/https).',
+        `Or set one of: ${ENV_PROXY_KEYS.join(', ')}.`,
+      ].join(' '),
+    };
+  }
+
+  if (!/^https?:\/\//i.test(endpoint)) {
+    return {
+      ok: false,
+      mode,
+      endpoint: '',
+      message: 'Forge proxy endpoint must be an absolute http(s) URL.',
     };
   }
 
   return {
     ok: true,
     mode,
-    local: true,
-    endpoint: '',
-    message: [
-      'Forge assistant endpoint is not configured for proxy mode.',
-      'Falling back to local shared-runtime forge assistant.',
-      `Set assistant.routes.forge.routePath or one of: ${ENV_PROXY_KEYS.join(', ')} for proxy mode.`,
-    ].join(' '),
+    endpoint,
+    message: 'Using configured forge assistant proxy endpoint.',
   };
 }

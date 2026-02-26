@@ -42,6 +42,11 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 
 ## Ralph Wiggum loop
 
+- Done (2026-02-26): Planning doc viewer: markdown syntax highlighting + doc list as tree:
+  - **Markdown:** PlanningDocPagePanel uses Monaco Editor in read-only mode with `language="markdown"` (same as Story/Diff panels); no new dependency.
+  - **Doc list tree:** Documents panel uses hierarchical tree from file paths. Added `@headless-tree/core` and `@headless-tree/react`; `buildPlanningDocTreeData(docs)` builds virtual filesystem (folder id = path prefix, file id = doc.id); Tree/TreeItem/TreeItemLabel in `apps/repo-studio/src/components/ui/tree.tsx`; PlanningDocListPanel uses useTree + syncDataLoaderFeature, Folder/FolderOpen/File icons, onOpenDoc on leaf click. See decisions.md.
+- Done (2026-02-26): WorkspaceViewport tab bar: vertical wheel scrolls horizontally without passive listener warning:
+  - Replaced React `onWheel` with native `addEventListener('wheel', ..., { passive: false })` in a useEffect so `preventDefault()` is respected and the console warning is gone. No third-party package; tab bar is custom (not Dockview). See decisions.md "Viewport tab bar wheel scroll".
 - Done (2026-02-26): Planning workspace viewport refactor (Story-like layout):
   - **Left rail:** Three panels—Phases, Tasks, Documents (PlanningDocListPanel: doc list + Copy @/Assistant/Copy Doc; clicking a doc opens it in main viewport).
   - **Main:** Single viewport with dynamic tabs (one per opened planning doc). PlanningDocPagePanel renders doc content + Copy/Assistant per tab. Viewport state key `${layoutId}::loop::${activeLoopId}`; openIds pruned to existing docs; allowEmpty + emptyState.

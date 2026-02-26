@@ -31,26 +31,12 @@ type OpenRouterModelRow = {
   supported_parameters?: string[] | null;
 };
 
-const DEFAULT_FORGE_MODELS: RepoAssistantModelOption[] = [
-  {
-    id: 'openai/gpt-oss-120b:free',
-    label: 'OpenAI: gpt-oss-120b',
-    provider: 'openai',
-    tier: 'free',
-    supportsTools: true,
-    supportsImages: false,
-    supportsResponsesV2: true,
-  },
-  {
-    id: 'openai/gpt-oss-20b:free',
-    label: 'OpenAI: gpt-oss-20b',
-    provider: 'openai',
-    tier: 'free',
-    supportsTools: true,
-    supportsImages: false,
-    supportsResponsesV2: true,
-  },
-];
+export class ForgeModelCatalogUnavailableError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ForgeModelCatalogUnavailableError';
+  }
+}
 
 let forgeCatalogCache: {
   updatedAt: number;
@@ -118,11 +104,13 @@ function sortModels(models: RepoAssistantModelOption[]) {
 
 async function fetchOpenRouterModels(): Promise<RepoAssistantModelOption[]> {
   const apiKey = String(process.env.OPENROUTER_API_KEY || '').trim();
-  if (!apiKey) return DEFAULT_FORGE_MODELS;
+  if (!apiKey) {
+    throw new ForgeModelCatalogUnavailableError('OPENROUTER_API_KEY is not configured.');
+  }
   const baseUrl = String(process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1').trim();
-  const timeoutMs = Number.parseInt(String(process.env.OPENROUTER_TIMEOUT_MS || '15000'), 10);
+  const timeoutMs = Number.parseInt(String(process.env.OPENROUTER_TIMEOUT_MS || '30000'), 10);
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), Number.isFinite(timeoutMs) ? timeoutMs : 15000);
+  const timer = setTimeout(() => controller.abort(), Number.isFinite(timeoutMs) ? timeoutMs : 30000);
   try {
     const response = await fetch(`${baseUrl}/models`, {
       headers: {
@@ -131,16 +119,30 @@ async function fetchOpenRouterModels(): Promise<RepoAssistantModelOption[]> {
       signal: controller.signal,
       next: { revalidate: 300 },
     });
-    if (!response.ok) return DEFAULT_FORGE_MODELS;
+    if (!response.ok) {
+      const detail = await response.text().catch(() => '');
+      throw new ForgeModelCatalogUnavailableError([
+        `OpenRouter model catalog request failed (${response.status}).`,
+        detail ? detail.slice(0, 280) : '',
+      ].filter(Boolean).join(' '));
+    }
     const body = await response.json() as { data?: OpenRouterModelRow[] };
     const data = Array.isArray(body.data) ? body.data : [];
     const normalized = data
       .map(normalizeForgeModel)
       .filter(Boolean) as RepoAssistantModelOption[];
-    if (normalized.length === 0) return DEFAULT_FORGE_MODELS;
+    if (normalized.length === 0) {
+      throw new ForgeModelCatalogUnavailableError('OpenRouter model catalog returned no usable models.');
+    }
     return sortModels(normalized);
-  } catch {
-    return DEFAULT_FORGE_MODELS;
+  } catch (error: any) {
+    if (error instanceof ForgeModelCatalogUnavailableError) throw error;
+    if (error?.name === 'AbortError') {
+      throw new ForgeModelCatalogUnavailableError(`OpenRouter model catalog timed out after ${timeoutMs}ms.`);
+    }
+    throw new ForgeModelCatalogUnavailableError(
+      String(error?.message || error || 'OpenRouter model catalog request failed.'),
+    );
   } finally {
     clearTimeout(timer);
   }
@@ -156,17 +158,27 @@ export async function getForgeModelCatalog() {
       source: 'cache',
     };
   }
-  const models = await fetchOpenRouterModels();
-  forgeCatalogCache = {
-    updatedAt: now,
-    models,
-  };
-  return {
-    ok: true,
-    models,
-    warning: models === DEFAULT_FORGE_MODELS ? 'OpenRouter catalog unavailable. Showing fallback defaults.' : '',
-    source: 'openrouter',
-  };
+  try {
+    const models = await fetchOpenRouterModels();
+    forgeCatalogCache = {
+      updatedAt: now,
+      models,
+    };
+    return {
+      ok: true,
+      models,
+      warning: '',
+      source: 'openrouter',
+    };
+  } catch (error: any) {
+    const message = String(error?.message || error || 'Unable to load OpenRouter model catalog.');
+    return {
+      ok: false,
+      models: [],
+      warning: message,
+      source: 'error',
+    };
+  }
 }
 
 function normalizeCodexModelToOption(entry: CodexModelEntry): RepoAssistantModelOption {

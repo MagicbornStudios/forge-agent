@@ -3,11 +3,13 @@
 import {
   AssistantPanel,
   CompanionRuntimeSwitch,
+  createForgeRuntimeContract,
   WorkspaceShell,
   WorkspaceStatusBar,
   WorkspaceToolbar,
   StudioLayout,
   StudioProviders,
+  useCompanionRuntimeStore,
   WorkspaceLayout,
   WorkspacePanel,
   useCompanionAssistantUrl,
@@ -15,9 +17,17 @@ import {
 import { getWorkspaceLayoutId, WORKSPACE_LABELS } from '../lib/app-spec.generated';
 
 const WORKSPACE_ID = 'assistant' as const;
+const CONSUMER_FORGE_CONTRACT = createForgeRuntimeContract({
+  aboutMe: {
+    name: 'Consumer Studio',
+    role: 'Dev Kit Consumer',
+    summary: 'Forge tool contract mounted from @forge/dev-kit.',
+  },
+});
 
 export default function Home() {
   const assistantUrl = useCompanionAssistantUrl();
+  const useCodexAssistant = useCompanionRuntimeStore((state: any) => state.useCodexAssistant);
   const layoutId = getWorkspaceLayoutId(WORKSPACE_ID);
 
   return (
@@ -56,7 +66,12 @@ export default function Home() {
                   <WorkspaceLayout.Panel id="assistant-chat" title="Assistant">
                     <WorkspacePanel panelId="assistant-chat-content" hideTitleBar className="h-full" scrollable={false}>
                       {assistantUrl ? (
-                        <AssistantPanel apiUrl={assistantUrl} className="h-full min-h-0" />
+                        <AssistantPanel
+                          apiUrl={assistantUrl}
+                          className="h-full min-h-0"
+                          contract={useCodexAssistant ? undefined : CONSUMER_FORGE_CONTRACT}
+                          toolsEnabled={!useCodexAssistant}
+                        />
                       ) : (
                         <div className="flex h-full min-h-0 items-center justify-center p-6 text-center text-sm text-muted-foreground">
                           Start Repo Studio (`pnpm dev:repo-studio`) and enable &quot;Use Repo Studio for AI&quot;.
@@ -81,4 +96,3 @@ export default function Home() {
     </StudioProviders>
   );
 }
-

@@ -47,22 +47,26 @@ export async function GET(request: Request) {
       runtime,
       loopId,
     );
+    const status = runtime === 'forge' && catalog.ok !== true ? 503 : 200;
     return NextResponse.json({
       ok: catalog.ok,
       runtime,
       source: catalog.source,
       warning: catalog.warning || '',
+      message: catalog.ok ? '' : (catalog.warning || 'Forge model catalog unavailable.'),
       selectedModelId,
       models: catalog.models,
-    }, { status: 200 });
+    }, { status });
   } catch (error: any) {
+    const message = String(error?.message || error || 'Unable to load model catalog.');
     return NextResponse.json({
       ok: false,
       runtime,
       models: [],
       selectedModelId: runtime === 'codex' ? 'gpt-5' : 'openai/gpt-oss-120b:free',
-      warning: String(error?.message || error || 'Unable to load model catalog.'),
+      warning: message,
+      message,
       source: 'error',
-    }, { status: 500 });
+    }, { status: runtime === 'forge' ? 503 : 500 });
   }
 }

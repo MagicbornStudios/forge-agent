@@ -1,18 +1,21 @@
 'use client';
 
 import * as React from 'react';
-import { Bot, ClipboardCopy, FileText } from 'lucide-react';
-import { Button } from '@forge/ui/button';
+import { syncDataLoaderFeature } from '@headless-tree/core';
+import { useTree } from '@headless-tree/react';
+import { FileText } from 'lucide-react';
 import type { PlanningSnapshot } from '@/lib/repo-data';
+import type { PlanningDocTreeNode } from './planning-doc-tree-data';
+import { buildPlanningDocTreeData } from './planning-doc-tree-data';
+import { Tree, TreeItem, TreeItemLabel } from '@/components/ui/tree';
 
 export interface PlanningDocListPanelProps {
   planning: PlanningSnapshot;
   selectedDocId: string | null;
   onOpenDoc: (docId: string) => void;
-  onCopyMentionToken: () => void;
-  onCopyText: (text: string) => void;
-  onOpenAssistant: () => void;
 }
+
+const TREE_INDENT = 20;
 
 export function PlanningDocListPanel({
   planning,
@@ -24,53 +27,57 @@ export function PlanningDocListPanel({
 }: PlanningDocListPanelProps) {
   const selectedDoc = planning.docs.find((doc) => doc.id === selectedDocId) ?? null;
 
+  const treeData = React.useMemo(
+    () => buildPlanningDocTreeData(planning.docs),
+    [planning.docs],
+  );
+
+  const rootItemId = treeData.rootItemId || '.planning';
+  const defaultExpanded = React.useMemo(() => {
+    const expanded = [rootItemId];
+    const phasesId = '.planning/phases';
+    if (rootItemId === '.planning' && treeData.getChildren('.planning').includes(phasesId)) {
+      expanded.push(phasesId);
+    }
+    return expanded;
+  }, [rootItemId, treeData]);
+
+  const tree = useTree<PlanningDocTreeNode>({
+    dataLoader: {
+      getItem: treeData.getItem,
+      getChildren: treeData.getChildren,
+    },
+    features: [syncDataLoaderFeature],
+    getItemName: (item) => item.getItemData().name,
+    indent: TREE_INDENT,
+    initialState: { expandedItems: defaultExpanded },
+    isItemFolder: (item) => item.getItemData().docId === undefined,
+    rootItemId,
+  });
+
   return (
     <div className="flex h-full min-h-0 flex-col overflow-auto p-2">
-      <div className="mb-2 flex flex-wrap items-center gap-1.5">
-        {selectedDoc ? (
-          <>
-            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={onCopyMentionToken}>
-              <ClipboardCopy size={12} className="mr-1" />
-              Copy @
-            </Button>
-            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={onOpenAssistant}>
-              <Bot size={12} className="mr-1" />
-              Assistant
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs"
-              onClick={() => onCopyText(selectedDoc.content)}
-            >
-              <ClipboardCopy size={12} className="mr-1" />
-              Copy Doc
-            </Button>
-          </>
-        ) : null}
-      </div>
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
           <FileText size={12} />
           Doc list
         </div>
-        <div className="min-h-0 flex-1 overflow-auto rounded-md border border-border">
-          <ul className="p-1">
-            {planning.docs.map((doc) => (
-              <li key={doc.id}>
-                <button
-                  type="button"
-                  onClick={() => onOpenDoc(doc.id)}
-                  className={`w-full cursor-pointer truncate rounded px-2 py-1.5 text-left text-xs hover:bg-accent ${
-                    selectedDocId === doc.id ? 'bg-accent font-medium' : ''
-                  }`}
-                  title={doc.filePath}
-                >
-                  {doc.filePath}
-                </button>
-              </li>
+        <div className="min-h-0 flex-1 overflow-auto rounded-md border border-border p-1">
+          <Tree tree={tree} indent={TREE_INDENT}>
+            {tree.getItems().map((item) => (
+              <TreeItem item={item} key={item.getId()}>
+                <TreeItemLabel
+                  item={item}
+                  onLeafClick={onOpenDoc}
+                  className={
+                    item.getItemData().docId && selectedDocId === item.getItemData().docId
+                      ? 'bg-accent font-medium'
+                      : ''
+                  }
+                />
+              </TreeItem>
             ))}
-          </ul>
+          </Tree>
         </div>
       </div>
     </div>

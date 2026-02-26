@@ -74,6 +74,8 @@ const LEGACY_DEFAULT_TARGET_KEY = `default${'Editor'}`;
 const LEGACY_ROUTE_KEY = `assistant.routes.${'loop'}`;
 const LEGACY_JSON_STORE = `json${'-'}legacy${'-'}store`;
 const LEGACY_UI_FLAG = `--legacy${'-'}ui`;
+const LEGACY_FORGE_FALLBACK = `runLocalForgeAssistant`;
+const LEGACY_FORGE_FALLBACK_FILE = `forge${'-'}assistant${'-'}chat`;
 
 const LEGACY_HARD_CUT_CHECKS = [
   {
@@ -99,6 +101,14 @@ const LEGACY_HARD_CUT_CHECKS = [
   {
     pattern: LEGACY_UI_FLAG,
     message: 'Legacy CLI fallback flag detected. Legacy package runtime UI fallback is removed.',
+  },
+  {
+    pattern: LEGACY_FORGE_FALLBACK,
+    message: 'Legacy local Forge fallback detected. Forge must use OpenRouter/proxy only.',
+  },
+  {
+    pattern: LEGACY_FORGE_FALLBACK_FILE,
+    message: 'Legacy forge-assistant-chat fallback module detected.',
   },
 ];
 

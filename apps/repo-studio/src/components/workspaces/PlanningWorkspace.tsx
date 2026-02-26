@@ -46,9 +46,6 @@ export function PlanningWorkspace({
     onSwitchLoop,
     selectedDocId,
     onSelectDoc,
-    onCopyMentionToken,
-    onCopyText,
-    onOpenAssistant,
   } = panelContext;
 
   const viewportStateKey = React.useMemo(
@@ -140,14 +137,12 @@ export function PlanningWorkspace({
               <PlanningDocPagePanel
                 docId={docId}
                 planning={planningSnapshot}
-                onCopyText={onCopyText}
-                onOpenAssistant={onOpenAssistant}
               />
             ),
           };
         })
         .filter((panel): panel is NonNullable<typeof panel> => panel != null),
-    [openPanelIds, planningSnapshot, onCopyText, onOpenAssistant],
+    [openPanelIds, planningSnapshot],
   );
 
   return (
@@ -207,9 +202,6 @@ export function PlanningWorkspace({
               planning={planningSnapshot}
               selectedDocId={selectedDocId}
               onOpenDoc={openPlanningDoc}
-              onCopyMentionToken={onCopyMentionToken}
-              onCopyText={onCopyText}
-              onOpenAssistant={onOpenAssistant}
             />
           </WorkspaceLayout.Panel>
         </WorkspaceLayout.Left>

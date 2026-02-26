@@ -24,3 +24,7 @@ Last activity: 2026-02-25T22:55:00.000Z - Unified Repo Studio assistant/runtime 
 ## Planning workspace layout
 
 - Planning workspace: Left = Phases | Tasks | Documents (three panels); Main = viewport with one tab per opened planning doc (like Story). PlanningDocListPanel in left Documents panel; PlanningDocPagePanel in each viewport tab. Viewport state per loop (`layoutId::loop::activeLoopId`); selectedDocId synced on open/active change for Copy @ and Assistant.
+
+## Viewport tab bar wheel scroll
+
+- WorkspaceViewport tab bar: vertical mouse wheel scrolls tabs horizontally. Implemented with native `addEventListener('wheel', ..., { passive: false })` in useEffect (not React onWheel) to avoid passive listener preventDefault warning. No third-party package; decision in docs/agent-artifacts/core/decisions.md.

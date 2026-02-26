@@ -1,4 +1,5 @@
 import { getRepoStudioPayload } from '@/lib/payload-client';
+import { readRepoStudioConfig, type RepoStudioConfig } from '@/lib/repo-studio-config';
 import { deepMergeSettings, normalizeSettingsObject } from './merge';
 import {
   REPO_LOCAL_SCOPE_ID,
@@ -146,18 +147,44 @@ function pickScopeSettings(
   return {};
 }
 
+function configSettingsDefaults(config: RepoStudioConfig): RepoSettingsObject {
+  return {
+    assistant: {
+      forge: {
+        toolsEnabled: true,
+        tools: {
+          forge_open_about_me: true,
+        },
+        aboutMe: {
+          name: String(config.assistant?.forge?.aboutMe?.name || '').trim(),
+          role: String(config.assistant?.forge?.aboutMe?.role || '').trim(),
+          email: String(config.assistant?.forge?.aboutMe?.email || '').trim(),
+          summary: String(config.assistant?.forge?.aboutMe?.summary || '').trim(),
+        },
+      },
+    },
+  };
+}
+
 export async function buildRepoSettingsSnapshot(options: { workspaceId?: string; loopId?: string } = {}): Promise<RepoSettingsSnapshot> {
   const workspaceId = String(options.workspaceId || 'planning').trim() || 'planning';
   const loopId = String(options.loopId || 'default').trim().toLowerCase() || 'default';
-  const docs = await listRepoSettingsOverrides();
+  const [docs, config] = await Promise.all([
+    listRepoSettingsOverrides(),
+    readRepoStudioConfig(),
+  ]);
 
   const app = pickScopeSettings(docs, 'app', null);
   const workspace = pickScopeSettings(docs, 'workspace', workspaceId);
   const local = pickScopeSettings(docs, 'local', REPO_LOCAL_SCOPE_ID);
+  const configDefaults = configSettingsDefaults(config);
 
   const merged = deepMergeSettings(
     deepMergeSettings(
-      deepMergeSettings(REPO_SETTINGS_DEFAULTS, app),
+      deepMergeSettings(
+        deepMergeSettings(REPO_SETTINGS_DEFAULTS, configDefaults),
+        app,
+      ),
       workspace,
     ),
     local,
