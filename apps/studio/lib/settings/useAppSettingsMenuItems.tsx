@@ -2,7 +2,7 @@
 
 import React, { useCallback, useMemo, useState } from 'react';
 import { Palette, Settings, User } from 'lucide-react';
-import type { EditorMenubarItem } from '@forge/shared/components/editor';
+import type { WorkspaceMenubarItem } from '@forge/shared/components/workspace';
 import { useSettingsStore } from '@/lib/settings/store';
 import { SettingsService } from '@/lib/api-client';
 import { API_ROUTES } from '@/lib/api-client/routes';
@@ -50,7 +50,7 @@ function getDisplayName(name: string | null | undefined, email: string | null | 
   return 'User';
 }
 
-export function useAppSettingsMenuItems(options: { onOpenCreateListing: () => void }): EditorMenubarItem[] {
+export function useAppSettingsMenuItems(options: { onOpenCreateListing: () => void }): WorkspaceMenubarItem[] {
   const openAppSettingsSheet = useOpenSettingsSheet();
   const settingsSidebarOpen = useAppShellStore((s) => s.settingsSidebarOpen);
   const appSettingsSheetOpen = useAppShellStore((s) => s.appSettingsSheetOpen);
@@ -123,7 +123,7 @@ export function useAppSettingsMenuItems(options: { onOpenCreateListing: () => vo
   }, [openAppSettingsSheet]);
 
   return useMemo(() => {
-    const items: EditorMenubarItem[] = [];
+    const items: WorkspaceMenubarItem[] = [];
 
     APP_THEMES.forEach((t) => {
       items.push({

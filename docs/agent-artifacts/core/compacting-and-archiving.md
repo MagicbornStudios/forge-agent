@@ -31,7 +31,7 @@ Thresholds are guidelines; use judgment. The goal is to keep the main file scann
 
 ## How to compact
 
-1. **Summarize** the subsection in the main doc (e.g. "Done (2026-02-04-02-05): Monorepo reorg, Payload, plans, Video skeleton, marketing site, workflow runtime, EditorApp, consumer example. See [archive/STATUS-done-2026-02.md](../archive/STATUS-done-2026-02.md) for full list.").
+1. **Summarize** the subsection in the main doc (e.g. "Done (2026-02-04-02-05): Monorepo reorg, Payload, plans, Video skeleton, marketing site, workflow runtime, WorkspaceApp, consumer example. See [archive/STATUS-done-2026-02.md](../archive/STATUS-done-2026-02.md) for full list.").
 2. **Move** the full content to a new file in `docs/agent-artifacts/archive/` with the chosen name.
 3. **Keep** a one-line pointer in the living doc. Do not duplicate the full content.
 4. **Agents:** Read the main artifact first; only open archive when tracing history.

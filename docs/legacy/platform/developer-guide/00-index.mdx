@@ -151,10 +151,10 @@ Deep dives into advanced features and AI integration.
 
 | Task | Guide | Components |
 |------|-------|------------|
-| Create a simple editor | [Quick Start](./quick-start) | EditorShell, DockLayout |
+| Create a simple editor | [Quick Start](./quick-start) | WorkspaceShell, DockLayout |
 | Add resizable panels | [Building Layouts](./building-layouts) | DockLayout, DockPanel |
-| Show properties panel | [Selection & Inspector](./selection-and-inspector) | EditorInspector |
-| Add toolbar buttons | [Menubar & Toolbar](./menubar-and-toolbar) | EditorToolbar |
+| Show properties panel | [Selection & Inspector](./selection-and-inspector) | WorkspaceInspector |
+| Add toolbar buttons | [Menubar & Toolbar](./menubar-and-toolbar) | WorkspaceToolbar |
 | Configure settings | [Settings Integration](./settings-integration) | SettingsPanel, SettingsField |
 | Add AI assistant | [AI Integration](./ai-integration) | Domain contracts, Tools |
 
@@ -176,8 +176,8 @@ Browse real-world examples from the platform:
 Every Forge editor follows this structure:
 
 ```
-EditorShell (root container)
-├── EditorToolbar (commands and actions)
+WorkspaceShell (root container)
+├── WorkspaceToolbar (commands and actions)
 │   ├── Menubar (File, Edit, View, etc.)
 │   ├── Toolbar buttons
 │   └── Right-side controls
@@ -186,8 +186,8 @@ EditorShell (root container)
 │   ├── Main viewport (content area)
 │   ├── Right rail (inspector, settings)
 │   └── Bottom rail (console, output)
-├── EditorStatusBar (status and info)
-└── EditorOverlaySurface (modals and dialogs)
+├── WorkspaceStatusBar (status and info)
+└── WorkspaceOverlaySurface (modals and dialogs)
 ```
 
 ### Data Flow
@@ -216,14 +216,14 @@ Build editors by composing small, focused components:
 
 ```typescript
 // ✅ Good - Composable
-<EditorShell>
-  <EditorToolbar>
+<WorkspaceShell>
+  <WorkspaceToolbar>
     <Button>New</Button>
-  </EditorToolbar>
+  </WorkspaceToolbar>
   <DockLayout>
     <DockPanel>Content</DockPanel>
   </DockLayout>
-</EditorShell>
+</WorkspaceShell>
 
 // ❌ Bad - Monolithic configuration
 <Editor
@@ -268,7 +268,7 @@ setSelection({
 });
 
 // Inspector automatically shows node properties
-<EditorInspector
+<WorkspaceInspector
   selection={selection}
   sections={inspectorSections}  // Filtered by selection.entityType
 />

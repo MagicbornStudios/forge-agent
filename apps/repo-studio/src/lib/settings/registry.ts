@@ -121,10 +121,10 @@ export const REPO_SETTINGS_SECTIONS: RepoSettingsSectionRegistration[] = [
     title: 'Assistants',
     fields: [
       {
-        key: 'assistant.prompts.loopAssistant',
-        label: 'Loop Assistant System Prompt',
+        key: 'assistant.prompts.forgeAssistant',
+        label: 'Forge Assistant System Prompt',
         type: 'textarea',
-        description: 'Applied to loop assistant before user prompt and @planning mentions.',
+        description: 'Applied to forge assistant before user prompt and @planning mentions.',
         defaultValue: '',
       },
       {

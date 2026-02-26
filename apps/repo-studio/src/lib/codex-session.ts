@@ -116,6 +116,16 @@ type CodexConfig = {
   execFallbackAllowed: boolean;
 };
 
+export type CodexModelEntry = {
+  id: string;
+  label: string;
+  provider?: string;
+  supportsTools?: boolean;
+  supportsImages?: boolean;
+  supportsResponsesV2?: boolean;
+  tier?: 'free' | 'paid';
+};
+
 type CodexInvocation = {
   command: string;
   args: string[];
@@ -136,6 +146,10 @@ type ConfigShape = {
 
 function getCodexSessionMetaPath() {
   return path.join(resolveRepoRoot(), '.repo-studio', 'codex-session.json');
+}
+
+function getCodexModelCachePath() {
+  return path.join(resolveRepoRoot(), '.repo-studio', 'codex-model-cache.json');
 }
 
 declare global {
@@ -283,6 +297,7 @@ function runCodexStatusCheck() {
   const result = spawnSync(process.execPath, [cliPath, 'codex-status', '--json'], {
     cwd: resolveRepoRoot(),
     encoding: 'utf8',
+    timeout: 10000,
   });
   const parse = (raw: string) => {
     try {
@@ -321,6 +336,97 @@ function normalizeCodexInvocation(raw: unknown, fallbackCommand: string): CodexI
     args: [],
     source: 'configured',
   };
+}
+
+function normalizeCodexModelEntry(raw: unknown): CodexModelEntry | null {
+  if (typeof raw === 'string') {
+    const id = raw.trim();
+    if (!id) return null;
+    return {
+      id,
+      label: id,
+      tier: 'paid',
+      supportsTools: false,
+      supportsImages: false,
+      supportsResponsesV2: true,
+    };
+  }
+  if (!raw || typeof raw !== 'object') return null;
+  const source = raw as Record<string, unknown>;
+  const id = String(
+    source.id
+    || source.model
+    || source.name
+    || source.slug
+    || '',
+  ).trim();
+  if (!id) return null;
+  const label = String(source.label || source.name || id).trim() || id;
+  const provider = String(source.provider || source.vendor || '').trim() || undefined;
+  const supportsTools = source.supportsTools === true || source.tools === true;
+  const supportsImages = source.supportsImages === true || source.vision === true;
+  const supportsResponsesV2 = source.supportsResponsesV2 !== false;
+  return {
+    id,
+    label,
+    provider,
+    tier: 'paid',
+    supportsTools,
+    supportsImages,
+    supportsResponsesV2,
+  };
+}
+
+function normalizeCodexModelList(raw: unknown): CodexModelEntry[] {
+  const records: unknown[] = [];
+  if (Array.isArray(raw)) {
+    records.push(...raw);
+  } else if (raw && typeof raw === 'object') {
+    const source = raw as Record<string, unknown>;
+    const candidates = [
+      source.models,
+      source.items,
+      source.entries,
+      source.result,
+      source.data,
+    ];
+    for (const candidate of candidates) {
+      if (Array.isArray(candidate)) {
+        records.push(...candidate);
+        break;
+      }
+    }
+  }
+
+  const deduped = new Map<string, CodexModelEntry>();
+  for (const record of records) {
+    const normalized = normalizeCodexModelEntry(record);
+    if (!normalized) continue;
+    if (!deduped.has(normalized.id)) {
+      deduped.set(normalized.id, normalized);
+    }
+  }
+  return [...deduped.values()];
+}
+
+async function readCodexModelCache() {
+  try {
+    const raw = await fs.readFile(getCodexModelCachePath(), 'utf8');
+    const parsed = JSON.parse(raw) as { models?: unknown };
+    const models = normalizeCodexModelList(parsed.models);
+    return models;
+  } catch {
+    return [];
+  }
+}
+
+async function writeCodexModelCache(models: CodexModelEntry[]) {
+  const cachePath = getCodexModelCachePath();
+  await fs.mkdir(path.dirname(cachePath), { recursive: true });
+  await fs.writeFile(cachePath, `${JSON.stringify({
+    updatedAt: nowIso(),
+    models,
+  }, null, 2)}\n`, 'utf8');
 }
 
 async function persistSessionMetadata(session: CodexSessionState | null, extra: Record<string, unknown> = {}) {
@@ -425,7 +531,7 @@ async function handleApprovalRequest(session: CodexSessionState, message: JsonRp
   let proposal: RepoProposal;
   try {
     proposal = await upsertPendingProposal({
-      assistantTarget: turn?.assistantTarget || 'codex-assistant',
+      assistantTarget: turn?.assistantTarget || 'codex',
       loopId: turn?.loopId || 'default',
       domain: turn?.domain || '',
       scopeRoots: turn?.scopeRoots || [],
@@ -863,6 +969,7 @@ export async function startCodexTurn(input: {
   messages?: any[];
   loopId?: string;
   assistantTarget?: string;
+  model?: string;
   domain?: string;
   scopeRoots?: string[];
   scopeOverrideToken?: string;
@@ -896,7 +1003,7 @@ export async function startCodexTurn(input: {
   const turn: CodexTurnState = {
     turnId,
     protocolTurnId: null,
-    assistantTarget: String(input.assistantTarget || 'codex-assistant'),
+    assistantTarget: String(input.assistantTarget || 'codex'),
     loopId: String(input.loopId || 'default'),
     domain: String(input.domain || '').trim().toLowerCase(),
     scopeRoots: Array.isArray(input.scopeRoots)
@@ -922,10 +1029,12 @@ export async function startCodexTurn(input: {
   });
 
   try {
+    const requestedModel = String(input.model || '').trim();
+    const fallbackModel = (await resolveCodexConfig()).defaultModel;
     const response = await request(session, 'turn/start', {
       threadId: session.threadId,
       cwd: resolveRepoRoot(),
-      model: (await resolveCodexConfig()).defaultModel,
+      model: requestedModel || fallbackModel,
       input: [
         {
           type: 'text',
@@ -1105,5 +1214,97 @@ export async function rejectApprovalWithFailure(approvalToken: string, reason: s
   });
   session.pendingApprovals.delete(token);
   await markProposalFailed(pending.proposalId, reason).catch(() => {});
+}
+
+export async function listCodexModels() {
+  const codexConfig = await resolveCodexConfig();
+  const fallbackModel: CodexModelEntry = {
+    id: codexConfig.defaultModel,
+    label: codexConfig.defaultModel,
+    tier: 'paid',
+    supportsTools: false,
+    supportsImages: false,
+    supportsResponsesV2: true,
+  };
+
+  const cachedModels = await readCodexModelCache();
+  const status = await ensureCodexSession();
+  if (!status.ok) {
+    if (cachedModels.length > 0) {
+      return {
+        ok: true,
+        models: cachedModels,
+        cacheUsed: true,
+        warning: status.message || 'Unable to refresh Codex model catalog. Using cached list.',
+      };
+    }
+    return {
+      ok: true,
+      models: [fallbackModel],
+      cacheUsed: true,
+      warning: status.message || 'Unable to load Codex model catalog. Using configured default model.',
+    };
+  }
+
+  const session = getGlobalSession();
+  if (!session) {
+    if (cachedModels.length > 0) {
+      return {
+        ok: true,
+        models: cachedModels,
+        cacheUsed: true,
+        warning: 'Codex session unavailable. Using cached model list.',
+      };
+    }
+    return {
+      ok: true,
+      models: [fallbackModel],
+      cacheUsed: true,
+      warning: 'Codex session unavailable. Using configured default model.',
+    };
+  }
+
+  try {
+    const response = await request(session, 'model/list', {}, 20000);
+    const models = normalizeCodexModelList(response);
+    if (models.length > 0) {
+      await writeCodexModelCache(models).catch(() => {});
+      return {
+        ok: true,
+        models,
+        cacheUsed: false,
+        warning: '',
+      };
+    }
+    if (cachedModels.length > 0) {
+      return {
+        ok: true,
+        models: cachedModels,
+        cacheUsed: true,
+        warning: 'Codex returned an empty model list. Using cached models.',
+      };
+    }
+    return {
+      ok: true,
+      models: [fallbackModel],
+      cacheUsed: true,
+      warning: 'Codex returned an empty model list. Using configured default model.',
+    };
+  } catch (error: any) {
+    if (cachedModels.length > 0) {
+      return {
+        ok: true,
+        models: cachedModels,
+        cacheUsed: true,
+        warning: String(error?.message || error || 'Codex model list failed. Using cached models.'),
+      };
+    }
+    return {
+      ok: true,
+      models: [fallbackModel],
+      cacheUsed: true,
+      warning: String(error?.message || error || 'Codex model list failed. Using configured default model.'),
+    };
+  }
 }
 

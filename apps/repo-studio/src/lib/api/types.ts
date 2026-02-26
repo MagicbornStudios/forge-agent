@@ -224,6 +224,86 @@ export type CodexLoginResponse = {
   stderr?: string;
 };
 
+export type AssistantRuntime = 'forge' | 'codex';
+
+export type RepoAssistantModelOption = {
+  id: string;
+  label: string;
+  provider?: string;
+  description?: string;
+  tier?: 'free' | 'paid';
+  supportsTools?: boolean;
+  supportsImages?: boolean;
+  supportsResponsesV2?: boolean;
+};
+
+export type RepoModelsCatalogResponse = {
+  ok: boolean;
+  runtime: AssistantRuntime;
+  source?: string;
+  warning?: string;
+  selectedModelId: string;
+  models: RepoAssistantModelOption[];
+  message?: string;
+};
+
+export type RepoModelSelectionResponse = {
+  ok: boolean;
+  runtime: AssistantRuntime;
+  modelId: string;
+  message?: string;
+  snapshot?: RepoSettingsSnapshot;
+};
+
+export type GitHubAuthStatus = {
+  installed: boolean;
+  configured?: boolean;
+  loggedIn: boolean;
+  username: string;
+  host: string;
+  scopes?: string[];
+  authType?: string;
+};
+
+export type GitHubAuthStatusResponse = {
+  ok: boolean;
+  github: GitHubAuthStatus;
+  message?: string;
+  stdout?: string;
+  stderr?: string;
+};
+
+export type GitHubLoginResponse = {
+  ok: boolean;
+  github: GitHubAuthStatus;
+  message?: string;
+  authUrl?: string | null;
+  deviceCode?: string;
+  userCode?: string;
+  interval?: number;
+  expiresIn?: number;
+  pending?: boolean;
+  stdout?: string;
+  stderr?: string;
+};
+
+export type GitHubDeviceStartResponse = GitHubLoginResponse;
+
+export type GitHubDevicePollResponse = {
+  ok: boolean;
+  pending: boolean;
+  github: GitHubAuthStatus;
+  message?: string;
+  stdout?: string;
+  stderr?: string;
+};
+
+export type GitHubLogoutResponse = {
+  ok: boolean;
+  github: GitHubAuthStatus;
+  message?: string;
+};
+
 export type RepoAuthStatusResponse = {
   ok: boolean;
   connected: boolean;
@@ -619,6 +699,32 @@ export type GitMutationResponse = {
   message?: string;
   stderr?: string;
   stdout?: string;
+};
+
+export type RepoProject = {
+  projectId: string;
+  name: string;
+  rootPath: string;
+  remoteUrl: string;
+  provider: string;
+  defaultBranch: string;
+  active: boolean;
+  createdAt: string;
+};
+
+export type RepoProjectsResponse = {
+  ok: boolean;
+  projects: RepoProject[];
+  activeProject: RepoProject | null;
+  activeRoot?: string;
+  message?: string;
+};
+
+export type RepoProjectMutationResponse = {
+  ok: boolean;
+  project: RepoProject | null;
+  activeRoot?: string;
+  message?: string;
 };
 
 export type FilesTreeResponse = {

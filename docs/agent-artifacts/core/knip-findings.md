@@ -15,7 +15,7 @@ Run **`pnpm knip`** at repo root to find unused files, unused exports, and unuse
 - **What it does:** Knip analyzes the monorepo for unused files, unused exports, unused dependencies, and unlisted dependencies. It uses the pnpm workspace layout ([pnpm-workspace.yaml](../../../pnpm-workspace.yaml)) and each package’s `package.json` and tsconfig to infer entry points and project files.
 - **Entry vs project:** Entry files are the roots (e.g. `src/index.ts`, Next.js pages and layout). Project files are everything else. Exports from entry files are not reported as "unused" by default; exports from non-entry files are reported if nothing imports them.
 - **Our config:** Root [knip.json](../../../knip.json):
-  - **ignoreWorkspaces:** `vendor/twick/packages/*`, `examples/*` — those workspaces are not analyzed.
+  - **ignoreWorkspaces:** `examples/*` — those workspaces are not analyzed. (Twick was removed; no vendor/twick.)
   - **ignoreFiles:** `.tmp/**`, `**/.source/**`, `**/dist/**`, `**/node_modules/**` — those paths are excluded from the "unused files" check only (still analyzed for exports/deps where applicable).
 - **Running:** `pnpm knip` at repo root. Exit code 1 when there are findings.
 - **Caveats:** Barrel re-exports (index.ts), Next.js dynamic imports, Payload/OpenAPI-generated code, and CSS/side-effect imports often produce false positives. Triage before removing anything.

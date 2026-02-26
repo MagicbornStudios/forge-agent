@@ -1,10 +1,8 @@
 import type { RepoWorkspaceId } from '@/lib/types';
-import {
-  getWorkspacePanelSpecs,
-  type RepoWorkspacePanelSpec,
-} from './workspace-layout-definitions';
+import type { WorkspacePanelSpec } from '@forge/shared';
+import { getWorkspacePanelSpecs } from '../app-spec.generated';
 
-export type RepoEditorPanelSpec = RepoWorkspacePanelSpec;
+export type RepoEditorPanelSpec = WorkspacePanelSpec;
 
 export function getEditorPanelSpecsForWorkspace(workspaceId: RepoWorkspaceId): RepoEditorPanelSpec[] {
   return getWorkspacePanelSpecs(workspaceId);
@@ -18,4 +16,3 @@ export function panelIdFromVisibilityKey(
   const panel = getWorkspacePanelSpecs(workspaceId).find((spec) => spec.key === normalized);
   return panel?.id || null;
 }
-

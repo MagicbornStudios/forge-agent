@@ -29,10 +29,10 @@ Forge is a production-ready platform for building professional desktop-class edi
 
 ### 🏗️ Studio Components
 Professional editor UI building blocks:
-- **EditorShell** - Root container with theming and layout
+- **WorkspaceShell** - Root container with theming and layout
 - **DockLayout** - VSCode-style resizable panel system
-- **EditorToolbar** - Extensible toolbar with menubar integration
-- **EditorInspector** - Selection-driven properties panel
+- **WorkspaceToolbar** - Extensible toolbar with menubar integration
+- **WorkspaceInspector** - Selection-driven properties panel
 - **SettingsPanel** - Complete settings UI with inheritance
 
 ### 🎨 Pre-built Editors
@@ -168,20 +168,20 @@ yarn dev
 
 ```typescript
 import {
-  EditorShell,
-  EditorToolbar,
+  WorkspaceShell,
+  WorkspaceToolbar,
   EditorDockLayout,
-  EditorStatusBar,
+  WorkspaceStatusBar,
 } from '@forge/shared/components/editor';
 
 export function MyEditor() {
   return (
-    <EditorShell editorId="my-editor" title="My Editor">
-      <EditorToolbar>
-        <EditorToolbar.Left>
+    <WorkspaceShell editorId="my-editor" title="My Editor">
+      <WorkspaceToolbar>
+        <WorkspaceToolbar.Left>
           <Button>Action</Button>
-        </EditorToolbar.Left>
-      </EditorToolbar>
+        </WorkspaceToolbar.Left>
+      </WorkspaceToolbar>
 
       <EditorDockLayout layoutId="my-editor-layout">
         <EditorDockLayout.Left>
@@ -197,8 +197,8 @@ export function MyEditor() {
         </EditorDockLayout.Main>
       </EditorDockLayout>
 
-      <EditorStatusBar>Ready</EditorStatusBar>
-    </EditorShell>
+      <WorkspaceStatusBar>Ready</WorkspaceStatusBar>
+    </WorkspaceShell>
   );
 }
 ```
@@ -209,7 +209,7 @@ export function MyEditor() {
 
 ### ✅ Production Ready
 
-- **Studio Components** - EditorShell, DockLayout, Toolbar, Inspector, Settings
+- **Studio Components** - WorkspaceShell, DockLayout, Toolbar, Inspector, Settings
 - **Settings System** - Hierarchical scoping with UI-first design
 - **Component API** - Stable, documented, TypeScript-safe
 

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Palette } from 'lucide-react';
-import { EditorButton } from '@forge/shared/components/editor';
+import { WorkspaceButton } from '@forge/shared/components/workspace';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -72,10 +72,10 @@ export function ThemeSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <EditorButton variant="ghost" size="sm">
+        <WorkspaceButton variant="ghost" size="sm">
           <Palette className="size-3 shrink-0" />
           <span className="hidden sm:inline">Theme</span>
-        </EditorButton>
+        </WorkspaceButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {APP_THEMES.map((t) => (

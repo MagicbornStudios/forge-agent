@@ -25,10 +25,10 @@ When Studio is running, you'll see the expected first-run UI:
 
 - `apps/studio/components/Studio.tsx` — Root component; registries for editors, menus, panels
 - `apps/studio/registry/__index__.tsx` — Default editor registration
-- `packages/shared/src/shared/components/editor/` — EditorShell, DockLayout, DockPanel
+- `packages/shared/src/shared/components/workspace/` — WorkspaceShell, DockLayout, DockPanel
 
 <Callout variant="note" title="For coding agents">
-File refs: `apps/studio/components/Studio.tsx`, `apps/studio/registry/__index__.tsx`, `apps/studio/lib/app-shell/editor-metadata.ts`, `packages/shared/src/shared/components/editor/`
+File refs: `apps/studio/components/Studio.tsx`, `apps/studio/registry/__index__.tsx`, `apps/studio/lib/app-shell/editor-metadata.ts`, `packages/shared/src/shared/components/workspace/`
 Related: STATUS § Studio, components/01-editor-shell, how-to/05-building-an-editor
 Do not: Add editor tabs manually in AppShell; use registry. Do not assume Video or Strategy are enabled
 </Callout>

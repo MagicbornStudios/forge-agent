@@ -4,7 +4,9 @@
  */
 
 export const API_ROUTES = {
-  // Auth
+  // Auth (Payload built-in)
+  LOGIN: '/api/users/login',
+  LOGOUT: '/api/users/logout',
   ME: '/api/me',
   ME_ORGS: '/api/me/orgs',
   ME_ORGS_ACTIVE: '/api/me/orgs/active',

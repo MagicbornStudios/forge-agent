@@ -28,7 +28,7 @@ Usage:
   forge-repo-studio <command> [options]
 
 Commands:
-  open [--profile forge-agent|forge-loop|custom] [--mode local|preview|production|headless] [--view planning|env|commands|docs|loop-assistant|codex-assistant|diff|story|git|code|review-queue] [--port <n>] [--app-runtime|--package-runtime|--desktop-runtime] [--reuse|--no-reuse] [--detach|--foreground] [--desktop-dev] [--legacy-ui]
+  open [--profile forge-agent|forge-loop|custom] [--mode local|preview|production|headless] [--view planning|env|commands|assistant|diff|story|git|code|review-queue] [--port <n>] [--app-runtime|--package-runtime|--desktop-runtime] [--reuse|--no-reuse] [--detach|--foreground] [--desktop-dev]
   doctor [--require-codex-login] [--no-links] [--plain] [--json]
   commands-list
   commands-toggle <command-id> [--enable|--disable]
@@ -37,7 +37,7 @@ Commands:
   codex-login
   codex-start [--ws-port <n>] [--reuse|--no-reuse]
   codex-stop
-  codex-exec [--prompt <text>]
+  codex-exec [--prompt <text>] [--model <id>]
   processes [--scope repo-studio|repo] [--json] [--plain]
   reclaim [--scope repo-studio|repo] [--dry-run] [--force] [--json] [--plain]
   status
@@ -104,7 +104,6 @@ export async function runRepoStudioCli(argv = process.argv.slice(2)) {
       detach,
       foreground: flags.has('foreground'),
       desktopDev: flags.has('desktop-dev'),
-      legacyUi: flags.has('legacy-ui'),
       openBrowser: !flags.has('no-browser'),
       runtimeChild: flags.has('runtime-child'),
     });
@@ -142,6 +141,7 @@ export async function runRepoStudioCli(argv = process.argv.slice(2)) {
   } else if (command === 'codex-exec') {
     result = await runCodexExecCommand({
       prompt: flags.get('prompt') || positional[0],
+      model: flags.get('model'),
     });
   } else if (command === 'status') {
     result = await runStatus();

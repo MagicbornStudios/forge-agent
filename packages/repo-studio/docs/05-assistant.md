@@ -1,14 +1,14 @@
-﻿# Assistant
+# Assistant
 
-RepoStudio exposes two assistant editors:
+RepoStudio exposes one assistant workspace with two runtimes:
 
-- `loop-assistant` for loop orchestration and planning operations
-- `codex-assistant` for code/repo operations
+- `forge` for planning/orchestration and shared runtime tools
+- `codex` for code/repo operations
 
-Both use the same config contract from `.repo-studio/config.json`, but routing is split by `assistantTarget`:
+Routing uses `assistantTarget`:
 
-- `assistantTarget=loop-assistant`: non-Codex shared runtime path (or proxy if explicitly configured).
-- `assistantTarget=codex-assistant`: Codex path (app-server transport primary, exec fallback optional).
+- `assistantTarget=forge`
+- `assistantTarget=codex`
 
 ## Config
 
@@ -16,10 +16,21 @@ Both use the same config contract from `.repo-studio/config.json`, but routing i
 {
   "assistant": {
     "enabled": true,
-    "defaultEditor": "loop-assistant",
-    "editors": ["loop-assistant", "codex-assistant"],
+    "defaultTarget": "forge",
+    "targets": ["forge", "codex"],
     "routeMode": "codex",
     "routePath": "/api/assistant-chat",
+    "routes": {
+      "forge": {
+        "mode": "shared-runtime",
+        "routePath": "/api/assistant-chat"
+      },
+      "codex": {
+        "mode": "codex",
+        "transport": "app-server",
+        "execFallbackAllowed": false
+      }
+    },
     "defaultModel": "gpt-5",
     "codex": {
       "enabled": true,
@@ -45,7 +56,6 @@ Both use the same config contract from `.repo-studio/config.json`, but routing i
 ## Modes
 
 - `codex`: Codex-first route with strict ChatGPT login requirement.
-  - `codex-assistant` uses app-server-first checks and explicit exec fallback controls.
 - `local`: RepoStudio app runtime with manual planning-context attachment.
 - `proxy`: forwards chat requests to absolute `http(s)` `routePath`.
 - `openrouter`: routed through the configured proxy/backend for OpenRouter-enabled assistants.
@@ -64,13 +74,11 @@ forge-env doctor --mode headless --runner codex --strict
 
 You can also authenticate directly from the `Codex Assistant` panel using the `Sign In` action in `Codex Setup`.
 
-Attach planning docs from the `Planning` tab with `Attach To Assistant`, then copy/paste the generated context block into either assistant editor as needed. Diff contexts can also be attached from the `Diff` workspace.
+Attach planning docs from the `Planning` tab with `Attach To Assistant`, then copy/paste the generated context block into assistant chat as needed. Diff contexts can also be attached from the `Diff` workspace.
 
 Story contexts can be attached from the `Story` panel, and scope guard rules apply when Codex turns propose edits outside configured story roots.
 
 When codex requests file/planning changes, RepoStudio records a proposal in SQLite (`repo-proposals` collection) and routes review/apply through the `Review Queue` workspace.
-
-Legacy `.repo-studio/proposals.json` is used only for one-time import and read-only fallback when SQLite is unavailable.
 
 ## Review Queue Trust Mode
 
@@ -88,4 +96,3 @@ Review Queue patch APIs:
 
 - `GET /api/repo/proposals/diff-files?proposalId=<id>`
 - `GET /api/repo/proposals/diff-file?proposalId=<id>&path=<repo-relative>`
-

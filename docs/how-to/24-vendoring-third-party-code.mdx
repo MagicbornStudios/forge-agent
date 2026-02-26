@@ -4,7 +4,7 @@ title: 24 - Vendoring third-party code
 
 # 24 - Vendoring third-party code
 
-Vendor third-party code, make local fixes, contribute upstream. Examples: **Twick** and **get-shit-done (GSD)** from MagicbornStudios.
+Vendor third-party code, make local fixes, contribute upstream. Current example: **get-shit-done (GSD)** from MagicbornStudios.
 
 ## Why we vendor
 
@@ -12,98 +12,7 @@ Vendor third-party code, make local fixes, contribute upstream. Examples: **Twic
 - Patch internals for editor needs
 - Clean path to submit fixes upstream
 
-Rules: vendor under `vendor/` (not `.tmp/`); never edit `node_modules`; use workspace overrides.
-
-## Install (first time)
-
-```bash
-git submodule add https://github.com/MagicbornStudios/twick.git vendor/twick
-git submodule update --init --recursive
-```
-
-If cloned without submodules:
-
-```bash
-git submodule update --init --recursive
-```
-
-## Workspace wiring
-
-- `pnpm-workspace.yaml` includes `vendor/twick/packages/*`
-- Root `package.json`:
-
-```json
-"pnpm": {
-  "overrides": {
-    "@twick/*": "workspace:*"
-  }
-}
-```
-
-**Install from repo root only:**
-
-```bash
-pnpm install
-```
-
-## Version alignment
-
-Keep vendored versions aligned with Studio. Update when changing Twick:
-
-- `vendor/twick/package.json`
-- `vendor/twick/packages/studio/package.json`
-- … (timeline, live-player, video-editor, canvas, media-utils, visualizer)
-
-## Publish to Verdaccio
-
-> Forge: `registry:forge:build` + `registry:forge:publish:local`. See [25 - Verdaccio](25-verdaccio-local-registry).
-
-**Build:**
-
-```bash
-pnpm vendor:twick:build
-```
-
-**Publish:**
-
-```bash
-pnpm vendor:twick:publish:local
-```
-
-**Consumer `.npmrc`:**
-
-```ini
-@forge:registry=http://localhost:4873
-@twick:registry=http://localhost:4873
-```
-
-## Making changes
-
-1. Branch inside submodule: `git -C vendor/twick checkout -b fix/your-branch`
-2. Edit under `vendor/twick`
-3. Build: `pnpm --filter @twick/studio build`
-4. Commit in submodule: `git -C vendor/twick add -A && git -C vendor/twick commit -m "Fix: ..."`
-
-## Contribute upstream
-
-```bash
-git -C vendor/twick push -u origin fix/your-branch
-```
-
-Open a PR on MagicbornStudios/twick.
-
-## Update vendor pointer
-
-```bash
-git -C vendor/twick fetch && git -C vendor/twick checkout main && git -C vendor/twick pull
-git add vendor/twick && git commit -m "chore: update twick submodule"
-```
-
-## Troubleshooting
-
-- Missing CSS: `pnpm --filter @twick/studio build`
-- ESM/TS errors: ensure `transpilePackages` includes Twick
-- Dependency mismatch: root overrides `@twick/*` → `workspace:*`
+Rules: vendor under `vendor/` (not `.tmp/`); never edit `node_modules`; use workspace overrides when the vendor is a pnpm workspace member.
 
 ## get-shit-done (GSD)
 
@@ -136,7 +45,7 @@ git add vendor/get-shit-done && git commit -m "chore: update get-shit-done submo
 **Next:** [25 - Verdaccio and local registry](25-verdaccio-local-registry)
 
 <Callout variant="note" title="For coding agents">
-File refs: `vendor/twick/`, `vendor/get-shit-done/`, `pnpm-workspace.yaml`, `verdaccio.yaml`, `scripts/env/manifest.mjs`
+File refs: `vendor/get-shit-done/`, `pnpm-workspace.yaml`, `verdaccio.yaml`, `scripts/env/manifest.mjs`
 Related: how-to/25-verdaccio-local-registry, architecture (component library)
-Do not: Edit .tmp/; run pnpm install inside vendor/twick
+Do not: Edit .tmp/
 </Callout>

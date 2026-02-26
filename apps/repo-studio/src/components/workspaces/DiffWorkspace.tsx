@@ -2,11 +2,14 @@
 
 import * as React from 'react';
 import { GitCompareArrows, TerminalSquare } from 'lucide-react';
-import { WorkspaceLayout } from '@forge/shared/components/editor';
+import { WorkspaceLayout } from '@forge/shared/components/workspace';
 import { CodePanel } from '@/components/features/code/CodePanel';
 import { DiffPanel } from '@/components/features/diff/DiffPanel';
 import { GitPanel } from '@/components/features/git/GitPanel';
 import { createHiddenPanelSet, isPanelVisible, type RepoWorkspaceProps } from './types';
+
+export const WORKSPACE_ID = 'diff' as const;
+export const WORKSPACE_LABEL = 'Diff';
 
 export function DiffWorkspace({
   layoutId,

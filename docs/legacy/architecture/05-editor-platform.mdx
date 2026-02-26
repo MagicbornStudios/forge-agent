@@ -13,17 +13,17 @@ Unreal-Engine-inspired system of **resizable, lockable panels**.
 
 | Old Name | New Name | Import |
 |---|---|---|
-| `AppSpace` | `EditorApp` | `@forge/shared/components/app` |
-| `WorkspaceShell` | `EditorShell` | `@forge/shared/components/editor` |
-| `WorkspaceHeader` | `EditorHeader` | `@forge/shared/components/editor` |
-| `WorkspaceToolbar` | `EditorToolbar` | `@forge/shared/components/editor` |
+| `AppSpace` | `WorkspaceApp` | `@forge/shared/components/app` |
+| `WorkspaceShell` | `WorkspaceShell` | `@forge/shared/components/editor` |
+| `WorkspaceHeader` | `WorkspaceHeader` | `@forge/shared/components/editor` |
+| `WorkspaceToolbar` | `WorkspaceToolbar` | `@forge/shared/components/editor` |
 | `WorkspaceLayoutGrid` | `DockLayout` | `@forge/shared/components/editor` |
 | `WorkspaceEditor` | `ViewportMeta` | `@forge/shared/components/editor` |
 | `WorkspaceLeftPanel` | `DockPanel` | `@forge/shared/components/editor` |
 | `WorkspaceInspector` | `DockPanel` | `@forge/shared/components/editor` |
-| `WorkspaceStatusBar` | `EditorStatusBar` | `@forge/shared/components/editor` |
-| `WorkspaceReviewBar` | `EditorReviewBar` | `@forge/shared/components/editor` |
-| `WorkspaceOverlaySurface` | `EditorOverlaySurface` | `@forge/shared/components/editor` |
+| `WorkspaceStatusBar` | `WorkspaceStatusBar` | `@forge/shared/components/editor` |
+| `WorkspaceReviewBar` | `WorkspaceReviewBar` | `@forge/shared/components/editor` |
+| `WorkspaceOverlaySurface` | `WorkspaceOverlaySurface` | `@forge/shared/components/editor` |
 | (new) | `PanelTabs` | `@forge/shared/components/editor` |
 | (new) | `PanelSettings` | `@forge/shared/components/editor` |
 | (new) | `usePanelLock` | `@forge/shared/components/editor` |
@@ -35,41 +35,41 @@ Unreal-Engine-inspired system of **resizable, lockable panels**.
 ## Architecture
 
 ```
-EditorApp                    -> top-level application shell (editor tabs)
-  EditorApp.Tabs             -> tab bar for editor switching
-  EditorApp.Content          -> active editor content area
-    EditorShell              -> root container per editor
-      EditorHeader           -> editor title bar (.Left, .Center, .Right)
-      EditorToolbar          -> editor toolbar (.Left, .Right, .Menubar, .Button ...)
-      EditorReviewBar        -> AI change review bar (revert/accept)
+WorkspaceApp                    -> top-level application shell (editor tabs)
+  WorkspaceApp.Tabs             -> tab bar for editor switching
+  WorkspaceApp.Content          -> active editor content area
+    WorkspaceShell              -> root container per editor
+      WorkspaceHeader           -> editor title bar (.Left, .Center, .Right)
+      WorkspaceToolbar          -> editor toolbar (.Left, .Right, .Menubar, .Button ...)
+      WorkspaceReviewBar        -> AI change review bar (revert/accept)
       DockLayout             -> dockable panel layout (left, main, right, bottom)
         DockPanel            -> individual panel (title, tabs, lock, settings)
           PanelTabs          -> tab bar within a panel
           PanelSettings      -> per-panel settings popover
         ViewportMeta         -> editor viewport metadata wrapper
-      EditorStatusBar        -> bottom status bar
-      EditorOverlaySurface   -> modal overlay surface
+      WorkspaceStatusBar        -> bottom status bar
+      WorkspaceOverlaySurface   -> modal overlay surface
 ```
 
 ---
 
 ## Component reference
 
-### `EditorShell`
+### `WorkspaceShell`
 
 Root container for an editor. Sets `data-editor-id` (and legacy `data-mode-id`),
 `data-domain`, `data-theme`, and `data-density` attributes for copilot, settings, and theming.
 
 ```tsx
-<EditorShell editorId="dialogue" title="Dialogue" domain="dialogue" theme="dark-fantasy">
-  {/* EditorHeader, EditorToolbar, DockLayout, EditorStatusBar, etc. */}
-</EditorShell>
+<WorkspaceShell editorId="dialogue" title="Dialogue" domain="dialogue" theme="dark-fantasy">
+  {/* WorkspaceHeader, WorkspaceToolbar, DockLayout, WorkspaceStatusBar, etc. */}
+</WorkspaceShell>
 ```
 
-### `EditorHeader` / `EditorToolbar`
+### `WorkspaceHeader` / `WorkspaceToolbar`
 
 Title bar and toolbar. Compound components with `.Left`, `.Center`, `.Right`.
-`EditorToolbar` also has `.Separator`, `.Group`, `.Button`, `.Menubar`, `.FileMenu`.
+`WorkspaceToolbar` also has `.Separator`, `.Group`, `.Button`, `.Menubar`, `.FileMenu`.
 
 ### `DockLayout`
 
@@ -147,7 +147,7 @@ Lightweight metadata wrapper that sets `data-viewport-id`, `data-viewport-type`,
 and `data-viewport-scope` attributes (plus legacy `data-editor-*`). Used by
 copilot and settings systems.
 
-### `EditorStatusBar` / `EditorReviewBar` / `EditorOverlaySurface`
+### `WorkspaceStatusBar` / `WorkspaceReviewBar` / `WorkspaceOverlaySurface`
 
 Bottom status bar, AI review bar, and modal overlay surface - same API as
 their `Workspace*` predecessors.
@@ -233,15 +233,15 @@ All AI operations go through TanStack Query mutations:
 ### 1. Change imports
 
 ```diff
-- import { EditorShell, EditorHeader, EditorToolbar, DockLayout, EditorStatusBar } from '@forge/shared';
-+ import { EditorShell, EditorHeader, EditorToolbar, DockLayout, EditorStatusBar } from '@forge/shared/components/editor';
+- import { WorkspaceShell, WorkspaceHeader, WorkspaceToolbar, DockLayout, WorkspaceStatusBar } from '@forge/shared';
++ import { WorkspaceShell, WorkspaceHeader, WorkspaceToolbar, DockLayout, WorkspaceStatusBar } from '@forge/shared/components/editor';
 ```
 
 ### 2. Replace the shell
 
 ```diff
 - <WorkspaceShell workspaceId="forge" title="Forge" domain="forge" theme={theme}>
-+ <EditorShell editorId="dialogue" title="Dialogue" domain="dialogue" theme={theme}>
++ <WorkspaceShell editorId="dialogue" title="Dialogue" domain="dialogue" theme={theme}>
 ```
 
 ### 3. Replace the layout
@@ -284,12 +284,12 @@ All AI operations go through TanStack Query mutations:
 | `DockPanel.tsx` | `DockPanel` | Individual panel with title/tabs/lock |
 | `PanelTabs.tsx` | `PanelTabs` | Tab bar within a panel |
 | `ViewportMeta.tsx` | `ViewportMeta` | Editor viewport metadata |
-| `EditorShell.tsx` | `EditorShell` | Editor root container |
-| `EditorHeader.tsx` | `EditorHeader` | Editor title bar |
-| `EditorToolbar.tsx` | `EditorToolbar` | Editor toolbar |
-| `EditorStatusBar.tsx` | `EditorStatusBar` | Bottom status bar |
-| `EditorReviewBar.tsx` | `EditorReviewBar` | AI change review bar |
-| `EditorOverlaySurface.tsx` | `EditorOverlaySurface` | Modal overlay surface |
+| `WorkspaceShell.tsx` | `WorkspaceShell` | Editor root container |
+| `WorkspaceHeader.tsx` | `WorkspaceHeader` | Editor title bar |
+| `WorkspaceToolbar.tsx` | `WorkspaceToolbar` | Editor toolbar |
+| `WorkspaceStatusBar.tsx` | `WorkspaceStatusBar` | Bottom status bar |
+| `WorkspaceReviewBar.tsx` | `WorkspaceReviewBar` | AI change review bar |
+| `WorkspaceOverlaySurface.tsx` | `WorkspaceOverlaySurface` | Modal overlay surface |
 | `PanelSettings.tsx` | `PanelSettings` | Per-panel settings popover |
 | `usePanelLock.ts` | `usePanelLock` | Panel lock state hook |
 | `index.ts` | Barrel | All exports |

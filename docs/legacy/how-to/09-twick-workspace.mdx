@@ -23,12 +23,12 @@ Video Editor uses the shared editor shell and slots.
 ```tsx
 // apps/studio/components/editors/VideoEditor.tsx
 return (
-  <EditorShell editorId="video" title="Video" domain="video">
-    <EditorHeader>...</EditorHeader>
-    <EditorToolbar>...</EditorToolbar>
+  <WorkspaceShell editorId="video" title="Video" domain="video">
+    <WorkspaceHeader>...</WorkspaceHeader>
+    <WorkspaceToolbar>...</WorkspaceToolbar>
     <DockLayout ... />
-    <EditorStatusBar>...</EditorStatusBar>
-  </EditorShell>
+    <WorkspaceStatusBar>...</WorkspaceStatusBar>
+  </WorkspaceShell>
 );
 ```
 

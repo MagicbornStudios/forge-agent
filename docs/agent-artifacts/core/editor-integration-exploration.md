@@ -13,7 +13,7 @@ Living artifact. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-
 ## Current integration path
 
 1. Add editor id to `EDITOR_IDS` and `editor-metadata.ts`
-2. Create component with `EditorShell` + `EditorDockLayout` + slot children
+2. Create component with `WorkspaceShell` + `EditorDockLayout` + slot children
 3. Export `editorDescriptor` (id, label, icon, order)
 4. Register in `editor-bootstrap.ts`
 
@@ -43,7 +43,7 @@ Editors compose panels declaratively via `EditorDockLayout.Left/Main/Right` + `E
 
 ## Next steps
 
-1. Document the “minimal editor” path (smallest viable EditorShell + layout + descriptor)
+1. Document the “minimal editor” path (smallest viable WorkspaceShell + layout + descriptor)
 2. Add `createEditorLayout` helper if we see repeated config patterns
 3. Consider `EditorDescriptor.defaultPanels` for plug-and-play when Studio supports it
 4. Revisit when developer program / plugin ecosystem work starts

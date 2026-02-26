@@ -115,6 +115,14 @@
 - [x] Consumer reference surface is now app-level `apps/consumer-studio` (chat-only, companion runtime driven); `examples/consumer` is removed from workspace packages.
 - [x] AI/chat semantic guardrails are enforced in automation (`guard-assistant-canonical`, `guard-workspace-semantics`) and wired into root lint + CI.
 
+## 2026-02-25
+
+- [x] Repo Studio assistant surface is hard-cut to one panel/workspace (`assistant`) with runtime switching (`forge` or `codex`) inside the panel; split runtime panels are migration-only and not primary UX.
+- [x] Repo Studio model routing is runtime-scoped and API-backed (`/api/repo/models`, `/api/repo/models/selection`): Forge models come from OpenRouter catalog semantics, Codex models come from codex app-server `model/list` with cache+warn fallback.
+- [x] Codex manual play/stop controls are removed from app bar; Codex session lifecycle is on-demand (first codex model load or codex message).
+- [x] GitHub auth in Repo Studio is OAuth device-flow based (in-app start/poll/logout routes backed by encrypted token persistence), not CLI-presence gated.
+- [x] Repo Studio git/files/diff/search operations resolve against active project root when configured; fallback remains workspace root only when no active project exists.
+
 ## 2026-02-23 (AI runtimes and companion mode)
 
 - [x] **Two distinct AI routes (no merging):** (1) **Open Router assistant** — tools, general chat, dialogue nodes, domain tools; uses Open Router (streamText, model registry, persistence). (2) **Codex** — coding agent; works on files via Codex SDK; never uses Open Router. Codex is implemented only in Repo Studio (`editorTarget=codex-assistant`); Open Router path is in Studio and will be shareable. No code path shall mix Codex with Open Router.

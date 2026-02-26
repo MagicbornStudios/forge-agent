@@ -2,8 +2,9 @@
 
 import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
+import type { WorkspacePanelSpec } from '@forge/shared';
 import { useSettingsStore } from '@/lib/settings/store';
-import { WORKSPACE_PANEL_SPECS, type WorkspacePanelSpec } from './workspace-panels';
+import { getWorkspacePanelSpecs } from './app-spec.generated';
 
 /**
  * Panel visibility for one workspace. Keys are app-scoped (panel.visible.{workspace}-{panelId}).
@@ -15,7 +16,7 @@ export function useWorkspacePanelVisibility(workspaceId: string): {
   panelSpecs: WorkspacePanelSpec[];
 } {
   const setSetting = useSettingsStore((s) => s.setSetting);
-  const specs = useMemo(() => WORKSPACE_PANEL_SPECS[workspaceId] ?? [], [workspaceId]);
+  const specs = useMemo(() => getWorkspacePanelSpecs(workspaceId), [workspaceId]);
 
   const visibility = useSettingsStore(
     useShallow(

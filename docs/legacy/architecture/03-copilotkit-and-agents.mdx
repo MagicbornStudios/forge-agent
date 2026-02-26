@@ -14,7 +14,7 @@ Single source of truth for how the AI sidebar, context, actions, and runtime *us
 
 - **Single Next.js app** (`apps/studio`): one layout, one CopilotKit provider, one App Shell.
 - **App Shell** (`apps/studio/components/AppShell.tsx`): owns editor tabs and the active editor; only the active editor is mounted.
-- **Editors**: Dialogue (primary, graph editor), Video (showcase), Character, Strategy (assistant-ui chat). Each uses `EditorShell` from shared and implements a **system contract** (context + actions + suggestions + highlights).
+- **Editors**: Dialogue (primary, graph editor), Video (showcase), Character, Strategy (assistant-ui chat). Each uses `WorkspaceShell` from shared and implements a **system contract** (context + actions + suggestions + highlights).
 - **Route**: Persisted in Zustand to localStorage (`forge:app-session:v2`); no URL for editor.
 
 ## 2. CopilotKit flow (client to runtime to model)
@@ -84,7 +84,7 @@ Single source of truth for how the AI sidebar, context, actions, and runtime *us
 - **forge_createPlan(goal)**: Calls `POST /api/forge/plan` with goal and graph summary; returns `{ steps }` without mutating the draft.
 - **Plan card**: `apps/studio/components/copilot/ForgePlanCard.tsx` renders `PlanCard` + `PlanActionBar` inline in chat with Apply/Dismiss actions.
 - **forge_executePlan(steps)**: Applies each step via `applyOperations`, triggers highlights, sets `pendingFromPlan` for review.
-- **Review UI**: When `isDirty && pendingFromPlan`, a bar shows "Pending changes from plan" with **Revert** (refetch graph, clear pending) and **Accept** (keep draft, clear pending). The bar is the shared primitive `EditorReviewBar` from `@forge/shared/components/editor`; place it between toolbar and DockLayout.
+- **Review UI**: When `isDirty && pendingFromPlan`, a bar shows "Pending changes from plan" with **Revert** (refetch graph, clear pending) and **Accept** (keep draft, clear pending). The bar is the shared primitive `WorkspaceReviewBar` from `@forge/shared/components/editor`; place it between toolbar and DockLayout.
 - **forge_commit**: Saves the graph (same as Save button); clears `pendingFromPlan`. Graph store has `pendingFromPlan` and `setPendingFromPlan`.
 
 ## 12. Missing / roadmap

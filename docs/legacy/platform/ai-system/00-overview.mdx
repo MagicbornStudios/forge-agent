@@ -18,7 +18,7 @@ Forge provides deep integration with AI systems to augment your editors with int
 ### ✅ Production Ready
 
 **Studio & Editor Components**
-- EditorShell, DockLayout, Toolbar, Inspector, Settings
+- WorkspaceShell, DockLayout, Toolbar, Inspector, Settings
 - Complete component API with TypeScript safety
 - Hierarchical settings system with UI-first design
 - Selection-driven inspector panels
@@ -316,11 +316,11 @@ export function MyEditor() {
   });
 
   return (
-    <EditorShell editorId="my-editor">
+    <WorkspaceShell editorId="my-editor">
       {/* ... editor UI ... */}
 
       <AssistantPanel contract={assistantContract} />
-    </EditorShell>
+    </WorkspaceShell>
   );
 }
 ```

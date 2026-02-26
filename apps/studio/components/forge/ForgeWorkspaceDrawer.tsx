@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { EditorBottomPanel } from '@forge/shared';
+import { WorkspaceBottomPanel } from '@forge/shared';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@forge/ui/tabs';
 
 const TABS = [
@@ -14,7 +14,7 @@ export function ForgeWorkspaceDrawer() {
   const [activeTab, setActiveTab] = useState<string>(TABS[0].id);
 
   return (
-    <EditorBottomPanel>
+    <WorkspaceBottomPanel>
       <div className="flex flex-col h-full min-h-0">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
           <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0 h-9">
@@ -39,6 +39,6 @@ export function ForgeWorkspaceDrawer() {
           </TabsContent>
         </Tabs>
       </div>
-    </EditorBottomPanel>
+    </WorkspaceBottomPanel>
   );
 }

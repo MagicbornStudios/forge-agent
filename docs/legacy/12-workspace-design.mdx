@@ -28,7 +28,7 @@ updated: 2026-02-07
 
 ### Adding an editor
 
-1. **New editor**: Add an editor id to `EditorId` in `lib/app-shell/store.ts`. Create an editor component (e.g. `XEditor`) using `EditorShell`, wire system store, `useXContract` + `useDomainCopilot`. Add tab and render branch in `AppShell`. Register shell context/actions (editor name, switch/open/close) if not already generic.
+1. **New editor**: Add an editor id to `EditorId` in `lib/app-shell/store.ts`. Create an editor component (e.g. `XEditor`) using `WorkspaceShell`, wire system store, `useXContract` + `useDomainCopilot`. Add tab and render branch in `AppShell`. Register shell context/actions (editor name, switch/open/close) if not already generic.
 2. **Viewport surface**: Implement the viewport in the editor's **main** slot. Expose selection (and optional viewport handle) for `revealSelection`. If you add multiple editor windows/tabs later, extend route state with `editors[]` and `sessions` per editor; see [01-unified-workspace.mdx](./architecture/01-unified-workspace.mdx).
 3. **Register agents**: System contract registers context and actions when the editor is active. Optionally add a co-agent (see [17-co-agents-and-multi-agent.mdx](./17-co-agents-and-multi-agent.mdx)).
 

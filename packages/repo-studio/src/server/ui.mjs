@@ -11,10 +11,6 @@ function buildCommandRows(commands) {
   return Array.isArray(commands) ? commands : [];
 }
 
-function buildDocsMap(docs) {
-  return Object.fromEntries((docs || []).map((item) => [item.id, item.content]));
-}
-
 function buildStatsMarkup(payload, analytics) {
   const status = payload?.status || 'unknown';
   const percent = Number(payload?.percent || 0);
@@ -40,34 +36,8 @@ function buildStatsMarkup(payload, analytics) {
   };
 }
 
-export function renderLegacyStudioHtml(model) {
-  return `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>RepoStudio (legacy-ui)</title>
-  <style>
-    body { margin: 0; padding: 1rem; font-family: ui-sans-serif, system-ui, sans-serif; background: #0b1220; color: #e7edf8; }
-    pre { white-space: pre-wrap; border: 1px solid #243756; border-radius: 8px; padding: .7rem; background: #10192c; }
-    .muted { color: #93a6c5; }
-  </style>
-</head>
-<body>
-  <h1>RepoStudio Legacy UI</h1>
-  <p class="muted">Use this only as a fallback. Default \`forge-repo-studio open\` loads the full command-center UI.</p>
-  <h2>Env</h2>
-  <pre>${escapeHtml(model.envReport || '')}</pre>
-  <h2>Forge Loop</h2>
-  <pre>${escapeHtml(model.loopReport || '')}</pre>
-</body>
-</html>`;
-}
-
 export function renderStudioHtml(model) {
   const initialView = model.view || 'planning';
-  const docs = model.docs || [];
-  const docsById = buildDocsMap(docs);
   const commands = buildCommandRows(model.commands);
   const loopStats = buildStatsMarkup(model.loopPayload, model.loopAnalytics);
   const disabledCount = Array.isArray(model?.config?.commandPolicy?.disabledCommandIds)
@@ -127,7 +97,6 @@ export function renderStudioHtml(model) {
     .ok { color: var(--ok); }
     .warn { color: var(--warn); }
     .bad { color: var(--bad); }
-    .doc-link { width: 100%; text-align: left; margin-bottom: .35rem; }
     .section-title { margin: 0 0 .5rem; font-size: .95rem; }
     .tiny { font-size: .75rem; color: var(--muted); }
     .history { max-height: 28vh; overflow: auto; border: 1px solid var(--line-2); border-radius: 9px; }
@@ -155,7 +124,6 @@ export function renderStudioHtml(model) {
       <button data-view="planning">Planning</button>
       <button data-view="env">Env</button>
       <button data-view="commands">Commands</button>
-      <button data-view="docs">Docs</button>
       <button data-view="assistant">Assistant</button>
     </nav>
 
@@ -222,13 +190,6 @@ export function renderStudioHtml(model) {
           </div>
         </section>
 
-        <section id="view-docs" class="panel">
-          <h2 class="section-title">Runbooks</h2>
-          <div class="row"><select id="doc-select"></select></div>
-          <div id="docs-list">${docs.map((item) => `<button class="doc-link" data-doc-id="${escapeHtml(item.id)}">${escapeHtml(item.path)}</button>`).join('') || '<p class="tiny">No runbooks found.</p>'}</div>
-          <pre id="doc-output">Select a runbook from docs index.</pre>
-        </section>
-
         <section id="view-assistant" class="panel">
           <h2 class="section-title">Assistant</h2>
           <p class="tiny">Route mode: <code id="assistant-route-mode">${escapeHtml(assistant.routeMode || 'local')}</code> | Route: <code id="assistant-route-path">${escapeHtml(assistant.routePath || '/api/assistant-chat')}</code></p>
@@ -271,7 +232,6 @@ export function renderStudioHtml(model) {
       mode: ${JSON.stringify(model.mode)},
       loopNext: ${JSON.stringify(loopStats.nextAction || 'forge-loop progress')},
       commands: ${JSON.stringify(commands)},
-      docs: ${JSON.stringify(docsById)},
       recentRuns: ${JSON.stringify(recentRuns)},
       commandView: ${JSON.stringify(model.commandView || { query: '', source: 'all', status: 'all', tab: 'recommended', sort: 'id' })},
     };
@@ -289,7 +249,6 @@ export function renderStudioHtml(model) {
       planning: document.getElementById('view-planning'),
       env: document.getElementById('view-env'),
       commands: document.getElementById('view-commands'),
-      docs: document.getElementById('view-docs'),
       assistant: document.getElementById('view-assistant'),
     };
 
@@ -529,31 +488,6 @@ export function renderStudioHtml(model) {
         renderCommands();
       });
     });
-
-    const docSelect = document.getElementById('doc-select');
-    const docOutput = document.getElementById('doc-output');
-    function setDoc(docId) {
-      const content = state.docs[docId];
-      if (!content) return;
-      docSelect.value = docId;
-      docOutput.textContent = content;
-    }
-    Object.keys(state.docs).sort().forEach((docId) => {
-      const option = document.createElement('option');
-      option.value = docId;
-      option.textContent = docId;
-      docSelect.appendChild(option);
-    });
-    docSelect.addEventListener('change', () => setDoc(docSelect.value));
-    document.querySelectorAll('[data-doc-id]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        setView('docs');
-        setDoc(btn.dataset.docId);
-      });
-    });
-    if (Object.keys(state.docs).length > 0) {
-      setDoc(Object.keys(state.docs).sort()[0]);
-    }
 
     document.getElementById('assistant-refresh').addEventListener('click', async () => {
       const response = await getJson('/api/assistant/status');

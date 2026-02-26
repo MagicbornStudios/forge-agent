@@ -16,7 +16,7 @@ Semantic tokens live in `packages/shared/src/shared/styles/themes.css`: `--backg
 ## App and editor theme
 
 - **App theme**: Driven by `ui.theme` (settings) and `AppThemeProvider`; sets `<html data-theme="...">`. See `apps/studio/components/providers/AppThemeProvider.tsx`.
-- **Editor override**: `EditorShell` accepts optional `theme`; sets `data-theme` on the editor root so a single editor can use a different theme (e.g. Video uses `darcula`).
+- **Editor override**: `WorkspaceShell` accepts optional `theme`; sets `data-theme` on the editor root so a single editor can use a different theme (e.g. Video uses `darcula`).
 
 ## UI atoms
 

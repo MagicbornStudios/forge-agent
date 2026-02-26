@@ -43,7 +43,7 @@ test('buildVerificationCommandPlan adds repo-studio build for repo-studio app ch
         tests: true,
       },
     },
-    ['apps/repo-studio/src/components/RepoStudioShell.tsx'],
+    ['apps/repo-studio/src/components/RepoStudioRoot.tsx'],
   );
 
   const rendered = commands.map((item) => `${item.command} ${item.args.join(' ')}`);

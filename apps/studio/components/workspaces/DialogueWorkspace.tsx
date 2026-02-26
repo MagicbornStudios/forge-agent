@@ -27,7 +27,7 @@ import { useCompanionAssistantUrl } from '@forge/shared';
 import { EDITOR_VIEWPORT_IDS } from '@/lib/app-shell/editor-metadata';
 import { CHAT_PANEL_ID } from '@/lib/workspace-registry/constants';
 import { AssistantPanel } from '@forge/shared/components/assistant-ui';
-import { YarnPanel, YARN_PANEL_ID } from '@/components/workspaces/dialogue/YarnPanel';
+import { YarnPanel } from '@/components/workspaces/dialogue/YarnPanel';
 import { ModelSwitcher } from '@/components/model-switcher';
 import { useWorkspacePanelVisibility } from '@/lib/app-shell/useWorkspacePanelVisibility';
 import { useSettingsStore } from '@/lib/settings/store';
@@ -38,17 +38,17 @@ import { planStepToOp } from '@forge/domain-forge/copilot/plan-utils';
 import { useCreateForgePlan, useForgeStoryBuilder } from '@/lib/data/hooks';
 import { API_ROUTES } from '@/lib/api-client/routes';
 import {
-  EditorShell,
-  EditorToolbar,
-  EditorStatusBar,
-  EditorOverlaySurface,
-  EditorReviewBar,
+  WorkspaceShell,
+  WorkspaceToolbar,
+  WorkspaceStatusBar,
+  WorkspaceOverlaySurface,
+  WorkspaceReviewBar,
   WorkspacePanel,
   WorkspaceLayout,
   usePanelLock,
   type PanelTabDef,
-  EditorInspector,
-  createEditorMenubarMenus,
+  WorkspaceInspector,
+  createWorkspaceMenubarMenus,
   type WorkspaceLayoutRef,
 } from '@forge/shared';
 import {
@@ -90,6 +90,9 @@ import {
 } from 'lucide-react';
 import type { WorkspaceDescriptor } from '@/lib/workspace-registry/workspace-registry';
 import { cn } from '@forge/shared/lib/utils';
+
+export const WORKSPACE_ID = 'dialogue' as const;
+export const WORKSPACE_LABEL = 'Dialogue';
 
 /** Editor descriptor for registry; defaults live on the component. */
 export const workspaceDescriptor: Omit<WorkspaceDescriptor, 'component'> = {
@@ -1105,7 +1108,7 @@ export function DialogueWorkspace() {
 
   const menubarMenus = useMemo(
     () =>
-      createEditorMenubarMenus({
+      createWorkspaceMenubarMenus({
         file: fileMenuItems,
         view: viewMenuItems,
       }),
@@ -1221,7 +1224,7 @@ export function DialogueWorkspace() {
   const inspectorContent =
     showRightPanel === false ? undefined : (
       <WorkspacePanel panelId="dialogue-right" hideTitleBar className="h-full">
-        <EditorInspector selection={activeSelection} sections={inspectorSections} />
+        <WorkspaceInspector selection={activeSelection} sections={inspectorSections} />
       </WorkspacePanel>
     );
 
@@ -1286,7 +1289,7 @@ export function DialogueWorkspace() {
 
   return (
     <NodeDragProvider>
-      <EditorShell
+      <WorkspaceShell
         editorId="dialogue"
         title="Dialogue"
         subtitle={activeGraph?.title}
@@ -1295,17 +1298,17 @@ export function DialogueWorkspace() {
         density={editorDensity}
         className="flex flex-col h-full min-h-0 bg-canvas"
       >
-        <EditorToolbar className="bg-sidebar border-b border-sidebar-border">
-          <EditorToolbar.Left>
-            <EditorToolbar.Group className="gap-[var(--control-gap)]">
-              <EditorToolbar.Menubar menus={menubarMenus} />
-              <EditorToolbar.Separator />
+        <WorkspaceToolbar className="bg-sidebar border-b border-sidebar-border">
+          <WorkspaceToolbar.Left>
+            <WorkspaceToolbar.Group className="gap-[var(--control-gap)]">
+              <WorkspaceToolbar.Menubar menus={menubarMenus} />
+              <WorkspaceToolbar.Separator />
               <span className="text-xs text-muted-foreground">{toolbarCounts}</span>
-            </EditorToolbar.Group>
-          </EditorToolbar.Left>
-          <EditorToolbar.Right>
+            </WorkspaceToolbar.Group>
+          </WorkspaceToolbar.Left>
+          <WorkspaceToolbar.Right>
             {headerLinks.map((link) => (
-              <EditorToolbar.Button
+              <WorkspaceToolbar.Button
                 key={link.label}
                 variant="outline"
                 size="sm"
@@ -1314,14 +1317,14 @@ export function DialogueWorkspace() {
               >
                 {link.icon}
                 <span className="ml-1.5 text-[11px]">{link.label}</span>
-              </EditorToolbar.Button>
+              </WorkspaceToolbar.Button>
             ))}
             {showAgentName !== false && (
               <Badge variant="secondary" className="px-[var(--badge-padding-x)] py-[var(--badge-padding-y)] text-[11px] leading-none">
                 Agent: {agentName ?? 'Default'}
               </Badge>
             )}
-            <EditorToolbar.Separator />
+            <WorkspaceToolbar.Separator />
             {dirtyByScope.narrative && (
               <Badge variant="outline" className="px-[var(--badge-padding-x)] py-[var(--badge-padding-y)] text-[11px] text-amber-500 border-amber-500/50">
                 Narrative unsaved
@@ -1333,10 +1336,10 @@ export function DialogueWorkspace() {
               </Badge>
             )}
 
-          </EditorToolbar.Right>
-        </EditorToolbar>
+          </WorkspaceToolbar.Right>
+        </WorkspaceToolbar>
 
-        <EditorReviewBar
+        <WorkspaceReviewBar
           visible={!!(activeGraph && activeDirty && activePending)}
           onRevert={() => handleRevert(activeScope)}
           onAccept={() => setPendingFromPlan(activeScope, false)}
@@ -1356,7 +1359,9 @@ export function DialogueWorkspace() {
             onPanelClosed={handlePanelClosed}
           >
             <WorkspaceLayout.Left>
-              {leftPanel}
+              <WorkspaceLayout.Panel id="left" title="Library" icon={<BookOpen size={14} />}>
+                {leftPanel}
+              </WorkspaceLayout.Panel>
             </WorkspaceLayout.Left>
             <WorkspaceLayout.Main>
               <WorkspaceLayout.Panel id="main" title="Dialogue Graphs" icon={<LayoutDashboard size={14} />}>
@@ -1367,10 +1372,10 @@ export function DialogueWorkspace() {
               <WorkspaceLayout.Panel id="right" title="Inspector" icon={<ScanSearch size={14} />}>
                 {inspectorContent}
               </WorkspaceLayout.Panel>
-              <WorkspaceLayout.Panel id={YARN_PANEL_ID} title="Yarn" icon={<FileCode size={14} />}>
+              <WorkspaceLayout.Panel id="yarn" title="Yarn" icon={<FileCode size={14} />}>
                 {yarnContent}
               </WorkspaceLayout.Panel>
-              <WorkspaceLayout.Panel id={CHAT_PANEL_ID} title="Chat" icon={<MessageCircle size={14} />}>
+              <WorkspaceLayout.Panel id="chat" title="Chat" icon={<MessageCircle size={14} />}>
                 {chatContent}
               </WorkspaceLayout.Panel>
             </WorkspaceLayout.Right>
@@ -1386,17 +1391,17 @@ export function DialogueWorkspace() {
           </DrawerContent>
         </Drawer>
 
-        <EditorStatusBar>
+        <WorkspaceStatusBar>
           {activeDirty ? 'Unsaved changes' : 'Ready'}
           {activeSelection && isEntity(activeSelection) && (
             <span className="ml-2 text-muted-foreground">
               - {activeSelection.entityType === 'forge.node' ? 'Node' : 'Edge'}: {activeSelection.id}
             </span>
           )}
-        </EditorStatusBar>
+        </WorkspaceStatusBar>
 
-        <EditorOverlaySurface overlays={overlays} activeOverlay={activeOverlay} onDismiss={dismissOverlay} />
-      </EditorShell>
+        <WorkspaceOverlaySurface overlays={overlays} activeOverlay={activeOverlay} onDismiss={dismissOverlay} />
+      </WorkspaceShell>
     </NodeDragProvider>
   );
 }

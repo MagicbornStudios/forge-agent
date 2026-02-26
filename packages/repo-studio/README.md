@@ -1,6 +1,6 @@
 # @forge/repo-studio
 
-RepoStudio is the loop console for running Forge Loop continuously across planning, env readiness, command execution, docs, and assistant operations.
+RepoStudio is the loop console for running Forge Loop continuously across planning, env readiness, command execution, and assistant operations.
 
 It is designed to be used with `@forge/forge-loop` and `@forge/forge-env`:
 
@@ -60,7 +60,7 @@ npx @forge/repo-studio open --view planning --mode headless
 
 ## Commands
 
-- `forge-repo-studio open [--profile ...] [--mode ...] [--view planning|env|commands|story|docs|git|loop-assistant|codex-assistant|diff|code|review-queue] [--port ...] [--app-runtime|--package-runtime|--desktop-runtime] [--reuse|--no-reuse] [--detach|--foreground] [--desktop-dev] [--legacy-ui]`
+- `forge-repo-studio open [--profile ...] [--mode ...] [--view planning|env|commands|assistant|story|git|diff|code|review-queue] [--port ...] [--app-runtime|--package-runtime|--desktop-runtime] [--reuse|--no-reuse] [--detach|--foreground] [--desktop-dev]`
 - `forge-repo-studio doctor`
 - `forge-repo-studio commands-list`
 - `forge-repo-studio commands-toggle <command-id> [--enable|--disable]`
@@ -148,7 +148,7 @@ Multi-loop helpers:
 - Uses the same assistant route contract defined in `.repo-studio/config.json`.
 - Manual planning-context attach is supported from the Planning workspace.
 - Assistant-generated file/planning changes are routed through the Review Queue (approval-gated apply/reject).
-- Review Queue proposals persist in RepoStudio SQLite (`repo-proposals`); legacy `.repo-studio/proposals.json` is migration input + read-only fallback.
+- Review Queue proposals persist in RepoStudio SQLite (`repo-proposals`) only.
 - `routeMode: codex|local|proxy|openrouter` is supported.
 - `codex` mode enforces `chatgpt-strict` readiness by default (`codex login status` must report ChatGPT auth).
 - RepoStudio bundles Codex CLI through `@openai/codex` and prefers the onboard binary by default.

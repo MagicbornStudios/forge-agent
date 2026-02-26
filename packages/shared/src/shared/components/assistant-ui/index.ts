@@ -25,5 +25,7 @@ export {
 } from './attachment';
 export { AssistantPanel } from './AssistantPanel';
 export type { AssistantPanelProps } from './AssistantPanel';
+export { AssistantModelSwitcher } from './AssistantModelSwitcher';
+export type { AssistantModelOption, AssistantModelSwitcherProps } from './AssistantModelSwitcher';
 export { CodebaseAgentStrategyWorkspace } from './CodebaseAgentStrategyWorkspace';
 export { AssistantDevToolsBridge } from './devtools-bridge';

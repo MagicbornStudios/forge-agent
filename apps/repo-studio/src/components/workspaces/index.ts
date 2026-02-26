@@ -1,14 +1,12 @@
 import type { ComponentType } from 'react';
 import type { RepoWorkspaceId } from '@/lib/types';
+import { AssistantWorkspace } from './AssistantWorkspace';
 import { CodeWorkspace } from './CodeWorkspace';
-import { CodexAssistantWorkspace } from './CodexAssistantWorkspace';
 import { CommandsWorkspace } from './CommandsWorkspace';
 import { DatabaseWorkspace } from './DatabaseWorkspace';
 import { DiffWorkspace } from './DiffWorkspace';
-import { DocsWorkspace } from './DocsWorkspace';
 import { EnvWorkspace } from './EnvWorkspace';
 import { GitWorkspace } from './GitWorkspace';
-import { LoopAssistantWorkspace } from './LoopAssistantWorkspace';
 import { PlanningWorkspace } from './PlanningWorkspace';
 import { ReviewQueueWorkspace } from './ReviewQueueWorkspace';
 import { StoryWorkspace } from './StoryWorkspace';
@@ -21,13 +19,10 @@ export const REPO_WORKSPACE_COMPONENTS: Record<RepoWorkspaceId, ComponentType<Re
   env: EnvWorkspace,
   commands: CommandsWorkspace,
   story: StoryWorkspace,
-  docs: DocsWorkspace,
   database: DatabaseWorkspace,
   git: GitWorkspace,
-  'loop-assistant': LoopAssistantWorkspace,
-  'codex-assistant': CodexAssistantWorkspace,
+  assistant: AssistantWorkspace,
   diff: DiffWorkspace,
   code: CodeWorkspace,
   'review-queue': ReviewQueueWorkspace,
 };
-

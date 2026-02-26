@@ -1,26 +1,26 @@
 ---
-title: EditorShell
+title: WorkspaceShell
 created: 2026-02-11
 updated: 2026-02-11
 icon: "🏠"
 ---
 
-# 🏠 EditorShell
+# 🏠 WorkspaceShell
 
 **Root container for all editors with theming and layout skeleton**
 
-The EditorShell is the foundational component for every editor. It provides theming, data attributes for CSS scoping, and a slot-based composition system for organizing editor UI.
+The WorkspaceShell is the foundational component for every editor. It provides theming, data attributes for CSS scoping, and a slot-based composition system for organizing editor UI.
 
 ---
 
 ## Usage
 
 ```typescript
-import { EditorShell } from '@forge/shared/components/editor';
+import { WorkspaceShell } from '@forge/shared/components/editor';
 
 export function MyEditor() {
   return (
-    <EditorShell
+    <WorkspaceShell
       editorId="my-editor"
       title="My Editor"
       subtitle="document-name.txt"
@@ -28,18 +28,18 @@ export function MyEditor() {
       theme="dark"
       density="comfortable"
     >
-      <EditorShell.Toolbar>
+      <WorkspaceShell.Toolbar>
         {/* Toolbar content */}
-      </EditorShell.Toolbar>
+      </WorkspaceShell.Toolbar>
 
-      <EditorShell.Layout>
+      <WorkspaceShell.Layout>
         {/* Main layout */}
-      </EditorShell.Layout>
+      </WorkspaceShell.Layout>
 
-      <EditorShell.StatusBar>
+      <WorkspaceShell.StatusBar>
         Ready
-      </EditorShell.StatusBar>
-    </EditorShell>
+      </WorkspaceShell.StatusBar>
+    </WorkspaceShell>
   );
 }
 ```
@@ -115,37 +115,37 @@ export function MyEditor() {
 
 ## Slot Components
 
-EditorShell uses a slot-based composition system for predictable ordering:
+WorkspaceShell uses a slot-based composition system for predictable ordering:
 
 ### Available Slots
 
 | Slot | Purpose | Order |
 |------|---------|-------|
-| `EditorShell.Header` | Optional header section | 1 |
-| `EditorShell.Toolbar` | Main toolbar | 2 |
-| `EditorShell.Settings` | Settings panel (shares row with toolbar) | 2 |
-| `EditorShell.Layout` | Main layout area | 3 |
-| `EditorShell.StatusBar` | Bottom status bar | 4 |
-| `EditorShell.Overlay` | Modal overlay surface | Float |
+| `WorkspaceShell.Header` | Optional header section | 1 |
+| `WorkspaceShell.Toolbar` | Main toolbar | 2 |
+| `WorkspaceShell.Settings` | Settings panel (shares row with toolbar) | 2 |
+| `WorkspaceShell.Layout` | Main layout area | 3 |
+| `WorkspaceShell.StatusBar` | Bottom status bar | 4 |
+| `WorkspaceShell.Overlay` | Modal overlay surface | Float |
 
 ### Slot Rendering
 
 When using slots, they render in a fixed order regardless of JSX order:
 
 ```typescript
-<EditorShell {...props}>
+<WorkspaceShell {...props}>
   {/* These render in: Toolbar → Layout → StatusBar order */}
-  <EditorShell.StatusBar>Status</EditorShell.StatusBar>
-  <EditorShell.Layout>Layout</EditorShell.Layout>
-  <EditorShell.Toolbar>Toolbar</EditorShell.Toolbar>
-</EditorShell>
+  <WorkspaceShell.StatusBar>Status</WorkspaceShell.StatusBar>
+  <WorkspaceShell.Layout>Layout</WorkspaceShell.Layout>
+  <WorkspaceShell.Toolbar>Toolbar</WorkspaceShell.Toolbar>
+</WorkspaceShell>
 ```
 
 ---
 
 ## Data Attributes
 
-EditorShell sets the following data attributes for CSS scoping:
+WorkspaceShell sets the following data attributes for CSS scoping:
 
 ```html
 <div
@@ -183,25 +183,25 @@ Use these for scoped styling:
 ```typescript
 export function BasicEditor() {
   return (
-    <EditorShell editorId="basic" title="Basic Editor">
-      <EditorShell.Toolbar>
-        <EditorToolbar>
-          <EditorToolbar.Left>
+    <WorkspaceShell editorId="basic" title="Basic Editor">
+      <WorkspaceShell.Toolbar>
+        <WorkspaceToolbar>
+          <WorkspaceToolbar.Left>
             <Button size="sm">New</Button>
-          </EditorToolbar.Left>
-        </EditorToolbar>
-      </EditorShell.Toolbar>
+          </WorkspaceToolbar.Left>
+        </WorkspaceToolbar>
+      </WorkspaceShell.Toolbar>
 
-      <EditorShell.Layout>
+      <WorkspaceShell.Layout>
         <div className="p-4">
           <p>Editor content goes here</p>
         </div>
-      </EditorShell.Layout>
+      </WorkspaceShell.Layout>
 
-      <EditorShell.StatusBar>
+      <WorkspaceShell.StatusBar>
         <span className="text-xs text-muted-foreground">Ready</span>
-      </EditorShell.StatusBar>
-    </EditorShell>
+      </WorkspaceShell.StatusBar>
+    </WorkspaceShell>
   );
 }
 ```
@@ -219,14 +219,14 @@ export function EditorWithSettings() {
   ) as 'compact' | 'comfortable' | undefined;
 
   return (
-    <EditorShell
+    <WorkspaceShell
       editorId="my-editor"
       title="My Editor"
       theme={theme}
       density={density}
     >
       {/* ... */}
-    </EditorShell>
+    </WorkspaceShell>
   );
 }
 ```
@@ -239,30 +239,30 @@ export function FullEditor() {
   const [showSettings, setShowSettings] = useState(false);
 
   return (
-    <EditorShell
+    <WorkspaceShell
       editorId="full"
       title="Full-Featured Editor"
       subtitle={activeFile || undefined}
       domain="full"
     >
-      <EditorShell.Toolbar>
-        <EditorToolbar>
-          <EditorToolbar.Left>
-            <EditorToolbar.Menubar menus={menubarMenus} />
-            <EditorToolbar.Separator />
+      <WorkspaceShell.Toolbar>
+        <WorkspaceToolbar>
+          <WorkspaceToolbar.Left>
+            <WorkspaceToolbar.Menubar menus={menubarMenus} />
+            <WorkspaceToolbar.Separator />
             <Button size="sm" variant="outline">
               <FilePlus size={14} className="mr-1" />
               New
             </Button>
-          </EditorToolbar.Left>
+          </WorkspaceToolbar.Left>
 
-          <EditorToolbar.Right>
+          <WorkspaceToolbar.Right>
             <Badge variant="secondary">{activeFile ? 'Editing' : 'Ready'}</Badge>
-          </EditorToolbar.Right>
-        </EditorToolbar>
-      </EditorShell.Toolbar>
+          </WorkspaceToolbar.Right>
+        </WorkspaceToolbar>
+      </WorkspaceShell.Toolbar>
 
-      <EditorShell.Layout>
+      <WorkspaceShell.Layout>
         <EditorDockLayout layoutId="full-editor">
           <EditorDockLayout.Main>
             <EditorDockPanel id="main" title="Editor">
@@ -270,22 +270,22 @@ export function FullEditor() {
             </EditorDockPanel>
           </EditorDockLayout.Main>
         </EditorDockLayout>
-      </EditorShell.Layout>
+      </WorkspaceShell.Layout>
 
-      <EditorShell.StatusBar>
+      <WorkspaceShell.StatusBar>
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
           <span>{activeFile || 'No file open'}</span>
           <Separator orientation="vertical" className="h-3" />
           <span>Ready</span>
         </div>
-      </EditorShell.StatusBar>
+      </WorkspaceShell.StatusBar>
 
-      <EditorShell.Overlay>
+      <WorkspaceShell.Overlay>
         {showSettings && (
           <SettingsDialog onClose={() => setShowSettings(false)} />
         )}
-      </EditorShell.Overlay>
-    </EditorShell>
+      </WorkspaceShell.Overlay>
+    </WorkspaceShell>
   );
 }
 ```
@@ -297,35 +297,35 @@ export function FullEditor() {
 ### ✅ Do
 
 - Always provide `editorId` for settings and analytics
-- Use slots (`EditorShell.Toolbar`, etc.) for predictable ordering
+- Use slots (`WorkspaceShell.Toolbar`, etc.) for predictable ordering
 - Connect theme and density to settings store
 - Set `domain` for CSS scoping when needed
 - Use `subtitle` to show active document/context
 
 ### ❌ Don't
 
-- Don't render multiple EditorShells in the same component
+- Don't render multiple WorkspaceShells in the same component
 - Don't mix slot and non-slot children (use one pattern)
 - Don't forget to provide `title` (required for accessibility)
-- Don't override flex layout styles (EditorShell uses flex column)
+- Don't override flex layout styles (WorkspaceShell uses flex column)
 
 ---
 
 ## Related Components
 
-- [EditorToolbar](./editor-toolbar) - Main toolbar component
+- [WorkspaceToolbar](./editor-toolbar) - Main toolbar component
 - [DockLayout](./dock-layout) - Layout manager for panels
-- [EditorStatusBar](./editor-status-bar) - Status display
-- [EditorOverlaySurface](./editor-overlay) - Modal system
+- [WorkspaceStatusBar](./editor-status-bar) - Status display
+- [WorkspaceOverlaySurface](./editor-overlay) - Modal system
 
 ---
 
 ## Source Code
 
-**Location:** `packages/shared/src/shared/components/editor/EditorShell.tsx`
+**Location:** `packages/shared/src/shared/components/editor/WorkspaceShell.tsx`
 
 ```typescript
-export interface EditorShellProps {
+export interface WorkspaceShellProps {
   editorId?: string;
   title: string;
   subtitle?: string;

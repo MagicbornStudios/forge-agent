@@ -15,8 +15,10 @@ function readPromptFromStdin() {
 export async function runCodexExecCommand(options = {}) {
   const config = await loadRepoStudioConfig();
   const prompt = String(options.prompt || '').trim() || readPromptFromStdin().trim();
+  const model = String(options.model || '').trim();
   const result = await runCodexExec(config, {
     prompt,
+    model,
     input: options.input,
   });
   return {

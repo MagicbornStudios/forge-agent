@@ -23,7 +23,7 @@ Forge is a **modular, domain-driven editor framework** for building AI-first cre
 - [Quick Start Tutorial](./tutorials/quick-start.mdx) — Build your first editor
 
 ### Core Components (Must Read)
-- [EditorShell Complete Reference](./components/editor-shell-complete.mdx) — Root container
+- [WorkspaceShell Complete Reference](./components/editor-shell-complete.mdx) — Root container
 - [DockLayout Complete Reference](./components/dock-layout-complete.mdx) — Resizable panel layout
 - [EditorDockPanel Complete Reference](./components/dock-panel-complete.mdx) — Panel wrapper
 
@@ -61,7 +61,7 @@ Forge is a **modular, domain-driven editor framework** for building AI-first cre
 **Comprehensive reference for every component in the dev kit.**
 
 #### Core Studio System
-- [EditorShell Complete Reference](./components/editor-shell-complete.mdx) ⭐
+- [WorkspaceShell Complete Reference](./components/editor-shell-complete.mdx) ⭐
   - Root container for editors
   - Theme, density, domain scoping
   - Slot-based composition
@@ -78,21 +78,21 @@ Forge is a **modular, domain-driven editor framework** for building AI-first cre
   - Title bars, scrolling, tabs, lock overlays
   - **50+ code examples, 1000+ lines**
 
-- **EditorToolbar** (Coming soon)
+- **WorkspaceToolbar** (Coming soon)
   - Menubar, buttons, groups, separators
   - Left/center/right sections
   - Data-driven vs slot-based
 
-- **EditorInspector** (Coming soon)
+- **WorkspaceInspector** (Coming soon)
   - Selection-driven property panel
   - Conditional sections
   - Entity type filtering
 
-- **EditorStatusBar & EditorReviewBar** (Coming soon)
+- **WorkspaceStatusBar & WorkspaceReviewBar** (Coming soon)
   - Status display, change review
   - Plan acceptance/rejection
 
-- **EditorOverlaySurface** (Coming soon)
+- **WorkspaceOverlaySurface** (Coming soon)
   - Modal system
   - Drawer, popover variants
   - Overlay specs and routing
@@ -127,7 +127,7 @@ Forge is a **modular, domain-driven editor framework** for building AI-first cre
   - Context system
   - Panel registration
 
-- **EditorMenubarContribution** (Coming soon)
+- **WorkspaceMenubarContribution** (Coming soon)
   - Menubar slot system
   - Item types (button, submenu, separator)
 
@@ -218,21 +218,21 @@ yarn add @forge/assistant-runtime
 
 ```tsx
 import {
-  EditorShell,
-  EditorToolbar,
+  WorkspaceShell,
+  WorkspaceToolbar,
   EditorDockLayout,
   EditorDockPanel,
-  EditorStatusBar,
+  WorkspaceStatusBar,
 } from '@forge/shared/components/editor';
 
 export function MyEditor() {
   return (
-    <EditorShell editorId="my-editor" title="My Editor">
-      <EditorToolbar>
-        <EditorToolbar.Left>
+    <WorkspaceShell editorId="my-editor" title="My Editor">
+      <WorkspaceToolbar>
+        <WorkspaceToolbar.Left>
           <span>My Editor</span>
-        </EditorToolbar.Left>
-      </EditorToolbar>
+        </WorkspaceToolbar.Left>
+      </WorkspaceToolbar>
 
       <EditorDockLayout layoutId="my-editor">
         <EditorDockLayout.Main>
@@ -242,8 +242,8 @@ export function MyEditor() {
         </EditorDockLayout.Main>
       </EditorDockLayout>
 
-      <EditorStatusBar>Ready</EditorStatusBar>
-    </EditorShell>
+      <WorkspaceStatusBar>Ready</WorkspaceStatusBar>
+    </WorkspaceShell>
   );
 }
 ```
@@ -255,10 +255,10 @@ export function MyEditor() {
 Components use **declarative slots** instead of configuration objects:
 
 ```tsx
-<EditorShell>
-  <EditorShell.Toolbar>...</EditorShell.Toolbar>
-  <EditorShell.Layout>...</EditorShell.Layout>
-</EditorShell>
+<WorkspaceShell>
+  <WorkspaceShell.Toolbar>...</WorkspaceShell.Toolbar>
+  <WorkspaceShell.Layout>...</WorkspaceShell.Layout>
+</WorkspaceShell>
 ```
 
 ### 2. Viewport Scoping
@@ -313,16 +313,16 @@ const contract = useForgeAssistantContract({
 ## Component Hierarchy
 
 ```
-EditorShell (root)
-├── EditorToolbar (top bar)
-├── EditorReviewBar (conditional)
+WorkspaceShell (root)
+├── WorkspaceToolbar (top bar)
+├── WorkspaceReviewBar (conditional)
 ├── EditorDockLayout (resizable layout)
 │   ├── Left Rail (navigator/library)
 │   ├── Main (viewport)
 │   ├── Right Rail (inspector/chat)
 │   └── Bottom Rail (optional)
-├── EditorStatusBar (bottom bar)
-└── EditorOverlaySurface (modals)
+├── WorkspaceStatusBar (bottom bar)
+└── WorkspaceOverlaySurface (modals)
 ```
 
 ## Development Workflow
@@ -330,22 +330,22 @@ EditorShell (root)
 ### 1. Start with the Shell
 
 ```tsx
-<EditorShell editorId="my-editor" title="My Editor">
+<WorkspaceShell editorId="my-editor" title="My Editor">
   {/* Everything goes here */}
-</EditorShell>
+</WorkspaceShell>
 ```
 
 ### 2. Add Toolbar
 
 ```tsx
-<EditorToolbar>
-  <EditorToolbar.Left>
+<WorkspaceToolbar>
+  <WorkspaceToolbar.Left>
     <span>My Editor</span>
-  </EditorToolbar.Left>
-  <EditorToolbar.Right>
-    <EditorToolbar.Button onClick={onAction}>Action</EditorToolbar.Button>
-  </EditorToolbar.Right>
-</EditorToolbar>
+  </WorkspaceToolbar.Left>
+  <WorkspaceToolbar.Right>
+    <WorkspaceToolbar.Button onClick={onAction}>Action</WorkspaceToolbar.Button>
+  </WorkspaceToolbar.Right>
+</WorkspaceToolbar>
 ```
 
 ### 3. Add Layout
@@ -364,15 +364,15 @@ EditorShell (root)
 ### 4. Add Status Bar
 
 ```tsx
-<EditorStatusBar>
+<WorkspaceStatusBar>
   {isDirty ? 'Unsaved changes' : 'Ready'}
-</EditorStatusBar>
+</WorkspaceStatusBar>
 ```
 
 ### 5. Add Modals
 
 ```tsx
-<EditorOverlaySurface
+<WorkspaceOverlaySurface
   overlays={overlays}
   activeOverlay={activeOverlay}
   onDismiss={dismissOverlay}
@@ -393,7 +393,7 @@ EditorShell (root)
 
 ```tsx
 // Editor components
-import { EditorShell, EditorDockLayout } from '@forge/shared/components/editor';
+import { WorkspaceShell, EditorDockLayout } from '@forge/shared/components/editor';
 
 // UI primitives
 import { Button, Input } from '@forge/ui';
@@ -410,7 +410,7 @@ import type { ForgeGraphDoc } from '@forge/types/graph';
 All components are **fully typed** with comprehensive JSDoc comments:
 
 ```tsx
-export interface EditorShellProps {
+export interface WorkspaceShellProps {
   /** Unique editor identifier */
   editorId?: string;
   /** Display title */
@@ -479,7 +479,7 @@ MIT
 
 **Current Documentation Status:**
 - ✅ Quick Start (complete)
-- ✅ EditorShell Reference (complete)
+- ✅ WorkspaceShell Reference (complete)
 - ✅ DockLayout Reference (complete)
 - ✅ EditorDockPanel Reference (complete)
 - ✅ Architecture Guide (complete)

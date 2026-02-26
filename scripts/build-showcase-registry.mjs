@@ -5,7 +5,7 @@
  * and generates demos/registry.generated.tsx with lazy imports.
  *
  * Entry point per folder: index.tsx or {FolderName}Demo.tsx
- * (e.g. editor-shell-demo -> EditorShellDemo.tsx)
+ * (e.g. editor-shell-demo -> WorkspaceShellDemo.tsx)
  */
 
 import fs from 'node:fs';

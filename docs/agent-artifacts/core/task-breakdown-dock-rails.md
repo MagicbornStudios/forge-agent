@@ -18,13 +18,13 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 - **Main** today: one Dockview panel with custom content (e.g. Dialogue stacks two ForgeGraphPanels in a div). Target: main = **multiple panel tabs** (e.g. Narrative | Storylet), each tab content = one EditorDockPanel wrapping one graph. Same pattern as right (Inspector | Settings | …).
 - **Right** today: either one `right` or two hardcoded `rightInspector` + `rightSettings`. Target: right = **list of panels**; adding "Foo" = one more descriptor in `rightPanels`.
 - **Composition**: EditorDockPanel can be leaf (children), tabbed (`tabs` → PanelTabs), or (future) nested "sub-rail." Document: rail → panel tabs → each tab content = EditorDockPanel → which can wrap simple content, PanelTabs, or nested panels. Same primitives (EditorDockPanel, PanelTabs) everywhere; naming and docs should reflect "rails" and "composable panels."
-- **Naming / refactors**: Slot ids as opaque strings for right rail instead of extending a union per new panel; "rail" terminology in shared README and AGENTS; DockLayout props and types aligned to `*Panels` arrays. Update [packages/shared/.../editor/README.md](../../packages/shared/src/shared/components/editor/README.md) and [AGENTS.md](../../packages/shared/src/shared/AGENTS.md) with the rails + composable panels convention.
+- **Naming / refactors**: Slot ids as opaque strings for right rail instead of extending a union per new panel; "rail" terminology in shared README and AGENTS; DockLayout props and types aligned to `*Panels` arrays. Update [packages/shared/.../editor/README.md](../../packages/shared/src/shared/components/workspace/README.md) and [AGENTS.md](../../packages/shared/src/shared/AGENTS.md) with the rails + composable panels convention.
 
 ## Tiers (pickable tasks)
 
 | id | title | parent | tier | impact | status | doc |
 |----|-------|--------|------|--------|--------|-----|
-| dock-rails-api-shape | RailPanelDescriptor + leftPanels/mainPanels/rightPanels/bottomPanels exist in EditorDockLayout; wire editors to array API (optional) | dock-rails | 2 | Medium | open | [EditorDockLayout](../../packages/shared/src/shared/components/editor/EditorDockLayout.tsx) |
+| dock-rails-api-shape | RailPanelDescriptor + leftPanels/mainPanels/rightPanels/bottomPanels exist in EditorDockLayout; wire editors to array API (optional) | dock-rails | 2 | Medium | open | [EditorDockLayout](../../packages/shared/src/shared/components/workspace/EditorDockLayout.tsx) |
 | dock-rails-wire-editors | Wire Dialogue/Character/Video to new rail API (mainPanels, rightPanels); deprecate or map old right/rightInspector/rightSettings | dock-rails | 2 | Medium | open | editors in apps/studio/components/editors |
 | dock-rails-naming | Align DockLayout, EditorDockPanel, shared editor README/AGENTS with rails and composable panels; document in errors-and-attempts/decisions | dock-rails | 3 | Small | open | README, AGENTS, decisions |
 

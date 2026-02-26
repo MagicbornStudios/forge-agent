@@ -187,6 +187,14 @@ AI routes require either authenticated session or valid API key with required sc
 
 ---
 
+## Repo Studio dev DB: wipe at dev start, Payload owns schema
+
+**Decision:** Repo Studio uses a single SQLite DB (Payload + Drizzle Studio). **Payload owns the schema** (collections in `apps/repo-studio/payload/collections/`). In dev, we do not rely on persistent DB data: at each `pnpm dev` (or `pnpm dev:repo-studio`), we run `db:reset-dev` first, which deletes the SQLite file (same path as `payload.config.ts`). Payload then recreates tables from the current collection config, so Payload never prompts "Is X column created or renamed?" (that prompt comes from Payload CMS in dev when it sees schema drift). Drizzle is used only for introspection (`db:pull`) and Drizzle Studio (DB UI); we do not run `drizzle-kit generate` against this DB. Standalone wipe: `pnpm --filter @forge/repo-studio-app db:reset-dev`.
+
+**Rationale:** Avoids one-off migration scripts and interactive Payload prompts during development; keeps dev reproducible. Production or long-lived data uses a different workflow (explicit migrations or separate DB path).
+
+---
+
 ## Private package publishing via Verdaccio
 
 **Decision:** Foundation packages are published to a **local Verdaccio registry** under the `@forge/*` scope. We publish `@forge/ui`, `@forge/shared`, `@forge/agent-engine`, and the convenience meta-package `@forge/dev-kit`. Domain packages stay private.
@@ -305,7 +313,7 @@ AI routes require either authenticated session or valid API key with required sc
 
 **Decision:** `DockLayout` is implemented with **Dockview** to restore Unreal-style docking, drag-to-reorder, and floating panels. Layout is persisted via **Zustand** (app-shell store `dockLayouts` keyed by layoutId) when used in controlled mode (`layoutJson` / `onLayoutChange` / `clearLayout`); otherwise it falls back to `localStorage['dockview-{layoutId}']`. Exposes a `resetLayout()` ref to recover lost panels.
 
-**Rationale:** Dockview provides the desired editor UX (docked tabs, floating groups, drag-to-group). To avoid known provider/context pitfalls (Twick), the Video editor is locked behind `studio.video.editor` until we re-enable and validate context flow.
+**Rationale:** Dockview provides the desired editor UX (docked tabs, floating groups, drag-to-group). The Video editor is locked behind `studio.video.editor` until we re-enable and choose a timeline/editor stack.
 
 ---
 
@@ -343,15 +351,15 @@ AI routes require either authenticated session or valid API key with required sc
 
 ## Shared panel content and editor-scoped contributions
 
-**Decision:** **Shared panel content** (e.g. Chat) is implemented **once** (e.g. `DialogueAssistantPanel`). Editors that want the panel add an **EditorPanel** with a **stable id** (e.g. `CHAT_PANEL_ID` from `apps/studio/lib/editor-registry/constants.ts`) and the same content component. Visibility and View menu derive from the panel registry; schema keys follow `panel.visible.{editorId}-{panelId}`. **Editor-scoped contributions** (panels, menus, settings sections) follow the same pattern: declare under a provider, **register on mount**, **unregister on unmount**, keyed by editorId or scope. No separate "app-level" panel registry is required; each editor that wants Chat explicitly adds the panel. A future **declarative editor registration** (editors registered like panels/settings) can follow this pattern and be documented when added.
+**Decision:** **Shared panel content** (e.g. Chat) is implemented **once** (e.g. `DialogueAssistantPanel`). Editors that want the panel add an **WorkspaceRailPanel** with a **stable id** (e.g. `CHAT_PANEL_ID` from `apps/studio/lib/editor-registry/constants.ts`) and the same content component. Visibility and View menu derive from the panel registry; schema keys follow `panel.visible.{editorId}-{panelId}`. **Editor-scoped contributions** (panels, menus, settings sections) follow the same pattern: declare under a provider, **register on mount**, **unregister on unmount**, keyed by editorId or scope. No separate "app-level" panel registry is required; each editor that wants Chat explicitly adds the panel. A future **declarative editor registration** (editors registered like panels/settings) can follow this pattern and be documented when added.
 
-**Rationale:** One panel implementation, one id, predictable schema keys; tooling and layout can be scoped the same way (e.g. by editorId). Aligns with existing EditorLayoutProvider + EditorRail + EditorPanel + useEditorPanelVisibility flow.
+**Rationale:** One panel implementation, one id, predictable schema keys; tooling and layout can be scoped the same way (e.g. by editorId). Aligns with existing EditorLayoutProvider + WorkspaceRail + WorkspaceRailPanel + useEditorPanelVisibility flow.
 
 ---
 
 ## Studio as single entrypoint and unified registry pattern
 
-**Decision:** **AppProviders** owns the full Studio shell (SidebarProvider, Settings sidebar, OpenSettingsSheetProvider, StudioMenubarProvider). **Studio** is content-only (tabs, editor content, sheets, toaster). The host renders `AppProviders` > `AppShell` > `Studio`. **Registries** (Zustand stores) are the single pattern for contributions: **editors** (editor registry, defaults on components, registered at module load), **menus** (menu registry by scope/context/target; EditorMenubarContribution and UnifiedMenubar use it), **panels** (panel registry by editorId/rail), **settings** (settings registry by scope/scopeId). Place components in the tree under a scope provider; they register on mount and unregister on unmount; consumers (menubar, settings sidebar, dock, tabs) read from registries and filter by scope/context/target. **StudioApp** (alias for EditorApp) is the tabs + content compound inside Studio; **EditorApp** remains the shared export name for backward compatibility.
+**Decision:** **AppProviders** owns the full Studio shell (SidebarProvider, Settings sidebar, OpenSettingsSheetProvider, StudioMenubarProvider). **Studio** is content-only (tabs, editor content, sheets, toaster). The host renders `AppProviders` > `AppShell` > `Studio`. **Registries** (Zustand stores) are the single pattern for contributions: **editors** (editor registry, defaults on components, registered at module load), **menus** (menu registry by scope/context/target; WorkspaceMenubarContribution and UnifiedMenubar use it), **panels** (panel registry by editorId/rail), **settings** (settings registry by scope/scopeId). Place components in the tree under a scope provider; they register on mount and unregister on unmount; consumers (menubar, settings sidebar, dock, tabs) read from registries and filter by scope/context/target. **StudioApp** (alias for WorkspaceApp) is the tabs + content compound inside Studio; **WorkspaceApp** remains the shared export name for backward compatibility.
 
 **Rationale:** One mental model for menus, settings, panels, and editors; host does not compose providers; canonical state stays in the app-shell store and Studio/editors consume it. See [Studio and unified registry refactor plan](.cursor/plans/studio_registry_refactor_2fb8702e.plan.md) and shared editor README.
 
@@ -511,7 +519,7 @@ AI routes require either authenticated session or valid API key with required sc
 
 ## What to do next: prefer MVP-critical; Video when unlocked
 
-**Decision:** When picking work from STATUS § Next, **prefer MVP-critical items** (Yarn Spinner, GamePlayer, plans/capabilities for platform, monetization). **Video** work (Twick → VideoDoc persistence, Video workflow panel) is done **when the Video editor is unlocked** (Video is not in MVP). The default "next slice" is MVP-critical (e.g. Yarn export/import or GamePlayer first slice), not Video.
+**Decision:** When picking work from STATUS § Next, **prefer MVP-critical items** (Yarn Spinner, GamePlayer, plans/capabilities for platform, monetization). **Video** work (persistence, workflow panel, timeline/editor stack) is done **when the Video editor is unlocked** (Video is not in MVP). The default "next slice" is MVP-critical (e.g. Yarn export/import or GamePlayer first slice), not Video.
 
 **Rationale:** Aligns agent and contributor effort with MVP success criterion and avoids spending time on Video until we re-enable it.
 
@@ -521,10 +529,10 @@ AI routes require either authenticated session or valid API key with required sc
 
 **Decision:** Editors use **declarative components** that **register** into shared registries; layout, View menu, Settings UI, and menubar **subscribe** to those registries. Authors do not hand-wire `rightPanels`, `EDITOR_PANEL_SPECS`, static settings sections, or `useAppMenubarContribution(menus)`.
 
-- **Panel layout:** **UI-first** (EditorDockLayout.Left/Main/Right/Bottom with EditorDockLayout.Panel children). Editors compose panels directly in JSX; no store-driven registration. **EditorLayoutProvider** provides `{ editorId }` only; **EditorLayout**, **EditorRail**, **EditorPanel** deprecated. View menu and `useEditorPanelVisibility` use **EDITOR_PANEL_SPECS** for panel toggles and "Restore all panels". Layout reset calls `ref.current?.resetLayout()` on EditorDockLayout.
+- **Panel layout:** **UI-first** (EditorDockLayout.Left/Main/Right/Bottom with EditorDockLayout.Panel children). Editors compose panels directly in JSX; no store-driven registration. **EditorLayoutProvider** provides `{ editorId }` only; **EditorLayout**, **WorkspaceRail**, **WorkspaceRailPanel** deprecated. View menu and `useEditorPanelVisibility` use **EDITOR_PANEL_SPECS** for panel toggles and "Restore all panels". Layout reset calls `ref.current?.resetLayout()` on EditorDockLayout.
 - **Settings registry:** Keyed by scope + scopeId (app, editor, viewport). **AppSettingsProvider** / **ViewportSettingsProvider** provide scope; **SettingsSection** + **SettingsField** (Studio) register on mount. **AppSettingsPanelContent** merges registry sections over static sections.
-- **Menubar:** **EditorMenubarContribution** (Studio) with **EditorMenubarMenuSlot** children builds the menu array and calls setEditorMenus on mount; clears on unmount. Must be used inside **EditorLayoutProvider** so switching editors resets the menubar.
-- **FormField-within-Form style:** SettingsSection, EditorMenubarContribution only work inside the correct provider; document in README and AGENTS.
+- **Menubar:** **WorkspaceMenubarContribution** (Studio) with **WorkspaceMenubarMenuSlot** children builds the menu array and calls setEditorMenus on mount; clears on unmount. Must be used inside **EditorLayoutProvider** so switching editors resets the menubar.
+- **FormField-within-Form style:** SettingsSection, WorkspaceMenubarContribution only work inside the correct provider; document in README and AGENTS.
 
 **Rationale:** Single source of truth for panels, settings sections, and menubar; no duplicated panel/section lists; View menu and layout stay in sync; new editors add declarative components instead of editing global config.
 

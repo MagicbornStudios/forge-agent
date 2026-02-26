@@ -31,8 +31,28 @@ export interface CompanionRuntimeDetectionResult {
   error: string | null;
 }
 
+function pingHealth(
+  url: string,
+  signal: AbortSignal,
+): Promise<{ ok: boolean; error?: string }> {
+  return fetch(url, { method: 'GET', signal, credentials: 'omit' })
+    .then((res) =>
+      res.ok ? { ok: true } : { ok: false, error: `${res.status} ${res.statusText}` },
+    )
+    .catch((err) => ({
+      ok: false,
+      error: err instanceof Error ? err.message : String(err),
+    }));
+}
+
+/** Interval (ms) to re-ping when companion is not available. */
+const RETRY_INTERVAL_MS = 8000;
+/** Interval (ms) to re-ping when companion is available (keep connection status fresh). */
+const REFRESH_INTERVAL_MS = 30000;
+
 /**
  * Pings a companion app's health endpoint to detect if it is available as an optional runtime.
+ * Re-pings periodically (faster when unavailable so starting Repo Studio is detected).
  * Used by Studio (and other studios) to show an opt-in toggle to "Use Repo Studio for AI".
  * No auth required for the health endpoint.
  */
@@ -56,27 +76,30 @@ export function useCompanionRuntimeDetection(
     }
 
     const url = resolvedBaseUrl.replace(/\/$/, '') + REPO_STUDIO_HEALTH_PATH;
-    setChecking(true);
-    setError(null);
-
     const controller = new AbortController();
-    fetch(url, { method: 'GET', signal: controller.signal, credentials: 'omit' })
-      .then((res) => {
-        setAvailable(res.ok);
-        if (!res.ok) {
-          setError(`${res.status} ${res.statusText}`);
-        }
-      })
-      .catch((err) => {
-        setAvailable(false);
-        setError(err instanceof Error ? err.message : String(err));
-      })
-      .finally(() => {
+    const signal = controller.signal;
+
+    function runCheck() {
+      setChecking(true);
+      setError(null);
+      pingHealth(url, signal).then((result) => {
+        if (signal.aborted) return;
+        setAvailable(result.ok);
+        setError(result.error ?? null);
         setChecking(false);
       });
+    }
 
-    return () => controller.abort();
-  }, [resolvedBaseUrl]);
+    runCheck();
+
+    const intervalMs = available ? REFRESH_INTERVAL_MS : RETRY_INTERVAL_MS;
+    const interval = setInterval(runCheck, intervalMs);
+
+    return () => {
+      controller.abort();
+      clearInterval(interval);
+    };
+  }, [resolvedBaseUrl, available]);
 
   return { available, checking, error };
 }

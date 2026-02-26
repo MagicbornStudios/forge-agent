@@ -11,17 +11,17 @@ Initiative: **editor-declarative-registries**. Impact: Large.
 | id | title | status |
 |----|-------|--------|
 | panel-registry-store | Panel registry (Zustand) + useEditorPanels | done |
-| EditorLayoutProvider-EditorRail-EditorPanel | Shared EditorRail/EditorPanel + Studio EditorLayoutProvider | done |
+| EditorLayoutProvider-WorkspaceRail-WorkspaceRailPanel | Shared WorkspaceRail/WorkspaceRailPanel + Studio EditorLayoutProvider | done |
 | EditorLayout-consumer | EditorLayout reads registry, filters by visibility, renders EditorDockLayout | done |
 | derive-panel-specs-from-registry | useEditorPanelVisibility and View menu derive from registry | done |
 | settings-registry-store | Settings registry (Zustand) + AppSettingsProvider, SettingsSection, SettingsField | done |
 | AppSettingsPanelContent-read-registry | AppSettingsPanelContent merges app/viewport sections from registry | done |
 | ViewportSettingsProvider | ViewportSettingsProvider; graph-viewport section from Dialogue | done |
-| EditorMenubarContribution | EditorMenubarContribution + EditorMenubarMenuSlot; setEditorMenus on mount | done |
+| WorkspaceMenubarContribution | WorkspaceMenubarContribution + WorkspaceMenubarMenuSlot; setEditorMenus on mount | done |
 | migrate-Dialogue | DialogueEditor: EditorLayoutProvider, rails/panels, menubar, viewport settings | done |
 | migrate-Character | CharacterEditor: same pattern | done |
 | migrate-Video | VideoEditor: same pattern | done |
-| migrate-Strategy | StrategyEditor: EditorLayoutProvider + EditorMenubarContribution only | done |
+| migrate-Strategy | StrategyEditor: EditorLayoutProvider + WorkspaceMenubarContribution only | done |
 | deprecate-EDITOR_PANEL_SPECS | EDITOR_PANEL_SPECS deprecated (fallback only) | done |
 | docs-and-ADR | decisions.md ADR, task-registry, breakdown, STATUS, README, AGENTS | done |
 

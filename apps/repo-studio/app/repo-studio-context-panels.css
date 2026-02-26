@@ -4,7 +4,11 @@
    Uses --domain-* from themes; panels get distinct color at a glance.
    ========================================================================== */
 
-[data-context-panel="planning"] {
+[data-context-panel="planning"],
+[data-context-panel="planning-phases"],
+[data-context-panel="planning-tasks"],
+[data-context-panel="planning-documents"],
+[data-context-panel="viewport"] {
   --context-accent: var(--domain-forge);
 }
 
@@ -16,13 +20,11 @@
   --context-accent: var(--domain-video);
 }
 
-[data-context-panel="loop-assistant"],
-[data-context-panel="codex-assistant"] {
+[data-context-panel="assistant"] {
   --context-accent: var(--domain-ai);
 }
 
-[data-context-panel="commands"],
-[data-context-panel="loop-cadence"] {
+[data-context-panel="commands"] {
   --context-accent: var(--domain-forge);
 }
 

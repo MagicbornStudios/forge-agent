@@ -54,3 +54,16 @@ export async function commitGitChanges(message: string) {
   });
 }
 
+export async function pullGit(remote = 'origin', branch?: string) {
+  return postJson<GitMutationResponse>('/api/repo/git/pull', { remote, branch }, {
+    fallbackMessage: 'Unable to pull from remote.',
+    timeoutMs: 120000,
+  });
+}
+
+export async function pushGit(remote = 'origin', branch?: string) {
+  return postJson<GitMutationResponse>('/api/repo/git/push', { remote, branch }, {
+    fallbackMessage: 'Unable to push to remote.',
+    timeoutMs: 120000,
+  });
+}

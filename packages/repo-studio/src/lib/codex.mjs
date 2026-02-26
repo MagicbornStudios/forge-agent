@@ -495,7 +495,7 @@ function extractPromptFromMessages(messages) {
   return '';
 }
 
-function buildExecArgs(codex, prompt, outputPath) {
+function buildExecArgs(codex, prompt, outputPath, modelOverride = '') {
   const args = [
     'exec',
     '--output-last-message',
@@ -505,8 +505,9 @@ function buildExecArgs(codex, prompt, outputPath) {
     '--sandbox',
     codex.sandboxMode,
   ];
-  if (codex.defaultModel) {
-    args.push('--model', codex.defaultModel);
+  const resolvedModel = String(modelOverride || codex.defaultModel || '').trim();
+  if (resolvedModel) {
+    args.push('--model', resolvedModel);
   }
   if (prompt) args.push(prompt);
   return args;
@@ -539,7 +540,7 @@ export async function runCodexExec(config = {}, options = {}) {
   }
 
   const outputPath = path.join(os.tmpdir(), `repo-studio-codex-${Date.now()}-${Math.random().toString(16).slice(2)}.txt`);
-  const args = buildExecArgs(codex, prompt, outputPath);
+  const args = buildExecArgs(codex, prompt, outputPath, String(options.model || '').trim());
   const invocation = resolveCodexInvocation(codex);
   const result = runCodexInvocationSync(invocation, args, {
     cwd: options.cwd || process.cwd(),

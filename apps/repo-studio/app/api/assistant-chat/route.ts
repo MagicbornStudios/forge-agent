@@ -3,8 +3,8 @@ import { createUIMessageStream, createUIMessageStreamResponse } from 'ai';
 
 import { companionCorsHeaders, isCompanionRequest } from '@/lib/companion-auth';
 import { runRepoStudioCli } from '@/lib/cli-runner';
-import { runLocalLoopAssistant } from '@/lib/loop-assistant-chat';
-import { resolveLoopAssistantEndpoint } from '@/lib/loop-assistant-runtime';
+import { runLocalForgeAssistant } from '@/lib/forge-assistant-chat';
+import { resolveForgeAssistantEndpoint } from '@/lib/forge-assistant-runtime';
 import { resolvePlanningMentionContext } from '@/lib/assistant/mention-context';
 import { loadRepoStudioSnapshot } from '@/lib/repo-data';
 import { resolveRepoRoot } from '@/lib/repo-files';
@@ -55,10 +55,10 @@ function extractPrompt(body: any) {
 function assistantTargetFromRequest(url: URL, body: any, config: RepoStudioConfig) {
   const queryAssistantTarget = String(url.searchParams.get('assistantTarget') || '').trim().toLowerCase();
   const bodyAssistantTarget = String(body?.assistantTarget || '').trim().toLowerCase();
-  const configAssistantTarget = String(config.assistant?.defaultEditor || 'loop-assistant').trim().toLowerCase();
+  const configAssistantTarget = String(config.assistant?.defaultTarget || 'forge').trim().toLowerCase();
   const assistantTarget = queryAssistantTarget || bodyAssistantTarget || configAssistantTarget;
-  if (assistantTarget === 'codex-assistant') return 'codex-assistant';
-  return 'loop-assistant';
+  if (assistantTarget === 'codex') return 'codex';
+  return 'forge';
 }
 
 function codexTransport(config: RepoStudioConfig) {
@@ -73,8 +73,12 @@ function allowExecFallback(url: URL, body: any, config: RepoStudioConfig) {
   return route.execFallbackAllowed === true;
 }
 
-function codexExec(prompt: string) {
-  const exec = runRepoStudioCli(['codex-exec', '--prompt', prompt, '--json']);
+function codexExec(prompt: string, model?: string) {
+  const args = ['codex-exec', '--prompt', prompt, '--json'];
+  if (model) {
+    args.push('--model', model);
+  }
+  const exec = runRepoStudioCli(args);
   const payload = exec.payload || {};
   return {
     ok: exec.ok && payload.ok !== false,
@@ -88,12 +92,31 @@ function normalizeLoopId(value: unknown) {
   return normalized || 'default';
 }
 
-function assistantPromptKey(assistantTarget: 'loop-assistant' | 'codex-assistant') {
-  return assistantTarget === 'codex-assistant' ? 'codexAssistant' : 'loopAssistant';
+function normalizeRequestedModel(value: unknown) {
+  const model = String(value || '').trim();
+  return model || '';
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, fallback: T): Promise<T> {
+  let timer: NodeJS.Timeout | null = null;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((resolve) => {
+        timer = setTimeout(() => resolve(fallback), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+function assistantPromptKey(assistantTarget: 'forge' | 'codex') {
+  return assistantTarget === 'codex' ? 'codexAssistant' : 'forgeAssistant';
 }
 
 async function resolveAssistantSystemPrompt(input: {
-  assistantTarget: 'loop-assistant' | 'codex-assistant';
+  assistantTarget: 'forge' | 'codex';
   workspaceId?: string;
   loopId: string;
 }) {
@@ -175,27 +198,33 @@ function buildEnrichedPrompt(input: {
 
 async function buildAssistantRequestContext(input: {
   body: any;
-  assistantTarget: 'loop-assistant' | 'codex-assistant';
+  assistantTarget: 'forge' | 'codex';
 }) {
   const loopId = normalizeLoopId(input.body?.loopId);
   const userPrompt = extractPrompt(input.body);
-  const systemPrompt = await resolveAssistantSystemPrompt({
-    assistantTarget: input.assistantTarget,
-    workspaceId: String(input.body?.workspaceId || 'planning'),
-    loopId,
-  });
+  const systemPrompt = await withTimeout(
+    resolveAssistantSystemPrompt({
+      assistantTarget: input.assistantTarget,
+      workspaceId: String(input.body?.workspaceId || 'planning'),
+      loopId,
+    }),
+    3000,
+    '',
+  );
 
   let mentionContext = '';
   if (userPrompt.includes('@planning/')) {
-    try {
-      const snapshot = await loadRepoStudioSnapshot(resolveRepoRoot(), { loopId });
-      mentionContext = resolvePlanningMentionContext({
-        text: userPrompt,
-        docs: snapshot.planning.docs,
-      }).contextBlock;
-    } catch {
-      mentionContext = '';
-    }
+    mentionContext = await withTimeout((async () => {
+      try {
+        const snapshot = await loadRepoStudioSnapshot(resolveRepoRoot(), { loopId });
+        return resolvePlanningMentionContext({
+          text: userPrompt,
+          docs: snapshot.planning.docs,
+        }).contextBlock;
+      } catch {
+        return '';
+      }
+    })(), 3000, '');
   }
 
   const enrichedPrompt = buildEnrichedPrompt({
@@ -340,6 +369,7 @@ async function runCodexPath(input: {
   assistantTarget: string;
   prompt: string;
   loopId: string;
+  model?: string;
 }) {
   const prompt = String(input.prompt || '').trim();
   if (!prompt) {
@@ -366,6 +396,7 @@ async function runCodexPath(input: {
       messages: input.body?.messages,
       loopId: input.loopId,
       assistantTarget: input.assistantTarget,
+      model: normalizeRequestedModel(input.model),
       domain: String(input.body?.domain || '').trim().toLowerCase(),
       scopeOverrideToken: String(input.body?.scopeOverrideToken || '').trim(),
       scopeRoots: (await resolveScopeGuardContext({
@@ -392,7 +423,7 @@ async function runCodexPath(input: {
     }
   }
 
-  const exec = codexExec(prompt);
+  const exec = codexExec(prompt, normalizeRequestedModel(input.model));
   if (!exec.ok) {
     return NextResponse.json(
       {
@@ -448,42 +479,48 @@ async function handlePost(request: Request) {
   const rawBody = await request.text();
   const parsedBody = parseBody(rawBody);
   const assistantTarget = assistantTargetFromRequest(url, parsedBody, config);
+  const requestedModel = normalizeRequestedModel(
+    url.searchParams.get('model') || parsedBody?.model,
+  );
   const requestContext = await buildAssistantRequestContext({
     body: parsedBody,
     assistantTarget,
   });
-  const requestBody = requestContext.body;
+  const requestBody = requestedModel
+    ? { ...requestContext.body, model: requestedModel }
+    : requestContext.body;
 
-  if (assistantTarget === 'codex-assistant') {
+  if (assistantTarget === 'codex') {
     return runCodexPath({
       config,
       url,
       body: requestBody,
-      assistantTarget: 'codex-assistant',
+      assistantTarget: 'codex',
       prompt: requestContext.prompt,
       loopId: requestContext.loopId,
+      model: requestedModel,
     });
   }
 
-  const loopRoute = resolveLoopAssistantEndpoint(config);
-  if (!loopRoute.ok) {
+  const forgeRoute = resolveForgeAssistantEndpoint(config);
+  if (!forgeRoute.ok) {
     return NextResponse.json(
       {
-        error: loopRoute.message,
-        routeMode: loopRoute.mode,
+        error: forgeRoute.message,
+        routeMode: forgeRoute.mode,
       },
       { status: 501 },
     );
   }
 
-  if (loopRoute.local === true || !loopRoute.endpoint) {
-    return runLocalLoopAssistant({
+  if (forgeRoute.local === true || !forgeRoute.endpoint) {
+    return runLocalForgeAssistant({
       body: requestBody,
-      assistantTarget: 'loop-assistant',
+      assistantTarget: 'forge',
     });
   }
 
-  const upstream = await fetch(loopRoute.endpoint, {
+  const upstream = await fetch(forgeRoute.endpoint, {
     method: 'POST',
     headers: {
       'content-type': request.headers.get('content-type') || 'application/json',
@@ -501,7 +538,27 @@ async function handlePost(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const response = await handlePost(request);
-  return applyCompanionCors(request, response);
+  try {
+    const response = await withTimeout<Response>(
+      handlePost(request),
+      45000,
+      NextResponse.json(
+        { error: 'Assistant request timed out before a response was produced.' },
+        { status: 504 },
+      ),
+    );
+    return applyCompanionCors(request, response);
+  } catch (error) {
+    return applyCompanionCors(
+      request,
+      NextResponse.json(
+        {
+          error: 'Assistant request failed.',
+          message: String((error as Error)?.message || error || 'Unknown error'),
+        },
+        { status: 500 },
+      ),
+    );
+  }
 }
 

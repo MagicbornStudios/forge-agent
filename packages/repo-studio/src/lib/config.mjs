@@ -30,7 +30,7 @@ export const DEFAULT_REPO_STUDIO_CONFIG = {
     terminalAllowlistedOnly: true,
   },
   views: {
-    order: ['planning', 'env', 'commands', 'story', 'docs', 'git', 'loop-assistant', 'codex-assistant', 'diff', 'code', 'review-queue'],
+    order: ['planning', 'env', 'commands', 'story', 'git', 'assistant', 'diff', 'code', 'review-queue'],
     hidden: [],
     defaultView: 'planning',
   },
@@ -41,12 +41,12 @@ export const DEFAULT_REPO_STUDIO_CONFIG = {
   },
   assistant: {
     enabled: true,
-    defaultEditor: 'loop-assistant',
-    editors: ['loop-assistant', 'codex-assistant'],
+    defaultTarget: 'forge',
+    targets: ['forge', 'codex'],
     routeMode: 'codex',
     routePath: '/api/assistant-chat',
     routes: {
-      loop: {
+      forge: {
         mode: 'shared-runtime',
         routePath: '/api/assistant-chat',
       },
@@ -206,16 +206,30 @@ function normalizeConfigShape(config) {
   const assistant = normalized.assistant || {};
   const codex = assistant.codex || {};
   const routes = assistant.routes || {};
+  const defaultTarget = String(assistant.defaultTarget || 'forge').trim().toLowerCase();
+  const targets = Array.isArray(assistant.targets)
+    ? assistant.targets.map((entry) => String(entry || '').trim().toLowerCase()).filter(Boolean)
+    : [];
+
   assistant.codex = {
     ...DEFAULT_REPO_STUDIO_CONFIG.assistant.codex,
     ...codex,
     transport: codex.transport === 'exec' ? 'exec' : 'app-server',
     execFallbackAllowed: codex.execFallbackAllowed === true,
   };
+
+  assistant.defaultTarget = defaultTarget === 'codex' ? 'codex' : 'forge';
+  assistant.targets = [...new Set(
+    targets.filter((entry) => entry === 'forge' || entry === 'codex'),
+  )];
+  if (assistant.targets.length === 0) {
+    assistant.targets = [...DEFAULT_REPO_STUDIO_CONFIG.assistant.targets];
+  }
+
   assistant.routes = {
-    loop: {
-      ...DEFAULT_REPO_STUDIO_CONFIG.assistant.routes.loop,
-      ...(routes.loop || {}),
+    forge: {
+      ...DEFAULT_REPO_STUDIO_CONFIG.assistant.routes.forge,
+      ...(routes.forge || {}),
     },
     codex: {
       ...DEFAULT_REPO_STUDIO_CONFIG.assistant.routes.codex,

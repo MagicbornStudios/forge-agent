@@ -50,7 +50,7 @@ Scope override APIs:
 3. Edit markdown content in Monaco.
 4. Save page (`/api/repo/story/page/save`).
 5. Use `Story Reader` for prev/next reading flow.
-6. Attach story context/diff to `codex-assistant`.
+6. Attach story context/diff to assistant with `assistantTarget=codex`.
 7. Review and approve assistant proposals from `Review Queue`.
 8. Use `Git` panel to stage/commit.
 

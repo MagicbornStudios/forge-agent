@@ -33,12 +33,12 @@ consumable by game runtimes.
 
 ```
 DialogueEditor
-  ├── EditorShell (editorId="dialogue")
-  ├── EditorHeader + EditorToolbar
+  ├── WorkspaceShell (editorId="dialogue")
+  ├── WorkspaceHeader + WorkspaceToolbar
   │     ├── ProjectSwitcher
   │     ├── File / View / State menus
   │     └── ModelSwitcher + SettingsMenu
-  ├── EditorReviewBar (plan review)
+  ├── WorkspaceReviewBar (plan review)
   ├── DockLayout
   │     ├── left: DockPanel (Library)
   │     │     └── PanelTabs: Narratives | Storylets | Nodes
@@ -46,10 +46,10 @@ DialogueEditor
   │     │     ├── ForgeGraphPanel (narrative)
   │     │     └── ForgeGraphPanel (storylet)
   │     ├── right: DockPanel (Inspector)
-  │     │     └── Inspector (`EditorInspector`, sections + AI workflow)
+  │     │     └── Inspector (`WorkspaceInspector`, sections + AI workflow)
   │     └── bottom: DockPanel (Workbench)
-  ├── EditorStatusBar
-  └── EditorOverlaySurface (CreateNodeModal)
+  ├── WorkspaceStatusBar
+  └── WorkspaceOverlaySurface (CreateNodeModal)
 ```
 
 ### Graph types
@@ -111,7 +111,7 @@ Dialogue Editor supports an AI plan-execute-review-commit workflow:
 
 1. **Plan** — User describes a goal; AI generates a plan (via `useCreateForgePlan`).
 2. **Patch** — Plan is applied as graph operations (add/update/delete nodes and edges).
-3. **Review** — `EditorReviewBar` shows pending changes; user can revert or accept.
+3. **Review** — `WorkspaceReviewBar` shows pending changes; user can revert or accept.
 4. **Commit** — Accepted changes are saved to the server.
 
 During plan application, the editor is locked via `usePanelLock` and a

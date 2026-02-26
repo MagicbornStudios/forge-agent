@@ -4,7 +4,7 @@ title: 25 - Verdaccio and local registry
 
 # 25 - Verdaccio and local registry
 
-Local npm registry for publishing `@forge/*` and `@twick/*` to consumer repos without public npm.
+Local npm registry for publishing `@forge/*` (and optionally vendored packages like `@forge/gsd`) to consumer repos without public npm.
 
 ## Quick launch
 
@@ -58,7 +58,7 @@ Twick: [24 - Vendoring](24-vendoring-third-party-code) for Twick build + publish
 
 2. **`package.json`**: add `"@forge/dev-kit": "^0.1.0"`
 3. **Install:** Verdaccio running, then `pnpm install`
-4. Import: `EditorShell`, `DockLayout`, etc. from `@forge/dev-kit`
+4. Import: `WorkspaceShell`, `DockLayout`, etc. from `@forge/dev-kit`
 
 ## Consuming the Forge Loop (GSD + multi-loop)
 
@@ -70,7 +70,6 @@ In consumer repo root:
 
 ```ini
 @forge:registry=http://localhost:4873
-@twick:registry=http://localhost:4873
 ```
 
 ### 2. Install @forge/gsd and run installer

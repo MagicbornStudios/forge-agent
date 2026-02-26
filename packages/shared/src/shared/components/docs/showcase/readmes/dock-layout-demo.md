@@ -299,7 +299,7 @@ Shows two graph viewports (narrative + storylet) in the main panel:
   <WorkspaceLayout.Right>
     <WorkspaceLayout.Panel id="right" title="Inspector" icon={<ScanSearch size={14} />}>
       <WorkspacePanel panelId="dialogue-right" hideTitleBar>
-        <EditorInspector selection={activeSelection} sections={inspectorSections} />
+        <WorkspaceInspector selection={activeSelection} sections={inspectorSections} />
       </WorkspacePanel>
     </WorkspaceLayout.Panel>
     <WorkspaceLayout.Panel id="chat" title="Chat" icon={<MessageCircle size={14} />}>
@@ -527,13 +527,13 @@ export interface DockLayoutRef {
 ```tsx
 const [leftVisible, setLeftVisible] = useState(true);
 
-<EditorToolbar>
-  <EditorToolbar.Left>
-    <EditorToolbar.Button onClick={() => setLeftVisible(!leftVisible)}>
+<WorkspaceToolbar>
+  <WorkspaceToolbar.Left>
+    <WorkspaceToolbar.Button onClick={() => setLeftVisible(!leftVisible)}>
       {leftVisible ? <PanelLeftClose /> : <PanelLeftOpen />}
-    </EditorToolbar.Button>
-  </EditorToolbar.Left>
-</EditorToolbar>
+    </WorkspaceToolbar.Button>
+  </WorkspaceToolbar.Left>
+</WorkspaceToolbar>
 
 <WorkspaceLayout layoutId="collapsible">
   {leftVisible && (
@@ -628,11 +628,11 @@ const showRightPanel = useSettingsStore((s) =>
 
 - [WorkspacePanel](./dock-panel) — Individual panel wrapper
 - [PanelTabs](./panel-tabs.mdx) — Tab system for multi-panel rails
-- [EditorInspector](./editor-inspector.mdx) — Selection-driven property panel
+- [WorkspaceInspector](./workspace-inspector.mdx) — Selection-driven property panel
 
 ## Source Code
 
-Location: `packages/shared/src/shared/components/editor/DockLayout.tsx`
+Location: `packages/shared/src/shared/components/workspace/DockLayout.tsx`
 
 ## Migration from WorkspaceLayoutGrid
 

@@ -4,7 +4,7 @@ title: Components
 
 # Components
 
-Editor primitives from `@forge/shared` and Studio settings. Build professional editors with EditorShell, EditorDockLayout, EditorDockPanel, and more.
+Editor primitives from `@forge/shared` and Studio settings. Build professional editors with WorkspaceShell, WorkspaceLayout, WorkspacePanel, and more.
 
 ## Showcase
 
@@ -13,33 +13,34 @@ Browse all components in one place. Navigate by tier:
 | Tier | Description |
 |------|-------------|
 | [Atoms](components/showcase/atoms.mdx) | `@forge/ui` — Button, Input, Card, Badge, and 50+ primitives |
-| [Molecules](components/showcase/molecules.mdx) | `@forge/shared` — EditorShell, DockLayout, EditorToolbar |
+| [Molecules](components/showcase/molecules.mdx) | `@forge/shared` — WorkspaceShell, DockLayout, WorkspaceToolbar |
 | [Organisms](components/showcase/organisms.mdx) | Full editors — DialogueEditor, CharacterEditor, Studio |
 
 ## Quick start
 
 ```tsx
 import {
-  EditorShell,
-  EditorToolbar,
-  EditorDockLayout,
-  EditorDockPanel,
-  EditorStatusBar,
-} from '@forge/shared/components/editor';
+  WorkspaceShell,
+  WorkspaceToolbar,
+  WorkspaceLayout,
+  WorkspacePanel,
+  WorkspaceStatusBar,
+} from '@forge/shared/components/workspace';
 
-<EditorShell editorId="my-editor" title="My Editor">
-  <EditorToolbar>...</EditorToolbar>
-  <EditorDockLayout layoutId="my-layout">
-    <EditorDockLayout.Main>
-      <EditorDockPanel panelId="main" title="Viewport">
+<WorkspaceShell editorId="my-editor" title="My Editor">
+  <WorkspaceToolbar>...</WorkspaceToolbar>
+  <WorkspaceLayout layoutId="my-layout">
+    <WorkspaceLayout.Main>
+      <WorkspacePanel panelId="main" title="Viewport">
         <MyContent />
-      </EditorDockPanel>
-    </EditorDockLayout.Main>
-  </EditorDockLayout>
-  <EditorStatusBar>Ready</EditorStatusBar>
-</EditorShell>
+      </WorkspacePanel>
+    </WorkspaceLayout.Main>
+  </WorkspaceLayout>
+  <WorkspaceStatusBar>Ready</WorkspaceStatusBar>
+</WorkspaceShell>
 ```
 
 ## Guides
 
 - [Building a complete Studio](guides/building-studio.mdx) — Step-by-step guide
+

@@ -475,7 +475,7 @@ export function DialogueEditor({ projectId, graphId }) {
 
   return (
     <AssistantProvider runtimeUrl="/api/assistant">
-      <EditorShell>
+      <WorkspaceShell>
         <EditorDockLayout>
           <EditorDockLayout.Main>
             <ForgeCanvas
@@ -492,7 +492,7 @@ export function DialogueEditor({ projectId, graphId }) {
             </EditorDockLayout.Panel>
           </EditorDockLayout.Right>
         </EditorDockLayout>
-      </EditorShell>
+      </WorkspaceShell>
     </AssistantProvider>
   );
 }

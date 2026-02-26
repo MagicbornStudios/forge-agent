@@ -1,10 +1,10 @@
 'use client';
 
 import * as React from 'react';
-import { EditorTab, type EditorTabProps } from '@forge/shared';
+import { WorkspaceTab, type WorkspaceTabProps } from '@forge/shared';
 
-export type AppTabProps = EditorTabProps;
+export type AppTabProps = WorkspaceTabProps;
 
 export function AppTab(props: AppTabProps) {
-  return <EditorTab {...props} />;
+  return <WorkspaceTab {...props} />;
 }

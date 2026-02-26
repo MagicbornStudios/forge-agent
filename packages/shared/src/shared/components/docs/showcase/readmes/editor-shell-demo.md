@@ -2,14 +2,14 @@ The outermost container for every editor in the Forge platform. Sets theme conte
 
 ## Overview
 
-`EditorShell` is the root component that wraps every editor (Dialogue, Character, Video, etc.). It establishes:
+`WorkspaceShell` is the root component that wraps every editor (Dialogue, Character, Video, etc.). It establishes:
 
 - **Data attributes** for CSS theming (`data-editor-id`, `data-domain`, `data-theme`, `data-density`)
 - **Flex layout skeleton** (toolbar → content → status bar)
 - **Slot-based composition** for structured editor shells
 - **Theme context** for domain-specific color schemes
 
-**Every editor starts with EditorShell.** It replaces the legacy `WorkspaceShell` and provides a cleaner, more declarative API.
+**Every editor starts with WorkspaceShell.** It replaces the legacy `WorkspaceShell` and provides a cleaner, more declarative API.
 
 ## Installation
 
@@ -25,17 +25,17 @@ Import:
 ## Basic Usage
 
 ```tsx
-<EditorShell
+<WorkspaceShell
   editorId="dialogue"
   title="Dialogue Editor"
   domain="dialogue"
   theme="dark"
   density="comfortable"
 >
-  <EditorToolbar>...</EditorToolbar>
+  <WorkspaceToolbar>...</WorkspaceToolbar>
   <DockLayout>...</DockLayout>
-  <EditorStatusBar>Ready</EditorStatusBar>
-</EditorShell>
+  <WorkspaceStatusBar>Ready</WorkspaceStatusBar>
+</WorkspaceShell>
 ```
 
 ## Props API
@@ -56,31 +56,31 @@ Import:
 When using slot components, content renders in **fixed order** with layout applied automatically:
 
 ```tsx
-<EditorShell editorId="dialogue" title="Dialogue" domain="dialogue">
-  <EditorShell.Header>
+<WorkspaceShell editorId="dialogue" title="Dialogue" domain="dialogue">
+  <WorkspaceShell.Header>
     {/* Optional header content (rarely used) */}
-  </EditorShell.Header>
+  </WorkspaceShell.Header>
 
-  <EditorShell.Toolbar>
-    <EditorToolbar>...</EditorToolbar>
-  </EditorShell.Toolbar>
+  <WorkspaceShell.Toolbar>
+    <WorkspaceToolbar>...</WorkspaceToolbar>
+  </WorkspaceShell.Toolbar>
 
-  <EditorShell.Layout>
+  <WorkspaceShell.Layout>
     <WorkspaceLayout>...</WorkspaceLayout>
-  </EditorShell.Layout>
+  </WorkspaceShell.Layout>
 
-  <EditorShell.StatusBar>
-    <EditorStatusBar>Ready</EditorStatusBar>
-  </EditorShell.StatusBar>
+  <WorkspaceShell.StatusBar>
+    <WorkspaceStatusBar>Ready</WorkspaceStatusBar>
+  </WorkspaceShell.StatusBar>
 
-  <EditorShell.Overlay>
-    <EditorOverlaySurface ... />
-  </EditorShell.Overlay>
+  <WorkspaceShell.Overlay>
+    <WorkspaceOverlaySurface ... />
+  </WorkspaceShell.Overlay>
 
-  <EditorShell.Settings>
+  <WorkspaceShell.Settings>
     {/* Optional settings panel (rarely used) */}
-  </EditorShell.Settings>
-</EditorShell>
+  </WorkspaceShell.Settings>
+</WorkspaceShell>
 ```
 
 ### Slot Order & Layout
@@ -100,29 +100,29 @@ Slots render in this order:
 Example showing a complete task management editor:
 
 ```tsx
-import { EditorShell, EditorToolbar, WorkspaceLayout, WorkspacePanel, EditorStatusBar } from '@forge/dev-kit';
+import { WorkspaceShell, WorkspaceToolbar, WorkspaceLayout, WorkspacePanel, WorkspaceStatusBar } from '@forge/dev-kit';
 export function TaskEditor() {
   const [tasks, setTasks] = useState([]);
   const [activeTask, setActiveTask] = useState(null);
 
   return (
-    <EditorShell
+    <WorkspaceShell
       editorId="tasks"
       title="Task Manager"
       subtitle={activeTask?.title}
       domain="tasks"
       className="bg-canvas"
     >
-      <EditorToolbar className="bg-sidebar border-b border-sidebar-border">
-        <EditorToolbar.Left>
+      <WorkspaceToolbar className="bg-sidebar border-b border-sidebar-border">
+        <WorkspaceToolbar.Left>
           <Badge variant="secondary">{tasks.length} tasks</Badge>
-        </EditorToolbar.Left>
-        <EditorToolbar.Right>
+        </WorkspaceToolbar.Left>
+        <WorkspaceToolbar.Right>
           <Button onClick={() => createTask()}>
             New Task
           </Button>
-        </EditorToolbar.Right>
-      </EditorToolbar>
+        </WorkspaceToolbar.Right>
+      </WorkspaceToolbar>
 
       <WorkspaceLayout
         layoutId="tasks-layout"
@@ -148,17 +148,17 @@ export function TaskEditor() {
         </WorkspaceLayout.Right>
       </WorkspaceLayout>
 
-      <EditorStatusBar>
+      <WorkspaceStatusBar>
         {activeTask ? `Editing: ${activeTask.title}` : 'Ready'}
-      </EditorStatusBar>
-    </EditorShell>
+      </WorkspaceStatusBar>
+    </WorkspaceShell>
   );
 }
 ```
 
 ## Data Attributes & CSS Scoping
 
-`EditorShell` sets these attributes for theming:
+`WorkspaceShell` sets these attributes for theming:
 
 ```html
 <div
@@ -224,14 +224,14 @@ function MyEditor() {
   ) as string | undefined;
 
   return (
-    <EditorShell
+    <WorkspaceShell
       editorId={editorId}
       title="My Editor"
       theme={editorTheme}
       density={editorDensity}
     >
       {/* ... */}
-    </EditorShell>
+    </WorkspaceShell>
   );
 }
 ```
@@ -239,7 +239,7 @@ function MyEditor() {
 ## Accessibility
 
 - Sets `aria-label` combining `title` and `subtitle` (`"Dialogue Editor - Main Graph"`)
-- `role="toolbar"` on EditorToolbar (when child of EditorShell)
+- `role="toolbar"` on WorkspaceToolbar (when child of WorkspaceShell)
 - All interactive elements should have accessible labels
 
 ## Advanced Patterns
@@ -247,22 +247,22 @@ function MyEditor() {
 ### Conditional Slot Content
 
 ```tsx
-<EditorShell editorId="video" title="Video">
-  <EditorShell.Toolbar>
-    <EditorToolbar>...</EditorToolbar>
-  </EditorShell.Toolbar>
+<WorkspaceShell editorId="video" title="Video">
+  <WorkspaceShell.Toolbar>
+    <WorkspaceToolbar>...</WorkspaceToolbar>
+  </WorkspaceShell.Toolbar>
 
-  <EditorShell.Layout>
+  <WorkspaceShell.Layout>
     <WorkspaceLayout>...</WorkspaceLayout>
-  </EditorShell.Layout>
+  </WorkspaceShell.Layout>
 
   {/* Conditionally render status bar */}
   {showStatus && (
-    <EditorShell.StatusBar>
-      <EditorStatusBar>{status}</EditorStatusBar>
-    </EditorShell.StatusBar>
+    <WorkspaceShell.StatusBar>
+      <WorkspaceStatusBar>{status}</WorkspaceStatusBar>
+    </WorkspaceShell.StatusBar>
   )}
-</EditorShell>
+</WorkspaceShell>
 ```
 
 ### Multiple Domains in One Editor
@@ -270,7 +270,7 @@ function MyEditor() {
 For multi-viewport editors (like Dialogue with narrative + storylet):
 
 ```tsx
-<EditorShell
+<WorkspaceShell
   editorId="dialogue"
   title="Dialogue"
   domain="dialogue"
@@ -285,7 +285,7 @@ For multi-viewport editors (like Dialogue with narrative + storylet):
       </div>
     </WorkspaceLayout.Main>
   </WorkspaceLayout>
-</EditorShell>
+</WorkspaceShell>
 ```
 
 Scope-specific styles:
@@ -303,7 +303,7 @@ Scope-specific styles:
 ## TypeScript Interface
 
 ```tsx
-export interface EditorShellProps {
+export interface WorkspaceShellProps {
   editorId?: string;
   title: string;
   subtitle?: string;
@@ -320,23 +320,23 @@ export interface EditorShellProps {
 ### Pattern: Minimal Editor Shell
 
 ```tsx
-<EditorShell editorId="simple" title="Simple Editor">
-  <EditorToolbar>
-    <EditorToolbar.Left>
+<WorkspaceShell editorId="simple" title="Simple Editor">
+  <WorkspaceToolbar>
+    <WorkspaceToolbar.Left>
       <span>Simple Editor</span>
-    </EditorToolbar.Left>
-  </EditorToolbar>
+    </WorkspaceToolbar.Left>
+  </WorkspaceToolbar>
 
   <div className="flex-1 p-4">
     {/* Your editor content */}
   </div>
-</EditorShell>
+</WorkspaceShell>
 ```
 
 ### Pattern: Full-Featured Editor Shell
 
 ```tsx
-<EditorShell
+<WorkspaceShell
   editorId="full"
   title="Full Editor"
   subtitle={documentName}
@@ -345,18 +345,18 @@ export interface EditorShellProps {
   density={density}
   className="bg-canvas"
 >
-  <EditorToolbar className="bg-sidebar border-b">
-    <EditorToolbar.Left>
-      <EditorToolbar.Menubar menus={menus} />
-      <EditorToolbar.Separator />
+  <WorkspaceToolbar className="bg-sidebar border-b">
+    <WorkspaceToolbar.Left>
+      <WorkspaceToolbar.Menubar menus={menus} />
+      <WorkspaceToolbar.Separator />
       <span className="text-xs text-muted-foreground">{statusText}</span>
-    </EditorToolbar.Left>
-    <EditorToolbar.Right>
-      <EditorToolbar.Button onClick={onSave}>Save</EditorToolbar.Button>
-    </EditorToolbar.Right>
-  </EditorToolbar>
+    </WorkspaceToolbar.Left>
+    <WorkspaceToolbar.Right>
+      <WorkspaceToolbar.Button onClick={onSave}>Save</WorkspaceToolbar.Button>
+    </WorkspaceToolbar.Right>
+  </WorkspaceToolbar>
 
-  <EditorReviewBar
+  <WorkspaceReviewBar
     visible={hasPendingChanges}
     onRevert={onRevert}
     onAccept={onAccept}
@@ -375,38 +375,38 @@ export interface EditorShellProps {
     </WorkspaceLayout.Main>
     <WorkspaceLayout.Right>
       <WorkspacePanel panelId="props" title="Properties">
-        <EditorInspector selection={selection} sections={sections} />
+        <WorkspaceInspector selection={selection} sections={sections} />
       </WorkspacePanel>
     </WorkspaceLayout.Right>
   </WorkspaceLayout>
 
-  <EditorStatusBar>
+  <WorkspaceStatusBar>
     {isDirty ? 'Unsaved changes' : 'Ready'}
-  </EditorStatusBar>
+  </WorkspaceStatusBar>
 
-  <EditorOverlaySurface
+  <WorkspaceOverlaySurface
     overlays={overlays}
     activeOverlay={activeOverlay}
     onDismiss={dismissOverlay}
   />
-</EditorShell>
+</WorkspaceShell>
 ```
 
 ## Related Components
 
-- [EditorToolbar](./editor-toolbar) — Toolbar with menubar, buttons, separators
+- [WorkspaceToolbar](./workspace-toolbar) — Toolbar with menubar, buttons, separators
 - [WorkspaceLayout](./dock-layout) — Resizable panel layout
-- [EditorStatusBar](./editor-status-bar.mdx) — Bottom status strip
-- [EditorOverlaySurface](./editor-overlay-surface.mdx) — Modal system
-- [EditorReviewBar](./editor-review-bar.mdx) — Change review bar for AI edits
+- [WorkspaceStatusBar](./workspace-status-bar.mdx) — Bottom status strip
+- [WorkspaceOverlaySurface](./workspace-overlay-surface.mdx) — Modal system
+- [WorkspaceReviewBar](./workspace-review-bar.mdx) — Change review bar for AI edits
 
 ## Source Code
 
-Location: `packages/shared/src/shared/components/editor/EditorShell.tsx`
+Location: `packages/shared/src/shared/components/workspace/WorkspaceShell.tsx`
 
 ## Migration from WorkspaceShell
 
-| Old (WorkspaceShell) | New (EditorShell) |
+| Old (WorkspaceShell) | New (WorkspaceShell) |
 |---------------------|-------------------|
 | `workspaceId` | `editorId` |
 | No slot system | Slot components (`.Toolbar`, `.Layout`, etc.) |

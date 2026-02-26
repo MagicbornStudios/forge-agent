@@ -39,13 +39,13 @@ We've created a **comprehensive, production-ready documentation suite** for the 
 
 #### Component Showcase (`components/`)
 - ✅ `00-index.mdx` - shadcn-style component catalog with visual cards
-- ✅ `editor-shell.mdx` - EditorShell basic reference
-- ✅ `editor-shell-complete.mdx` - **900+ lines** - Complete EditorShell API
+- ✅ `editor-shell.mdx` - WorkspaceShell basic reference
+- ✅ `editor-shell-complete.mdx` - **900+ lines** - Complete WorkspaceShell API
 - ✅ `dock-layout.mdx` - DockLayout basic reference
 - ✅ `dock-layout-complete.mdx` - **1,800+ lines** - Every DockLayout pattern
 - ✅ `dock-panel.mdx` - DockPanel basic reference
 - ✅ `dock-panel-complete.mdx` - **1,000+ lines** - Complete panel system
-- ✅ `editor-toolbar.mdx` - EditorToolbar basic reference
+- ✅ `editor-toolbar.mdx` - WorkspaceToolbar basic reference
 - ✅ `editor-toolbar-complete.mdx` - **1,500+ lines** - Complete toolbar/menubar
 - ✅ `settings-panel.mdx` - SettingsPanel basic reference
 - ✅ `settings-field.mdx` - SettingsField basic reference
@@ -117,7 +117,7 @@ We've created a **comprehensive, production-ready documentation suite** for the 
 ### 2. **Build Production Editors**
 - Use DockLayout Complete guide for complex panel layouts
 - Use Settings System Complete for hierarchical configuration
-- Use EditorToolbar Complete for command interfaces
+- Use WorkspaceToolbar Complete for command interfaces
 
 ### 3. **Integrate AI**
 - Follow AI Integration Tutorial for complete domain contract implementation
@@ -144,12 +144,12 @@ All core studio components are fully documented:
 
 | Component | Basic | Complete | Examples | Props | Patterns |
 |-----------|-------|----------|----------|-------|----------|
-| EditorShell | ✅ | ✅ 900 lines | 20+ | ✅ Full | ✅ |
+| WorkspaceShell | ✅ | ✅ 900 lines | 20+ | ✅ Full | ✅ |
 | DockLayout | ✅ | ✅ 1,800 lines | 15+ | ✅ Full | ✅ |
 | DockPanel | ✅ | ✅ 1,000 lines | 10+ | ✅ Full | ✅ |
-| EditorToolbar | ✅ | ✅ 1,500 lines | 12+ | ✅ Full | ✅ |
-| EditorInspector | ✅ | ✅ 1,200 lines | 8+ | ✅ Full | ✅ |
-| EditorOverlaySurface | ✅ | ✅ 1,100 lines | 7+ | ✅ Full | ✅ |
+| WorkspaceToolbar | ✅ | ✅ 1,500 lines | 12+ | ✅ Full | ✅ |
+| WorkspaceInspector | ✅ | ✅ 1,200 lines | 8+ | ✅ Full | ✅ |
+| WorkspaceOverlaySurface | ✅ | ✅ 1,100 lines | 7+ | ✅ Full | ✅ |
 | PanelTabs | ✅ | ✅ 1,000 lines | 6+ | ✅ Full | ✅ |
 | Settings System | ✅ | ✅ 1,700 lines | 15+ | ✅ Full | ✅ |
 
@@ -258,7 +258,7 @@ All important topics covered:
    - Code generation
    - Real settings from DialogueEditor
 
-4. **EditorToolbar Complete** - 1,500+ lines
+4. **WorkspaceToolbar Complete** - 1,500+ lines
    - Menubar integration
    - All slot patterns
    - Feature gating

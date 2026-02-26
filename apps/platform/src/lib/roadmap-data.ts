@@ -131,7 +131,7 @@ export const ROADMAP_ITEMS: RoadmapItem[] = [
   },
   {
     id: 'editor-platform',
-    title: 'Editor platform (DockLayout, EditorShell)',
+    title: 'Editor platform (DockLayout, WorkspaceShell)',
     status: 'shipped',
     statusLabel: 'Shipped',
     description:

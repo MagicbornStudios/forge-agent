@@ -1,43 +1,43 @@
 ---
-title: EditorToolbar
+title: WorkspaceToolbar
 created: 2026-02-11
 updated: 2026-02-11
 icon: "🧰"
 ---
 
-# 🧰 EditorToolbar
+# 🧰 WorkspaceToolbar
 
 **Composable toolbar with slots, data-driven rendering, and feature gating**
 
-EditorToolbar is the main toolbar component for editors. It supports both slot-based composition (`.Left`, `.Center`, `.Right`) and data-driven rendering via `groups` prop, with built-in feature gating and menubar integration.
+WorkspaceToolbar is the main toolbar component for editors. It supports both slot-based composition (`.Left`, `.Center`, `.Right`) and data-driven rendering via `groups` prop, with built-in feature gating and menubar integration.
 
 ---
 
 ## Usage
 
 ```typescript
-import { EditorToolbar } from '@forge/shared/components/editor';
+import { WorkspaceToolbar } from '@forge/shared/components/editor';
 import { FilePlus, Save } from 'lucide-react';
 
 export function MyEditor() {
   return (
-    <EditorToolbar>
-      <EditorToolbar.Left>
-        <EditorToolbar.Menubar menus={menubarMenus} />
-        <EditorToolbar.Separator />
-        <EditorToolbar.Button onClick={handleNew}>
+    <WorkspaceToolbar>
+      <WorkspaceToolbar.Left>
+        <WorkspaceToolbar.Menubar menus={menubarMenus} />
+        <WorkspaceToolbar.Separator />
+        <WorkspaceToolbar.Button onClick={handleNew}>
           <FilePlus size={14} />
           New
-        </EditorToolbar.Button>
-      </EditorToolbar.Left>
+        </WorkspaceToolbar.Button>
+      </WorkspaceToolbar.Left>
 
-      <EditorToolbar.Right>
-        <EditorToolbar.Button onClick={handleSave}>
+      <WorkspaceToolbar.Right>
+        <WorkspaceToolbar.Button onClick={handleSave}>
           <Save size={14} />
           Save
-        </EditorToolbar.Button>
-      </EditorToolbar.Right>
-    </EditorToolbar>
+        </WorkspaceToolbar.Button>
+      </WorkspaceToolbar.Right>
+    </WorkspaceToolbar>
   );
 }
 ```
@@ -163,21 +163,21 @@ export interface ToolbarMenuItem {
 
 ## Slot Components
 
-EditorToolbar provides slot components for declarative composition:
+WorkspaceToolbar provides slot components for declarative composition:
 
 ### Available Slots
 
 | Slot | Component | Alignment | Purpose |
 |------|-----------|-----------|---------|
-| Left | `EditorToolbar.Left` | flex-start | Primary actions (File, Edit menus) |
-| Center | `EditorToolbar.Center` | center | Centered content (breadcrumbs) |
-| Right | `EditorToolbar.Right` | flex-end | Secondary actions (Save, Settings) |
-| Separator | `EditorToolbar.Separator` | - | Visual divider |
-| Group | `EditorToolbar.Group` | - | Logical group of items |
-| Button | `EditorToolbar.Button` | - | Toolbar button (EditorButton) |
-| Menubar | `EditorToolbar.Menubar` | - | Menu bar (File, Edit, View) |
-| FileMenu | `EditorToolbar.FileMenu` | - | File menu dropdown |
-| ProjectSelect | `EditorToolbar.ProjectSelect` | - | Project switcher |
+| Left | `WorkspaceToolbar.Left` | flex-start | Primary actions (File, Edit menus) |
+| Center | `WorkspaceToolbar.Center` | center | Centered content (breadcrumbs) |
+| Right | `WorkspaceToolbar.Right` | flex-end | Secondary actions (Save, Settings) |
+| Separator | `WorkspaceToolbar.Separator` | - | Visual divider |
+| Group | `WorkspaceToolbar.Group` | - | Logical group of items |
+| Button | `WorkspaceToolbar.Button` | - | Toolbar button (WorkspaceButton) |
+| Menubar | `WorkspaceToolbar.Menubar` | - | Menu bar (File, Edit, View) |
+| FileMenu | `WorkspaceToolbar.FileMenu` | - | File menu dropdown |
+| ProjectSelect | `WorkspaceToolbar.ProjectSelect` | - | Project switcher |
 
 ---
 
@@ -186,28 +186,28 @@ EditorToolbar provides slot components for declarative composition:
 ### Basic Toolbar
 
 ```typescript
-import { EditorToolbar } from '@forge/shared/components/editor';
+import { WorkspaceToolbar } from '@forge/shared/components/editor';
 import { Save, Undo, Redo } from 'lucide-react';
 
 export function BasicToolbar() {
   return (
-    <EditorToolbar>
-      <EditorToolbar.Left>
-        <EditorToolbar.Button onClick={handleUndo}>
+    <WorkspaceToolbar>
+      <WorkspaceToolbar.Left>
+        <WorkspaceToolbar.Button onClick={handleUndo}>
           <Undo size={14} />
-        </EditorToolbar.Button>
-        <EditorToolbar.Button onClick={handleRedo}>
+        </WorkspaceToolbar.Button>
+        <WorkspaceToolbar.Button onClick={handleRedo}>
           <Redo size={14} />
-        </EditorToolbar.Button>
-      </EditorToolbar.Left>
+        </WorkspaceToolbar.Button>
+      </WorkspaceToolbar.Left>
 
-      <EditorToolbar.Right>
-        <EditorToolbar.Button onClick={handleSave}>
+      <WorkspaceToolbar.Right>
+        <WorkspaceToolbar.Button onClick={handleSave}>
           <Save size={14} />
           Save
-        </EditorToolbar.Button>
-      </EditorToolbar.Right>
-    </EditorToolbar>
+        </WorkspaceToolbar.Button>
+      </WorkspaceToolbar.Right>
+    </WorkspaceToolbar>
   );
 }
 ```
@@ -215,7 +215,7 @@ export function BasicToolbar() {
 ### Toolbar with Menubar
 
 ```typescript
-import { EditorToolbar } from '@forge/shared/components/editor';
+import { WorkspaceToolbar } from '@forge/shared/components/editor';
 import { Save } from 'lucide-react';
 
 const menubarMenus = [
@@ -239,20 +239,20 @@ const menubarMenus = [
 
 export function ToolbarWithMenubar() {
   return (
-    <EditorToolbar>
-      <EditorToolbar.Left>
-        <EditorToolbar.Menubar menus={menubarMenus} />
-        <EditorToolbar.Separator />
-        <EditorToolbar.Button onClick={handleSave}>
+    <WorkspaceToolbar>
+      <WorkspaceToolbar.Left>
+        <WorkspaceToolbar.Menubar menus={menubarMenus} />
+        <WorkspaceToolbar.Separator />
+        <WorkspaceToolbar.Button onClick={handleSave}>
           <Save size={14} />
           Save
-        </EditorToolbar.Button>
-      </EditorToolbar.Left>
+        </WorkspaceToolbar.Button>
+      </WorkspaceToolbar.Left>
 
-      <EditorToolbar.Right>
+      <WorkspaceToolbar.Right>
         <Badge variant="secondary">Ready</Badge>
-      </EditorToolbar.Right>
-    </EditorToolbar>
+      </WorkspaceToolbar.Right>
+    </WorkspaceToolbar>
   );
 }
 ```
@@ -260,38 +260,38 @@ export function ToolbarWithMenubar() {
 ### Toolbar with Groups
 
 ```typescript
-import { EditorToolbar } from '@forge/shared/components/editor';
+import { WorkspaceToolbar } from '@forge/shared/components/editor';
 import { Save, Download, Upload, Settings } from 'lucide-react';
 
 export function GroupedToolbar() {
   return (
-    <EditorToolbar>
-      <EditorToolbar.Left>
-        <EditorToolbar.Group>
-          <EditorToolbar.Button onClick={handleSave}>
+    <WorkspaceToolbar>
+      <WorkspaceToolbar.Left>
+        <WorkspaceToolbar.Group>
+          <WorkspaceToolbar.Button onClick={handleSave}>
             <Save size={14} />
-          </EditorToolbar.Button>
-          <EditorToolbar.Button onClick={handleDownload}>
+          </WorkspaceToolbar.Button>
+          <WorkspaceToolbar.Button onClick={handleDownload}>
             <Download size={14} />
-          </EditorToolbar.Button>
-          <EditorToolbar.Button onClick={handleUpload}>
+          </WorkspaceToolbar.Button>
+          <WorkspaceToolbar.Button onClick={handleUpload}>
             <Upload size={14} />
-          </EditorToolbar.Button>
-        </EditorToolbar.Group>
+          </WorkspaceToolbar.Button>
+        </WorkspaceToolbar.Group>
 
-        <EditorToolbar.Separator />
+        <WorkspaceToolbar.Separator />
 
-        <EditorToolbar.Group>
+        <WorkspaceToolbar.Group>
           <ModelSwitcher />
-        </EditorToolbar.Group>
-      </EditorToolbar.Left>
+        </WorkspaceToolbar.Group>
+      </WorkspaceToolbar.Left>
 
-      <EditorToolbar.Right>
-        <EditorToolbar.Button onClick={handleSettings}>
+      <WorkspaceToolbar.Right>
+        <WorkspaceToolbar.Button onClick={handleSettings}>
           <Settings size={14} />
-        </EditorToolbar.Button>
-      </EditorToolbar.Right>
-    </EditorToolbar>
+        </WorkspaceToolbar.Button>
+      </WorkspaceToolbar.Right>
+    </WorkspaceToolbar>
   );
 }
 ```
@@ -299,7 +299,7 @@ export function GroupedToolbar() {
 ### Data-Driven Toolbar
 
 ```typescript
-import { EditorToolbar } from '@forge/shared/components/editor';
+import { WorkspaceToolbar } from '@forge/shared/components/editor';
 import type { ToolbarGroup } from '@forge/shared/workspace';
 import { Save, Download, Settings } from 'lucide-react';
 
@@ -342,14 +342,14 @@ export function DataDrivenToolbar() {
     },
   ];
 
-  return <EditorToolbar groups={groups} />;
+  return <WorkspaceToolbar groups={groups} />;
 }
 ```
 
 ### Toolbar with Feature Gating
 
 ```typescript
-import { EditorToolbar } from '@forge/shared/components/editor';
+import { WorkspaceToolbar } from '@forge/shared/components/editor';
 import type { ToolbarGroup } from '@forge/shared/workspace';
 import { Sparkles } from 'lucide-react';
 
@@ -375,14 +375,14 @@ export function GatedToolbar() {
     },
   ];
 
-  return <EditorToolbar groups={groups} />;
+  return <WorkspaceToolbar groups={groups} />;
 }
 ```
 
 ### Toolbar with Toggle Buttons
 
 ```typescript
-import { EditorToolbar } from '@forge/shared/components/editor';
+import { WorkspaceToolbar } from '@forge/shared/components/editor';
 import { Grid, Lock, Eye } from 'lucide-react';
 
 export function ToolbarWithToggles() {
@@ -391,35 +391,35 @@ export function ToolbarWithToggles() {
   const [preview, setPreview] = useState(false);
 
   return (
-    <EditorToolbar>
-      <EditorToolbar.Left>
-        <EditorToolbar.Group>
-          <EditorToolbar.Button
+    <WorkspaceToolbar>
+      <WorkspaceToolbar.Left>
+        <WorkspaceToolbar.Group>
+          <WorkspaceToolbar.Button
             onClick={() => setShowGrid(!showGrid)}
             data-state={showGrid ? 'on' : 'off'}
             variant="outline"
           >
             <Grid size={14} />
-          </EditorToolbar.Button>
+          </WorkspaceToolbar.Button>
 
-          <EditorToolbar.Button
+          <WorkspaceToolbar.Button
             onClick={() => setLocked(!locked)}
             data-state={locked ? 'on' : 'off'}
             variant="outline"
           >
             <Lock size={14} />
-          </EditorToolbar.Button>
+          </WorkspaceToolbar.Button>
 
-          <EditorToolbar.Button
+          <WorkspaceToolbar.Button
             onClick={() => setPreview(!preview)}
             data-state={preview ? 'on' : 'off'}
             variant="outline"
           >
             <Eye size={14} />
-          </EditorToolbar.Button>
-        </EditorToolbar.Group>
-      </EditorToolbar.Left>
-    </EditorToolbar>
+          </WorkspaceToolbar.Button>
+        </WorkspaceToolbar.Group>
+      </WorkspaceToolbar.Left>
+    </WorkspaceToolbar>
   );
 }
 ```
@@ -427,66 +427,66 @@ export function ToolbarWithToggles() {
 ### Complex Multi-Section Toolbar
 
 ```typescript
-import { EditorToolbar } from '@forge/shared/components/editor';
+import { WorkspaceToolbar } from '@forge/shared/components/editor';
 import { Save, Download, Upload, Undo, Redo, Settings, HelpCircle } from 'lucide-react';
 
 export function ComplexToolbar() {
   return (
-    <EditorToolbar className="bg-sidebar border-b border-sidebar-border">
-      <EditorToolbar.Left>
-        <EditorToolbar.Group>
-          <EditorToolbar.FileMenu />
-          <EditorToolbar.Menubar menus={menubarMenus} />
-        </EditorToolbar.Group>
+    <WorkspaceToolbar className="bg-sidebar border-b border-sidebar-border">
+      <WorkspaceToolbar.Left>
+        <WorkspaceToolbar.Group>
+          <WorkspaceToolbar.FileMenu />
+          <WorkspaceToolbar.Menubar menus={menubarMenus} />
+        </WorkspaceToolbar.Group>
 
-        <EditorToolbar.Separator />
+        <WorkspaceToolbar.Separator />
 
-        <EditorToolbar.Group>
-          <EditorToolbar.Button onClick={handleSave} tooltip="Save (Cmd+S)">
+        <WorkspaceToolbar.Group>
+          <WorkspaceToolbar.Button onClick={handleSave} tooltip="Save (Cmd+S)">
             <Save size={14} />
-          </EditorToolbar.Button>
-          <EditorToolbar.Button onClick={handleDownload} tooltip="Export">
+          </WorkspaceToolbar.Button>
+          <WorkspaceToolbar.Button onClick={handleDownload} tooltip="Export">
             <Download size={14} />
-          </EditorToolbar.Button>
-          <EditorToolbar.Button onClick={handleUpload} tooltip="Import">
+          </WorkspaceToolbar.Button>
+          <WorkspaceToolbar.Button onClick={handleUpload} tooltip="Import">
             <Upload size={14} />
-          </EditorToolbar.Button>
-        </EditorToolbar.Group>
+          </WorkspaceToolbar.Button>
+        </WorkspaceToolbar.Group>
 
-        <EditorToolbar.Separator />
+        <WorkspaceToolbar.Separator />
 
-        <EditorToolbar.Group>
-          <EditorToolbar.Button onClick={handleUndo} tooltip="Undo (Cmd+Z)">
+        <WorkspaceToolbar.Group>
+          <WorkspaceToolbar.Button onClick={handleUndo} tooltip="Undo (Cmd+Z)">
             <Undo size={14} />
-          </EditorToolbar.Button>
-          <EditorToolbar.Button onClick={handleRedo} tooltip="Redo (Cmd+Shift+Z)">
+          </WorkspaceToolbar.Button>
+          <WorkspaceToolbar.Button onClick={handleRedo} tooltip="Redo (Cmd+Shift+Z)">
             <Redo size={14} />
-          </EditorToolbar.Button>
-        </EditorToolbar.Group>
-      </EditorToolbar.Left>
+          </WorkspaceToolbar.Button>
+        </WorkspaceToolbar.Group>
+      </WorkspaceToolbar.Left>
 
-      <EditorToolbar.Center>
+      <WorkspaceToolbar.Center>
         <Breadcrumbs items={breadcrumbItems} />
-      </EditorToolbar.Center>
+      </WorkspaceToolbar.Center>
 
-      <EditorToolbar.Right>
-        <EditorToolbar.Group>
+      <WorkspaceToolbar.Right>
+        <WorkspaceToolbar.Group>
           <ModelSwitcher />
           <Badge variant="secondary">v1.2.0</Badge>
-        </EditorToolbar.Group>
+        </WorkspaceToolbar.Group>
 
-        <EditorToolbar.Separator />
+        <WorkspaceToolbar.Separator />
 
-        <EditorToolbar.Group>
-          <EditorToolbar.Button onClick={handleHelp} tooltip="Help">
+        <WorkspaceToolbar.Group>
+          <WorkspaceToolbar.Button onClick={handleHelp} tooltip="Help">
             <HelpCircle size={14} />
-          </EditorToolbar.Button>
-          <EditorToolbar.Button onClick={handleSettings} tooltip="Settings">
+          </WorkspaceToolbar.Button>
+          <WorkspaceToolbar.Button onClick={handleSettings} tooltip="Settings">
             <Settings size={14} />
-          </EditorToolbar.Button>
-        </EditorToolbar.Group>
-      </EditorToolbar.Right>
-    </EditorToolbar>
+          </WorkspaceToolbar.Button>
+        </WorkspaceToolbar.Group>
+      </WorkspaceToolbar.Right>
+    </WorkspaceToolbar>
   );
 }
 ```
@@ -521,7 +521,7 @@ export function ComplexToolbar() {
 
 ## Feature Gating Integration
 
-EditorToolbar integrates with `FeatureGate` for capability-based access:
+WorkspaceToolbar integrates with `FeatureGate` for capability-based access:
 
 ```typescript
 const groups: ToolbarGroup[] = [
@@ -555,7 +555,7 @@ const groups: ToolbarGroup[] = [
 
 ## Menubar Integration
 
-Use `EditorToolbar.Menubar` for menu bars:
+Use `WorkspaceToolbar.Menubar` for menu bars:
 
 ```typescript
 const menus = [
@@ -577,7 +577,7 @@ const menus = [
   },
 ];
 
-<EditorToolbar.Menubar menus={menus} />
+<WorkspaceToolbar.Menubar menus={menus} />
 ```
 
 ---
@@ -617,24 +617,24 @@ Toolbar uses CSS variables for theming:
 
 ## Related Components
 
-- [EditorShell](./editor-shell) - Editor container
-- [EditorButton](./editor-button) - Toolbar button
-- [EditorMenubar](./editor-menubar) - Menu bar component
+- [WorkspaceShell](./editor-shell) - Editor container
+- [WorkspaceButton](./editor-button) - Toolbar button
+- [WorkspaceMenubar](./editor-menubar) - Menu bar component
 - [FeatureGate](./feature-gate) - Feature gating wrapper
 
 ---
 
 ## Source Code
 
-**Location:** `packages/shared/src/shared/components/editor/EditorToolbar.tsx`
+**Location:** `packages/shared/src/shared/components/editor/WorkspaceToolbar.tsx`
 
 **External Dependencies:**
 - `@forge/ui/separator` - Separator component
-- `@forge/shared/components/editor/EditorButton` - Button component
+- `@forge/shared/components/editor/WorkspaceButton` - Button component
 - `@forge/shared/components/gating/FeatureGate` - Feature gating
-- `@forge/shared/components/editor/toolbar/EditorMenubar` - Menubar
-- `@forge/shared/components/editor/toolbar/EditorFileMenu` - File menu
-- `@forge/shared/components/editor/toolbar/EditorProjectSelect` - Project switcher
+- `@forge/shared/components/editor/toolbar/WorkspaceMenubar` - Menubar
+- `@forge/shared/components/editor/toolbar/WorkspaceFileMenu` - File menu
+- `@forge/shared/components/editor/toolbar/WorkspaceProjectSelect` - Project switcher
 
 **Toolbar Role:**
 ```typescript

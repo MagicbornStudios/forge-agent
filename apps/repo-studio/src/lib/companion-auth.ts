@@ -8,15 +8,27 @@ const COMPANION_ORIGINS_ENV = 'REPO_STUDIO_COMPANION_ORIGINS';
 const COMPANION_SECRET_HEADER = 'x-forge-companion-secret';
 const COMPANION_SECRET_ENV = 'REPO_STUDIO_COMPANION_SECRET';
 
+const DEFAULT_DEV_ORIGINS = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:3010',
+  'http://127.0.0.1:3010',
+];
+
 function getAllowedOrigins(): Set<string> {
   const raw = process.env[COMPANION_ORIGINS_ENV]?.trim();
-  if (!raw) return new Set();
-  return new Set(
-    raw
-      .split(/[,\s]+/)
-      .map((o) => o.trim().toLowerCase())
-      .filter(Boolean),
-  );
+  if (raw) {
+    return new Set(
+      raw
+        .split(/[,\s]+/)
+        .map((o) => o.trim().toLowerCase())
+        .filter(Boolean),
+    );
+  }
+  if (process.env.NODE_ENV === 'development') {
+    return new Set(DEFAULT_DEV_ORIGINS);
+  }
+  return new Set();
 }
 
 function isLocalhostOrigin(origin: string): boolean {

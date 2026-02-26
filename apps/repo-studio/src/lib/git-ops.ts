@@ -1,10 +1,12 @@
 import { spawnSync } from 'node:child_process';
 
-import { isSafeRepoPath, normalizeRelPath, resolveRepoRoot } from '@/lib/repo-files';
+import { resolveActiveProjectRoot } from '@/lib/project-root';
+import { isSafeRepoPath, normalizeRelPath } from '@/lib/repo-files';
 
 function runGit(args: string[]) {
+  const root = resolveActiveProjectRoot();
   const result = spawnSync('git', args, {
-    cwd: resolveRepoRoot(),
+    cwd: root,
     encoding: 'utf8',
   });
   return {
@@ -132,4 +134,24 @@ export function gitLog(limit = 30) {
     ...result,
     entries,
   };
+}
+
+export function gitPull(remote = 'origin', branch?: string) {
+  const normalizedRemote = String(remote || 'origin').trim() || 'origin';
+  const args = ['pull', normalizedRemote];
+  const normalizedBranch = String(branch || '').trim();
+  if (normalizedBranch) {
+    args.push(normalizedBranch);
+  }
+  return runGit(args);
+}
+
+export function gitPush(remote = 'origin', branch?: string) {
+  const normalizedRemote = String(remote || 'origin').trim() || 'origin';
+  const args = ['push', normalizedRemote];
+  const normalizedBranch = String(branch || '').trim();
+  if (normalizedBranch) {
+    args.push(normalizedBranch);
+  }
+  return runGit(args);
 }

@@ -36,11 +36,11 @@ export type RepoStudioConfig = {
   };
   assistant?: {
     enabled?: boolean;
-    defaultEditor?: 'loop-assistant' | 'codex-assistant' | string;
+    defaultTarget?: 'forge' | 'codex' | string;
     routeMode?: 'codex' | 'local' | 'proxy' | 'openrouter' | string;
     routePath?: string;
     routes?: {
-      loop?: {
+      forge?: {
         mode?: 'shared-runtime' | 'proxy' | 'openrouter' | 'local' | string;
         routePath?: string;
       };
@@ -89,10 +89,10 @@ export function storyScopePolicyFromConfig(config: RepoStudioConfig) {
   return value === 'soft' ? 'soft' : 'hard-with-override';
 }
 
-export function resolveLoopAssistantRoute(config: RepoStudioConfig) {
-  const loop = config?.assistant?.routes?.loop;
-  const mode = String(loop?.mode || 'shared-runtime').trim().toLowerCase();
-  const routePath = String(loop?.routePath || config?.assistant?.routePath || '').trim();
+export function resolveForgeAssistantRoute(config: RepoStudioConfig) {
+  const forge = config?.assistant?.routes?.forge;
+  const mode = String(forge?.mode || 'shared-runtime').trim().toLowerCase();
+  const routePath = String(forge?.routePath || config?.assistant?.routePath || '').trim();
   return {
     mode: mode || 'shared-runtime',
     routePath,

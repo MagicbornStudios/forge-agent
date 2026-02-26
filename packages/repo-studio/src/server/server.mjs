@@ -23,10 +23,9 @@ import {
 import {
   captureEnvDoctor,
   captureForgeLoopProgress,
-  collectRunbookDocs,
   collectLoopAnalytics,
 } from '../lib/snapshots.mjs';
-import { renderLegacyStudioHtml, renderStudioHtml } from './ui.mjs';
+import { renderStudioHtml } from './ui.mjs';
 
 const HOST = '127.0.0.1';
 const DEFAULT_PORT = 3864;
@@ -53,7 +52,7 @@ function json(res, statusCode, payload) {
 function normalizeView(view) {
   const normalized = String(view || 'env').toLowerCase();
   if (normalized === 'forge-loop') return 'planning';
-  if (['planning', 'env', 'commands', 'story', 'docs', 'git', 'loop-assistant', 'codex-assistant', 'diff', 'code', 'review-queue'].includes(normalized)) {
+  if (['planning', 'env', 'commands', 'story', 'git', 'assistant', 'diff', 'code', 'review-queue'].includes(normalized)) {
     return normalized;
   }
   return 'env';
@@ -249,7 +248,6 @@ export async function createStudioModel(options = {}) {
   const envDoctor = captureEnvDoctor({ profile, mode });
   const loop = captureForgeLoopProgress();
   const loopAnalytics = await collectLoopAnalytics(config);
-  const docs = await collectRunbookDocs(config);
   const assistant = await assistantStatusFromConfig(config);
 
   return {
@@ -262,7 +260,6 @@ export async function createStudioModel(options = {}) {
     loopReport: loop.report || loop.stderr,
     loopPayload: loop.payload || null,
     loopAnalytics,
-    docs,
     assistant,
     recentRuns: config?.localOverrides?.recentRuns || [],
     commandView: config?.localOverrides?.commandView || null,
@@ -285,11 +282,7 @@ export async function runRepoStudioServer(options = {}) {
     if (req.method === 'GET' && url.pathname === '/') {
       const model = await createStudioModel(options);
       res.writeHead(200, { 'content-type': 'text/html' });
-      if (options.legacyUi === true) {
-        res.end(renderLegacyStudioHtml(model));
-      } else {
-        res.end(renderStudioHtml(model));
-      }
+      res.end(renderStudioHtml(model));
       return;
     }
 

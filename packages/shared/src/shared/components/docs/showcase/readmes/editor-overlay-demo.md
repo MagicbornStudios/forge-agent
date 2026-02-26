@@ -1,4 +1,4 @@
-The **EditorOverlaySurface** component provides a declarative modal system for editors. It replaces complex modal registries with a simple, type-safe API for rendering modals, drawers, and popovers.
+The **WorkspaceOverlaySurface** component provides a declarative modal system for editors. It replaces complex modal registries with a simple, type-safe API for rendering modals, drawers, and popovers.
 
 ## Table of Contents
 
@@ -18,7 +18,7 @@ The **EditorOverlaySurface** component provides a declarative modal system for e
 
 ```
 ┌────────────────────────────────────────────────────┐
-│            EditorOverlaySurface                     │
+│            WorkspaceOverlaySurface                     │
 ├────────────────────────────────────────────────────┤
 │                                                     │
 │  1. Declarative Overlay Specs (one place)          │
@@ -110,10 +110,10 @@ const sizeClasses: Record<OverlaySize, string> = {
 
 ## Component API
 
-### EditorOverlaySurface Props
+### WorkspaceOverlaySurface Props
 
 ```typescript
-export interface EditorOverlaySurfaceProps {
+export interface WorkspaceOverlaySurfaceProps {
   /** Declarative overlay definitions */
   overlays: OverlaySpec[];
 
@@ -154,10 +154,10 @@ function MyEditor() {
   ];
 
   return (
-    <EditorShell>
+    <WorkspaceShell>
       <EditorCanvas />
 
-      <EditorOverlaySurface
+      <WorkspaceOverlaySurface
         overlays={overlays}
         activeOverlay={activeOverlay}
         onDismiss={() => setActiveOverlay(null)}
@@ -166,7 +166,7 @@ function MyEditor() {
       <Button onClick={() => setActiveOverlay({ id: 'create-node' })}>
         Create Node
       </Button>
-    </EditorShell>
+    </WorkspaceShell>
   );
 }
 ```
@@ -222,15 +222,15 @@ function DialogueWorkspace() {
   );
 
   return (
-    <EditorShell>
+    <WorkspaceShell>
       <GraphEditor onRequestCreateNode={handleRequestCreateNode} />
 
-      <EditorOverlaySurface
+      <WorkspaceOverlaySurface
         overlays={overlays}
         activeOverlay={activeOverlay}
         onDismiss={() => setActiveOverlay(null)}
       />
-    </EditorShell>
+    </WorkspaceShell>
   );
 }
 ```
@@ -474,7 +474,7 @@ function MyEditor() {
   const dismissOverlay = useEditorStore((s) => s.dismissOverlay);
 
   return (
-    <EditorOverlaySurface
+    <WorkspaceOverlaySurface
       overlays={overlays}
       activeOverlay={activeOverlay}
       onDismiss={dismissOverlay}
@@ -617,7 +617,7 @@ const handleDismiss = () => {
   }
 };
 
-<EditorOverlaySurface
+<WorkspaceOverlaySurface
   overlays={overlays}
   activeOverlay={activeOverlay}
   onDismiss={handleDismiss}
@@ -803,7 +803,7 @@ setActiveOverlay({
 
 ## Summary
 
-The **EditorOverlaySurface** provides:
+The **WorkspaceOverlaySurface** provides:
 
 ✅ **Declarative API** - Define overlays in one place
 ✅ **Type-safe payloads** - Full TypeScript support

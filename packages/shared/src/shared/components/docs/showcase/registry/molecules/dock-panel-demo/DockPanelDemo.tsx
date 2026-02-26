@@ -1,6 +1,6 @@
 'use client';
 
-import { EditorButton, WorkspacePanel } from '@forge/shared';
+import { WorkspaceButton, WorkspacePanel } from '@forge/shared';
 import { ShowcaseDemoSurface } from '../../../demos/harnesses';
 
 export function DockPanelDemo() {
@@ -10,7 +10,7 @@ export function DockPanelDemo() {
         <WorkspacePanel
           panelId="dock-panel-demo"
           title="Dock Panel"
-          headerActions={<EditorButton size="sm" variant="outline">Action</EditorButton>}
+          headerActions={<WorkspaceButton size="sm" variant="outline">Action</WorkspaceButton>}
         >
           <WorkspacePanel.Tab id="content" label="Content">
             <div className="space-y-2 text-xs text-muted-foreground p-3">

@@ -2,9 +2,12 @@
 
 import * as React from 'react';
 import { Database } from 'lucide-react';
-import { WorkspaceLayout } from '@forge/shared/components/editor';
+import { WorkspaceLayout } from '@forge/shared/components/workspace';
 import { DatabasePanel } from '@/components/features/database/DatabasePanel';
 import { createHiddenPanelSet, isPanelVisible, type RepoWorkspaceProps } from './types';
+
+export const WORKSPACE_ID = 'database' as const;
+export const WORKSPACE_LABEL = 'Database';
 
 export function DatabaseWorkspace({
   layoutId,

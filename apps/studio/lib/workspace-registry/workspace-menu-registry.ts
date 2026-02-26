@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { create } from 'zustand';
-import type { EditorMenubarMenu, EditorMenubarItem } from '@forge/shared/components/editor';
+import type { WorkspaceMenubarMenu, WorkspaceMenubarItem } from '@forge/shared/components/workspace';
 
 export type MenuScope = 'app' | 'workspace';
 
@@ -16,7 +16,7 @@ export interface MenuEntry {
   target?: string;
   menuId: string;
   label: string;
-  items: EditorMenubarItem[];
+  items: WorkspaceMenubarItem[];
 }
 
 const STANDARD_MENU_ORDER = ['file', 'view', 'edit', 'state', 'settings', 'help'] as const;
@@ -32,11 +32,11 @@ export interface MenuRegistryState {
     scope: MenuScope,
     context: MenuRegistryContext,
     menuId: string,
-    items: EditorMenubarItem[],
+    items: WorkspaceMenubarItem[],
     options?: { label?: string; target?: string }
   ) => void;
   unregisterMenu: (scope: MenuScope, context: MenuRegistryContext, menuId: string) => void;
-  getMenusForTarget: (target: string | undefined, activeWorkspaceId: string | null) => EditorMenubarMenu[];
+  getMenusForTarget: (target: string | undefined, activeWorkspaceId: string | null) => WorkspaceMenubarMenu[];
 }
 
 export const useMenuRegistryStore = create<MenuRegistryState>((set, get) => ({
@@ -68,7 +68,7 @@ export const useMenuRegistryStore = create<MenuRegistryState>((set, get) => ({
   },
   getMenusForTarget: (target, activeWorkspaceId) => {
     const { entries } = get();
-    const byMenuId = new Map<string, { label: string; items: EditorMenubarItem[] }>();
+    const byMenuId = new Map<string, { label: string; items: WorkspaceMenubarItem[] }>();
     const list = Object.values(entries);
     // Process app scope first so workspace items follow (same menuId).
     list.sort((a, b) => (a.scope === 'app' && b.scope !== 'app' ? -1 : a.scope !== 'app' && b.scope === 'app' ? 1 : 0));
@@ -85,7 +85,7 @@ export const useMenuRegistryStore = create<MenuRegistryState>((set, get) => ({
       byMenuId.set(entry.menuId, { label: entry.label, items });
     }
 
-    const result: EditorMenubarMenu[] = [];
+    const result: WorkspaceMenubarMenu[] = [];
     for (const menuId of STANDARD_MENU_ORDER) {
       const data = byMenuId.get(menuId);
       if (data && data.items.length > 0) {
@@ -102,7 +102,7 @@ export const useMenuRegistryStore = create<MenuRegistryState>((set, get) => ({
 }));
 
 /** Subscribe to merged menus for a target and active workspace. Memoizes result so getSnapshot is stable. */
-export function useMenuRegistry(target: string | undefined, activeWorkspaceId: string | null): EditorMenubarMenu[] {
+export function useMenuRegistry(target: string | undefined, activeWorkspaceId: string | null): WorkspaceMenubarMenu[] {
   const entries = useMenuRegistryStore((s) => s.entries);
   return React.useMemo(
     () => {

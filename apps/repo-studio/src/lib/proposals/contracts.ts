@@ -4,7 +4,7 @@ export type RepoProposalStatus = 'pending' | 'applied' | 'rejected' | 'failed';
 
 export type RepoProposal = {
   id: string;
-  assistantTarget: 'loop-assistant' | 'codex-assistant' | string;
+  assistantTarget: 'forge' | 'codex' | string;
   loopId: string;
   domain: string;
   scopeRoots: string[];
@@ -73,9 +73,11 @@ export function sanitizeMetadata(value: unknown): Record<string, unknown> | null
 }
 
 export function sanitizeProposal(entry: Partial<RepoProposal>): RepoProposal {
+  const normalizedTarget = String(entry.assistantTarget || '').trim().toLowerCase();
+  const assistantTarget = normalizedTarget === 'codex' ? 'codex' : 'forge';
   return {
     id: String(entry.id || randomUUID()),
-    assistantTarget: String(entry.assistantTarget || 'codex-assistant'),
+    assistantTarget,
     loopId: String(entry.loopId || 'default'),
     domain: String(entry.domain || '').trim().toLowerCase(),
     scopeRoots: sanitizeList(entry.scopeRoots),

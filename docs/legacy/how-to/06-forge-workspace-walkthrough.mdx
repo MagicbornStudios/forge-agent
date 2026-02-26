@@ -18,19 +18,19 @@ Build a Dialogue Editor that:
 - Supports AI plan -> patch -> review -> commit with streamed output.
 - Highlights changed nodes and edges after AI actions or patch acceptance.
 
-## 0. EditorApp + AppProviders (app-level)
+## 0. WorkspaceApp + AppProviders (app-level)
 
-Dialogue Editor lives inside the **App Shell**, which uses `EditorApp`. Providers
+Dialogue Editor lives inside the **App Shell**, which uses `WorkspaceApp`. Providers
 are centralized in `AppProviders` so a consumer app can drop in the shell with
 minimal setup.
 
 ```tsx
 // apps/studio/components/AppShell.tsx
 return (
-  <EditorApp>
-    <EditorApp.Tabs>...</EditorApp.Tabs>
-    <EditorApp.Content>...</EditorApp.Content>
-  </EditorApp>
+  <WorkspaceApp>
+    <WorkspaceApp.Tabs>...</WorkspaceApp.Tabs>
+    <WorkspaceApp.Content>...</WorkspaceApp.Content>
+  </WorkspaceApp>
 );
 ```
 
@@ -57,7 +57,7 @@ owns state and content.
 ```tsx
 // apps/studio/components/editors/DialogueEditor.tsx
 return (
-  <EditorShell
+  <WorkspaceShell
     editorId="dialogue"
     title="Dialogue"
     subtitle={graph?.title}
@@ -65,12 +65,12 @@ return (
     theme={workspaceTheme}
     className="flex flex-col h-full min-h-0 bg-background"
   >
-    <EditorHeader>...</EditorHeader>
-    <EditorToolbar>...</EditorToolbar>
+    <WorkspaceHeader>...</WorkspaceHeader>
+    <WorkspaceToolbar>...</WorkspaceToolbar>
     <DockLayout main={mainPanel} right={inspectorPanel} bottom={bottomPanel} />
-    <EditorStatusBar>...</EditorStatusBar>
-    <EditorOverlaySurface ... />
-  </EditorShell>
+    <WorkspaceStatusBar>...</WorkspaceStatusBar>
+    <WorkspaceOverlaySurface ... />
+  </WorkspaceShell>
 );
 ```
 
@@ -104,7 +104,7 @@ Expected behavior:
 ## 4. Inspector sections
 
 Selection-driven inspector sections live in `dialogueInspectorSections`, then are
-rendered with `EditorInspector` inside a `DockPanel`.
+rendered with `WorkspaceInspector` inside a `DockPanel`.
 
 Key file: `apps/studio/components/forge/ForgeInspectorSections.tsx`.
 
@@ -124,14 +124,14 @@ Key files:
 
 Expected behavior:
 - Plan renders in chat (PlanCard + PlanActionBar).
-- Patches apply to draft, and `EditorReviewBar` appears for accept/revert.
+- Patches apply to draft, and `WorkspaceReviewBar` appears for accept/revert.
 - Accept commits the draft (save); Revert reloads server state.
 
 ## 6. DockLayout + panels
 
 Dialogue Editor uses `DockLayout` for resizable panels. The left panel uses
 `PanelTabs` for graph lists and node palette; the right panel uses
-`EditorInspector`. The workbench (Settings/Debug/Logs) is a **slide-out Drawer** from the bottom, not a dock panel.
+`WorkspaceInspector`. The workbench (Settings/Debug/Logs) is a **slide-out Drawer** from the bottom, not a dock panel.
 
 Key file: `apps/studio/components/editors/DialogueEditor.tsx`.
 

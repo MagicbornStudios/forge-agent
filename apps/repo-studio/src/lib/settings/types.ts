@@ -1,4 +1,4 @@
-import { REPO_SETTINGS_GENERATED_DEFAULTS } from '@/lib/settings/generated/defaults';
+import { REPO_SETTINGS_GENERATED_DEFAULTS } from '../app-spec.generated';
 
 export type RepoSettingsScope = 'app' | 'workspace' | 'local';
 

@@ -5,12 +5,15 @@ import {
 import {
   findProposalByApprovalTokenFromRepository,
   findProposalByIdFromRepository,
+  isProposalStoreUnavailableError,
   listProposalsFromRepository,
+  ProposalStoreUnavailableError,
   transitionProposalInRepository,
   upsertPendingProposalInRepository,
 } from './repository';
 
 export type { RepoProposal, RepoProposalStatus } from './contracts';
+export { isProposalStoreUnavailableError, ProposalStoreUnavailableError };
 
 export async function listProposals() {
   return listProposalsFromRepository();

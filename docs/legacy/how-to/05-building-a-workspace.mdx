@@ -22,8 +22,8 @@ context yet.
 
 ## Step 2: Shell + slots
 
-Create `MyEditor.tsx`. Compose `EditorShell`, `EditorHeader`, `EditorToolbar`,
-`DockLayout` (with a placeholder `main`), `EditorStatusBar`, `EditorOverlaySurface`.
+Create `MyEditor.tsx`. Compose `WorkspaceShell`, `WorkspaceHeader`, `WorkspaceToolbar`,
+`DockLayout` (with a placeholder `main`), `WorkspaceStatusBar`, `WorkspaceOverlaySurface`.
 No data binding yet.
 
 **AI at this stage:** Same as step 1; editor is just layout.
@@ -39,7 +39,7 @@ inspector and the Copilot contract.
 ## Step 4: Inspector (optional)
 
 Use `DockLayout`'s `right` slot with a `DockPanel` that wraps
-Inspector (`EditorInspector`). Pass `selection` and `sections` (or children). Selection
+Inspector (`WorkspaceInspector`). Pass `selection` and `sections` (or children). Selection
 shape is shared: see `packages/shared/src/shared/workspace/selection.ts`.
 
 **AI at this stage:** Still no contract; AI does not see selection or system state.
@@ -59,7 +59,7 @@ actions (create/update/delete, save). No plan-execute-review yet unless you add 
 
 If your editor supports plan-execute-review-commit: add a plan API
 (e.g. `POST /api/my/plan`), actions like `my_createPlan` and `my_executePlan`,
-and `EditorReviewBar` between Toolbar and DockLayout. Render the plan in chat with
+and `WorkspaceReviewBar` between Toolbar and DockLayout. Render the plan in chat with
 `PlanCard` + `PlanActionBar` (see ForgePlanCard) so the user can Apply/Dismiss
 before executing. Wire `visible` to `(isDirty && pendingFromPlan)`, `onRevert`
 to refetch, `onAccept` to clear pending. State stays in your store.

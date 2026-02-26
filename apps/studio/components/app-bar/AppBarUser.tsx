@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { User } from 'lucide-react';
-import { EditorButton } from '@forge/shared/components/editor';
+import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
+import { LogIn, LogOut, User } from 'lucide-react';
+import { WorkspaceButton } from '@forge/shared/components/workspace';
 import { FeatureGate } from '@forge/shared';
 import { CAPABILITIES } from '@forge/shared/entitlements';
 import {
@@ -15,6 +17,9 @@ import {
 import { Avatar, AvatarFallback } from '@forge/ui/avatar';
 import { useMe } from '@/lib/data/hooks';
 import { API_ROUTES } from '@/lib/api-client/routes';
+import { logout } from '@/lib/api-client/auth';
+import { authKeys } from '@/lib/data/keys';
+import { SignInSheet } from './SignInSheet';
 
 async function openConnectOnboarding(): Promise<void> {
   const res1 = await fetch(API_ROUTES.STRIPE_CONNECT_CREATE_ACCOUNT, {
@@ -57,30 +62,43 @@ function getDisplayName(name: string | null | undefined, email: string | null | 
 export function AppBarUser() {
   const { data, isLoading } = useMe();
   const user = data?.user ?? null;
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const [signInOpen, setSignInOpen] = useState(false);
   const [connectLoading, setConnectLoading] = useState(false);
 
   if (isLoading) {
     return (
-      <EditorButton variant="ghost" size="sm" disabled>
+      <WorkspaceButton variant="ghost" size="sm" disabled>
         <User className="size-3 shrink-0" />
         <span className="hidden sm:inline">…</span>
-      </EditorButton>
+      </WorkspaceButton>
     );
   }
 
   if (!user) {
     return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <EditorButton variant="ghost" size="sm">
-            <User className="size-3 shrink-0" />
-            <span className="hidden sm:inline">Not signed in</span>
-          </EditorButton>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem disabled className="text-xs">Not signed in</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <WorkspaceButton variant="ghost" size="sm">
+              <User className="size-3 shrink-0" />
+              <span className="hidden sm:inline">Not signed in</span>
+            </WorkspaceButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem disabled className="text-xs">
+              Not signed in
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-xs" onClick={() => setSignInOpen(true)}>
+              <LogIn className="mr-2 size-4" />
+              Sign in
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <SignInSheet open={signInOpen} onOpenChange={setSignInOpen} />
+      </>
     );
   }
 
@@ -90,12 +108,12 @@ export function AppBarUser() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <EditorButton variant="ghost" size="sm">
+        <WorkspaceButton variant="ghost" size="sm">
           <Avatar className="h-6 w-6 shrink-0">
             <AvatarFallback className="text-xs">{initial}</AvatarFallback>
           </Avatar>
           <span className="hidden sm:inline truncate max-w-[120px]">{displayName}</span>
-        </EditorButton>
+        </WorkspaceButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem disabled className="text-xs font-medium">
@@ -122,6 +140,22 @@ export function AppBarUser() {
             )}
           </>
         </FeatureGate>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="text-xs"
+          onClick={async () => {
+            try {
+              await logout();
+            } catch {
+              // still clear UI (e.g. session already gone)
+            }
+            await queryClient.invalidateQueries({ queryKey: authKeys.me() });
+            router?.refresh?.();
+          }}
+        >
+          <LogOut className="mr-2 size-4" />
+          Log out
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

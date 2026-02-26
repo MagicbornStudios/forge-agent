@@ -2,6 +2,9 @@ import type { DependencyHealth, EnvDoctorPayload, RepoMode, RuntimeDepsResponse 
 import type { PlanningSnapshot, RepoCommandEntry, RepoLoopEntry } from '@/lib/repo-data';
 import type { RepoCommandView } from '@/lib/types';
 import type { CommandRow } from '@/components/hooks/useCommandFilters';
+import { PINNED_PANEL_IDS } from '@/lib/app-spec.generated';
+
+const PINNED_PANEL_IDS_SET = new Set(PINNED_PANEL_IDS);
 
 export type RepoCommandSourceOption = Array<'all' | RepoCommandEntry['source']>;
 
@@ -47,10 +50,15 @@ export interface RepoWorkspaceProps {
   panelContext: RepoStudioPanelContext;
 }
 
+export function isPinnedPanelId(panelId: string) {
+  return PINNED_PANEL_IDS_SET.has(String(panelId || '').trim());
+}
+
 export function createHiddenPanelSet(hiddenPanelIds: string[]) {
   return new Set(
     (hiddenPanelIds || [])
       .map((panelId) => String(panelId || '').trim())
+      .filter((panelId) => !isPinnedPanelId(panelId))
       .filter(Boolean),
   );
 }

@@ -9,6 +9,7 @@ Workspace Platform Engineer: owns `packages/shared/src/shared` (editor component
 - **Public layout API:** Use `WorkspaceLayout` + `WorkspacePanel` for docked panel composition.
 - **Workspace semantics:** Workspace = tab/root surface. Panel = content unit inside workspace rails.
 - **Assistant semantics:** shared `AssistantPanel` (`shared/components/assistant-ui/AssistantPanel.tsx`) is canonical for runtime wiring.
+- **Assistant runtime model contract:** model switcher options must be runtime-scoped/API-backed (no hardcoded app-local model arrays in assistant panels).
 
 ## Workspace (internal types only)
 
@@ -18,22 +19,22 @@ Workspace Platform Engineer: owns `packages/shared/src/shared` (editor component
 - **Overlays** — `OverlaySpec[]` + `ActiveOverlay`; no registry. Editor declares list in one place.
 - **Capabilities** — `WorkspaceCapabilities` interface; editors implement, chat calls. No imperative UI refs.
 - **Workspace UI spec** — Declarative slots: `header`, `toolbar`, `left`, `main`, `right`, `statusBar`, `bottom`, `overlays`.
-- **Modal** — Legacy `ModalRoute` / `ModalRegistry`; prefer OverlaySpec + EditorOverlaySurface for new code.
-- **Editor shell**: Declarative, slot-based. Recommended: use `EditorShell.Header`, `.Toolbar`, `.Layout`, `.StatusBar`, `.Overlay`, `.Settings` so anatomy is explicit.
-- **Workspace layout (rails)**: Left, main, right, bottom are rails. Use inline `WorkspaceLayout.Left`/`.Main`/`.Right`/`.Bottom` with `WorkspaceLayout.Panel` children (`id`, `title`, `icon?`).
-- **Deprecated registration primitives**: `EditorRail`, `EditorPanel`, `PanelRegistrationContext` are legacy and should not be introduced in new work.
+- **Modal** — Legacy `ModalRoute` / `ModalRegistry`; prefer OverlaySpec + WorkspaceOverlaySurface for new code.
+- **Editor shell**: Declarative, slot-based. Recommended: use `WorkspaceShell.Header`, `.Toolbar`, `.Layout`, `.StatusBar`, `.Overlay`, `.Settings` so anatomy is explicit.
+- **Workspace layout (rails)**: Left, main, right, bottom are rails. Use inline `WorkspaceLayout.Left`/`.Main`/`.Right`/`.Bottom` with `WorkspaceLayout.Panel` children (`id`, `title`, `icon?`). **Left** and **Right** support optional **`hideTabBar`** for static rails (no Dockview tab strip). The main area can host a **viewport** (viewport panels: files/Monaco, previews, graphs).
+- **Deprecated registration primitives**: `WorkspaceRail`, `WorkspaceRailPanel`, `PanelRegistrationContext` are legacy and should not be introduced in new work.
 - **No render-helper panel factories**: compose workspace panels inline where the workspace is defined.
 - **Atomic design**: shadcn atoms live in `packages/ui/src/components/ui/*`; shared editor UI composes those atoms into molecules.
 - **Styles**: Single source in `packages/shared/src/shared/styles/`. Themes are data-driven (`data-theme` on `<html>` or editor root). Do not duplicate theme tokens elsewhere.
-- **Density**: Editor UI is compact by default. Use tokenized spacing (`--control-*`, `--panel-padding`, `--tab-height`) and set `data-density` on `EditorShell` for overrides.
+- **Density**: Editor UI is compact by default. Use tokenized spacing (`--control-*`, `--panel-padding`, `--tab-height`) and set `data-density` on `WorkspaceShell` for overrides.
 - **No cross-domain imports**: Shared should not import from app routes or domain-specific code (e.g. Dialogue, Character). UI atoms are imported from `@forge/ui`.
-- **Editor UI primitives**: Use `EditorButton`, `PanelTabs`, and `EditorTooltip` for tooltip-enabled UI.
+- **Editor UI primitives**: Use `WorkspaceButton`, `PanelTabs`, and `WorkspaceTooltip` for tooltip-enabled UI.
 - **Media components**: Reusable `MediaCard` and `GenerateMediaModal` live under `shared/components/media` for entity media slots.
 - **Assistant UI + tool UI**: runtime wiring belongs in `shared/components/assistant-ui/AssistantPanel.tsx`; tool surfaces live under `shared/components/tool-ui`.
 
 ## Adding a new slot or panel
 
-Recommended composition is slot-based (`EditorShell.*`, `EditorApp.Tabs.Menubar`/`.Actions`, `WorkspaceLayout.*`); raw children and prop-based APIs remain supported for backward compatibility. Follow the "Recommended editor scaffold" in `components/editor/README.md` (and dev-kit docs when present). Extend the editor types and `DockLayout` (or equivalent) in `packages/shared/src/shared/components/editor/`. Document the new slot in `components/editor/README.md`. Do not add one-off layouts per domain.
+Recommended composition is slot-based (`WorkspaceShell.*`, `WorkspaceApp.Tabs.Menubar`/`.Actions`, `WorkspaceLayout.*`); raw children and prop-based APIs remain supported for backward compatibility. Follow the "Recommended editor scaffold" in `components/workspace/README.md` (and dev-kit docs when present). Extend the editor types and `DockLayout` (or equivalent) in `packages/shared/src/shared/components/workspace/`. Document the new slot in `components/workspace/README.md`. Do not add one-off layouts per domain.
 
 ## Unified editor / Assistant
 
@@ -42,7 +43,6 @@ Recommended composition is slot-based (`EditorShell.*`, `EditorApp.Tabs.Menubar`
 ## Pitfalls
 
 - Do not duplicate theme tokens in `apps/studio/app/globals.css`; see **docs/agent-artifacts/core/errors-and-attempts.md**.
-- Vendored dependencies (e.g. Twick) live under `vendor/`; follow [How-to 24](../../../../docs/how-to/24-vendoring-third-party-code.mdx) for version alignment, submodule updates, and Verdaccio publishing.
+- Vendored dependencies (e.g. GSD) live under `vendor/`; follow [How-to 24](../../../../docs/how-to/24-vendoring-third-party-code.mdx) for version alignment, submodule updates, and Verdaccio publishing.
 - Forge publish flow: `registry:forge:build` + `registry:forge:publish:local`.
-- Twick publish flow: `vendor:twick:build` + `vendor:twick:publish:local`.
 - Verdaccio login is optional; 409 conflict fix is documented in [How-to 25 - Verdaccio](../../../../docs/how-to/25-verdaccio-local-registry.mdx).

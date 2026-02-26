@@ -2,7 +2,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-import { isPathWithinRoots, isSafeRepoPath, listScopeRoots, normalizeRelPath, resolveRepoRoot } from '@/lib/repo-files';
+import { resolveActiveProjectRoot } from '@/lib/project-root';
+import { isPathWithinRoots, isSafeRepoPath, listScopeRoots, normalizeRelPath } from '@/lib/repo-files';
 import { readRepoStudioConfig, storyRootsFromConfig } from '@/lib/repo-studio-config';
 
 type DiffScope = 'workspace' | 'loop' | 'story' | 'planning';
@@ -26,7 +27,7 @@ function parseStatus(stdout: string) {
 
 function runGit(args: string[]) {
   return spawnSync('git', args, {
-    cwd: resolveRepoRoot(),
+    cwd: resolveActiveProjectRoot(),
     encoding: 'utf8',
   });
 }
@@ -40,7 +41,7 @@ function safeRef(ref: string) {
 async function scopeRoots(scope: DiffScope, loopId?: string) {
   if (scope === 'workspace') return ['.'];
   if (scope === 'planning') return ['.planning'];
-  if (scope === 'loop') return listScopeRoots(resolveRepoRoot(), 'loop', loopId);
+  if (scope === 'loop') return listScopeRoots(resolveActiveProjectRoot(), 'loop', loopId);
   const config = await readRepoStudioConfig();
   return storyRootsFromConfig(config);
 }
@@ -70,7 +71,7 @@ export async function getDiffStatus(input?: { scope?: DiffScope; loopId?: string
 
 async function readWorktreeFile(filePath: string) {
   try {
-    return await fs.readFile(path.join(resolveRepoRoot(), filePath), 'utf8');
+    return await fs.readFile(path.join(resolveActiveProjectRoot(), filePath), 'utf8');
   } catch {
     return '';
   }

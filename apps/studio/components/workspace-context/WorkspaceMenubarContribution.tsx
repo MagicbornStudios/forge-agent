@@ -1,15 +1,15 @@
 'use client';
 
 import * as React from 'react';
-import { usePanelRegistration } from '@forge/shared/components/editor';
-import { createEditorMenubarMenus, type CreateEditorMenubarMenusOptions } from '@forge/shared/components/editor';
-import type { EditorMenubarItem } from '@forge/shared/components/editor';
+import { usePanelRegistration } from '@forge/shared/components/workspace';
+import { createWorkspaceMenubarMenus, type CreateWorkspaceMenubarMenusOptions } from '@forge/shared/components/workspace';
+import type { WorkspaceMenubarItem } from '@forge/shared/components/workspace';
 import { useMenuRegistryStore } from '@/lib/workspace-registry/workspace-menu-registry';
 
 export interface WorkspaceMenubarMenuSlotProps {
   id: string;
   label: string;
-  items: EditorMenubarItem[];
+  items: WorkspaceMenubarItem[];
 }
 
 /**
@@ -39,11 +39,11 @@ export function WorkspaceMenubarContribution({ children }: { children?: React.Re
   const unregisterMenu = useMenuRegistryStore((s) => s.unregisterMenu);
 
   const menus = React.useMemo(() => {
-    const options: CreateEditorMenubarMenusOptions = { file: [] };
+    const options: CreateWorkspaceMenubarMenusOptions = { file: [] };
     React.Children.forEach(children, (child) => {
       if (isMenuSlotChild(child)) {
         const { id, label, items } = child.props;
-        const key = id as keyof CreateEditorMenubarMenusOptions;
+        const key = id as keyof CreateWorkspaceMenubarMenusOptions;
         if (key === 'file') {
           options.file = items;
         } else if (key === 'view') {
@@ -61,7 +61,7 @@ export function WorkspaceMenubarContribution({ children }: { children?: React.Re
         }
       }
     });
-    return createEditorMenubarMenus(options);
+    return createWorkspaceMenubarMenus(options);
   }, [children]);
 
   React.useEffect(() => {

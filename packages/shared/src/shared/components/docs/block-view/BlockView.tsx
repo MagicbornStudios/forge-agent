@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Code2, Eye, X } from 'lucide-react';
 import { cn } from '@forge/ui/lib/utils';
-import { WorkspacePanel, EditorButton } from '../../editor';
+import { WorkspacePanel, WorkspaceButton } from '../../workspace';
 import { BlockViewCodePanel } from './BlockViewCodePanel';
 import { BlockViewPreviewPanel } from './BlockViewPreviewPanel';
 import type { BlockViewMode, BlockViewProps } from './types';
@@ -62,14 +62,14 @@ export function BlockView({
         hideTitleBar={true}
         headerActions={
           onClose ? (
-            <EditorButton
+            <WorkspaceButton
               size="sm"
               variant="ghost"
               onClick={onClose}
               aria-label="Close"
             >
               <X className="size-3.5" />
-            </EditorButton>
+            </WorkspaceButton>
           ) : undefined
         }
         scrollable={false}

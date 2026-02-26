@@ -5,17 +5,18 @@ import { useProjects, useCreateProject } from '@/lib/data/hooks';
 import { ProjectSwitcher } from '@/components/ProjectSwitcher';
 import { StudioApp } from '@forge/shared/components/app';
 import {
-  EditorMenubar,
-  EditorFileMenu,
-  EditorHelpMenu,
-  type EditorMenubarItem,
-} from '@forge/shared/components/editor';
+  WorkspaceMenubar,
+  WorkspaceFileMenu,
+  WorkspaceHelpMenu,
+  type WorkspaceMenubarItem,
+} from '@forge/shared/components/workspace';
 import { AppSettingsSheet } from '@/components/settings/AppSettingsSheet';
 import { CreateListingSheet } from '@/components/listings/CreateListingSheet';
 import { useAppSettingsMenuItems } from '@/lib/settings/useAppSettingsMenuItems';
 import { Toaster } from '@forge/ui/sonner';
 import { SidebarTrigger } from '@forge/ui/sidebar';
-import { CompanionRuntimeSwitch } from '@forge/shared';
+import { CompanionIndicator } from '@forge/shared';
+import { AppBarUser } from '@/components/app-bar';
 import { useSettingsStore } from '@/lib/settings/store';
 import { useWorkspaceRegistryStore } from '@/lib/workspace-registry/workspace-registry';
 import { useMenuRegistry } from '@/lib/workspace-registry/workspace-menu-registry';
@@ -44,8 +45,8 @@ function UnifiedMenubar({
   );
   const appSettingsItems = useAppSettingsMenuItems({ onOpenCreateListing });
   const merged = useMemo(() => {
-    const helpItems = [EditorHelpMenu.Welcome(), EditorHelpMenu.About()];
-    const editorsSubmenu: EditorMenubarItem = {
+    const helpItems = [WorkspaceHelpMenu.Welcome(), WorkspaceHelpMenu.About()];
+    const editorsSubmenu: WorkspaceMenubarItem = {
       id: 'file-editors',
       label: 'Editors',
       submenu: [
@@ -53,17 +54,17 @@ function UnifiedMenubar({
         { id: 'file-open-character-editor', label: 'Character', onSelect: openCharacterWorkspace },
       ],
     };
-    const stripEdgeSeparators = (items: EditorMenubarItem[]): EditorMenubarItem[] => {
+    const stripEdgeSeparators = (items: WorkspaceMenubarItem[]): WorkspaceMenubarItem[] => {
       let start = 0;
       let end = items.length;
       while (start < end && items[start]?.type === 'separator') start += 1;
       while (end > start && items[end - 1]?.type === 'separator') end -= 1;
       return items.slice(start, end);
     };
-    const baseFileItems: EditorMenubarItem[] = [];
+    const baseFileItems: WorkspaceMenubarItem[] = [];
     if (openProjectSwitcher) {
-      baseFileItems.push(EditorFileMenu.SwitchProject({ onSelect: openProjectSwitcher }));
-      baseFileItems.push(EditorFileMenu.Separator('file-sep-before-editors'));
+      baseFileItems.push(WorkspaceFileMenu.SwitchProject({ onSelect: openProjectSwitcher }));
+      baseFileItems.push(WorkspaceFileMenu.Separator('file-sep-before-editors'));
     }
     baseFileItems.push(editorsSubmenu);
 
@@ -77,11 +78,11 @@ function UnifiedMenubar({
     const fileMenuFromEditor = editorMenus.find((m) => m.id === 'file');
     const otherEditorMenus = editorMenus.filter((m) => m.id !== 'file');
     const contributedFileItems = stripEdgeSeparators(fileMenuFromEditor?.items ?? []);
-    const fileItems: EditorMenubarItem[] =
+    const fileItems: WorkspaceMenubarItem[] =
       contributedFileItems.length > 0
         ? [
             ...baseFileItems,
-            EditorFileMenu.Separator('file-sep-before-editor-items'),
+            WorkspaceFileMenu.Separator('file-sep-before-editor-items'),
             ...contributedFileItems,
           ]
         : baseFileItems;
@@ -99,7 +100,7 @@ function UnifiedMenubar({
     openDialogueWorkspace,
     openCharacterWorkspace,
   ]);
-  return <EditorMenubar menus={merged} />;
+  return <WorkspaceMenubar menus={merged} />;
 }
 
 function ActiveEditorContent({ activeWorkspaceId }: { activeWorkspaceId: string }) {
@@ -215,13 +216,16 @@ export function Studio() {
           </StudioApp.Tabs.Main>
 
           <StudioApp.Tabs.Right>
-            <CompanionRuntimeSwitch />
-            <SidebarTrigger
-              className="h-[var(--control-height-sm)] w-[var(--control-height-sm)] border border-border/60 bg-background text-muted-foreground shadow-[var(--shadow-xs)] hover:bg-accent/40 hover:text-foreground"
-              aria-label="Toggle Settings"
-            >
-              <Settings className="size-4" />
-            </SidebarTrigger>
+            <div className="flex items-center gap-[var(--control-gap,0.375rem)]">
+              <CompanionIndicator />
+              <AppBarUser />
+              <SidebarTrigger
+                className="h-[var(--control-height-sm)] w-[var(--control-height-sm)] border border-border/60 bg-background text-muted-foreground shadow-[var(--shadow-xs)] hover:bg-accent/40 hover:text-foreground"
+                aria-label="Toggle Settings"
+              >
+                <Settings className="size-4" />
+              </SidebarTrigger>
+            </div>
           </StudioApp.Tabs.Right>
         </StudioApp.Tabs>
 

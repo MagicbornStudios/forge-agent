@@ -5,13 +5,13 @@ import { toast } from 'sonner';
 
 // New editor platform components
 import {
-  EditorShell,
-  EditorToolbar,
-  EditorStatusBar,
-  EditorOverlaySurface,
+  WorkspaceShell,
+  WorkspaceToolbar,
+  WorkspaceStatusBar,
+  WorkspaceOverlaySurface,
   WorkspacePanel,
   WorkspaceLayout,
-} from '@forge/shared/components/editor';
+} from '@forge/shared/components/workspace';
 import type { OverlaySpec, ActiveOverlay, Selection, WorkspaceLayoutRef } from '@forge/shared';
 import { isEntity } from '@forge/shared';
 
@@ -64,6 +64,9 @@ import { NodeDragProvider } from '@/components/graph/useNodeDrag';
 import { useCharacterAssistantContract } from '@forge/domain-character';
 import { CAPABILITIES, useEntitlements } from '@forge/shared/entitlements';
 
+export const WORKSPACE_ID = 'character' as const;
+export const WORKSPACE_LABEL = 'Characters';
+
 // ---------------------------------------------------------------------------
 // Editor descriptor for registry; defaults live on the component.
 // ---------------------------------------------------------------------------
@@ -114,13 +117,13 @@ function useCharacterSelection(
  * CharacterWorkspace — AI-first character management editor.
  *
  * Uses the new editor platform components:
- * - `EditorShell` (replaces `WorkspaceShell`)
- * - `EditorHeader` (replaces `WorkspaceHeader`)
- * - `EditorToolbar` (replaces `WorkspaceToolbar`)
+ * - `WorkspaceShell` (replaces `WorkspaceShell`)
+ * - `WorkspaceHeader` (replaces `WorkspaceHeader`)
+ * - `WorkspaceToolbar` (replaces `WorkspaceToolbar`)
  * - `WorkspaceLayout` (replaces `WorkspaceLayoutGrid`) — resizable panels
  * - `WorkspacePanel` (wraps left/right panels with title + scroll)
- * - `EditorStatusBar` (replaces `WorkspaceStatusBar`)
- * - `EditorOverlaySurface` (replaces `WorkspaceOverlaySurface`)
+ * - `WorkspaceStatusBar` (replaces `WorkspaceStatusBar`)
+ * - `WorkspaceOverlaySurface` (replaces `WorkspaceOverlaySurface`)
  */
 export function CharacterWorkspace() {
   const workspaceId = 'character';
@@ -530,7 +533,7 @@ export function CharacterWorkspace() {
 
   return (
     <NodeDragProvider>
-      <EditorShell
+      <WorkspaceShell
         editorId="character"
         title="Characters"
         subtitle={activeChar?.name}
@@ -539,31 +542,31 @@ export function CharacterWorkspace() {
         density={editorDensity}
         className="bg-canvas"
       >
-        <EditorToolbar className="bg-sidebar border-b border-sidebar-border">
-          <EditorToolbar.Left>
-            <EditorToolbar.Group className="gap-[var(--control-gap)]">
-            </EditorToolbar.Group>
+        <WorkspaceToolbar className="bg-sidebar border-b border-sidebar-border">
+          <WorkspaceToolbar.Left>
+            <WorkspaceToolbar.Group className="gap-[var(--control-gap)]">
+            </WorkspaceToolbar.Group>
             <span className="text-xs text-muted-foreground">
               {characters.length} character{characters.length !== 1 ? 's' : ''} &middot;{' '}
               {relationships.length} relationship{relationships.length !== 1 ? 's' : ''}
             </span>
-          </EditorToolbar.Left>
-          <EditorToolbar.Right>
+          </WorkspaceToolbar.Left>
+          <WorkspaceToolbar.Right>
           {showAgentName !== false && (
             <Badge variant="secondary" className="text-xs">
               Agent: {agentName ?? 'Default'}
             </Badge>
           )}
-          <EditorToolbar.Separator />
-          <EditorToolbar.Button
+          <WorkspaceToolbar.Separator />
+          <WorkspaceToolbar.Button
             onClick={() => openOverlay(CREATE_CHARACTER_OVERLAY_ID)}
             variant="outline"
             size="sm"
           >
               Add Character
-            </EditorToolbar.Button>
-          </EditorToolbar.Right>
-        </EditorToolbar>
+            </WorkspaceToolbar.Button>
+          </WorkspaceToolbar.Right>
+        </WorkspaceToolbar>
 
         <WorkspaceContextProvider workspaceId="character" viewportId={viewportId}>
           <WorkspaceMenubarContribution>
@@ -593,7 +596,7 @@ export function CharacterWorkspace() {
               <WorkspaceLayout.Panel id="right" title="Properties" icon={<ScanSearch size={14} />}>
                 {rightPanel}
               </WorkspaceLayout.Panel>
-              <WorkspaceLayout.Panel id={CHAT_PANEL_ID} title="Chat" icon={<MessageCircle size={14} />}>
+              <WorkspaceLayout.Panel id="chat" title="Chat" icon={<MessageCircle size={14} />}>
                 <div className="h-full min-h-0">
                   <AssistantPanel
                     apiUrl={assistantChatUrl ?? undefined}
@@ -608,7 +611,7 @@ export function CharacterWorkspace() {
           </WorkspaceLayout>
         </WorkspaceContextProvider>
 
-        <EditorStatusBar>
+        <WorkspaceStatusBar>
           {characters.length > 0
             ? `${characters.length} character${characters.length !== 1 ? 's' : ''}`
             : 'Ready'}
@@ -619,14 +622,14 @@ export function CharacterWorkspace() {
               {charSelection.id}
             </span>
           )}
-        </EditorStatusBar>
+        </WorkspaceStatusBar>
 
-        <EditorOverlaySurface
+        <WorkspaceOverlaySurface
           overlays={overlays}
           activeOverlay={activeOverlay}
           onDismiss={dismissOverlay}
         />
-      </EditorShell>
+      </WorkspaceShell>
     </NodeDragProvider>
   );
 }

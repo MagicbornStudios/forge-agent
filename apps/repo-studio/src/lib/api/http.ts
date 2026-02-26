@@ -45,16 +45,46 @@ function toRequestError(input: { response: Response; payload: unknown; fallback:
 
 export async function requestJson<T>(
   url: string,
-  init: RequestInit & { fallbackMessage?: string } = {},
+  init: RequestInit & { fallbackMessage?: string; timeoutMs?: number } = {},
 ): Promise<T> {
   const fallbackMessage = String(init.fallbackMessage || 'Request failed');
-  const response = await fetch(url, {
-    ...init,
-    headers: {
-      'content-type': 'application/json',
-      ...(init.headers || {}),
-    },
-  });
+  const timeoutMs = Number(init.timeoutMs || 20000);
+  const timeoutSignal = !init.signal && Number.isFinite(timeoutMs) && timeoutMs > 0
+    ? AbortSignal.timeout(timeoutMs)
+    : undefined;
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...init,
+      signal: init.signal || timeoutSignal,
+      headers: {
+        'content-type': 'application/json',
+        ...(init.headers || {}),
+      },
+    });
+  } catch (error: unknown) {
+    const aborted = error && typeof error === 'object' && (
+      (error as { name?: string }).name === 'AbortError'
+      || (error as { name?: string }).name === 'TimeoutError'
+    );
+    if (aborted) {
+      throw new ApiRequestError({
+        message: `${fallbackMessage} (timed out after ${timeoutMs}ms)`,
+        status: 408,
+        payload: null,
+        url,
+      });
+    }
+    if (error instanceof ApiRequestError) throw error;
+    throw new ApiRequestError({
+      message: toErrorMessage(error, fallbackMessage),
+      status: 0,
+      payload: null,
+      url,
+    });
+  }
+
   const payload = await parseJson(response);
   if (!response.ok) {
     throw toRequestError({
@@ -67,7 +97,7 @@ export async function requestJson<T>(
   return payload as T;
 }
 
-export async function getJson<T>(url: string, init: RequestInit & { fallbackMessage?: string } = {}) {
+export async function getJson<T>(url: string, init: RequestInit & { fallbackMessage?: string; timeoutMs?: number } = {}) {
   return requestJson<T>(url, {
     ...init,
     method: init.method || 'GET',
@@ -77,7 +107,7 @@ export async function getJson<T>(url: string, init: RequestInit & { fallbackMess
 export async function postJson<T>(
   url: string,
   body: unknown,
-  init: RequestInit & { fallbackMessage?: string } = {},
+  init: RequestInit & { fallbackMessage?: string; timeoutMs?: number } = {},
 ) {
   return requestJson<T>(url, {
     ...init,
@@ -92,4 +122,3 @@ export function toErrorMessage(error: unknown, fallback = 'Request failed.') {
   const text = String(error || '').trim();
   return text || fallback;
 }
-

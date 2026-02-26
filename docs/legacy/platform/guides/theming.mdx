@@ -172,13 +172,13 @@ const editorTheme = useSettingsStore((s) =>
   s.getSettingValue('ui.theme', { editorId: 'character' })
 ) as string | undefined;
 
-<EditorShell
+<WorkspaceShell
   editorId="character"
   title="Characters"
   theme={editorTheme}  // 'light', 'dark', or undefined (system)
 >
   {/* editor content */}
-</EditorShell>
+</WorkspaceShell>
 ```
 
 ### System Theme
@@ -186,7 +186,7 @@ const editorTheme = useSettingsStore((s) =>
 Respects OS theme preference when not overridden:
 
 ```typescript
-// EditorShell applies theme via data attribute
+// WorkspaceShell applies theme via data attribute
 <div
   data-theme={theme ?? 'system'}
   data-editor-id={editorId}
@@ -237,12 +237,12 @@ const editorDensity = useSettingsStore((s) =>
   s.getSettingValue('ui.density', { editorId: 'dialogue' })
 ) as string | undefined;
 
-<EditorShell
+<WorkspaceShell
   editorId="dialogue"
   density={editorDensity}  // 'compact', 'comfortable', or undefined (default)
 >
   {/* density affects all internal spacing */}
-</EditorShell>
+</WorkspaceShell>
 ```
 
 ---
@@ -385,7 +385,7 @@ const editorDensity = useSettingsStore((s) =>
   s.getSettingValue('ui.density', { editorId: 'dialogue' })
 ) as string | undefined;
 
-<EditorShell
+<WorkspaceShell
   editorId="dialogue"
   title="Dialogue"
   subtitle={activeGraph?.title}
@@ -395,7 +395,7 @@ const editorDensity = useSettingsStore((s) =>
   className="flex flex-col h-full min-h-0 bg-canvas"
 >
   {/* Editor content inherits theme and density */}
-</EditorShell>
+</WorkspaceShell>
 ```
 
 ### ForgeGraphPanel Active State

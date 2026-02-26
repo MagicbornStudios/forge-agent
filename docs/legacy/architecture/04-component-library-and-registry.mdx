@@ -18,7 +18,7 @@ This repo is both **the Studio app** and the **source of publishable building bl
 
 ### `@forge/shared`
 - Editor shell, DockLayout primitives, and editor scaffolding.
-- EditorApp + AppProviders for app-shell structure and provider wiring.
+- WorkspaceApp + AppProviders for app-shell structure and provider wiring.
 - Copilot helpers (`useDomainCopilot`, action config types, generative UI).
 - App/editor/viewport contracts.
 - Assistant UI and tool UI components for Strategy editor.
@@ -155,7 +155,7 @@ pnpm install
 Usage:
 
 ```ts
-import { EditorShell, DockLayout } from '@forge/dev-kit';
+import { WorkspaceShell, DockLayout } from '@forge/dev-kit';
 import { Button } from '@forge/ui';
 import { ForgeCopilotProvider, createForgeCopilotRuntime } from '@forge/dev-kit';
 ```
@@ -166,7 +166,7 @@ For DockLayout/editor chrome styles, import once in your CSS: `@import '@forge/d
 
 This repo includes a minimal consumer app at `examples/consumer/` that demonstrates:
 
-- EditorApp layout
+- WorkspaceApp layout
 - AppProviders + Copilot sidebar
 - CodebaseAgentStrategyEditor (assistant-ui + tool-ui)
 - `/api/copilotkit` using `createForgeCopilotRuntime`

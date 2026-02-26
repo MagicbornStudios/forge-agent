@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process';
 
-import { isPathWithinRoots, listScopeRoots, normalizeRelPath, resolveRepoRoot } from '@/lib/repo-files';
+import { resolveActiveProjectRoot } from '@/lib/project-root';
+import { isPathWithinRoots, listScopeRoots, normalizeRelPath } from '@/lib/repo-files';
 import { resolveScopeGuardContext } from '@/lib/scope-guard';
 import type { RepoSearchMatch } from '@/lib/api/types';
 import type { RepoSearchInput } from '@/lib/search-input';
@@ -57,7 +58,7 @@ function parseRgJsonOutput(stdout: string, maxMatches: number) {
 }
 
 export async function searchRepository(input: RepoSearchInput) {
-  const repoRoot = resolveRepoRoot();
+  const repoRoot = resolveActiveProjectRoot();
   const scopeRoots = await listScopeRoots(repoRoot, input.scope, input.loopId || undefined);
   const guard = await resolveScopeGuardContext({
     loopId: input.loopId || undefined,

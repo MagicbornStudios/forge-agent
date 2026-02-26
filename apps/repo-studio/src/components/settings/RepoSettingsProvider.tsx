@@ -13,7 +13,7 @@ type RepoSettingsContextValue = {
   reviewQueueTrustMode: 'require-approval' | 'auto-approve-all';
   reviewQueueLastAutoApplyAt: string;
   activeLoopId: string;
-  loopAssistantPrompt: string;
+  forgeAssistantPrompt: string;
   codexAssistantPrompt: string;
   platformBaseUrl: string;
   platformAutoValidate: boolean;
@@ -40,7 +40,7 @@ export interface RepoSettingsProviderProps {
   reviewQueueTrustMode: 'require-approval' | 'auto-approve-all';
   reviewQueueLastAutoApplyAt: string;
   activeLoopId: string;
-  loopAssistantPrompt: string;
+  forgeAssistantPrompt: string;
   codexAssistantPrompt: string;
   platformBaseUrl: string;
   platformAutoValidate: boolean;
@@ -52,7 +52,7 @@ export interface RepoSettingsProviderProps {
   onModeChange: (value: RepoSettingsMode) => void;
   onConfirmRunsChange: (value: boolean) => void;
   onReviewQueueTrustModeChange: (value: 'require-approval' | 'auto-approve-all') => void;
-  onLoopAssistantPromptChange: (value: string) => void;
+  onForgeAssistantPromptChange: (value: string) => void;
   onCodexAssistantPromptChange: (value: string) => void;
   onPlatformBaseUrlChange: (value: string) => void;
   onPlatformAutoValidateChange: (value: boolean) => void;
@@ -72,7 +72,7 @@ export function RepoSettingsProvider({
   reviewQueueTrustMode,
   reviewQueueLastAutoApplyAt,
   activeLoopId,
-  loopAssistantPrompt,
+  forgeAssistantPrompt,
   codexAssistantPrompt,
   platformBaseUrl,
   platformAutoValidate,
@@ -84,7 +84,7 @@ export function RepoSettingsProvider({
   onModeChange,
   onConfirmRunsChange,
   onReviewQueueTrustModeChange,
-  onLoopAssistantPromptChange,
+  onForgeAssistantPromptChange,
   onCodexAssistantPromptChange,
   onPlatformBaseUrlChange,
   onPlatformAutoValidateChange,
@@ -103,7 +103,7 @@ export function RepoSettingsProvider({
     reviewQueueTrustMode,
     reviewQueueLastAutoApplyAt,
     activeLoopId,
-    loopAssistantPrompt,
+    forgeAssistantPrompt,
     codexAssistantPrompt,
     platformBaseUrl,
     platformAutoValidate,
@@ -128,7 +128,7 @@ export function RepoSettingsProvider({
       if (key === 'platform.autoValidate') return platformAutoValidate;
       if (key === 'platform.lastStatus') return platformStatus?.connected ? 'connected' : 'disconnected';
       if (key === 'platform.lastValidatedAt') return platformStatus?.lastValidatedAt || '';
-      if (key === 'assistant.prompts.loopAssistant') return loopAssistantPrompt;
+      if (key === 'assistant.prompts.forgeAssistant') return forgeAssistantPrompt;
       if (key === 'assistant.prompts.codexAssistant') return codexAssistantPrompt;
       return '';
     },
@@ -161,8 +161,8 @@ export function RepoSettingsProvider({
         onPlatformAutoValidateChange(value === true);
         return;
       }
-      if (key === 'assistant.prompts.loopAssistant') {
-        onLoopAssistantPromptChange(String(value || ''));
+      if (key === 'assistant.prompts.forgeAssistant') {
+        onForgeAssistantPromptChange(String(value || ''));
         return;
       }
       if (key === 'assistant.prompts.codexAssistant') {
@@ -174,11 +174,11 @@ export function RepoSettingsProvider({
     activeLoopId,
     codexAssistantPrompt,
     confirmRuns,
-    loopAssistantPrompt,
+    forgeAssistantPrompt,
     mode,
     onConfirmRunsChange,
     onCodexAssistantPromptChange,
-    onLoopAssistantPromptChange,
+    onForgeAssistantPromptChange,
     onModeChange,
     onReviewQueueTrustModeChange,
     onPlatformAutoValidateChange,
@@ -215,3 +215,4 @@ export function useRepoSettings() {
   }
   return context;
 }
+

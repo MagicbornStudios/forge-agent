@@ -1,7 +1,7 @@
 ---
 title: Errors and attempts
 created: 2026-02-04
-updated: 2026-02-23
+updated: 2026-02-26
 ---
 
 Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx).
@@ -11,6 +11,16 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 > **For coding agents.** See [Agent artifacts index](../../18-agent-artifacts-index.mdx) for the full list.
 
 Log of known failures and fixes so agents and developers avoid repeating the same mistakes.
+
+---
+
+## Twick undo-redo: localStorage is not defined (Studio SSR) — OBSOLETE
+
+**Obsolete (2026-02-24)**: Twick was fully removed from the repo. This entry is kept for historical reference only.
+
+**Problem**: Studio terminal showed `Failed to load undo-redo state from localStorage: [ReferenceError: localStorage is not defined]`. Twick's `UndoRedoProvider` (timeline) used a persistence key and loaded/saved state from localStorage.
+
+**Guardrail (still valid)**: Any vendored or shared code that touches localStorage in a path that can run during SSR or in Node must use `window.localStorage` and check `typeof window !== "undefined" && typeof window.localStorage !== "undefined"` before use.
 
 ---
 
@@ -28,6 +38,100 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 **Guardrail**:
 - `pnpm dev:repo-studio` must fail-fast on dependency/runtime breakage, but must not fail solely because Codex login is missing unless strict mode is explicitly enabled.
+
+---
+
+## Repo Studio assistant/runtime split drift + GitHub CLI auth coupling (2026-02-25)
+
+**Problem**: Repo Studio assistant UX regressed into split assistant surfaces and inconsistent model behavior, while GitHub auth in app bar depended on CLI-style status/login semantics.
+
+**Root cause**:
+- Separate `loop-assistant` and `codex-assistant` surfaces created duplicated state and routing ambiguity.
+- Model selection in Repo Studio was not fully runtime-scoped/API-backed.
+- GitHub sign-in path was tied to CLI-style readiness, causing disabled/confusing app-bar behavior.
+
+**Fix**:
+- Hard-cut to one assistant panel/workspace id: `assistant`, with runtime switching inside the panel (`forge` or `codex`).
+- Added runtime model catalog APIs:
+  - `GET /api/repo/models?runtime=forge|codex`
+  - `POST /api/repo/models/selection`
+- Added codex `model/list` cache+warn fallback (`.repo-studio/codex-model-cache.json`) so codex catalog failures do not hard-block chat.
+- Replaced GitHub login flow with OAuth device-flow routes:
+  - `POST /api/repo/github/oauth/device/start`
+  - `POST /api/repo/github/oauth/device/poll`
+  - `POST /api/repo/github/logout`
+  - `GET /api/repo/github/status`
+- Rewired app bar controls to start/poll OAuth and show connected state from persisted integration status, not CLI presence.
+
+**Guardrail**:
+- Repo Studio must keep one assistant panel with runtime-scoped model catalogs.
+- GitHub auth UX must remain OAuth/API-driven and never be disabled due missing CLI tooling.
+
+---
+
+## Repo Studio viewport-as-canvas correction (2026-02-26)
+
+**Problem**: Repo Studio treated `viewport` as an explicit dock tab in the main rail. This produced a redundant “Viewport” tab header and blocked the expected VS Code-style center canvas behavior, especially in Story where the user expected a left explorer and closable page tabs in the center.
+
+**Root cause**:
+- `WorkspaceLayout.Main` did not support `hideTabBar`, so only left/right rails could hide outer Dockview headers.
+- Planning/Code/Story rendered `viewport` as a normal toggleable main panel tab.
+- Story still used a monolithic single-tab panel (`StoryPanel`) instead of explorer + per-page tabs.
+- Panel toggles/store state still allowed `viewport` hidden states to leak through menus/settings/persistence paths.
+
+**Fix**:
+- Added `hideTabBar` support to `WorkspaceLayout.Main` and applied rail-header hiding for main panels.
+- Updated Planning/Code/Story to use `WorkspaceLayout.Main hideTabBar` while keeping `WorkspaceLayout.Panel id=\"viewport\"` for stable layout IDs/codegen.
+- Hard-pinned `viewport` visibility:
+  - filtered viewport out of View > Layout hide/show items,
+  - filtered viewport out of Settings > Panels toggles,
+  - blocked hide attempts in store actions and migration sanitization.
+- Refactored Story workspace to two surfaces:
+  - left `story` panel (`StoryExplorerPanel`) for outline/scope/create/publish,
+  - center viewport tabs (`StoryPagePanel`) for per-page editor+reader with one tab per path.
+- Added closable inner Story tabs with:
+  - empty canvas support (`allowEmpty` + custom empty state),
+  - dirty-close interception (`onBeforeCloseTab` confirm/discard),
+  - per-loop tab persistence keying (`${layoutId}::loop::${loopId}`),
+  - tree-refresh pruning for removed paths while preserving drafts for still-open tabs.
+
+**Guardrail**:
+- Treat `viewport` as canvas, not as a user-toggleable panel.
+- For viewport workspaces, hide outer main tab headers and keep close behavior on inner viewport tabs only.
+- Story must preserve left explorer + center closable page tabs with empty-canvas allowed.
+
+---
+
+## Repo Studio no-legacy contract drift (2026-02-26)
+
+**Problem**: Legacy assistant ids/config keys and fallback surfaces (`loop-assistant`, `codex-assistant`, `defaultEditor`, `assistant.routes.loop`, JSON proposal fallback, `--legacy-ui`) remained in active runtime/codegen/CLI paths, causing repeated regressions and mixed contracts.
+
+**Fix (hard cut)**:
+- Removed assistant-id aliases in runtime and codegen outputs; canonical targets are now only `forge` and `codex`.
+- Renamed config/settings contract to `defaultTarget`, `targets`, `assistant.routes.forge`, `assistant.prompts.forgeAssistant`.
+- Switched repo-studio shell persist key to clean-state v2 with no legacy migration path.
+- Removed JSON proposal fallback/migration path and enforced SQLite-only proposal store with explicit `503` (`SQLITE_PROPOSALS_UNAVAILABLE`) API responses.
+- Removed obsolete compatibility files/routes (`LoopAssistantWorkspace`, `CodexAssistantWorkspace`, legacy GitHub login route).
+- Removed package runtime `--legacy-ui` and package UI docs tab; package UI tabs are planning/env/commands/assistant.
+
+**Guardrail**:
+- Do not add alias normalization or fallback paths for removed assistant/config/proposal/CLI contracts.
+- Any stale caller/config using removed tokens is invalid and must be updated to canonical values.
+
+---
+
+## Repo Studio: Payload "Is X column created or renamed?" prompt in dev (2026-02-26)
+
+**Problem**: When running Repo Studio in dev, Payload CMS (collections in dev mode) prompted interactively: "Is assistant_target column in repo_proposals table created or renamed from another column?" after renaming a collection field (e.g. `editor_target` → `assistant_target`). This blocked non-interactive dev and required one-off migration scripts.
+
+**Root cause**: Payload sees schema drift (old column gone, new column present) and asks whether to treat it as a rename or a create. We do not want to rely on persistent dev DB data or answer prompts.
+
+**Fix (2026-02-26)**:
+- Dev runs `db:reset-dev` before starting Next + Drizzle Studio. That deletes the Repo Studio SQLite file (same path as `payload.config.ts`), so Payload always starts with no DB and creates tables from current collection config—no prompt.
+- Removed one-off script `scripts/migrate-assistant-target.mjs` and `db:migrate:assistant-target`. Standalone wipe: `pnpm --filter @forge/repo-studio-app db:reset-dev`.
+- Documented in [decisions.md](./decisions.md): Repo Studio dev DB is ephemeral; Payload owns schema; Drizzle is pull-only.
+
+**Guardrail**: Do not add one-off Payload column-migration scripts for dev. If you need to rename a collection field, the dev workflow is: run dev (which wipes and recreates). For production data, use Payload migrations or a separate process.
 
 ---
 
@@ -390,11 +494,11 @@ This removes the local prebuild dependency on `packages/shared/dist/styles/edito
 **Fix**:
 
 - Treat this as a Studio-only composition fix first: adjust `StudioApp.Tabs.Left/Main/Right` placement in `Studio.tsx`.
-- Ensure `EditorTabGroup` enforces real regions: root `w-full`, tablist `flex-1 min-w-0`, actions `shrink-0 ml-auto`; otherwise all controls can visually collapse to the left despite slot naming.
+- Ensure `WorkspaceTabGroup` enforces real regions: root `w-full`, tablist `flex-1 min-w-0`, actions `shrink-0 ml-auto`; otherwise all controls can visually collapse to the left despite slot naming.
 - Keep shared tab-group spacing tweaks intact unless there is a proven shared component defect.
 - Prefer menu-level editor-open actions (File -> Editors submenu) over adding more top-bar quick-open buttons when space is tight.
 
-**Do not**: Overcorrect `packages/shared/src/shared/components/editor/EditorTabGroup.tsx` for a Studio-only layout regression.
+**Do not**: Overcorrect `packages/shared/src/shared/components/workspace/WorkspaceTabGroup.tsx` for a Studio-only layout regression.
 
 ---
 
@@ -554,7 +658,7 @@ References:
 
 **Problem**: Toolbar and menu items appeared flat grey and text-only; the AI intent card had tight padding and looked flush to borders.
 
-**Fix**: (1) Use `outline` (or `default`) for File menu trigger and primary toolbar actions so they are not ghost-only. (2) Add optional `icon` to `EditorMenubarItem` and `EditorFileMenuItem`, and pass icons from DialogueEditor/CharacterEditor for View, State, and File menu items. (3) Add icons to editor creation buttons and Workbench in AppShell/DialogueEditor. (4) Use `p-[var(--panel-padding)]` (and content padding) in cards (e.g. AgentWorkflowPanel). Design docs 01 and 02 updated with icon/padding rules and screenshot reference ([docs/design/01-styling-and-theming.mdx](../../design/01-styling-and-theming.mdx), [02-components.mdx](../../design/02-components.mdx)).
+**Fix**: (1) Use `outline` (or `default`) for File menu trigger and primary toolbar actions so they are not ghost-only. (2) Add optional `icon` to `WorkspaceMenubarItem` and `WorkspaceFileMenuItem`, and pass icons from DialogueEditor/CharacterEditor for View, State, and File menu items. (3) Add icons to editor creation buttons and Workbench in AppShell/DialogueEditor. (4) Use `p-[var(--panel-padding)]` (and content padding) in cards (e.g. AgentWorkflowPanel). Design docs 01 and 02 updated with icon/padding rules and screenshot reference ([docs/design/01-styling-and-theming.mdx](../../design/01-styling-and-theming.mdx), [02-components.mdx](../../design/02-components.mdx)).
 
 ---
 
@@ -989,23 +1093,18 @@ References:
 
 ---
 
-## Twick CSS/JS resolution (build)
+## Twick CSS/JS resolution (build) — OBSOLETE
 
-**Problem**: Build fails with "Can't resolve '@twick/timeline/dist/timeline.css'" or "Can't resolve '@twick/live-player'" / "Can't resolve '@twick/studio'". Twick packages may be missing from the lockfile, or the registry was unreachable.
-
-**Fix**: (1) Use `workspace:*` for internal `@forge/*` deps in `packages/agent-engine`, `packages/shared`, and `packages/dev-kit` so `pnpm install` does not require Verdaccio. (2) Run `pnpm install --no-frozen-lockfile` from the repo root to resolve and lock all Twick packages. (3) In `apps/studio/app/globals.css`, import only `@twick/studio/dist/studio.css`; do not import `@twick/timeline/dist/timeline.css` ?" the published npm package does not ship that file (studio bundles timeline styles).
+**Obsolete (2026-02-24)**: Twick was fully removed. Kept for historical reference.
 
 ---
 
-## Twick: useTimelineContext must be used within a TimelineProvider (VideoEditor)
+## Twick: useTimelineContext must be used within a TimelineProvider (VideoEditor) — OBSOLETE
 
-**Problem**: Runtime error "useTimelineContext must be used within a TimelineProvider" when the Video editor panel is opened (stack at TwickStudio).
-
-**Cause (historical)**: Dockview rendered panels in a way that disconnected them from the parent React tree, so app-level providers did not reach panel content.
-
-**Fix (current)**: The Video editor is now **locked by capability** `studio.video.editor` while Dockview is restored. This avoids relying on Twick context until we re-enable Video. If we re-enable Video, either mount Twick providers inside the panel content, or validate Dockview panels stay within the React tree (avoid portal-based panel wrappers).
+**Obsolete (2026-02-24)**: Twick was fully removed. Video editor remains capability-locked; when re-enabled, use a new timeline/editor stack.
 
 ---
+
 
 ## Lost panels / Reset layout (DockLayout)
 
@@ -1097,7 +1196,7 @@ For the ongoing convention (new or moved docs), see [standard-practices](standar
 
 **Problem**: `pnpm dev` fails with "Parsing CSS source code failed" at `globals.css` (compiled line ~1115): `@import rules must precede all rules aside from @charset and @layer statements`. The offending lines are `@import url('https://fonts.googleapis.com/...')` (Inter, JetBrains Mono, Rubik, Mulish, etc.).
 
-**Root cause**: A dependency (almost certainly `@twick/studio/dist/studio.css` or something it pulls in) contains `@import url(...)` for Google Fonts. When `apps/studio/app/globals.css` is processed by PostCSS/Tailwind, the pipeline order produces a single CSS file where Tailwind's expanded rules appear first (~1100+ lines), then the inlined content from `@import "@twick/studio/dist/studio.css"` appears, so the font `@import` ends up after other rules. CSS requires all `@import` to be at the top.
+**Root cause (historical)**: A dependency (formerly e.g. `@twick/studio/dist/studio.css`) could contain `@import url(...)` for Google Fonts. Twick was removed 2026-02-24; if a future dependency injects font @import, the same fix applies. When `apps/studio/app/globals.css` is processed by PostCSS/Tailwind, the pipeline order produces a single CSS file where Tailwind's expanded rules appear first (~1100+ lines), then the inlined content from `@import "@twick/studio/dist/studio.css"` appears, so the font `@import` ends up after other rules. CSS requires all `@import` to be at the top.
 
 **Attempted fix (insufficient)**: Moving all `@import` in globals.css to the very top (tw-animate, shared styles, studio) so they are "first" in the source file. This did not fix it because the Tailwind/PostCSS pipeline expands `@tailwind base/components/utilities` and merges dependency CSS in an order that still places dependency-injected `@import url()` after those rules in the final output.
 
@@ -1123,7 +1222,7 @@ For the ongoing convention (new or moved docs), see [standard-practices](standar
 
 ## "Maximum update depth exceeded" — Radix composeRefs hypothesis (FALSE POSITIVE)
 
-**Context**: Error surfaces at Radix UI `setRef` / `ScrollAreaPrimitive.Root` / `EditorTooltip` in the stack. External reports (Radix #3799) cite composeRefs + React 19 as cause.
+**Context**: Error surfaces at Radix UI `setRef` / `ScrollAreaPrimitive.Root` / `WorkspaceTooltip` in the stack. External reports (Radix #3799) cite composeRefs + React 19 as cause.
 
 **FALSE POSITIVE in this codebase**: The user explicitly confirmed that (a) Radix tooltip was **not** the cause — stripping tooltips did not fix the error; (b) Radix ScrollArea / replacing with native overflow is **forbidden** — "absolutely not"; (c) the composeRefs hypothesis was wrong for this repo. Many projects use Radix without issue.
 
@@ -1135,7 +1234,7 @@ For the ongoing convention (new or moved docs), see [standard-practices](standar
 
 ## Maximum update depth — panel registration and slot store cascade
 
-**Problem**: "Maximum update depth exceeded" in EditorInspector / EditorDockPanel / ScrollArea path (Dialogue and Character editors). The panel registration cascade (EditorRail → setRailPanels → EditorLayout → setSlots → SlotPanel) may contribute.
+**Problem**: "Maximum update depth exceeded" in WorkspaceInspector / EditorDockPanel / ScrollArea path (Dialogue and Character editors). The panel registration cascade (WorkspaceRail → setRailPanels → EditorLayout → setSlots → SlotPanel) may contribute.
 
 **Attempted fix (reverted)**: Deferring setRailPanels/setSlots via requestAnimationFrame caused graph panels to stop rendering (black/empty). rAF deferral reverted.
 
@@ -1153,9 +1252,9 @@ For the ongoing convention (new or moved docs), see [standard-practices](standar
 
 ## Panel registry recursion fix (UI-first layout)
 
-**Problem**: The imperative panel flow (EditorRail effect → setRailPanels → panel registry store → EditorLayout subscribes → DockLayout) caused store update cascades and "Maximum update depth exceeded".
+**Problem**: The imperative panel flow (WorkspaceRail effect → setRailPanels → panel registry store → EditorLayout subscribes → DockLayout) caused store update cascades and "Maximum update depth exceeded".
 
-**Fix**: Replaced with **UI-first declarative API**. Editors compose `EditorDockLayout.Left` / `.Main` / `.Right` / `.Bottom` slot children with `EditorDockLayout.Panel` children. DockLayout collects panels from JSX in render; no store-driven registration, no effects for panel registration. `EditorLayoutProvider` now provides only `{ editorId }`; `EditorRail`, `EditorPanel`, and `EditorLayout` are deprecated. `useEditorPanelVisibility` uses `EDITOR_PANEL_SPECS` fallback when `useEditorPanels` returns empty.
+**Fix**: Replaced with **UI-first declarative API**. Editors compose `EditorDockLayout.Left` / `.Main` / `.Right` / `.Bottom` slot children with `EditorDockLayout.Panel` children. DockLayout collects panels from JSX in render; no store-driven registration, no effects for panel registration. `EditorLayoutProvider` now provides only `{ editorId }`; `WorkspaceRail`, `WorkspaceRailPanel`, and `EditorLayout` are deprecated. `useEditorPanelVisibility` uses `EDITOR_PANEL_SPECS` fallback when `useEditorPanels` returns empty.
 
 **Do not**: Reintroduce imperative setRailPanels or store-driven panel registration for layout.
 
@@ -1169,12 +1268,12 @@ For the ongoing convention (new or moved docs), see [standard-practices](standar
 
 **Fix**: Standardize overlay/dialog sizing and close placement:
 
-- `EditorOverlaySurface` size mapping is compact by default (`sm -> max-w-md`, `md -> max-w-xl`, `lg -> max-w-2xl`).
+- `WorkspaceOverlaySurface` size mapping is compact by default (`sm -> max-w-md`, `md -> max-w-xl`, `lg -> max-w-2xl`).
 - `full` remains constrained (`min(94vw, 72rem)`) with max-height cap; never edge-to-edge for standard forms.
 - Close button is icon-only and top-right for all dialogs.
 - Upsert forms use shadcn `Form` primitives plus section layout with tokenized spacing.
 
-References: `packages/shared/src/shared/components/editor/EditorOverlaySurface.tsx`, `packages/ui/src/components/ui/dialog.tsx`, `apps/studio/components/character/CreateCharacterModal.tsx`, and [styling-and-ui-consistency.md](./styling-and-ui-consistency.md).
+References: `packages/shared/src/shared/components/workspace/WorkspaceOverlaySurface.tsx`, `packages/ui/src/components/ui/dialog.tsx`, `apps/studio/components/character/CreateCharacterModal.tsx`, and [styling-and-ui-consistency.md](./styling-and-ui-consistency.md).
 
 ---
 

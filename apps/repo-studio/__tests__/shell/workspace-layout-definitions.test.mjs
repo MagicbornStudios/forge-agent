@@ -1,30 +1,29 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import * as typesModule from '../../src/lib/types.ts';
-import * as definitionsModule from '../../src/lib/app-shell/workspace-layout-definitions.ts';
+import * as appSpecModule from '../../src/lib/app-spec.generated.ts';
 
-const REPO_WORKSPACE_IDS = typesModule.REPO_WORKSPACE_IDS || typesModule.default?.REPO_WORKSPACE_IDS || [];
+const WORKSPACE_IDS = appSpecModule.WORKSPACE_IDS || appSpecModule.default?.WORKSPACE_IDS || [];
 const getWorkspaceLayoutDefinition = (
-  definitionsModule.getWorkspaceLayoutDefinition
-  || definitionsModule.default?.getWorkspaceLayoutDefinition
+  appSpecModule.getWorkspaceLayoutDefinition
+  || appSpecModule.default?.getWorkspaceLayoutDefinition
 );
 const getWorkspaceLayoutId = (
-  definitionsModule.getWorkspaceLayoutId
-  || definitionsModule.default?.getWorkspaceLayoutId
+  appSpecModule.getWorkspaceLayoutId
+  || appSpecModule.default?.getWorkspaceLayoutId
 );
 const getWorkspacePanelSpecs = (
-  definitionsModule.getWorkspacePanelSpecs
-  || definitionsModule.default?.getWorkspacePanelSpecs
+  appSpecModule.getWorkspacePanelSpecs
+  || appSpecModule.default?.getWorkspacePanelSpecs
 );
 
 test('workspace layout definitions keep valid main anchors and panel rails', () => {
   assert.equal(typeof getWorkspaceLayoutDefinition, 'function');
   assert.equal(typeof getWorkspaceLayoutId, 'function');
   assert.equal(typeof getWorkspacePanelSpecs, 'function');
-  assert.ok(Array.isArray(REPO_WORKSPACE_IDS));
+  assert.ok(Array.isArray(WORKSPACE_IDS));
 
-  for (const workspaceId of REPO_WORKSPACE_IDS) {
+  for (const workspaceId of WORKSPACE_IDS) {
     const definition = getWorkspaceLayoutDefinition(workspaceId);
     const panelSpecs = getWorkspacePanelSpecs(workspaceId);
     const mainPanelIds = panelSpecs.filter((panel) => panel.rail === 'main').map((panel) => panel.id);
@@ -37,4 +36,19 @@ test('workspace layout definitions keep valid main anchors and panel rails', () 
     assert.deepEqual(definition.mainPanelIds, mainPanelIds);
     assert.equal(panelIds.length, new Set(panelIds).size, `${workspaceId} should not duplicate panel ids`);
   }
+});
+
+test('story workspace layout includes explorer left rail and viewport main canvas', () => {
+  const definition = getWorkspaceLayoutDefinition('story');
+  const panelSpecs = getWorkspacePanelSpecs('story');
+  const panelById = new Map(panelSpecs.map((panel) => [panel.id, panel]));
+
+  assert.ok(panelById.has('story'));
+  assert.ok(panelById.has('viewport'));
+  assert.ok(panelById.has('assistant'));
+  assert.equal(panelById.get('story')?.rail, 'left');
+  assert.equal(panelById.get('viewport')?.rail, 'main');
+  assert.equal(panelById.get('assistant')?.rail, 'right');
+  assert.ok(definition.mainPanelIds.includes('viewport'));
+  assert.equal(definition.mainAnchorPanelId, 'viewport');
 });

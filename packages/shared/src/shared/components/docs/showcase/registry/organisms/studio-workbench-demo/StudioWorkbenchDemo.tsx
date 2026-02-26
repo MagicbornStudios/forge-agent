@@ -3,8 +3,8 @@
 import * as React from 'react';
 import * as UI from '@forge/ui';
 import {
-  EditorMenubar,
-  EditorProjectSelect,
+  WorkspaceMenubar,
+  WorkspaceProjectSelect,
   SettingsTriggerProvider,
   StudioApp,
   type ActiveOverlay,
@@ -58,8 +58,8 @@ export function StudioWorkbenchDemo() {
           <StudioApp.Tabs label="Studio tabs" tabListClassName="justify-center">
             <StudioApp.Tabs.Left>
               <div className="flex min-w-0 items-center gap-[var(--control-gap)]">
-                <EditorMenubar menus={menus} />
-                <EditorProjectSelect
+                <WorkspaceMenubar menus={menus} />
+                <WorkspaceProjectSelect
                   value={activeProject}
                   onValueChange={setActiveProject}
                   options={PROJECT_OPTIONS}

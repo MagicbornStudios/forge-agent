@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { resolveActiveProjectRoot } from '@/lib/project-root';
 import { readRepoFile } from '@/lib/repo-files';
 import { enforceScopeGuard } from '@/lib/scope-guard';
 
@@ -29,7 +30,7 @@ export async function GET(request: Request) {
         scope: scope.context,
       }, { status: 403 });
     }
-    const result = await readRepoFile(filePath);
+    const result = await readRepoFile(filePath, resolveActiveProjectRoot());
     return NextResponse.json({
       ok: true,
       ...result,

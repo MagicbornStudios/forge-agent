@@ -197,7 +197,7 @@ export function DialogueEditor({ projectId, graphId }) {
   useDomainAssistant(assistantContract);
 
   return (
-    <EditorShell>
+    <WorkspaceShell>
       <EditorDockLayout>
         <EditorDockLayout.Main>
           <ForgeCanvas graph={graph} selection={selection} highlights={highlights} />
@@ -208,7 +208,7 @@ export function DialogueEditor({ projectId, graphId }) {
           </EditorDockLayout.Panel>
         </EditorDockLayout.Right>
       </EditorDockLayout>
-    </EditorShell>
+    </WorkspaceShell>
   );
 }
 ```

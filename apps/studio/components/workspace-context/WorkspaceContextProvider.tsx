@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { PanelRegistrationContextProvider } from '@forge/shared/components/editor';
+import { PanelRegistrationContextProvider } from '@forge/shared/components/workspace';
 
 export interface WorkspaceContextProviderProps {
   /** Workspace id (e.g. dialogue, character). Used for visibility keys and menu scope. */

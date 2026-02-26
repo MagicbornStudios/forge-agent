@@ -35,9 +35,9 @@ not for top-level units.
 
 | Area | Unreal term | Forge implementation |
 | --- | --- | --- |
-| App container | Editor host | `EditorApp` + `AppShell` tabs |
-| Editor root | Editor | `EditorShell` |
-| Tool surfaces | Tools | `EditorHeader`, `EditorToolbar`, `DockPanel`, `PanelTabs` |
+| App container | Editor host | `WorkspaceApp` + `AppShell` tabs |
+| Editor root | Editor | `WorkspaceShell` |
+| Tool surfaces | Tools | `WorkspaceHeader`, `WorkspaceToolbar`, `DockPanel`, `PanelTabs` |
 | Viewport | Viewport | `DockLayout` + `ViewportMeta` (`data-viewport-*`) |
 | Systems | Systems | `packages/domain-*` |
 
@@ -45,7 +45,7 @@ not for top-level units.
 
 ## Example: Dialogue Editor
 
-- **Editor:** Dialogue Editor (`EditorShell` with `domain="dialogue"`).
+- **Editor:** Dialogue Editor (`WorkspaceShell` with `domain="dialogue"`).
 - **Tools:** node palette, minimap, inspector, AI plan review bar.
 - **Viewport:** React Flow graph surface (`ViewportMeta` with `viewportType="react-flow"`).
 - **System:** `packages/domain-forge` (graph model, operations, copilot contracts).

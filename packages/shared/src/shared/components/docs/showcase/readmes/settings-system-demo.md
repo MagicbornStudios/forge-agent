@@ -1445,6 +1445,6 @@ The Settings System provides:
 ✅ **Flexible composition** - Custom controls and render props
 
 **Next Steps:**
-- [EditorInspector Guide](./editor-inspector)
+- [WorkspaceInspector Guide](./workspace-inspector)
 - [Component Patterns](../guides/patterns.mdx)
 - [Theming System](../guides/theming.mdx)

@@ -2,14 +2,14 @@
 
 import * as React from 'react';
 import {
-  createEditorMenubarMenus,
-  EditorFileMenu,
-  EditorHelpMenu,
-  EditorMenubar,
-  EditorProjectSelect,
-  EditorSettingsMenu,
+  createWorkspaceMenubarMenus,
+  WorkspaceFileMenu,
+  WorkspaceHelpMenu,
+  WorkspaceMenubar,
+  WorkspaceProjectSelect,
+  WorkspaceSettingsMenu,
   StudioApp,
-  type EditorMenubarMenu,
+  type WorkspaceMenubarMenu,
 } from '@forge/shared';
 import { MessageCircle, Users } from 'lucide-react';
 import { ShowcaseDemoSurface } from '../../../demos/harnesses';
@@ -31,24 +31,24 @@ const EDITORS: Array<{
   { id: 'character', label: 'Character', icon: Users },
 ];
 
-function buildContributedMenus(editorId: DemoEditorId, openSettings: () => void): EditorMenubarMenu[] {
+function buildContributedMenus(editorId: DemoEditorId, openSettings: () => void): WorkspaceMenubarMenu[] {
   const editorMenus =
     editorId === 'dialogue'
-      ? createEditorMenubarMenus({
+      ? createWorkspaceMenubarMenus({
           file: [
-            EditorFileMenu.New({ shortcut: 'Ctrl+N' }),
-            EditorFileMenu.Save({ shortcut: 'Ctrl+S' }),
+            WorkspaceFileMenu.New({ shortcut: 'Ctrl+N' }),
+            WorkspaceFileMenu.Save({ shortcut: 'Ctrl+S' }),
           ],
           view: [
             { id: 'dialogue-view-outline', label: 'Toggle Outline' },
             { id: 'dialogue-view-notes', label: 'Toggle Notes' },
           ],
         })
-      : createEditorMenubarMenus({
+      : createWorkspaceMenubarMenus({
           file: [
-            EditorFileMenu.New({ shortcut: 'Ctrl+Shift+N' }),
-            EditorFileMenu.Open({ shortcut: 'Ctrl+O' }),
-            EditorFileMenu.Save({ shortcut: 'Ctrl+S' }),
+            WorkspaceFileMenu.New({ shortcut: 'Ctrl+Shift+N' }),
+            WorkspaceFileMenu.Open({ shortcut: 'Ctrl+O' }),
+            WorkspaceFileMenu.Save({ shortcut: 'Ctrl+S' }),
           ],
           view: [
             { id: 'character-view-voice', label: 'Toggle Voice Panel' },
@@ -56,14 +56,14 @@ function buildContributedMenus(editorId: DemoEditorId, openSettings: () => void)
           ],
         });
 
-  const sharedMenus = createEditorMenubarMenus({
+  const sharedMenus = createWorkspaceMenubarMenus({
     file: [],
     settings: [
-      EditorSettingsMenu.OpenSettings({ onSelect: openSettings }),
-      EditorSettingsMenu.Separator('settings-sep'),
-      EditorSettingsMenu.User({ label: 'Account' }),
+      WorkspaceSettingsMenu.OpenSettings({ onSelect: openSettings }),
+      WorkspaceSettingsMenu.Separator('settings-sep'),
+      WorkspaceSettingsMenu.User({ label: 'Account' }),
     ],
-    help: [EditorHelpMenu.Welcome(), EditorHelpMenu.About()],
+    help: [WorkspaceHelpMenu.Welcome(), WorkspaceHelpMenu.About()],
   });
 
   return [...editorMenus, ...sharedMenus];
@@ -85,8 +85,8 @@ export function StudioMenubarContributionDemo() {
         <StudioApp.Tabs label="Studio editor tabs">
           <StudioApp.Tabs.Left>
             <div className="flex min-w-0 items-center gap-[var(--control-gap)]">
-              <EditorMenubar menus={menus} />
-              <EditorProjectSelect
+              <WorkspaceMenubar menus={menus} />
+              <WorkspaceProjectSelect
                 value={activeProject}
                 onValueChange={setActiveProject}
                 options={PROJECT_OPTIONS}

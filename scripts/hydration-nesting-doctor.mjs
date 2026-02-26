@@ -95,9 +95,9 @@ function classifyElement(tagName, attributes, importMap) {
   const isKnownButtonLike =
     (imported.module.startsWith("@forge/ui/") &&
       forgeUIButtonLike.has(imported.imported)) ||
-    (imported.module === "@forge/shared" && imported.imported === "EditorButton") ||
-    (imported.module === "@forge/shared/components/editor" &&
-      imported.imported === "EditorButton");
+    (imported.module === "@forge/shared" && imported.imported === "WorkspaceButton") ||
+    (imported.module === "@forge/shared/components/workspace" &&
+      imported.imported === "WorkspaceButton");
 
   if (isKnownButtonLike) return { kind: "buttonLike", name: tag };
   return null;

@@ -6,24 +6,24 @@ updated: 2026-02-07
 
 # 02 - Editor shell and slots
 
-Every editor uses the same surfaces: EditorHeader, EditorToolbar, DockLayout
-(main/right/bottom/left), EditorStatusBar, and overlays. Composition only; no
+Every editor uses the same surfaces: WorkspaceHeader, WorkspaceToolbar, DockLayout
+(main/right/bottom/left), WorkspaceStatusBar, and overlays. Composition only; no
 data binding in this guide.
 
 ## Shared components
 
 From `packages/shared/src/shared/components/editor/`:
 
-- **EditorShell** - Root; accepts `editorId`, `title`, `subtitle`, `domain`,
+- **WorkspaceShell** - Root; accepts `editorId`, `title`, `subtitle`, `domain`,
   `theme`, `className`, `children`. Renders a flex column; children define order.
-- **EditorHeader** - `EditorHeader.Left`, `.Center`, `.Right` for composable sections.
-- **EditorToolbar** - `EditorToolbar.Left`, `.Center`, `.Right`; menubar, project
+- **WorkspaceHeader** - `WorkspaceHeader.Left`, `.Center`, `.Right` for composable sections.
+- **WorkspaceToolbar** - `WorkspaceToolbar.Left`, `.Center`, `.Right`; menubar, project
   select, buttons.
 - **DockLayout** - Slots: `main` (required), `left?`, `right?`, `bottom?`.
   Resizable and persistent.
 - **DockPanel** - Panel wrapper with optional title and tabs.
-- **EditorStatusBar** - Footer strip (e.g. "Ready", "Unsaved changes").
-- **EditorOverlaySurface** - Renders overlays from a declarative list:
+- **WorkspaceStatusBar** - Footer strip (e.g. "Ready", "Unsaved changes").
+- **WorkspaceOverlaySurface** - Renders overlays from a declarative list:
   `overlays`, `activeOverlay`, `onDismiss`.
 
 Legacy components still live in `components/workspace` but new work should use
@@ -33,13 +33,13 @@ and [shared AGENTS.md](../../packages/shared/src/shared/AGENTS.md) (§ Workspace
 ## Minimal shell example
 
 ```tsx
-<EditorShell editorId="my-editor" title="My Editor" domain="my">
-  <EditorHeader>...</EditorHeader>
-  <EditorToolbar>...</EditorToolbar>
+<WorkspaceShell editorId="my-editor" title="My Editor" domain="my">
+  <WorkspaceHeader>...</WorkspaceHeader>
+  <WorkspaceToolbar>...</WorkspaceToolbar>
   <DockLayout main={<DockPanel panelId="main">Main content</DockPanel>} />
-  <EditorStatusBar>Ready</EditorStatusBar>
-  <EditorOverlaySurface overlays={[]} activeOverlay={null} onDismiss={() => {}} />
-</EditorShell>
+  <WorkspaceStatusBar>Ready</WorkspaceStatusBar>
+  <WorkspaceOverlaySurface overlays={[]} activeOverlay={null} onDismiss={() => {}} />
+</WorkspaceShell>
 ```
 
 Real reference: `apps/studio/components/editors/DialogueEditor.tsx` composes these

@@ -12,7 +12,7 @@ updated: 2026-02-10
 - **Shadcn-first**: Base shadcn tokens (`--background`, `--foreground`, `--border`, `--radius-*`, `--shadow-*`) power **every** UI surface. No ad-hoc colors, radii, or shadows in editor chrome.
 - **Unreal-style compactness**: dense, editor-first layouts; we keep density tokens and align visuals to the design language (radius, type, soft depth).
 - **Declarative shadcn**: use shadcn UI primitives (DropdownMenu, Select, Sheet, Card, Button, etc.) instead of hand-rolled UI; default appearance should look like shadcn docs.
-- **Editor theming**: app theme is the base (driven by `ui.theme` via `AppThemeProvider`), editors may override via `EditorShell theme`.
+- **Editor theming**: app theme is the base (driven by `ui.theme` via `AppThemeProvider`), editors may override via `WorkspaceShell theme`.
 - **Atomic design**: atoms live in `packages/ui/src/components/ui/*` (shadcn). Build molecules and organisms from those primitives.
 
 ## UI rules
@@ -46,7 +46,7 @@ We drive density through CSS variables and `data-density`:
 
 - **Default**: `compact`
 - **Setting**: `ui.density` (app defaults) + per‑editor overrides (editor settings)
-- **Override**: `EditorShell` can set `data-density` directly
+- **Override**: `WorkspaceShell` can set `data-density` directly
 
 **Icon and radius:** Standard icon size is **12px** (`size-3` or `var(--icon-size)`); optional `--icon-size-sm: 10px` for tight spots and `--icon-size-lg: 14px` for emphasis. Radius scale is modest (Spotify-like): `--radius-sm: 4px`, `--radius-md: 5px`, `--radius-lg: 6px`, `--radius-xl: 8px`, `--radius: 6px`. See [03 - Design language](03-design-language.mdx).
 
@@ -101,7 +101,7 @@ Dropdown and context menus in `packages/ui` use these tokens so all menus get co
 - `--context-accent`, `--ring`, and `--sidebar-*` stay aligned to preserve hover/focus clarity.
 - Panel and layout tab active state use `--context-accent` as a border (e.g. bottom edge); resizable panel separators can be themed when inside `[data-domain]` if needed.
 
-**Editor color context:** Each editor sets `data-domain` via `EditorShell` (e.g. `domain="dialogue"`). All panels and sections inside the shell inherit `--context-accent` (and related tokens). Use `--context-accent` for section headers, list category accents, and active/selected state so UI stays in-domain. Optional `data-context-node-type` on a subtree refines the accent (e.g. dialogue node types). **Context override:** Section components (e.g. `SectionHeader`) can accept an optional `context` prop that wraps the section in `data-domain={context}` so that section uses a different accent; overridable by users. See editor README: `packages/shared/src/shared/components/editor/README.md`.
+**Editor color context:** Each editor sets `data-domain` via `WorkspaceShell` (e.g. `domain="dialogue"`). All panels and sections inside the shell inherit `--context-accent` (and related tokens). Use `--context-accent` for section headers, list category accents, and active/selected state so UI stays in-domain. Optional `data-context-node-type` on a subtree refines the accent (e.g. dialogue node types). **Context override:** Section components (e.g. `SectionHeader`) can accept an optional `context` prop that wraps the section in `data-domain={context}` so that section uses a different accent; overridable by users. See editor README: `packages/shared/src/shared/components/workspace/README.md`.
 
 ### Token system (layers and when to use which)
 
@@ -137,7 +137,7 @@ We use **four token layers**. Cascade order: `:root` → `[data-density]` → `[
 
 - Theme tokens: `packages/shared/src/shared/styles/themes.css`
 - Context accents: `packages/shared/src/shared/styles/contexts.css`
-- Editor chrome sizing: `packages/shared/src/shared/components/editor/EditorToolbar.tsx`, `packages/shared/src/shared/components/editor/EditorHeader.tsx`, `packages/shared/src/shared/components/editor/DockPanel.tsx`
+- Editor chrome sizing: `packages/shared/src/shared/components/workspace/WorkspaceToolbar.tsx`, `packages/shared/src/shared/components/workspace/WorkspaceHeader.tsx`, `packages/shared/src/shared/components/workspace/DockPanel.tsx`
 - Shadcn primitives: `packages/ui/src/components/ui/button.tsx`, `packages/ui/src/components/ui/input.tsx`, `packages/ui/src/components/ui/tabs.tsx`, `packages/ui/src/components/ui/card.tsx`
 
 ## Accessibility

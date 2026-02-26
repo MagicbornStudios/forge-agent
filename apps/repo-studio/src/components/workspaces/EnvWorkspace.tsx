@@ -2,10 +2,13 @@
 
 import * as React from 'react';
 import { BookOpen, ShieldCheck } from 'lucide-react';
-import { WorkspaceLayout } from '@forge/shared/components/editor';
+import { WorkspaceLayout } from '@forge/shared/components/workspace';
 import { EnvPanel } from '@/components/features/env/EnvPanel';
 import { PlanningPanel } from '@/components/features/planning/PlanningPanel';
 import { createHiddenPanelSet, isPanelVisible, type RepoWorkspaceProps } from './types';
+
+export const WORKSPACE_ID = 'env' as const;
+export const WORKSPACE_LABEL = 'Env';
 
 export function EnvWorkspace({
   layoutId,
@@ -46,7 +49,7 @@ export function EnvWorkspace({
           </WorkspaceLayout.Panel>
         ) : null}
       </WorkspaceLayout.Main>
-      <WorkspaceLayout.Right>
+      <WorkspaceLayout.Right hideTabBar>
         {isPanelVisible(hiddenPanels, 'env') ? (
           <WorkspaceLayout.Panel id="env" title="Env" icon={<ShieldCheck size={14} />}>
             <EnvPanel

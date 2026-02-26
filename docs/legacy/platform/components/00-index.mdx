@@ -24,7 +24,7 @@ The fundamental building blocks for any editor.
         <span className="text-2xl">🏠</span>
       </div>
       <div className="flex-1">
-        <h3 className="font-semibold text-sm mb-1">EditorShell</h3>
+        <h3 className="font-semibold text-sm mb-1">WorkspaceShell</h3>
         <p className="text-xs text-muted-foreground">Root container with theming and layout skeleton</p>
       </div>
     </div>
@@ -60,7 +60,7 @@ The fundamental building blocks for any editor.
         <span className="text-2xl">🛠️</span>
       </div>
       <div className="flex-1">
-        <h3 className="font-semibold text-sm mb-1">EditorToolbar</h3>
+        <h3 className="font-semibold text-sm mb-1">WorkspaceToolbar</h3>
         <p className="text-xs text-muted-foreground">Extensible toolbar with menubar</p>
       </div>
     </div>
@@ -72,7 +72,7 @@ The fundamental building blocks for any editor.
         <span className="text-2xl">🔍</span>
       </div>
       <div className="flex-1">
-        <h3 className="font-semibold text-sm mb-1">EditorInspector</h3>
+        <h3 className="font-semibold text-sm mb-1">WorkspaceInspector</h3>
         <p className="text-xs text-muted-foreground">Selection-driven properties panel</p>
       </div>
     </div>
@@ -84,7 +84,7 @@ The fundamental building blocks for any editor.
         <span className="text-2xl">📊</span>
       </div>
       <div className="flex-1">
-        <h3 className="font-semibold text-sm mb-1">EditorStatusBar</h3>
+        <h3 className="font-semibold text-sm mb-1">WorkspaceStatusBar</h3>
         <p className="text-xs text-muted-foreground">Bottom status and info display</p>
       </div>
     </div>
@@ -96,7 +96,7 @@ The fundamental building blocks for any editor.
         <span className="text-2xl">🎭</span>
       </div>
       <div className="flex-1">
-        <h3 className="font-semibold text-sm mb-1">EditorOverlaySurface</h3>
+        <h3 className="font-semibold text-sm mb-1">WorkspaceOverlaySurface</h3>
         <p className="text-xs text-muted-foreground">Modal and dialog system</p>
       </div>
     </div>
@@ -269,7 +269,7 @@ Context providers and layout managers.
         <span className="text-2xl">📚</span>
       </div>
       <div className="flex-1">
-        <h3 className="font-semibold text-sm mb-1">EditorMenubarContribution</h3>
+        <h3 className="font-semibold text-sm mb-1">WorkspaceMenubarContribution</h3>
         <p className="text-xs text-muted-foreground">Declarative menubar slots</p>
       </div>
     </div>
@@ -294,21 +294,21 @@ Context providers and layout managers.
 
 ```typescript
 import {
-  EditorShell,
-  EditorToolbar,
+  WorkspaceShell,
+  WorkspaceToolbar,
   EditorDockLayout,
   EditorDockPanel,
-  EditorStatusBar,
+  WorkspaceStatusBar,
 } from '@forge/shared/components/editor';
 
 export function MyEditor() {
   return (
-    <EditorShell editorId="my-editor" title="My Editor">
-      <EditorToolbar>
-        <EditorToolbar.Left>
+    <WorkspaceShell editorId="my-editor" title="My Editor">
+      <WorkspaceToolbar>
+        <WorkspaceToolbar.Left>
           <Button>New</Button>
-        </EditorToolbar.Left>
-      </EditorToolbar>
+        </WorkspaceToolbar.Left>
+      </WorkspaceToolbar>
 
       <EditorDockLayout layoutId="my-layout">
         <EditorDockLayout.Main>
@@ -318,8 +318,8 @@ export function MyEditor() {
         </EditorDockLayout.Main>
       </EditorDockLayout>
 
-      <EditorStatusBar>Ready</EditorStatusBar>
-    </EditorShell>
+      <WorkspaceStatusBar>Ready</WorkspaceStatusBar>
+    </WorkspaceShell>
   );
 }
 ```

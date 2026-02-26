@@ -24,6 +24,7 @@
     "registry": "http://localhost:4873"
   },
   "dependencies": {
+    "@forge/forge-codegen": "workspace:*",
     "@forge/ui": "workspace:*",
     "@forge/shared": "workspace:*",
     "@forge/agent-engine": "workspace:*"

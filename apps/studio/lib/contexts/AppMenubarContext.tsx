@@ -1,16 +1,16 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import type { EditorMenubarMenu } from '@forge/shared/components/editor';
+import type { WorkspaceMenubarMenu } from '@forge/shared/components/workspace';
 
 type AppMenubarContextValue = {
-  editorMenus: EditorMenubarMenu[];
-  setEditorMenus: React.Dispatch<React.SetStateAction<EditorMenubarMenu[]>>;
+  editorMenus: WorkspaceMenubarMenu[];
+  setEditorMenus: React.Dispatch<React.SetStateAction<WorkspaceMenubarMenu[]>>;
 };
 
 const AppMenubarContext = createContext<AppMenubarContextValue | null>(null);
 
-const areMenuItemsEqual = (left: EditorMenubarMenu['items'][number], right: EditorMenubarMenu['items'][number]) => {
+const areMenuItemsEqual = (left: WorkspaceMenubarMenu['items'][number], right: WorkspaceMenubarMenu['items'][number]) => {
   return (
     left.id === right.id &&
     left.label === right.label &&
@@ -20,7 +20,7 @@ const areMenuItemsEqual = (left: EditorMenubarMenu['items'][number], right: Edit
   );
 };
 
-const areMenusEqual = (prev: EditorMenubarMenu[] | null | undefined, next: EditorMenubarMenu[] | null | undefined) => {
+const areMenusEqual = (prev: WorkspaceMenubarMenu[] | null | undefined, next: WorkspaceMenubarMenu[] | null | undefined) => {
   if (prev === next) return true;
   if (!prev || !next) return false;
   if (prev.length !== next.length) return false;
@@ -38,7 +38,7 @@ const areMenusEqual = (prev: EditorMenubarMenu[] | null | undefined, next: Edito
 };
 
 export function AppMenubarProvider({ children }: { children: React.ReactNode }) {
-  const [editorMenus, setEditorMenus] = useState<EditorMenubarMenu[]>([]);
+  const [editorMenus, setEditorMenus] = useState<WorkspaceMenubarMenu[]>([]);
   const value = useMemo<AppMenubarContextValue>(
     () => ({ editorMenus, setEditorMenus }),
     [editorMenus],
@@ -61,9 +61,9 @@ export function useAppMenubar(): AppMenubarContextValue {
   return ctx;
 }
 
-export function useAppMenubarContribution(menus: EditorMenubarMenu[]): void {
+export function useAppMenubarContribution(menus: WorkspaceMenubarMenu[]): void {
   const { setEditorMenus } = useAppMenubar();
-  const menusRef = useRef<EditorMenubarMenu[]>(menus);
+  const menusRef = useRef<WorkspaceMenubarMenu[]>(menus);
 
   useEffect(() => {
     menusRef.current = menus;

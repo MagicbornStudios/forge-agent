@@ -6,7 +6,7 @@
     "dev": "pnpm run build:showcase-registry && pnpm run env:bootstrap -- --app studio && pnpm --parallel --filter @forge/studio --filter @forge/docs dev",
     "dev:studio": "pnpm run env:bootstrap -- --app studio && pnpm --filter @forge/studio dev",
     "dev:docs": "pnpm run build:showcase-registry && pnpm --filter @forge/docs dev",
-    "predev:repo-studio": "pnpm forge-repo-studio doctor",
+    "predev:repo-studio": "pnpm --filter @forge/repo-studio-app run codegen && pnpm forge-repo-studio doctor",
     "dev:repo-studio": "pnpm --filter @forge/repo-studio-app dev",
     "dev:consumer-studio": "pnpm --filter @forge/consumer-studio-app dev",
     "dev:platform": "pnpm run build:showcase-registry && pnpm run env:bootstrap -- --app platform && pnpm --filter @forge/platform dev",
@@ -103,9 +103,7 @@
     "registry:forge:loop:publish": "node scripts/bump-forge-packages.mjs packages/forge-loop packages/forge-env packages/repo-studio && pnpm --filter @forge/forge-loop build && npm publish --registry http://localhost:4873 ./packages/forge-loop && npm publish --registry http://localhost:4873 ./packages/forge-env && npm publish --registry http://localhost:4873 ./packages/repo-studio",
     "gsd:install": "node scripts/gsd-install.mjs",
     "vendor:gsd:build": "node -e \"require('fs').accessSync('vendor/get-shit-done/bin/install.js')\"",
-    "vendor:gsd:publish:local": "node scripts/vendor-gsd-publish.mjs",
-    "vendor:twick:build": "pnpm --filter @twick/media-utils build && pnpm --filter @twick/canvas build && pnpm --filter @twick/timeline build && pnpm --filter @twick/visualizer build && pnpm --filter @twick/live-player build && pnpm --filter @twick/video-editor build && pnpm --filter @twick/studio build",
-    "vendor:twick:publish:local": "npm publish --registry http://localhost:4873 ./vendor/twick/packages/media-utils && npm publish --registry http://localhost:4873 ./vendor/twick/packages/canvas && npm publish --registry http://localhost:4873 ./vendor/twick/packages/timeline && npm publish --registry http://localhost:4873 ./vendor/twick/packages/visualizer && npm publish --registry http://localhost:4873 ./vendor/twick/packages/live-player && npm publish --registry http://localhost:4873 ./vendor/twick/packages/video-editor && npm publish --registry http://localhost:4873 ./vendor/twick/packages/studio"
+    "vendor:gsd:publish:local": "node scripts/vendor-gsd-publish.mjs"
   },
   "devDependencies": {
     "knip": "^5.83.1",
@@ -114,7 +112,6 @@
   },
   "pnpm": {
     "overrides": {
-      "@twick/*": "workspace:*",
       "@types/react": "19.2.11",
       "@types/react-dom": "19.2.3"
     }

@@ -50,13 +50,13 @@ Location: `packages/shared/`
 ```typescript
 // Editor components
 import {
-  EditorShell,
-  EditorToolbar,
+  WorkspaceShell,
+  WorkspaceToolbar,
   EditorDockLayout,
   EditorDockPanel,
-  EditorStatusBar,
-  EditorInspector,
-  EditorOverlaySurface,
+  WorkspaceStatusBar,
+  WorkspaceInspector,
+  WorkspaceOverlaySurface,
 } from '@forge/shared/components/editor';
 
 // AI system
@@ -291,7 +291,7 @@ apps/studio/
 ```typescript
 // Editor components
 import {
-  EditorShell,
+  WorkspaceShell,
   EditorDockLayout,
 } from '@forge/shared/components/editor';
 
@@ -558,8 +558,8 @@ Use explicit exports:
 
 ```typescript
 // packages/shared/src/index.ts
-export { EditorShell } from './components/editor/EditorShell';
-export type { EditorShellProps } from './components/editor/EditorShell';
+export { WorkspaceShell } from './components/editor/WorkspaceShell';
+export type { WorkspaceShellProps } from './components/editor/WorkspaceShell';
 ```
 
 ### 3. Dependencies

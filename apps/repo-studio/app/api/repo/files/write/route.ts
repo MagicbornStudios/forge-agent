@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { resolveActiveProjectRoot } from '@/lib/project-root';
 import { writeRepoFile } from '@/lib/repo-files';
 import { enforceScopeGuard } from '@/lib/scope-guard';
 
@@ -53,6 +54,7 @@ export async function POST(request: Request) {
       path: filePath,
       content,
       createIfMissing: body.createIfMissing === true,
+      repoRoot: resolveActiveProjectRoot(),
     });
     return NextResponse.json({
       ok: true,

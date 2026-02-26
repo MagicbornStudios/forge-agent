@@ -12,16 +12,16 @@ This guide maps old Workspace naming to the new Editor platform primitives and p
 
 | Old name | New name | Purpose |
 |---|---|---|
-| `AppSpace` | `EditorApp` | App frame, tabs, and content slots. |
-| `WorkspaceShell` | `EditorShell` | Editor root (layout + data attributes). |
-| `WorkspaceHeader` | `EditorHeader` | Header slots. |
-| `WorkspaceToolbar` | `EditorToolbar` | Toolbar slots, groups, buttons. |
+| `AppSpace` | `WorkspaceApp` | App frame, tabs, and content slots. |
+| `WorkspaceShell` | `WorkspaceShell` | Editor root (layout + data attributes). |
+| `WorkspaceHeader` | `WorkspaceHeader` | Header slots. |
+| `WorkspaceToolbar` | `WorkspaceToolbar` | Toolbar slots, groups, buttons. |
 | `WorkspaceLayoutGrid` | `DockLayout` | Resizable dock layout. |
-| `WorkspaceStatusBar` | `EditorStatusBar` | Status bar. |
-| `WorkspaceOverlaySurface` | `EditorOverlaySurface` | Overlay host. |
-| `WorkspaceReviewBar` | `EditorReviewBar` | Plan review bar. |
-| `WorkspaceButton` | `EditorButton` | Tooltip-enabled button. |
-| `WorkspaceTooltip` | `EditorTooltip` | Tooltip wrapper. |
+| `WorkspaceStatusBar` | `WorkspaceStatusBar` | Status bar. |
+| `WorkspaceOverlaySurface` | `WorkspaceOverlaySurface` | Overlay host. |
+| `WorkspaceReviewBar` | `WorkspaceReviewBar` | Plan review bar. |
+| `WorkspaceButton` | `WorkspaceButton` | Tooltip-enabled button. |
+| `WorkspaceTooltip` | `WorkspaceTooltip` | Tooltip wrapper. |
 | `WorkspaceSidebar` | `DockSidebar` | Sidebar wrapper in dock panels. |
 | `WorkspaceTabGroup` / `GraphSidebar` | `PanelTabs` | Tabs inside a dock panel. |
 | `WorkspaceEditor` | `ViewportMeta` | Metadata wrapper for editor surfaces. |
@@ -37,17 +37,17 @@ This guide maps old Workspace naming to the new Editor platform primitives and p
 
 ## Compatibility
 
-Migration is complete. Import editor UI and types from `@forge/shared` only. Use Editor* names (EditorShell, EditorInspector, EditorButton, etc.). The workspace component export has been removed; types (Selection, InspectorSection, etc.) remain on `@forge/shared`. Use `apps/studio/lib/app-shell/editor-metadata.ts` for editor labels and viewport IDs.
+Migration is complete. Import editor UI and types from `@forge/shared` only. Use Editor* names (WorkspaceShell, WorkspaceInspector, WorkspaceButton, etc.). The workspace component export has been removed; types (Selection, InspectorSection, etc.) remain on `@forge/shared`. Use `apps/studio/lib/app-shell/editor-metadata.ts` for editor labels and viewport IDs.
 
 ## Migration checklist
 
-1. Update imports from `@forge/shared/components/workspace` or `@forge/shared/workspace` to `@forge/shared`. Use Editor* component names (e.g. `EditorButton`, `EditorInspector`).
+1. Update imports from `@forge/shared/components/workspace` or `@forge/shared/workspace` to `@forge/shared`. Use Editor* component names (e.g. `WorkspaceButton`, `WorkspaceInspector`).
 2. Replace `WorkspaceLayoutGrid` with `DockLayout` and move left/right/bottom panels into `DockPanel` wrappers.
 3. Replace sidebars with `DockPanel` + `PanelTabs`.
 4. Wrap the main editor surface in `ViewportMeta` and set `viewport={{ viewportId, viewportType }}` on `DockLayout`.
-5. Ensure `EditorShell` has the correct editor id (`editorId` prop), `domain`, and `theme` props.
-6. Replace `WorkspaceReviewBar` with `EditorReviewBar` between toolbar and layout.
-7. Replace `WorkspaceOverlaySurface` with `EditorOverlaySurface` at the bottom of the shell.
+5. Ensure `WorkspaceShell` has the correct editor id (`editorId` prop), `domain`, and `theme` props.
+6. Replace `WorkspaceReviewBar` with `WorkspaceReviewBar` between toolbar and layout.
+7. Replace `WorkspaceOverlaySurface` with `WorkspaceOverlaySurface` at the bottom of the shell.
 8. Update settings keys for panel visibility and editor lock:
    - `editor.locked`
    - `panel.visible.<panelId>`
@@ -57,12 +57,12 @@ Migration is complete. Import editor UI and types from `@forge/shared` only. Use
 
 ```tsx
 import {
-  EditorShell,
-  EditorHeader,
-  EditorToolbar,
-  EditorStatusBar,
-  EditorReviewBar,
-  EditorOverlaySurface,
+  WorkspaceShell,
+  WorkspaceHeader,
+  WorkspaceToolbar,
+  WorkspaceStatusBar,
+  WorkspaceReviewBar,
+  WorkspaceOverlaySurface,
   DockLayout,
   DockPanel,
   PanelTabs,
@@ -70,10 +70,10 @@ import {
 
 export function DialogueEditor() {
   return (
-    <EditorShell editorId="dialogue" title="Dialogue" domain="dialogue">
-      <EditorHeader>...</EditorHeader>
-      <EditorToolbar>...</EditorToolbar>
-      <EditorReviewBar visible={false} />
+    <WorkspaceShell editorId="dialogue" title="Dialogue" domain="dialogue">
+      <WorkspaceHeader>...</WorkspaceHeader>
+      <WorkspaceToolbar>...</WorkspaceToolbar>
+      <WorkspaceReviewBar visible={false} />
       <DockLayout
         left={<DockPanel panelId="dialogue-left" tabs={[]} />}
         main={<DockPanel panelId="dialogue-main" scrollable={false}>...</DockPanel>}
@@ -81,9 +81,9 @@ export function DialogueEditor() {
         viewport={{ viewportId: 'dialogue-graph', viewportType: 'react-flow' }}
         layoutId="dialogue-editor"
       />
-      <EditorStatusBar>Ready</EditorStatusBar>
-      <EditorOverlaySurface overlays={[]} activeOverlay={null} onDismiss={() => {}} />
-    </EditorShell>
+      <WorkspaceStatusBar>Ready</WorkspaceStatusBar>
+      <WorkspaceOverlaySurface overlays={[]} activeOverlay={null} onDismiss={() => {}} />
+    </WorkspaceShell>
   );
 }
 ```

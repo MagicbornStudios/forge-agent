@@ -1,12 +1,14 @@
 'use client';
 
 import * as React from 'react';
-import { ShieldCheck, TerminalSquare, Wrench } from 'lucide-react';
-import { WorkspaceLayout } from '@forge/shared/components/editor';
+import { TerminalSquare, Wrench } from 'lucide-react';
+import { WorkspaceLayout } from '@forge/shared/components/workspace';
 import { CommandsPanel } from '@/components/features/commands/CommandsPanel';
 import { TerminalPanel } from '@/components/features/commands/TerminalPanel';
-import { LoopCadencePanel } from '@/components/features/planning/LoopCadencePanel';
 import { createHiddenPanelSet, isPanelVisible, type RepoWorkspaceProps } from './types';
+
+export const WORKSPACE_ID = 'commands' as const;
+export const WORKSPACE_LABEL = 'Commands';
 
 export function CommandsWorkspace({
   layoutId,
@@ -28,17 +30,7 @@ export function CommandsWorkspace({
       onPanelClosed={onPanelClosed}
       className="h-full"
     >
-      <WorkspaceLayout.Left>
-        {isPanelVisible(hiddenPanels, 'loop-cadence') ? (
-          <WorkspaceLayout.Panel id="loop-cadence" title="Loop Cadence" icon={<ShieldCheck size={14} />}>
-            <LoopCadencePanel
-              nextAction={panelContext.planningSnapshot.nextAction}
-              onCopyText={panelContext.onCopyText}
-              onRefresh={panelContext.onRefreshLoopSnapshot}
-            />
-          </WorkspaceLayout.Panel>
-        ) : null}
-      </WorkspaceLayout.Left>
+      <WorkspaceLayout.Left hideTabBar />
       <WorkspaceLayout.Main>
         {isPanelVisible(hiddenPanels, 'commands') ? (
           <WorkspaceLayout.Panel id="commands" title="Commands" icon={<Wrench size={14} />}>

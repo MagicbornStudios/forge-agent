@@ -15,7 +15,7 @@ This document catalogs the **shared components** we expose for consumers and con
 - Use tokenized spacing and sizing (`--control-*`, `--panel-padding`, `--tab-height`).
 - Avoid raw `px-*`/`py-*` utilities in editor surfaces.
 - Badge/tag padding uses `--badge-padding-*`; do not override with ad-hoc `px-*`/`h-*`.
-- Prefer `EditorShell` + `DockLayout` + `DockPanel` for consistent padding and borders.
+- Prefer `WorkspaceShell` + `DockLayout` + `DockPanel` for consistent padding and borders.
 - **Default appearance** aligns with shadcn (radius, type scale, focus); compact density is available via `data-density` where supported (see [03 - Design language](03-design-language.mdx)).
 
 ## Icon audit checklist
@@ -25,7 +25,7 @@ Use **Lucide React** throughout; standard size **12px** (`size-3` or `var(--icon
 | Surface | Where | Status |
 |--------|--------|--------|
 | Panel headers | `DockPanel` `title` + `icon` (Library, Inspector, Workbench, Tracks, Timeline, Characters, Properties) | Required |
-| Editor tabs | `EditorApp.Tab` label (Dialogue, Video, Characters, Strategy) | Required |
+| Editor tabs | `WorkspaceApp.Tab` label (Dialogue, Video, Characters, Strategy) | Required |
 | Toolbar actions | Fit view, new, settings, etc. | Required |
 | Menu items | File/View/State menu items (Fit view, Open workbench, New narrative, Save, etc.) | Required |
 | Editor creation buttons | "+ Dialogue Editor", "+ Video Editor", "+ Character Editor", "+ Strategy Editor" (AppShell) | Required |
@@ -82,18 +82,18 @@ Composable UI patterns built on atoms.
 
 ### Editor chrome
 
-- `EditorApp` (semantic wrapper over AppLayout + tabs + content)
-- `EditorShell`
-- `EditorHeader` (Left / Center / Right slots)
-- `EditorToolbar` (Menubar, Group, Button, ProjectSelect, Settings)
+- `WorkspaceApp` (semantic wrapper over AppLayout + tabs + content)
+- `WorkspaceShell`
+- `WorkspaceHeader` (Left / Center / Right slots)
+- `WorkspaceToolbar` (Menubar, Group, Button, ProjectSelect, Settings)
 - `DockLayout` (left / main / right / bottom slots)
 - `DockPanel` (title, tabs, lock, settings)
 - `PanelTabs`
 - `PanelSettings`
-- `EditorStatusBar`
-- `EditorReviewBar`
-- `EditorOverlaySurface`
-- `EditorButton`, `EditorTooltip`
+- `WorkspaceStatusBar`
+- `WorkspaceReviewBar`
+- `WorkspaceOverlaySurface`
+- `WorkspaceButton`, `WorkspaceTooltip`
 - `DockSidebar`
 - `AppProviders` (optional shared provider stack for tooltips/copilot)
 
@@ -166,7 +166,7 @@ See `apps/studio/components/CreateNodeModal.tsx` for the canonical form structur
 
 - `Form` wrapper from `@forge/ui`
 - `FormField` + `FormItem` + `FormControl`
-- `EditorButton` for actions
+- `WorkspaceButton` for actions
 
 ---
 

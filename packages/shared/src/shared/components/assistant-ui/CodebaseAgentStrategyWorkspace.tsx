@@ -11,7 +11,7 @@ import {
 } from '@assistant-ui/react';
 import { AssistantChatTransport, useChatRuntime } from '@assistant-ui/react-ai-sdk';
 import { AppProviders } from '../app';
-import { WorkspaceLayout, WorkspacePanel } from '../editor';
+import { WorkspaceLayout, WorkspacePanel } from '../workspace';
 import { Thread } from './thread';
 import { ThreadList } from './thread-list';
 import { ToolFallback } from './tool-fallback';

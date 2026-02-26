@@ -3,9 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"next dev --turbopack -p 3010\" \"drizzle-kit studio --port=4983\"",
+    "dev": "node scripts/reset-dev-db.mjs && concurrently \"next dev --turbopack -p 3010\" \"drizzle-kit studio --port=4983\"",
     "dev:next": "next dev --turbopack -p 3010",
-    "build": "next build",
+    "build": "pnpm run codegen && next build",
+    "codegen": "node --import tsx ../../packages/forge-codegen/cli.mjs all --config forge-codegen.config.mjs",
+    "check:codegen": "pnpm run codegen && git diff --exit-code src/lib/app-spec.generated.ts || (echo 'Generated files are out of date. Commit the changes or run pnpm run codegen.' && exit 1)",
     "start": "next start -p 3010",
     "lint": "next lint --max-warnings 0",
     "test:settings-codegen": "node --import tsx --test \"__tests__/settings/*.test.mjs\"",
@@ -15,7 +17,7 @@
     "test:review-queue": "node --import tsx --test \"__tests__/review-queue/*.test.mjs\"",
     "check:direct-fetch": "node scripts/check-direct-fetch.mjs",
     "check:direct-fetch:strict": "node scripts/check-direct-fetch.mjs --strict",
-    "db:migrate:assistant-target": "node scripts/migrate-assistant-target.mjs",
+    "db:reset-dev": "node scripts/reset-dev-db.mjs",
     "db:pull": "drizzle-kit pull",
     "db:studio": "drizzle-kit studio --port=4983"
   },
@@ -42,6 +44,7 @@
     "zustand": "^5.0.9"
   },
   "devDependencies": {
+    "@forge/forge-codegen": "workspace:*",
     "concurrently": "^9.0.0",
     "drizzle-kit": "^0.30.0",
     "drizzle-orm": "^0.38.0",

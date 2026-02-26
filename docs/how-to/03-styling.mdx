@@ -21,14 +21,14 @@ Semantic tokens in `packages/shared/src/shared/styles/themes.css`:
 ## Theme
 
 - **App theme** — `ui.theme` (settings) + `AppThemeProvider`; sets `<html data-theme="...">`. File: `apps/studio/components/providers/AppThemeProvider.tsx`
-- **Editor override** — `EditorShell` accepts `theme`; sets `data-theme` on editor root
+- **Editor override** — `WorkspaceShell` accepts `theme`; sets `data-theme` on editor root
 - **Values** — `dark` | `light` (Spotify-inspired palettes)
 
 <ShowcaseLink href="components/showcase/atoms#theme-density" label="View theme & density in Catalog" />
 
 ## Density
 
-- **Default** — `compact`. Override via `ui.density` (app settings) or `data-density` on `EditorShell`.
+- **Default** — `compact`. Override via `ui.density` (app settings) or `data-density` on `WorkspaceShell`.
 - **Tokens** — `--control-height`, `--panel-padding`, `--tab-height` (see [Design: styling](design/01-styling-and-theming.mdx)).
 
 ## UI atoms

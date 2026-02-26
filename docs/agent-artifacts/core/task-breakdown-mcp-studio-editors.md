@@ -21,7 +21,7 @@ Initiative: **mcp-apps** (Studio and editors as MCP). See [product roadmap](../.
 - Define `McpAppDescriptor` (id, name, tools, uiResources) and registration contract.
 - Registry (app shell or MCP server) where descriptors are registered; Studio MCP Server aggregates them.
 - Each built-in editor (Dialogue, Character, Video, Strategy) exports a descriptor and registers.
-- Align with [editor metadata](../../packages/shared/src/shared/components/editor/README.md) and [AppShell](../../apps/studio/components/AppShell.tsx) editor list.
+- Align with [editor metadata](../../packages/shared/src/shared/components/workspace/README.md) and [AppShell](../../apps/studio/components/AppShell.tsx) editor list.
 - Third-party editors: same contract per [Developer program](../../business/developer-program-and-editors.mdx).
 
 ### Lane 3: CopilotKit/assistant-ui alignment (caveats doc + optional unified backend)
@@ -35,7 +35,7 @@ Initiative: **mcp-apps** (Studio and editors as MCP). See [product roadmap](../.
 - Host matrix (Cursor, Claude, VS Code, ChatGPT, Atlas, Perplexity) — doc 12.
 - Per-host setup: how to add Forge/Studio MCP server (config, env, auth).
 - Future: "Quick start for Cursor" and "Quick start for Claude" guides.
-- Reference distribution pattern: [vendor/twick MCP agent](../../vendor/twick/packages/agents/mcp-agent/).
+- Reference: MCP host setup guides (e.g. Claude Desktop config, install script pattern) in architecture docs.
 
 ---
 

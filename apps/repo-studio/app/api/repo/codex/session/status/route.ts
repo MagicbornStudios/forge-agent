@@ -21,5 +21,5 @@ export async function GET() {
     message: status.ok
       ? (status.running ? 'Codex app-server session is ready.' : 'Codex is ready. Session not started yet.')
       : 'Codex is not ready.',
-  }, { status: status.ok ? 200 : 503 });
+  }, { status: 200 });
 }

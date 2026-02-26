@@ -8,7 +8,7 @@ updated: 2026-02-07
 
 ## Mental model
 
-- **EditorShell** - Layout and surfaces (header, toolbar, left, main, right, statusBar, bottom, overlays). Declarative slots only.
+- **WorkspaceShell** - Layout and surfaces (header, toolbar, left, main, right, statusBar, bottom, overlays). Declarative slots only.
 - **Editor controller (system)** - Store + adapter + subscriptions (e.g. Zustand).
 - **Editor bridge (per editor)** - Converts editor state/events into shared Selection and commands.
 - **Chat orchestrator** - Reads shared state, emits intents, proposes drafts, triggers navigation.
@@ -52,7 +52,7 @@ Legacy: `SelectionKind` / `LegacySelection` for backward compat; map to entity i
 
 Inspector is **composition**, not a monolith:
 
-- Inspector component (`EditorInspector`) receives `selection` and `sections: InspectorSection[]`.
+- Inspector component (`WorkspaceInspector`) receives `selection` and `sections: InspectorSection[]`.
 - Each section: `id`, `title`, `when(selection) => boolean`, `render({ selection }) => ReactNode`.
 - Only sections that pass `when(selection)` are rendered. Handles Dialogue node/edge, Writer range, Characters element, etc.
 
@@ -64,7 +64,7 @@ Declarative **data + slots**:
 
 - `ToolbarGroup`: `id`, `align` ('start' | 'center' | 'end'), `items: ToolbarItem[]`.
 - `ToolbarItem`: `button` | `toggle` | `menu` | `custom` (with id, label, onClick / onToggle / render / children).
-- Pass `groups` to `EditorToolbar` to render from data; otherwise use `Left`/`Center`/`Right` slots.
+- Pass `groups` to `WorkspaceToolbar` to render from data; otherwise use `Left`/`Center`/`Right` slots.
 
 ---
 
@@ -72,7 +72,7 @@ Declarative **data + slots**:
 
 - **No registry.** One list per editor: `OverlaySpec[]` with `id`, `type`, `title?`, `size?`, `render({ payload, onDismiss })`.
 - Editor state holds `activeOverlay: { id, payload? } | null`. Set to open; `onDismiss()` clears.
-- `EditorOverlaySurface` finds spec by `activeOverlay.id` and calls `render`. No file scanning or generators.
+- `WorkspaceOverlaySurface` finds spec by `activeOverlay.id` and calls `render`. No file scanning or generators.
 
 ---
 
@@ -84,7 +84,7 @@ Declarative **data + slots**:
 - **ToolbarGroup** / **ToolbarItem** - Declarative toolbar.
 - **InspectorSection** - when(selection) + render(selection).
 - **WorkspaceUISpec** - slots + overlays list (one place per editor). Legacy naming retained for compatibility.
-- **ModalRoute** / **ModalRegistry** - Legacy; prefer OverlaySpec + EditorOverlaySurface.
+- **ModalRoute** / **ModalRegistry** - Legacy; prefer OverlaySpec + WorkspaceOverlaySurface.
 - **DeepLink** / **NavRequest**, **Draft**, **Proposal**, **WorkspaceCapabilities** - Unchanged (legacy naming maps to editors).
 
 ---

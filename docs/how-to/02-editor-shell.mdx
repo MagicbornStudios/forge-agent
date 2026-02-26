@@ -8,24 +8,24 @@ Every editor uses the same surfaces. Composition only; no data binding in this g
 
 ## Shared components
 
-From `packages/shared/src/shared/components/editor/`:
+From `packages/shared/src/shared/components/workspace/`:
 
 | Component | Purpose |
 |-----------|---------|
-| EditorShell | Root; `editorId`, `title`, `domain`, `theme`, `density` |
-| EditorToolbar | `.Left`, `.Right`, `.Center`, `.Group`, `.Button`, `.Menubar` |
+| WorkspaceShell | Root; `editorId`, `title`, `domain`, `theme`, `density` |
+| WorkspaceToolbar | `.Left`, `.Right`, `.Center`, `.Group`, `.Button`, `.Menubar` |
 | WorkspaceLayout | Slots: `.Left`, `.Main`, `.Right`, `.Bottom` |
 | WorkspacePanel | Panel wrapper; title, tabs, scrollable |
-| EditorStatusBar | Footer strip |
-| EditorOverlaySurface | `overlays`, `activeOverlay`, `onDismiss` |
+| WorkspaceStatusBar | Footer strip |
+| WorkspaceOverlaySurface | `overlays`, `activeOverlay`, `onDismiss` |
 
 ## Minimal shell
 
 ```tsx
-<EditorShell editorId="my-editor" title="My Editor" domain="my">
-  <EditorToolbar>
-    <EditorToolbar.Left><span>My Editor</span></EditorToolbar.Left>
-  </EditorToolbar>
+<WorkspaceShell editorId="my-editor" title="My Editor" domain="my">
+  <WorkspaceToolbar>
+    <WorkspaceToolbar.Left><span>My Editor</span></WorkspaceToolbar.Left>
+  </WorkspaceToolbar>
   <WorkspaceLayout layoutId="my-layout">
     <WorkspaceLayout.Main>
       <WorkspacePanel panelId="main" title="Main">
@@ -33,9 +33,9 @@ From `packages/shared/src/shared/components/editor/`:
       </WorkspacePanel>
     </WorkspaceLayout.Main>
   </WorkspaceLayout>
-  <EditorStatusBar>Ready</EditorStatusBar>
-  <EditorOverlaySurface overlays={[]} activeOverlay={null} onDismiss={() => {}} />
-</EditorShell>
+  <WorkspaceStatusBar>Ready</WorkspaceStatusBar>
+  <WorkspaceOverlaySurface overlays={[]} activeOverlay={null} onDismiss={() => {}} />
+</WorkspaceShell>
 ```
 
 Reference: `apps/studio/components/workspaces/DialogueWorkspace.tsx`, `apps/studio/components/workspaces/CharacterWorkspace.tsx`.
@@ -43,7 +43,8 @@ Reference: `apps/studio/components/workspaces/DialogueWorkspace.tsx`, `apps/stud
 **Next:** [03 - Styling and theming](03-styling)
 
 <Callout variant="note" title="For coding agents">
-File refs: `packages/shared/src/shared/components/editor/EditorShell.tsx`, `packages/shared/src/shared/components/editor/WorkspaceLayout.tsx`, `apps/studio/components/workspaces/DialogueWorkspace.tsx`
+File refs: `packages/shared/src/shared/components/workspace/WorkspaceShell.tsx`, `packages/shared/src/shared/components/workspace/WorkspaceLayout.tsx`, `apps/studio/components/workspaces/DialogueWorkspace.tsx`
 Related: components/01-editor-shell, components/02-dock-layout
-Do not: Use deprecated dock naming (`EditorDockLayout`, `EditorDockPanel`) in new code
+Do not: Use deprecated dock naming (`WorkspaceLayout`, `WorkspacePanel`) in new code
 </Callout>
+

@@ -748,4 +748,4 @@ The **PanelTabs** component provides:
 **Next Steps:**
 - [Tutorial: Adding Panels](../tutorials/adding-panels.mdx)
 - [Component Patterns](../guides/patterns.mdx)
-- [EditorInspector Guide](./editor-inspector)
+- [WorkspaceInspector Guide](./workspace-inspector)

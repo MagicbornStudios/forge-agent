@@ -87,7 +87,7 @@ If we cannot get FlexLayout (or the current shell) to show main content within a
    - Temporarily comment out the FlexLayout CSS import and the `flexlayout__theme_dark` class; render a simple placeholder (e.g. "Layout placeholder") inside the same slot wrapper. If the placeholder appears, the issue is likely FlexLayout CSS or structure.
 
 3. **Rule out React/Next streaming**
-   - Check for uncaught errors or suspended boundaries in the editor path (DialogueEditor -> EditorShell -> DockLayout). Add a minimal client-only fallback (e.g. a div with "Editor content" before DockLayout) to see if any content under `EditorApp.Content` appears.
+   - Check for uncaught errors or suspended boundaries in the editor path (DialogueEditor -> WorkspaceShell -> DockLayout). Add a minimal client-only fallback (e.g. a div with "Editor content" before DockLayout) to see if any content under `WorkspaceApp.Content` appears.
 
 4. **Guard localStorage in app**
    - Ensure any code that reads `localStorage` (undo-redo, layout, etc.) is behind `typeof window !== 'undefined'` or runs only in `useEffect` so we do not throw during SSR.
@@ -103,6 +103,6 @@ If we cannot get FlexLayout (or the current shell) to show main content within a
 ## 7. References
 
 - [errors-and-attempts.md](./errors-and-attempts.md): FlexLayout panels not showing (resolved; Dockview restored).
-- [05-editor-platform.mdx](../../architecture/05-editor-platform.mdx): EditorApp, DockLayout, EditorShell (Dockview).
+- [05-editor-platform.mdx](../../architecture/05-editor-platform.mdx): WorkspaceApp, DockLayout, WorkspaceShell (Dockview).
 - [DockLayout.tsx](../../../packages/shared/src/shared/components/editor/DockLayout.tsx): Current Dockview implementation.
 - [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx): Index of agent artifacts.

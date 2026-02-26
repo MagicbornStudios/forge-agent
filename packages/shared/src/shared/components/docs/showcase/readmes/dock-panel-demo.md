@@ -219,12 +219,12 @@ From `apps/studio/components/editors/DialogueWorkspace.tsx`:
 
 ```tsx
 <WorkspacePanel panelId="dialogue-right" hideTitleBar className="h-full">
-  <EditorInspector selection={activeSelection} sections={inspectorSections} />
+  <WorkspaceInspector selection={activeSelection} sections={inspectorSections} />
 </WorkspacePanel>
 ```
 
 - `hideTitleBar` — Title shown in dockview tab
-- `EditorInspector` handles scroll internally
+- `WorkspaceInspector` handles scroll internally
 
 ## Real-World Example: DialogueWorkspace Main (Locked)
 
@@ -503,11 +503,11 @@ const ExpensivePanel = React.memo(function ExpensivePanel({ data }: { data: Data
 
 - [WorkspaceLayout](./dock-layout) — Parent layout system
 - [PanelTabs](./panel-tabs.mdx) — Tab system for multi-mode panels
-- [EditorInspector](./editor-inspector.mdx) — Selection-driven inspector
+- [WorkspaceInspector](./workspace-inspector.mdx) — Selection-driven inspector
 
 ## Source Code
 
-Location: `packages/shared/src/shared/components/editor/DockPanel.tsx`
+Location: `packages/shared/src/shared/components/workspace/DockPanel.tsx`
 
 ## Best Practices
 

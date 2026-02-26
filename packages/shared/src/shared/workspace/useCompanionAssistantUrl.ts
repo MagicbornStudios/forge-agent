@@ -21,11 +21,10 @@ export function useCompanionAssistantUrl(options?: UseCompanionAssistantUrlOptio
     if (useRepoStudioRuntime && repoStudioBaseUrl) {
       const base = `${repoStudioBaseUrl.replace(/\/$/, '')}/api/assistant-chat`;
       if (useCodexAssistant) {
-        return `${base}?assistantTarget=codex-assistant`;
+        return `${base}?assistantTarget=codex`;
       }
       return base;
     }
     return fallbackUrl;
   }, [fallbackUrl, repoStudioBaseUrl, useCodexAssistant, useRepoStudioRuntime]);
 }
-

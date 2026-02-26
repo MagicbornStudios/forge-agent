@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { runRepoStudioCli } from '@/lib/cli-runner';
 
 export async function POST() {
-  const result = runRepoStudioCli(['codex-login', '--json']);
+  const result = runRepoStudioCli(['codex-login', '--json'], { timeoutMs: 300000 });
   const payload = result.payload || {};
   const ok = payload.ok ?? result.ok;
   return NextResponse.json({

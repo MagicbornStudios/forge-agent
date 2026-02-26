@@ -17,20 +17,20 @@ After completing this guide you will have:
 
 - **App shell** — [Studio](components/showcase/organisms.mdx#studio) with menubar, sidebar, project switcher
 - **Editor registry** — Tab-based editor switching, no manual branches
-- **First editor** — Built with [EditorShell](components/showcase/molecules.mdx#editorshell), [EditorDockLayout](components/showcase/molecules.mdx#editordocklayout)
+- **First editor** — Built with [WorkspaceShell](components/showcase/molecules.mdx#workspaceshell), [WorkspaceLayout](components/showcase/molecules.mdx#workspacelayout)
 - **Data layer** — TanStack Query + API client for projects and documents
 - **Assistant UI** — AI chat with domain tools via `DomainAssistantContract`
 - **Settings** — Theme, density, model routing with [SettingsPanel](components/showcase/molecules.mdx#settingspanel)
 
 ---
 
-## Step 1: Molecules — EditorShell, EditorDockLayout [#step-1-molecules]
+## Step 1: Molecules — WorkspaceShell, WorkspaceLayout [#step-1-molecules]
 
-Compose atoms into [EditorShell](components/showcase/molecules.mdx#editorshell), [EditorDockLayout](components/showcase/molecules.mdx#editordocklayout), [EditorToolbar](components/showcase/molecules.mdx#editortoolbar), and [PanelTabs](components/showcase/molecules.mdx#paneltabs). See [how-to 02 — Editor shell](how-to/02-editor-shell.mdx) and [how-to 05 — Building an editor](how-to/05-building-an-editor.mdx).
+Compose atoms into [WorkspaceShell](components/showcase/molecules.mdx#workspaceshell), [WorkspaceLayout](components/showcase/molecules.mdx#workspacelayout), [WorkspaceToolbar](components/showcase/molecules.mdx#workspacetoolbar), and [PanelTabs](components/showcase/molecules.mdx#paneltabs). See [how-to 02 — Editor shell](how-to/02-editor-shell.mdx) and [how-to 05 — Building an editor](how-to/05-building-an-editor.mdx).
 
 ## Step 2: Organisms — Full editors
 
-[DialogueEditor](components/showcase/organisms.mdx) and [CharacterEditor](components/showcase/organisms.mdx) are full organisms: EditorShell + DockLayout + domain-specific content. Reference: `apps/studio/components/editors/DialogueEditor.tsx`, `apps/studio/components/editors/CharacterEditor.tsx`.
+[DialogueEditor](components/showcase/organisms.mdx) and [CharacterEditor](components/showcase/organisms.mdx) are full organisms: WorkspaceShell + DockLayout + domain-specific content. Reference: `apps/studio/components/editors/DialogueEditor.tsx`, `apps/studio/components/editors/CharacterEditor.tsx`.
 
 ## Step 3: Studio shell and providers [#step-3-studio-shell-and-providers]
 
@@ -154,51 +154,51 @@ export const EDITOR_VIEWPORT_IDS: Record<EditorId, string> = {
 
 ## Add your first editor
 
-Use [EditorShell](components/showcase/molecules.mdx#editorshell) and [EditorDockLayout](components/showcase/molecules.mdx#editordocklayout). See [how-to 05](how-to/05-building-an-editor) for the full walkthrough.
+Use [WorkspaceShell](components/showcase/molecules.mdx#workspaceshell) and [WorkspaceLayout](components/showcase/molecules.mdx#workspacelayout). See [how-to 05](how-to/05-building-an-editor) for the full walkthrough.
 
 ### Minimal editor
 
 ```tsx
 import {
-  EditorShell,
-  EditorToolbar,
-  EditorDockLayout,
-  EditorDockPanel,
-  EditorStatusBar,
+  WorkspaceShell,
+  WorkspaceToolbar,
+  WorkspaceLayout,
+  WorkspacePanel,
+  WorkspaceStatusBar,
 } from '@forge/shared';
 
 export function MyEditor() {
   return (
-    <EditorShell editorId="my-editor" title="My Editor" domain="my-domain" className="bg-canvas">
-      <EditorToolbar>
-        <EditorToolbar.Left>
+    <WorkspaceShell editorId="my-editor" title="My Editor" domain="my-domain" className="bg-canvas">
+      <WorkspaceToolbar>
+        <WorkspaceToolbar.Left>
           <span className="text-xs font-medium">My Editor</span>
-        </EditorToolbar.Left>
-      </EditorToolbar>
+        </WorkspaceToolbar.Left>
+      </WorkspaceToolbar>
 
-      <EditorDockLayout layoutId="my-editor-layout" leftDefaultSize={20}>
-        <EditorDockLayout.Left>
-          <EditorDockPanel panelId="nav" title="Navigator">
+      <WorkspaceLayout layoutId="my-editor-layout" leftDefaultSize={20}>
+        <WorkspaceLayout.Left>
+          <WorkspacePanel panelId="nav" title="Navigator">
             <div className="p-4">Sidebar content</div>
-          </EditorDockPanel>
-        </EditorDockLayout.Left>
-        <EditorDockLayout.Main>
-          <EditorDockPanel panelId="main" title="Viewport">
+          </WorkspacePanel>
+        </WorkspaceLayout.Left>
+        <WorkspaceLayout.Main>
+          <WorkspacePanel panelId="main" title="Viewport">
             <div className="p-4">Main content</div>
-          </EditorDockPanel>
-        </EditorDockLayout.Main>
-      </EditorDockLayout>
+          </WorkspacePanel>
+        </WorkspaceLayout.Main>
+      </WorkspaceLayout>
 
-      <EditorStatusBar>Ready</EditorStatusBar>
-    </EditorShell>
+      <WorkspaceStatusBar>Ready</WorkspaceStatusBar>
+    </WorkspaceShell>
   );
 }
 ```
 
 ### Layout composition
 
-- **[EditorToolbar](components/showcase/molecules.mdx#editortoolbar)** — `.Left`, `.Center`, `.Right`, `.Menubar`, `.Button`
-- **[EditorDockPanel](components/showcase/molecules.mdx#editordockpanel)** — `panelId`, `title`, `scrollable`, `locked`
+- **[WorkspaceToolbar](components/showcase/molecules.mdx#workspacetoolbar)** — `.Left`, `.Center`, `.Right`, `.Menubar`, `.Button`
+- **[WorkspacePanel](components/showcase/molecules.mdx#workspacepanel)** — `panelId`, `title`, `scrollable`, `locked`
 - **PanelTabs** — Use [PanelTabs](components/showcase/molecules.mdx#paneltabs) when the right panel has Inspector + Chat
 
 ---
@@ -267,11 +267,11 @@ export function useMyEditorAssistantContract(): DomainAssistantContract {
 Use `DialogueAssistantPanel` (or equivalent) in a [PanelTabs](components/showcase/molecules.mdx#paneltabs) slot:
 
 ```tsx
-<EditorDockPanel
+<WorkspacePanel
   panelId={CHAT_PANEL_ID}
   title="Chat"
   tabs={[
-    { id: 'inspector', label: 'Inspector', content: <EditorInspector ... /> },
+    { id: 'inspector', label: 'Inspector', content: <WorkspaceInspector ... /> },
     { id: 'chat', label: 'Chat', content: <DialogueAssistantPanel contract={contract} /> },
   ]}
 />
@@ -297,7 +297,7 @@ Editors read from `useSettingsStore`:
 const theme = useSettingsStore((s) => s.getSettingValue('ui.theme', { editorId }));
 const density = useSettingsStore((s) => s.getSettingValue('ui.density', { editorId }));
 
-<EditorShell theme={theme} density={density} ... />
+<WorkspaceShell theme={theme} density={density} ... />
 ```
 
 ### Settings panel
@@ -323,6 +323,7 @@ Use [SettingsPanel](components/showcase/molecules.mdx#settingspanel) and [Settin
 ## Related
 
 - [how-to 05 — Building an editor](how-to/05-building-an-editor)
-- [EditorShell](components/showcase/molecules.mdx#editorshell)
-- [EditorDockLayout](components/showcase/molecules.mdx#editordocklayout)
+- [WorkspaceShell](components/showcase/molecules.mdx#workspaceshell)
+- [WorkspaceLayout](components/showcase/molecules.mdx#workspacelayout)
 - [Studio](components/showcase/organisms.mdx#studio)
+

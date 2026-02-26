@@ -5,15 +5,8 @@ import {
   type RepoProposalUpsertInput,
 } from './contracts';
 import {
-  findLegacyProposalByApprovalToken,
-  findLegacyProposalById,
-  listLegacyProposals,
-  readLegacyProposalStore,
-} from './json-legacy-store';
-import {
   findSqliteProposalByApprovalToken,
   findSqliteProposalById,
-  importLegacyProposalsToSqlite,
   isSqliteProposalStoreAvailable,
   listSqliteProposals,
   transitionSqliteProposal,
@@ -23,39 +16,44 @@ import {
 type RepositoryState = {
   initialized: boolean;
   sqliteAvailable: boolean;
-  fallbackReason: string;
+  unavailableReason: string;
 };
 
 const state: RepositoryState = {
   initialized: false,
   sqliteAvailable: false,
-  fallbackReason: '',
+  unavailableReason: '',
 };
 
 let initPromise: Promise<void> | null = null;
+
+export class ProposalStoreUnavailableError extends Error {
+  readonly statusCode: number;
+
+  constructor(message: string) {
+    super(message);
+    this.name = 'ProposalStoreUnavailableError';
+    this.statusCode = 503;
+  }
+}
+
+export function isProposalStoreUnavailableError(error: unknown): error is ProposalStoreUnavailableError {
+  return error instanceof ProposalStoreUnavailableError;
+}
+
+function unavailableMessage() {
+  const suffix = state.unavailableReason ? ` (${state.unavailableReason})` : '';
+  return `SQLite proposal store unavailable${suffix}.`;
+}
 
 async function initializeRepository() {
   if (state.initialized) return;
   const availability = await isSqliteProposalStoreAvailable();
   state.sqliteAvailable = availability.ok;
-  state.fallbackReason = availability.message || '';
-
-  if (!availability.ok) {
-    state.initialized = true;
-    return;
-  }
-
-  try {
-    const legacyEntries = await readLegacyProposalStore();
-    if (legacyEntries.length > 0) {
-      await importLegacyProposalsToSqlite(legacyEntries);
-    }
-  } catch (error: any) {
-    state.sqliteAvailable = false;
-    state.fallbackReason = String(error?.message || error || 'Unable to migrate legacy proposals.');
-  } finally {
-    state.initialized = true;
-  }
+  state.unavailableReason = availability.ok
+    ? ''
+    : String(availability.message || 'SQLite proposal store unavailable.');
+  state.initialized = true;
 }
 
 async function ensureInitialized() {
@@ -68,56 +66,49 @@ async function ensureInitialized() {
   await initPromise;
 }
 
-function readOnlyFallbackMessage() {
-  const suffix = state.fallbackReason ? ` (${state.fallbackReason})` : '';
-  return `SQLite proposal store unavailable${suffix}. JSON fallback is read-only.`;
+async function ensureSqliteAvailable() {
+  await ensureInitialized();
+  if (state.sqliteAvailable) return;
+  throw new ProposalStoreUnavailableError(unavailableMessage());
+}
+
+async function withSqlite<T>(operation: () => Promise<T>, fallbackMessage: string): Promise<T> {
+  await ensureSqliteAvailable();
+  try {
+    return await operation();
+  } catch (error: any) {
+    state.sqliteAvailable = false;
+    state.unavailableReason = String(error?.message || error || fallbackMessage);
+    throw new ProposalStoreUnavailableError(unavailableMessage());
+  }
 }
 
 export async function listProposalsFromRepository() {
-  await ensureInitialized();
-  if (state.sqliteAvailable) {
-    try {
-      return await listSqliteProposals();
-    } catch (error: any) {
-      state.sqliteAvailable = false;
-      state.fallbackReason = String(error?.message || error || 'Unable to read SQLite proposals.');
-    }
-  }
-  return listLegacyProposals();
+  return withSqlite(
+    () => listSqliteProposals(),
+    'Unable to list SQLite proposals.',
+  );
 }
 
 export async function findProposalByIdFromRepository(proposalId: string) {
-  await ensureInitialized();
-  if (state.sqliteAvailable) {
-    try {
-      return await findSqliteProposalById(proposalId);
-    } catch (error: any) {
-      state.sqliteAvailable = false;
-      state.fallbackReason = String(error?.message || error || 'Unable to read SQLite proposal.');
-    }
-  }
-  return findLegacyProposalById(proposalId);
+  return withSqlite(
+    () => findSqliteProposalById(proposalId),
+    'Unable to read SQLite proposal by id.',
+  );
 }
 
 export async function findProposalByApprovalTokenFromRepository(approvalToken: string) {
-  await ensureInitialized();
-  if (state.sqliteAvailable) {
-    try {
-      return await findSqliteProposalByApprovalToken(approvalToken);
-    } catch (error: any) {
-      state.sqliteAvailable = false;
-      state.fallbackReason = String(error?.message || error || 'Unable to read SQLite proposal.');
-    }
-  }
-  return findLegacyProposalByApprovalToken(approvalToken);
+  return withSqlite(
+    () => findSqliteProposalByApprovalToken(approvalToken),
+    'Unable to read SQLite proposal by approval token.',
+  );
 }
 
 export async function upsertPendingProposalInRepository(input: RepoProposalUpsertInput): Promise<RepoProposal> {
-  await ensureInitialized();
-  if (!state.sqliteAvailable) {
-    throw new Error(readOnlyFallbackMessage());
-  }
-  return upsertSqlitePendingProposal(input);
+  return withSqlite(
+    () => upsertSqlitePendingProposal(input),
+    'Unable to upsert SQLite proposal.',
+  );
 }
 
 export async function transitionProposalInRepository(
@@ -125,20 +116,13 @@ export async function transitionProposalInRepository(
   status: RepoProposalStatus,
   errorText?: string,
 ): Promise<RepoProposalTransitionResult> {
-  await ensureInitialized();
-  if (!state.sqliteAvailable) {
-    return {
-      ok: false,
-      proposal: null,
-      message: readOnlyFallbackMessage(),
-      noop: false,
-    };
-  }
-  return transitionSqliteProposal(proposalId, status, errorText);
+  return withSqlite(
+    () => transitionSqliteProposal(proposalId, status, errorText),
+    'Unable to transition SQLite proposal.',
+  );
 }
 
 export async function isReadOnlyProposalFallback() {
   await ensureInitialized();
   return !state.sqliteAvailable;
 }
-

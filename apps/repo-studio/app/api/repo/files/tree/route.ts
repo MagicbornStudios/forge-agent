@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { resolveActiveProjectRoot } from '@/lib/project-root';
 import { listRepoFiles } from '@/lib/repo-files';
 import { resolveScopeGuardContext } from '@/lib/scope-guard';
 
@@ -26,6 +27,7 @@ export async function GET(request: Request) {
       loopId,
       allowedRoots: guard.allowedRoots,
       maxItems: Number.isFinite(maxItemsRaw) ? maxItemsRaw : undefined,
+      repoRoot: resolveActiveProjectRoot(),
     });
     return NextResponse.json({
       ok: true,

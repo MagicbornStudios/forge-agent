@@ -3,18 +3,22 @@
 import {
   AssistantPanel,
   CompanionRuntimeSwitch,
-  EditorShell,
-  EditorStatusBar,
-  EditorToolbar,
+  WorkspaceShell,
+  WorkspaceStatusBar,
+  WorkspaceToolbar,
   StudioLayout,
   StudioProviders,
   WorkspaceLayout,
   WorkspacePanel,
   useCompanionAssistantUrl,
 } from '@forge/dev-kit';
+import { getWorkspaceLayoutId, WORKSPACE_LABELS } from '../lib/app-spec.generated';
+
+const WORKSPACE_ID = 'assistant' as const;
 
 export default function Home() {
   const assistantUrl = useCompanionAssistantUrl();
+  const layoutId = getWorkspaceLayoutId(WORKSPACE_ID);
 
   return (
     <StudioProviders tooltip={{ delayDuration: 250 }}>
@@ -29,25 +33,25 @@ export default function Home() {
         </StudioLayout.Tabs>
 
         <StudioLayout.Content className="min-h-0 overflow-hidden">
-          <EditorShell
-            editorId="assistant"
-            title="AI Chat"
+          <WorkspaceShell
+            editorId={WORKSPACE_ID}
+            title={WORKSPACE_LABELS[WORKSPACE_ID]}
             subtitle={assistantUrl ? 'Companion runtime connected' : 'Companion runtime not connected'}
             domain="ai"
             className="flex h-full min-h-0 flex-col bg-canvas"
           >
-            <EditorShell.Toolbar>
-              <EditorToolbar className="border-b border-sidebar-border bg-sidebar">
-                <EditorToolbar.Left>
+            <WorkspaceShell.Toolbar>
+              <WorkspaceToolbar className="border-b border-sidebar-border bg-sidebar">
+                <WorkspaceToolbar.Left>
                   <span className="text-xs text-muted-foreground">
                     Chat-only consumer reference app using shared assistant components.
                   </span>
-                </EditorToolbar.Left>
-              </EditorToolbar>
-            </EditorShell.Toolbar>
+                </WorkspaceToolbar.Left>
+              </WorkspaceToolbar>
+            </WorkspaceShell.Toolbar>
 
-            <EditorShell.Layout>
-              <WorkspaceLayout layoutId="consumer-studio-chat" className="h-full">
+            <WorkspaceShell.Layout>
+              <WorkspaceLayout layoutId={layoutId} className="h-full">
                 <WorkspaceLayout.Main>
                   <WorkspaceLayout.Panel id="assistant-chat" title="Assistant">
                     <WorkspacePanel panelId="assistant-chat-content" hideTitleBar className="h-full" scrollable={false}>
@@ -62,16 +66,16 @@ export default function Home() {
                   </WorkspaceLayout.Panel>
                 </WorkspaceLayout.Main>
               </WorkspaceLayout>
-            </EditorShell.Layout>
+            </WorkspaceShell.Layout>
 
-            <EditorShell.StatusBar>
-              <EditorStatusBar>
+            <WorkspaceShell.StatusBar>
+              <WorkspaceStatusBar>
                 {assistantUrl
                   ? `Assistant runtime: ${assistantUrl}`
                   : 'Assistant runtime: unavailable (waiting for companion runtime)'}
-              </EditorStatusBar>
-            </EditorShell.StatusBar>
-          </EditorShell>
+              </WorkspaceStatusBar>
+            </WorkspaceShell.StatusBar>
+          </WorkspaceShell>
         </StudioLayout.Content>
       </StudioLayout>
     </StudioProviders>

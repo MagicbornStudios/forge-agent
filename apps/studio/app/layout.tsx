@@ -4,7 +4,6 @@ import './globals.css';
 import { AppThemeProvider } from '@/components/providers/AppThemeProvider';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { SettingsHydration } from '@/components/settings/SettingsHydration';
-import { TwickProviders } from '@/components/providers/TwickProviders';
 
 const fontSans = Inter({
   subsets: ['latin'],
@@ -31,14 +30,12 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="font-sans antialiased">
-        <TwickProviders>
-          <AppThemeProvider>
-            <QueryProvider>
-              <SettingsHydration />
-              {children}
-            </QueryProvider>
-          </AppThemeProvider>
-        </TwickProviders>
+        <AppThemeProvider>
+          <QueryProvider>
+            <SettingsHydration />
+            {children}
+          </QueryProvider>
+        </AppThemeProvider>
       </body>
     </html>
   );

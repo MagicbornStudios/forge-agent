@@ -1,8 +1,6 @@
 'use client';
 
 import React from 'react';
-import { LivePlayerProvider } from '@twick/live-player';
-import { TimelineProvider, INITIAL_TIMELINE_DATA } from '@twick/timeline';
 import { CopilotKitBypassProvider } from '@/components/providers/CopilotKitBypassProvider';
 import { LocalDevAuthGate } from '@/components/providers/LocalDevAuthGate';
 import { AppProviders as SharedAppProviders } from '@forge/shared/components/app';
@@ -82,88 +80,80 @@ export function AppProviders({ children }: AppProvidersProps) {
       <DirtyBeforeUnload />
       <LocalDevAuthGate>
         <EntitlementsProvider>
-          <LivePlayerProvider>
-            <TimelineProvider
-              contextId="studio-video"
-              initialData={INITIAL_TIMELINE_DATA}
-              undoRedoPersistenceKey="studio-video-history"
-            >
-              <SharedAppProviders>
-                <CopilotKitBypassProvider>
-                  <OpenSettingsSheetProvider>
-                    <StudioMenubarProvider>
-                      <SidebarProvider
-                        open={settingsSidebarOpen}
-                        onOpenChange={setSettingsSidebarOpen}
-                        className="flex flex-col h-screen min-h-0 w-full"
+          <SharedAppProviders>
+            <CopilotKitBypassProvider>
+              <OpenSettingsSheetProvider>
+                <StudioMenubarProvider>
+                  <SidebarProvider
+                    open={settingsSidebarOpen}
+                    onOpenChange={setSettingsSidebarOpen}
+                    className="flex flex-col h-screen min-h-0 w-full"
+                    style={
+                      {
+                        '--sidebar-width': '20rem',
+                        '--sidebar-width-mobile': '18rem',
+                      } as React.CSSProperties
+                    }
+                  >
+                    <MainWithSettingsMargin>{children}</MainWithSettingsMargin>
+                    <Sidebar
+                      side="right"
+                      collapsible="offcanvas"
+                      className="border-l border-sidebar-border"
+                    >
+                      <SidebarHeader
+                        className="border-b border-sidebar-border p-[var(--panel-padding)]"
                         style={
-                          {
-                            '--sidebar-width': '20rem',
-                            '--sidebar-width-mobile': '18rem',
-                          } as React.CSSProperties
+                          settingsActiveTab &&
+                          SETTINGS_SCOPE_COLORS[settingsActiveTab]
+                            ? {
+                                borderLeftWidth: 4,
+                                borderLeftStyle: 'solid',
+                                borderLeftColor:
+                                  SETTINGS_SCOPE_COLORS[settingsActiveTab],
+                              }
+                            : undefined
                         }
                       >
-                        <MainWithSettingsMargin>{children}</MainWithSettingsMargin>
-                        <Sidebar
-                          side="right"
-                          collapsible="offcanvas"
-                          className="border-l border-sidebar-border"
-                        >
-                          <SidebarHeader
-                            className="border-b border-sidebar-border p-[var(--panel-padding)]"
-                            style={
-                              settingsActiveTab &&
-                              SETTINGS_SCOPE_COLORS[settingsActiveTab]
-                                ? {
-                                    borderLeftWidth: 4,
-                                    borderLeftStyle: 'solid',
-                                    borderLeftColor:
-                                      SETTINGS_SCOPE_COLORS[settingsActiveTab],
-                                  }
-                                : undefined
-                            }
+                        <div className="flex items-start justify-between gap-[var(--control-gap)]">
+                          <div>
+                            <h2 className="text-sm font-semibold text-sidebar-foreground">
+                              {settingsActiveTab
+                                ? `Settings - ${capitalizeTab(settingsActiveTab)}`
+                                : 'Settings'}
+                            </h2>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              App and workspace defaults; viewport settings when in context.
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Close settings"
+                            className="h-[var(--control-height-sm)] w-[var(--control-height-sm)] shrink-0 text-muted-foreground hover:text-foreground"
+                            onClick={() => setSettingsSidebarOpen(false)}
                           >
-                            <div className="flex items-start justify-between gap-[var(--control-gap)]">
-                              <div>
-                                <h2 className="text-sm font-semibold text-sidebar-foreground">
-                                  {settingsActiveTab
-                                    ? `Settings - ${capitalizeTab(settingsActiveTab)}`
-                                    : 'Settings'}
-                                </h2>
-                                <p className="text-xs text-muted-foreground mt-0.5">
-                                  App and workspace defaults; viewport settings when in context.
-                                </p>
-                              </div>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                aria-label="Close settings"
-                                className="h-[var(--control-height-sm)] w-[var(--control-height-sm)] shrink-0 text-muted-foreground hover:text-foreground"
-                                onClick={() => setSettingsSidebarOpen(false)}
-                              >
-                                <X className="size-4" />
-                              </Button>
-                            </div>
-                          </SidebarHeader>
-                          <SidebarContent className="flex-1 min-h-0">
-                            <AppSettingsPanelContent
-                              activeWorkspaceId={activeWorkspaceId}
-                              activeProjectId={
-                                activeProjectId != null ? String(activeProjectId) : null
-                              }
-                              viewportId={settingsViewportId ?? 'main'}
-                              className="h-full"
-                            />
-                          </SidebarContent>
-                        </Sidebar>
-                      </SidebarProvider>
-                    </StudioMenubarProvider>
-                  </OpenSettingsSheetProvider>
-                </CopilotKitBypassProvider>
-              </SharedAppProviders>
-            </TimelineProvider>
-          </LivePlayerProvider>
+                            <X className="size-4" />
+                          </Button>
+                        </div>
+                      </SidebarHeader>
+                      <SidebarContent className="flex-1 min-h-0">
+                        <AppSettingsPanelContent
+                          activeWorkspaceId={activeWorkspaceId}
+                          activeProjectId={
+                            activeProjectId != null ? String(activeProjectId) : null
+                          }
+                          viewportId={settingsViewportId ?? 'main'}
+                          className="h-full"
+                        />
+                      </SidebarContent>
+                    </Sidebar>
+                  </SidebarProvider>
+                </StudioMenubarProvider>
+              </OpenSettingsSheetProvider>
+            </CopilotKitBypassProvider>
+          </SharedAppProviders>
         </EntitlementsProvider>
       </LocalDevAuthGate>
     </AppShellPersistGate>

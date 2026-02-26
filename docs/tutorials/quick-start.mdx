@@ -1,6 +1,6 @@
 ---
 title: Quick start - Build your first editor
-description: Build a functional editor with Forge in ~10 minutes. EditorShell, DockLayout, CRUD, modals.
+description: Build a functional editor with Forge in ~10 minutes. WorkspaceShell, DockLayout, CRUD, modals.
 ---
 
 # Quick start: Build your first editor
@@ -37,46 +37,46 @@ Create `TaskEditor.tsx`:
 'use client';
 
 import {
-  EditorShell,
-  EditorToolbar,
-  EditorDockLayout,
-  EditorDockPanel,
-  EditorStatusBar,
+  WorkspaceShell,
+  WorkspaceToolbar,
+  WorkspaceLayout,
+  WorkspacePanel,
+  WorkspaceStatusBar,
 } from '@forge/shared';
 import { Plus } from 'lucide-react';
 
 export function TaskEditor() {
   return (
-    <EditorShell
+    <WorkspaceShell
       editorId="tasks"
       title="Tasks"
       domain="tasks"
       className="bg-canvas"
     >
-      <EditorToolbar className="bg-sidebar border-b">
-        <EditorToolbar.Left>
+      <WorkspaceToolbar className="bg-sidebar border-b">
+        <WorkspaceToolbar.Left>
           <span className="text-xs font-medium">Tasks</span>
-        </EditorToolbar.Left>
-        <EditorToolbar.Right>
-          <EditorToolbar.Button
+        </WorkspaceToolbar.Left>
+        <WorkspaceToolbar.Right>
+          <WorkspaceToolbar.Button
             size="sm"
             variant="outline"
             onClick={() => console.log('Create task')}
           >
             <Plus size={14} />
             New Task
-          </EditorToolbar.Button>
-        </EditorToolbar.Right>
-      </EditorToolbar>
+          </WorkspaceToolbar.Button>
+        </WorkspaceToolbar.Right>
+      </WorkspaceToolbar>
 
       <div className="flex-1 flex items-center justify-center">
         <p className="text-muted-foreground">Editor content goes here</p>
       </div>
 
-      <EditorStatusBar>
+      <WorkspaceStatusBar>
         Ready
-      </EditorStatusBar>
-    </EditorShell>
+      </WorkspaceStatusBar>
+    </WorkspaceShell>
   );
 }
 ```
@@ -90,18 +90,18 @@ export function TaskEditor() {
 
 ## Step 2: Add the layout (~3 minutes)
 
-Replace the placeholder with `EditorDockLayout`:
+Replace the placeholder with `WorkspaceLayout`:
 
 ```tsx
 'use client';
 
 import { useState } from 'react';
 import {
-  EditorShell,
-  EditorToolbar,
-  EditorDockLayout,
-  EditorDockPanel,
-  EditorStatusBar,
+  WorkspaceShell,
+  WorkspaceToolbar,
+  WorkspaceLayout,
+  WorkspacePanel,
+  WorkspaceStatusBar,
 } from '@forge/shared';
 import { Plus, ListTodo, FileEdit, ScanSearch } from 'lucide-react';
 import { Card } from '@forge/ui/card';
@@ -124,36 +124,36 @@ export function TaskEditor() {
   const activeTask = tasks.find((t) => t.id === activeTaskId);
 
   return (
-    <EditorShell
+    <WorkspaceShell
       editorId="tasks"
       title="Tasks"
       domain="tasks"
       className="bg-canvas"
     >
-      <EditorToolbar className="bg-sidebar border-b">
-        <EditorToolbar.Left>
+      <WorkspaceToolbar className="bg-sidebar border-b">
+        <WorkspaceToolbar.Left>
           <span className="text-xs font-medium">{tasks.length} tasks</span>
-        </EditorToolbar.Left>
-        <EditorToolbar.Right>
-          <EditorToolbar.Button
+        </WorkspaceToolbar.Left>
+        <WorkspaceToolbar.Right>
+          <WorkspaceToolbar.Button
             size="sm"
             variant="outline"
             onClick={() => console.log('Create task')}
           >
             <Plus size={14} />
             New Task
-          </EditorToolbar.Button>
-        </EditorToolbar.Right>
-      </EditorToolbar>
+          </WorkspaceToolbar.Button>
+        </WorkspaceToolbar.Right>
+      </WorkspaceToolbar>
 
-      <EditorDockLayout
+      <WorkspaceLayout
         layoutId="tasks-editor"
         leftDefaultSize={20}
         rightDefaultSize={25}
       >
-        <EditorDockLayout.Left>
-          <EditorDockLayout.Panel id="list" title="Tasks" icon={<ListTodo size={14} />}>
-            <EditorDockPanel panelId="task-list" hideTitleBar scrollable>
+        <WorkspaceLayout.Left>
+          <WorkspaceLayout.Panel id="list" title="Tasks" icon={<ListTodo size={14} />}>
+            <WorkspacePanel panelId="task-list" hideTitleBar scrollable>
               <div className="space-y-1 p-2">
                 {tasks.map((task) => (
                   <Button
@@ -167,13 +167,13 @@ export function TaskEditor() {
                   </Button>
                 ))}
               </div>
-            </EditorDockPanel>
-          </EditorDockLayout.Panel>
-        </EditorDockLayout.Left>
+            </WorkspacePanel>
+          </WorkspaceLayout.Panel>
+        </WorkspaceLayout.Left>
 
-        <EditorDockLayout.Main>
-          <EditorDockLayout.Panel id="editor" title="Editor" icon={<FileEdit size={14} />}>
-            <EditorDockPanel panelId="task-editor" hideTitleBar scrollable={false}>
+        <WorkspaceLayout.Main>
+          <WorkspaceLayout.Panel id="editor" title="Editor" icon={<FileEdit size={14} />}>
+            <WorkspacePanel panelId="task-editor" hideTitleBar scrollable={false}>
               {activeTask ? (
                 <div className="flex flex-col h-full p-4">
                   <Card className="p-4">
@@ -186,13 +186,13 @@ export function TaskEditor() {
                   <p className="text-muted-foreground">Select a task</p>
                 </div>
               )}
-            </EditorDockPanel>
-          </EditorDockLayout.Panel>
-        </EditorDockLayout.Main>
+            </WorkspacePanel>
+          </WorkspaceLayout.Panel>
+        </WorkspaceLayout.Main>
 
-        <EditorDockLayout.Right>
-          <EditorDockLayout.Panel id="props" title="Properties" icon={<ScanSearch size={14} />}>
-            <EditorDockPanel panelId="task-props" hideTitleBar scrollable>
+        <WorkspaceLayout.Right>
+          <WorkspaceLayout.Panel id="props" title="Properties" icon={<ScanSearch size={14} />}>
+            <WorkspacePanel panelId="task-props" hideTitleBar scrollable>
               {activeTask ? (
                 <div className="space-y-4 p-4">
                   <div>
@@ -207,15 +207,15 @@ export function TaskEditor() {
               ) : (
                 <p className="text-xs text-muted-foreground p-4">No task selected</p>
               )}
-            </EditorDockPanel>
-          </EditorDockLayout.Panel>
-        </EditorDockLayout.Right>
-      </EditorDockLayout>
+            </WorkspacePanel>
+          </WorkspaceLayout.Panel>
+        </WorkspaceLayout.Right>
+      </WorkspaceLayout>
 
-      <EditorStatusBar>
+      <WorkspaceStatusBar>
         {activeTask ? `Editing: ${activeTask.title}` : 'Ready'}
-      </EditorStatusBar>
-    </EditorShell>
+      </WorkspaceStatusBar>
+    </WorkspaceShell>
   );
 }
 ```
@@ -234,7 +234,7 @@ Add create, update, delete and an overlay for the create form:
 
 ```tsx
 import { useCallback, useState } from 'react';
-import { EditorOverlaySurface } from '@forge/shared';
+import { WorkspaceOverlaySurface } from '@forge/shared';
 import type { OverlaySpec, ActiveOverlay } from '@forge/shared';
 import { Input } from '@forge/ui/input';
 import { Textarea } from '@forge/ui/textarea';
@@ -281,13 +281,13 @@ const overlays: OverlaySpec[] = [
   },
 ];
 
-// In JSX: wire New Task button and add EditorOverlaySurface
-<EditorToolbar.Button onClick={() => setActiveOverlay({ id: 'create-task' })}>
+// In JSX: wire New Task button and add WorkspaceOverlaySurface
+<WorkspaceToolbar.Button onClick={() => setActiveOverlay({ id: 'create-task' })}>
   <Plus size={14} /> New Task
-</EditorToolbar.Button>
+</WorkspaceToolbar.Button>
 
-// At end of EditorShell, before closing tag:
-<EditorOverlaySurface
+// At end of WorkspaceShell, before closing tag:
+<WorkspaceOverlaySurface
   overlays={overlays}
   activeOverlay={activeOverlay}
   onDismiss={() => setActiveOverlay(null)}
@@ -359,12 +359,12 @@ To run inside Forge Studio, follow [how-to 05 - Building an editor](../how-to/05
 
 ## Key takeaways
 
-1. **EditorShell** — Root container with theme, density, domain
-2. **EditorDockLayout** — Resizable panel layout (Left, Main, Right)
-3. **EditorDockPanel** — Individual panel wrapper
-4. **EditorOverlaySurface** — Modal overlay system
-5. **EditorToolbar** — Left/Center/Right slots, Button sub-component
-6. **EditorStatusBar** — Bottom status strip
+1. **WorkspaceShell** — Root container with theme, density, domain
+2. **WorkspaceLayout** — Resizable panel layout (Left, Main, Right)
+3. **WorkspacePanel** — Individual panel wrapper
+4. **WorkspaceOverlaySurface** — Modal overlay system
+5. **WorkspaceToolbar** — Left/Center/Right slots, Button sub-component
+6. **WorkspaceStatusBar** — Bottom status strip
 
 ## Next steps
 
@@ -377,3 +377,4 @@ File refs: `packages/shared/`, `packages/dev-kit/`, `apps/studio/components/edit
 Related: how-to/05-building-an-editor, components/01-editor-shell, tutorials/adding-panels
 Do not: Use npm/yarn; use pnpm. Use @forge/shared or @forge/dev-kit for editor components.
 </Callout>
+

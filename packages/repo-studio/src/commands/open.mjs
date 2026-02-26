@@ -201,7 +201,6 @@ async function runPackageRuntimeForeground(options) {
     mode: options.mode,
     view: options.view,
     port: options.port,
-    legacyUi: options.legacyUi === true,
     openBrowser: options.openBrowser,
   });
 
@@ -244,7 +243,6 @@ async function runPackageRuntimeDetached(options) {
     String(options.port),
   ];
 
-  if (options.legacyUi === true) args.push('--legacy-ui');
   const child = spawnDetached(process.execPath, [cliPath(), ...args], {
     cwd: process.cwd(),
   });
@@ -467,7 +465,6 @@ export async function runOpen(options = {}) {
         view,
         port,
         openBrowser,
-        legacyUi: options.legacyUi === true,
       });
     }
     return runPackageRuntimeForeground({
@@ -476,7 +473,6 @@ export async function runOpen(options = {}) {
       view,
       port,
       openBrowser,
-      legacyUi: options.legacyUi === true,
     });
   }
 

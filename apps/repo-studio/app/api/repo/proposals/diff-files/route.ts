@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { findProposalById } from '@/lib/proposals';
+import { findProposalById, isProposalStoreUnavailableError } from '@/lib/proposals';
 import { parseProposalUnifiedDiff } from '@/lib/proposals/diff-parser';
 
 export const runtime = 'nodejs';
@@ -16,7 +16,22 @@ export async function GET(request: Request) {
     }, { status: 400 });
   }
 
-  const proposal = await findProposalById(proposalId);
+  let proposal: Awaited<ReturnType<typeof findProposalById>>;
+  try {
+    proposal = await findProposalById(proposalId);
+  } catch (error) {
+    if (isProposalStoreUnavailableError(error)) {
+      return NextResponse.json(
+        { ok: false, message: error.message, code: 'SQLITE_PROPOSALS_UNAVAILABLE' },
+        { status: 503 },
+      );
+    }
+    return NextResponse.json(
+      { ok: false, message: String((error as Error)?.message || error || 'Unable to read proposal diff list.') },
+      { status: 500 },
+    );
+  }
+
   if (!proposal) {
     return NextResponse.json({
       ok: false,
@@ -44,4 +59,3 @@ export async function GET(request: Request) {
     message: parsed.warnings[0] || undefined,
   });
 }
-

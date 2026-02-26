@@ -52,7 +52,7 @@ We use **[Pixi'VN](https://pixi-vn.web.app)** as the playable runtime for demos 
 
 | Slice | Description | Impact |
 |-------|-------------|--------|
-| **1. GamePlayer editor tab** | Register GamePlayer as an editor in AppShell; same chrome as other editors (EditorShell, project context). Content area = "Play" button + placeholder or minimal UI. | Small |
+| **1. GamePlayer editor tab** | Register GamePlayer as an editor in AppShell; same chrome as other editors (WorkspaceShell, project context). Content area = "Play" button + placeholder or minimal UI. | Small |
 | **2. Load project dialogue** | For the active project, load narrative/storylet data (from Yarn export or forge-graphs API). No execution yet; just data load and validation. | Medium |
 | **3. Minimal runtime** | Interpret loaded dialogue: current node, lines, options, variables. State machine or small Yarn-like runner. Render current line and choices; on choice, advance state. No TTS required for slice. | Medium |
 
@@ -74,7 +74,7 @@ We use **[Pixi'VN](https://pixi-vn.web.app)** as the playable runtime for demos 
 
 ## Where it lives in the repo
 
-- **Editor UI:** `apps/studio` — new GamePlayer editor component (e.g. `GamePlayerEditor`), registered in the app shell next to Dialogue, Character, Writer. Uses shared `EditorShell`, project context, and (optionally) DockLayout or a single play surface.
+- **Editor UI:** `apps/studio` — new GamePlayer editor component (e.g. `GamePlayerEditor`), registered in the app shell next to Dialogue, Character, Writer. Uses shared `WorkspaceShell`, project context, and (optionally) DockLayout or a single play surface.
 - **Runtime / engine:** **[Pixi'VN](https://pixi-vn.web.app)** — npm packages `@drincs/pixi-vn` and `@drincs/pixi-vn-json` (see [Pixi'VN + Json Integration](https://pixi-vn.web.app/json)). Implementation can live in `packages/gameplayer-runtime` or `apps/studio/lib/gameplayer/` and depend on these packages; same runtime for in-Studio play and hosted build URL.
 - **Data:** No new Payload collections for MVP. Reads existing forge-graphs (or Yarn export) and project-scoped character data.
 

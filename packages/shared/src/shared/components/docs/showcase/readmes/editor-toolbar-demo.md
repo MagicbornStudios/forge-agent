@@ -2,7 +2,7 @@ The toolbar bar component for editors. Provides menubar, buttons, separators, an
 
 ## Overview
 
-`EditorToolbar` is the **command bar** at the top of editors. It replaces `WorkspaceToolbar` with:
+`WorkspaceToolbar` is the **command bar** at the top of editors. It replaces `WorkspaceToolbar` with:
 
 - **Compound component API** (`.Left`, `.Right`, `.Center`, `.Group`, `.Button`, `.Menubar`)
 - **Data-driven rendering** via `groups` prop (optional)
@@ -23,14 +23,14 @@ Import:
 ## Basic Usage
 
 ```tsx
-<EditorToolbar className="bg-sidebar border-b">
-  <EditorToolbar.Left>
+<WorkspaceToolbar className="bg-sidebar border-b">
+  <WorkspaceToolbar.Left>
     <span className="text-xs font-medium">My Editor</span>
-  </EditorToolbar.Left>
-  <EditorToolbar.Right>
-    <EditorToolbar.Button onClick={onSave}>Save</EditorToolbar.Button>
-  </EditorToolbar.Right>
-</EditorToolbar>
+  </WorkspaceToolbar.Left>
+  <WorkspaceToolbar.Right>
+    <WorkspaceToolbar.Button onClick={onSave}>Save</WorkspaceToolbar.Button>
+  </WorkspaceToolbar.Right>
+</WorkspaceToolbar>
 ```
 
 ## Props API
@@ -46,59 +46,59 @@ Import:
 ### Left / Right / Center Sections
 
 ```tsx
-<EditorToolbar>
-  <EditorToolbar.Left>
-    <EditorToolbar.Menubar menus={menus} />
-    <EditorToolbar.Separator />
+<WorkspaceToolbar>
+  <WorkspaceToolbar.Left>
+    <WorkspaceToolbar.Menubar menus={menus} />
+    <WorkspaceToolbar.Separator />
     <span className="text-xs text-muted-foreground">{status}</span>
-  </EditorToolbar.Left>
+  </WorkspaceToolbar.Left>
 
-  <EditorToolbar.Center>
+  <WorkspaceToolbar.Center>
     <Badge variant="secondary">Agent: {agentName}</Badge>
-  </EditorToolbar.Center>
+  </WorkspaceToolbar.Center>
 
-  <EditorToolbar.Right>
-    <EditorToolbar.Button onClick={onUndo} disabled={!canUndo}>
+  <WorkspaceToolbar.Right>
+    <WorkspaceToolbar.Button onClick={onUndo} disabled={!canUndo}>
       <Undo size={14} />
-    </EditorToolbar.Button>
-    <EditorToolbar.Button onClick={onRedo} disabled={!canRedo}>
+    </WorkspaceToolbar.Button>
+    <WorkspaceToolbar.Button onClick={onRedo} disabled={!canRedo}>
       <Redo size={14} />
-    </EditorToolbar.Button>
-    <EditorToolbar.Separator />
-    <EditorToolbar.Button onClick={onSave} variant="default">
+    </WorkspaceToolbar.Button>
+    <WorkspaceToolbar.Separator />
+    <WorkspaceToolbar.Button onClick={onSave} variant="default">
       Save
-    </EditorToolbar.Button>
-  </EditorToolbar.Right>
-</EditorToolbar>
+    </WorkspaceToolbar.Button>
+  </WorkspaceToolbar.Right>
+</WorkspaceToolbar>
 ```
 
 ### Grouping with `.Group`
 
 ```tsx
-<EditorToolbar>
-  <EditorToolbar.Left>
-    <EditorToolbar.Group className="gap-[var(--control-gap)]">
-      <EditorToolbar.Button onClick={onNew}>
+<WorkspaceToolbar>
+  <WorkspaceToolbar.Left>
+    <WorkspaceToolbar.Group className="gap-[var(--control-gap)]">
+      <WorkspaceToolbar.Button onClick={onNew}>
         <Plus size={14} />
-      </EditorToolbar.Button>
-      <EditorToolbar.Button onClick={onOpen}>
+      </WorkspaceToolbar.Button>
+      <WorkspaceToolbar.Button onClick={onOpen}>
         <FolderOpen size={14} />
-      </EditorToolbar.Button>
-      <EditorToolbar.Button onClick={onSave}>
+      </WorkspaceToolbar.Button>
+      <WorkspaceToolbar.Button onClick={onSave}>
         <Save size={14} />
-      </EditorToolbar.Button>
-    </EditorToolbar.Group>
-    <EditorToolbar.Separator />
-    <EditorToolbar.Group>
-      <EditorToolbar.Button onClick={onZoomIn}>
+      </WorkspaceToolbar.Button>
+    </WorkspaceToolbar.Group>
+    <WorkspaceToolbar.Separator />
+    <WorkspaceToolbar.Group>
+      <WorkspaceToolbar.Button onClick={onZoomIn}>
         <ZoomIn size={14} />
-      </EditorToolbar.Button>
-      <EditorToolbar.Button onClick={onZoomOut}>
+      </WorkspaceToolbar.Button>
+      <WorkspaceToolbar.Button onClick={onZoomOut}>
         <ZoomOut size={14} />
-      </EditorToolbar.Button>
-    </EditorToolbar.Group>
-  </EditorToolbar.Left>
-</EditorToolbar>
+      </WorkspaceToolbar.Button>
+    </WorkspaceToolbar.Group>
+  </WorkspaceToolbar.Left>
+</WorkspaceToolbar>
 ```
 
 ## Sub-Components
@@ -108,17 +108,17 @@ Import:
 Alignment sections:
 
 ```tsx
-<EditorToolbar.Left>
+<WorkspaceToolbar.Left>
   {/* Flex-start alignment */}
-</EditorToolbar.Left>
+</WorkspaceToolbar.Left>
 
-<EditorToolbar.Center>
+<WorkspaceToolbar.Center>
   {/* Center alignment */}
-</EditorToolbar.Center>
+</WorkspaceToolbar.Center>
 
-<EditorToolbar.Right>
+<WorkspaceToolbar.Right>
   {/* Flex-end alignment */}
-</EditorToolbar.Right>
+</WorkspaceToolbar.Right>
 ```
 
 ### `.Button`
@@ -126,7 +126,7 @@ Alignment sections:
 Toolbar button with tooltip support:
 
 ```tsx
-<EditorToolbar.Button
+<WorkspaceToolbar.Button
   variant="outline"        // 'default' | 'outline' | 'ghost'
   size="sm"                // 'sm' | 'md'
   onClick={handleClick}
@@ -136,7 +136,7 @@ Toolbar button with tooltip support:
 >
   <Save size={14} />
   Save
-</EditorToolbar.Button>
+</WorkspaceToolbar.Button>
 ```
 
 ### `.Separator`
@@ -144,7 +144,7 @@ Toolbar button with tooltip support:
 Vertical separator:
 
 ```tsx
-<EditorToolbar.Separator />
+<WorkspaceToolbar.Separator />
 ```
 
 Renders as:
@@ -157,10 +157,10 @@ Renders as:
 Logical grouping of buttons:
 
 ```tsx
-<EditorToolbar.Group className="gap-2">
-  <EditorToolbar.Button onClick={onUndo}>Undo</EditorToolbar.Button>
-  <EditorToolbar.Button onClick={onRedo}>Redo</EditorToolbar.Button>
-</EditorToolbar.Group>
+<WorkspaceToolbar.Group className="gap-2">
+  <WorkspaceToolbar.Button onClick={onUndo}>Undo</WorkspaceToolbar.Button>
+  <WorkspaceToolbar.Button onClick={onRedo}>Redo</WorkspaceToolbar.Button>
+</WorkspaceToolbar.Group>
 ```
 
 ### `.Menubar`
@@ -168,7 +168,7 @@ Logical grouping of buttons:
 Menu bar for File/Edit/View menus:
 
 ```tsx
-const menus = createEditorMenubarMenus({
+const menus = createWorkspaceMenubarMenus({
   file: [
     { id: 'new', label: 'New', icon: <FilePlus />, onSelect: onNew },
     { id: 'open', label: 'Open', icon: <FolderOpen />, onSelect: onOpen },
@@ -185,11 +185,11 @@ const menus = createEditorMenubarMenus({
   ],
 });
 
-<EditorToolbar>
-  <EditorToolbar.Left>
-    <EditorToolbar.Menubar menus={menus} />
-  </EditorToolbar.Left>
-</EditorToolbar>
+<WorkspaceToolbar>
+  <WorkspaceToolbar.Left>
+    <WorkspaceToolbar.Menubar menus={menus} />
+  </WorkspaceToolbar.Left>
+</WorkspaceToolbar>
 ```
 
 ### `.FileMenu`
@@ -197,7 +197,7 @@ const menus = createEditorMenubarMenus({
 Standalone file menu (legacy):
 
 ```tsx
-<EditorToolbar.FileMenu
+<WorkspaceToolbar.FileMenu
   items={[
     { id: 'new', label: 'New', onSelect: onNew },
     { id: 'open', label: 'Open', onSelect: onOpen },
@@ -210,7 +210,7 @@ Standalone file menu (legacy):
 Project switcher:
 
 ```tsx
-<EditorToolbar.ProjectSelect
+<WorkspaceToolbar.ProjectSelect
   projects={projects}
   activeProjectId={activeProjectId}
   onSelect={setActiveProjectId}
@@ -222,33 +222,33 @@ Project switcher:
 From `apps/studio/components/editors/CharacterWorkspace.tsx`:
 
 ```tsx
-<EditorToolbar className="bg-sidebar border-b border-sidebar-border">
-  <EditorToolbar.Left>
-    <EditorToolbar.Group className="gap-[var(--control-gap)]">
+<WorkspaceToolbar className="bg-sidebar border-b border-sidebar-border">
+  <WorkspaceToolbar.Left>
+    <WorkspaceToolbar.Group className="gap-[var(--control-gap)]">
       {/* Empty group — placeholder for future actions */}
-    </EditorToolbar.Group>
+    </WorkspaceToolbar.Group>
     <span className="text-xs text-muted-foreground">
       {characters.length} character{characters.length !== 1 ? 's' : ''} &middot;{' '}
       {relationships.length} relationship{relationships.length !== 1 ? 's' : ''}
     </span>
-  </EditorToolbar.Left>
+  </WorkspaceToolbar.Left>
 
-  <EditorToolbar.Right>
+  <WorkspaceToolbar.Right>
     {showAgentName !== false && (
       <Badge variant="secondary" className="text-xs">
         Agent: {agentName ?? 'Default'}
       </Badge>
     )}
-    <EditorToolbar.Separator />
-    <EditorToolbar.Button
+    <WorkspaceToolbar.Separator />
+    <WorkspaceToolbar.Button
       onClick={() => openOverlay('create-character')}
       variant="outline"
       size="sm"
     >
       Add Character
-    </EditorToolbar.Button>
-  </EditorToolbar.Right>
-</EditorToolbar>
+    </WorkspaceToolbar.Button>
+  </WorkspaceToolbar.Right>
+</WorkspaceToolbar>
 ```
 
 ## Real-World Example: DialogueWorkspace
@@ -316,25 +316,25 @@ const viewMenuItems = useMemo(
 );
 
 const menubarMenus = useMemo(
-  () => createEditorMenubarMenus({
+  () => createWorkspaceMenubarMenus({
     file: fileMenuItems,
     view: viewMenuItems,
   }),
   [fileMenuItems, viewMenuItems]
 );
 
-<EditorToolbar className="bg-sidebar border-b border-sidebar-border">
-  <EditorToolbar.Left>
-    <EditorToolbar.Group className="gap-[var(--control-gap)]">
-      <EditorToolbar.Menubar menus={menubarMenus} />
-      <EditorToolbar.Separator />
+<WorkspaceToolbar className="bg-sidebar border-b border-sidebar-border">
+  <WorkspaceToolbar.Left>
+    <WorkspaceToolbar.Group className="gap-[var(--control-gap)]">
+      <WorkspaceToolbar.Menubar menus={menubarMenus} />
+      <WorkspaceToolbar.Separator />
       <span className="text-xs text-muted-foreground">{toolbarCounts}</span>
-    </EditorToolbar.Group>
-  </EditorToolbar.Left>
+    </WorkspaceToolbar.Group>
+  </WorkspaceToolbar.Left>
 
-  <EditorToolbar.Right>
+  <WorkspaceToolbar.Right>
     {headerLinks.map((link) => (
-      <EditorToolbar.Button
+      <WorkspaceToolbar.Button
         key={link.label}
         variant="outline"
         size="sm"
@@ -342,14 +342,14 @@ const menubarMenus = useMemo(
       >
         {link.icon}
         <span className="ml-1.5 text-[11px]">{link.label}</span>
-      </EditorToolbar.Button>
+      </WorkspaceToolbar.Button>
     ))}
     {showAgentName !== false && (
       <Badge variant="secondary" className="text-xs">
         Agent: {agentName ?? 'Default'}
       </Badge>
     )}
-    <EditorToolbar.Separator />
+    <WorkspaceToolbar.Separator />
     {dirtyByScope.narrative && (
       <Badge variant="outline" className="text-xs text-amber-500 border-amber-500/50">
         Narrative unsaved
@@ -360,8 +360,8 @@ const menubarMenus = useMemo(
         Storylet unsaved
       </Badge>
     )}
-  </EditorToolbar.Right>
-</EditorToolbar>
+  </WorkspaceToolbar.Right>
+</WorkspaceToolbar>
 ```
 
 ## Data-Driven Rendering (Alternative)
@@ -413,13 +413,13 @@ const toolbarGroups: ToolbarGroup[] = [
   },
 ];
 
-<EditorToolbar groups={toolbarGroups} />
+<WorkspaceToolbar groups={toolbarGroups} />
 ```
 
 ## TypeScript Interfaces
 
 ```tsx
-export interface EditorToolbarProps {
+export interface WorkspaceToolbarProps {
   children?: React.ReactNode;
   groups?: ToolbarGroup[];
   className?: string;
@@ -472,14 +472,14 @@ export interface ToolbarCustomItem {
 Buttons can be gated by entitlement:
 
 ```tsx
-<EditorToolbar.Button
+<WorkspaceToolbar.Button
   onClick={onExport}
   capability="STUDIO_EXPORT"
   gateMode="disable"
   gateReason="Export requires Pro plan"
 >
   Export
-</EditorToolbar.Button>
+</WorkspaceToolbar.Button>
 ```
 
 When user lacks capability:
@@ -507,18 +507,18 @@ When user lacks capability:
 ### Custom Classes
 
 ```tsx
-<EditorToolbar className="bg-gradient-to-r from-blue-500 to-purple-500">
+<WorkspaceToolbar className="bg-gradient-to-r from-blue-500 to-purple-500">
   {/* Custom gradient toolbar */}
-</EditorToolbar>
+</WorkspaceToolbar>
 ```
 
 ### Icon Sizing
 
 ```tsx
-<EditorToolbar.Button>
+<WorkspaceToolbar.Button>
   <Save size={14} /> {/* Icons typically 14px */}
   Save
-</EditorToolbar.Button>
+</WorkspaceToolbar.Button>
 ```
 
 ## Accessibility
@@ -533,7 +533,7 @@ When user lacks capability:
 ### Pattern: File/Edit/View Menubar
 
 ```tsx
-const menus = createEditorMenubarMenus({
+const menus = createWorkspaceMenubarMenus({
   file: [
     { id: 'new', label: 'New', icon: <FilePlus />, onSelect: onNew },
     { id: 'open', label: 'Open', icon: <FolderOpen />, onSelect: onOpen },
@@ -549,64 +549,64 @@ const menus = createEditorMenubarMenus({
   ],
 });
 
-<EditorToolbar>
-  <EditorToolbar.Left>
-    <EditorToolbar.Menubar menus={menus} />
-  </EditorToolbar.Left>
-</EditorToolbar>
+<WorkspaceToolbar>
+  <WorkspaceToolbar.Left>
+    <WorkspaceToolbar.Menubar menus={menus} />
+  </WorkspaceToolbar.Left>
+</WorkspaceToolbar>
 ```
 
 ### Pattern: Status Display
 
 ```tsx
-<EditorToolbar>
-  <EditorToolbar.Left>
+<WorkspaceToolbar>
+  <WorkspaceToolbar.Left>
     <span className="text-xs text-muted-foreground">
       {nodes.length} nodes &middot; {edges.length} edges
     </span>
-  </EditorToolbar.Left>
-</EditorToolbar>
+  </WorkspaceToolbar.Left>
+</WorkspaceToolbar>
 ```
 
 ### Pattern: Undo/Redo
 
 ```tsx
-<EditorToolbar.Group>
-  <EditorToolbar.Button onClick={onUndo} disabled={!canUndo} tooltip="Undo">
+<WorkspaceToolbar.Group>
+  <WorkspaceToolbar.Button onClick={onUndo} disabled={!canUndo} tooltip="Undo">
     <Undo size={14} />
-  </EditorToolbar.Button>
-  <EditorToolbar.Button onClick={onRedo} disabled={!canRedo} tooltip="Redo">
+  </WorkspaceToolbar.Button>
+  <WorkspaceToolbar.Button onClick={onRedo} disabled={!canRedo} tooltip="Redo">
     <Redo size={14} />
-  </EditorToolbar.Button>
-</EditorToolbar.Group>
+  </WorkspaceToolbar.Button>
+</WorkspaceToolbar.Group>
 ```
 
 ### Pattern: Zoom Controls
 
 ```tsx
-<EditorToolbar.Group>
-  <EditorToolbar.Button onClick={onZoomOut} tooltip="Zoom Out">
+<WorkspaceToolbar.Group>
+  <WorkspaceToolbar.Button onClick={onZoomOut} tooltip="Zoom Out">
     <ZoomOut size={14} />
-  </EditorToolbar.Button>
+  </WorkspaceToolbar.Button>
   <span className="text-xs text-muted-foreground">{zoom}%</span>
-  <EditorToolbar.Button onClick={onZoomIn} tooltip="Zoom In">
+  <WorkspaceToolbar.Button onClick={onZoomIn} tooltip="Zoom In">
     <ZoomIn size={14} />
-  </EditorToolbar.Button>
-  <EditorToolbar.Button onClick={onFitView} tooltip="Fit View">
+  </WorkspaceToolbar.Button>
+  <WorkspaceToolbar.Button onClick={onFitView} tooltip="Fit View">
     <Maximize size={14} />
-  </EditorToolbar.Button>
-</EditorToolbar.Group>
+  </WorkspaceToolbar.Button>
+</WorkspaceToolbar.Group>
 ```
 
 ## Related Components
 
-- [EditorShell](./editor-shell) — Root container
-- [EditorMenubar](./editor-menubar.mdx) — Menu bar component
-- [EditorButton](./editor-button.mdx) — Button with tooltip
+- [WorkspaceShell](./workspace-shell) — Root container
+- [WorkspaceMenubar](./workspace-menubar.mdx) — Menu bar component
+- [WorkspaceButton](./workspace-button.mdx) — Button with tooltip
 
 ## Source Code
 
-Location: `packages/shared/src/shared/components/editor/EditorToolbar.tsx`
+Location: `packages/shared/src/shared/components/workspace/WorkspaceToolbar.tsx`
 
 ## Best Practices
 

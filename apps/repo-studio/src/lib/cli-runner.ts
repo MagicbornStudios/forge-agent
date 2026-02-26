@@ -26,12 +26,13 @@ function parseJsonPayloadFromStreams(stdout: string, stderr: string) {
 
 export { resolveRepoRoot } from '@/lib/repo-files';
 
-export function runRepoStudioCli(args: string[]) {
+export function runRepoStudioCli(args: string[], options: { timeoutMs?: number } = {}) {
   const repoRoot = resolveRepoRoot();
   const cliPath = path.join(repoRoot, 'packages', 'repo-studio', 'src', 'cli.mjs');
   const result = spawnSync(process.execPath, [cliPath, ...args], {
     cwd: repoRoot,
     encoding: 'utf8',
+    timeout: Number(options.timeoutMs || 30000),
   });
 
   const payload = parseJsonPayload(String(result.stdout || ''));

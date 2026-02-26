@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import dynamic from 'next/dynamic';
@@ -6,134 +6,210 @@ import { Badge } from '@forge/ui/badge';
 import { Button } from '@forge/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@forge/ui/card';
 import { Input } from '@forge/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@forge/ui/select';
-import { Textarea } from '@forge/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@forge/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@forge/ui/tabs';
+import { Textarea } from '@forge/ui/textarea';
 import { toErrorMessage } from '@/lib/api/http';
 import {
-  applyStoryPublish,
-  createStoryPage,
   fetchStoryPage,
   fetchStoryReader,
   fetchStoryTree,
-  previewStoryPublish,
-  queueStoryPublish,
   saveStoryPage,
 } from '@/lib/api/services';
-import type {
-  StoryActNode,
-  StoryPublishPreviewPayload,
-  StoryReaderPayload,
-} from '@/lib/api/types';
+import type { StoryActNode, StoryPageNode, StoryReaderPayload } from '@/lib/api/types';
 
 const MonacoEditor = dynamic(
   () => import('@monaco-editor/react').then((module) => module.default),
   { ssr: false },
 );
 
-export interface StoryPanelProps {
-  activeLoopId: string;
-  onCopyText: (text: string) => void;
+const STORY_DOMAIN = 'story';
+const STORY_VIEWPORT_PANEL_PREFIX = 'story-page:';
+
+export interface StoryPageDraft {
+  path: string;
+  content: string;
+  baseline: string;
+  reader: StoryReaderPayload | null;
+  loading: boolean;
 }
 
-export function StoryPanel({
-  activeLoopId,
-  onCopyText,
-}: StoryPanelProps) {
+export function getStoryViewportPanelId(path: string) {
+  return `${STORY_VIEWPORT_PANEL_PREFIX}${encodeURIComponent(path)}`;
+}
+
+export function getStoryPathFromViewportPanelId(panelId: string | null | undefined): string | null {
+  if (!panelId || !panelId.startsWith(STORY_VIEWPORT_PANEL_PREFIX)) return null;
+  const encodedPath = panelId.slice(STORY_VIEWPORT_PANEL_PREFIX.length);
+  try {
+    return decodeURIComponent(encodedPath);
+  } catch {
+    return encodedPath;
+  }
+}
+
+function flattenStoryRows(tree: StoryActNode[]) {
+  return tree.flatMap((act) =>
+    act.chapters.flatMap((chapter) =>
+      chapter.pages.map((page) => ({
+        act,
+        chapter,
+        page,
+      })),
+    ),
+  );
+}
+
+function flattenStoryPages(tree: StoryActNode[]): StoryPageNode[] {
+  return tree.flatMap((act) => act.chapters.flatMap((chapter) => chapter.pages));
+}
+
+interface StoryWorkspaceModelOptions {
+  activeLoopId: string;
+}
+
+export function useStoryWorkspaceModel({ activeLoopId }: StoryWorkspaceModelOptions) {
   const [tree, setTree] = React.useState<StoryActNode[]>([]);
   const [roots, setRoots] = React.useState<string[]>([]);
-  const [selectedPath, setSelectedPath] = React.useState('');
-  const [content, setContent] = React.useState('');
-  const [baseline, setBaseline] = React.useState('');
-  const [reader, setReader] = React.useState<StoryReaderPayload | null>(null);
-  const [publishPreview, setPublishPreview] = React.useState<StoryPublishPreviewPayload | null>(null);
-  const [publishProposalId, setPublishProposalId] = React.useState('');
-  const [message, setMessage] = React.useState('');
-  const [loading, setLoading] = React.useState(false);
-  const [publishing, setPublishing] = React.useState(false);
-
-  const [createActIndex, setCreateActIndex] = React.useState('1');
-  const [createChapterIndex, setCreateChapterIndex] = React.useState('1');
-  const [createPageIndex, setCreatePageIndex] = React.useState('1');
+  const [hasLoadedTree, setHasLoadedTree] = React.useState(false);
+  const [loadingTree, setLoadingTree] = React.useState(false);
   const [scopeOverrideToken, setScopeOverrideToken] = React.useState('');
-  const [storyTab, setStoryTab] = React.useState<'outline' | 'page' | 'reader' | 'create' | 'publish'>('outline');
+  const [selectedPath, setSelectedPath] = React.useState('');
+  const [message, setMessage] = React.useState('');
 
-  const pages = React.useMemo(
-    () => tree.flatMap((act) => act.chapters.flatMap((chapter) => chapter.pages)),
-    [tree],
-  );
+  const [drafts, setDrafts] = React.useState<Record<string, StoryPageDraft>>({});
+  const draftsRef = React.useRef(drafts);
+  React.useEffect(() => {
+    draftsRef.current = drafts;
+  }, [drafts]);
 
-  const hasChanges = content !== baseline;
+  const rows = React.useMemo(() => flattenStoryRows(tree), [tree]);
+  const pages = React.useMemo(() => flattenStoryPages(tree), [tree]);
+  const pagePathSet = React.useMemo(() => new Set(pages.map((page) => page.path)), [pages]);
 
-  const refreshTree = React.useCallback(async () => {
-    setLoading(true);
-    try {
-      const payload = await fetchStoryTree({
-        loopId: activeLoopId,
-        domain: 'story',
-        scopeOverrideToken: scopeOverrideToken.trim() || undefined,
-      });
-      if (!payload.ok) {
-        setMessage(payload.message || 'Unable to load story tree.');
-        setLoading(false);
-        return;
+  React.useEffect(() => {
+    setDrafts({});
+    setSelectedPath('');
+  }, [activeLoopId]);
+
+  const updateDraft = React.useCallback((path: string, updater: (current: StoryPageDraft | undefined) => StoryPageDraft | undefined) => {
+    setDrafts((current) => {
+      const nextValue = updater(current[path]);
+      if (nextValue === undefined) {
+        if (!(path in current)) return current;
+        const rest = { ...current };
+        delete rest[path];
+        return rest;
       }
-      const acts = payload.tree?.acts || [];
-      setRoots(payload.roots || []);
-      setTree(acts);
-      const firstPath = acts[0]?.chapters[0]?.pages[0]?.path || '';
-      if (!selectedPath && firstPath) {
-        setSelectedPath(firstPath);
-      }
-      setMessage(`Loaded story tree (${payload.tree?.pageCount || 0} pages).`);
-    } catch (error) {
-      setMessage(toErrorMessage(error, 'Unable to load story tree.'));
-    } finally {
-      setLoading(false);
-    }
-  }, [activeLoopId, scopeOverrideToken, selectedPath]);
-
-  const loadPage = React.useCallback(async (targetPath: string) => {
-    if (!targetPath) return;
-    setLoading(true);
-    try {
-      const payload = await fetchStoryPage({
-        path: targetPath,
-        loopId: activeLoopId,
-        domain: 'story',
-        scopeOverrideToken: scopeOverrideToken.trim() || undefined,
-      });
-      if (!payload.ok) {
-        setMessage(payload.message || 'Unable to read story page.');
-        setLoading(false);
-        return;
-      }
-      setContent(payload.content || '');
-      setBaseline(payload.content || '');
-      setMessage(`Loaded ${payload.path}.`);
-    } catch (error) {
-      setMessage(toErrorMessage(error, 'Unable to read story page.'));
-    } finally {
-      setLoading(false);
-    }
-  }, [activeLoopId, scopeOverrideToken]);
+      return {
+        ...current,
+        [path]: nextValue,
+      };
+    });
+  }, []);
 
   const refreshReader = React.useCallback(async (targetPath: string) => {
+    if (!targetPath) return;
     try {
       const payload = await fetchStoryReader({
         path: targetPath,
         loopId: activeLoopId,
-        domain: 'story',
+        domain: STORY_DOMAIN,
         scopeOverrideToken: scopeOverrideToken.trim() || undefined,
       });
       if (!payload.ok) {
         setMessage(payload.message || 'Unable to load story reader.');
         return;
       }
-      setReader(payload);
+      updateDraft(targetPath, (current) => ({
+        path: targetPath,
+        content: current?.content || '',
+        baseline: current?.baseline || '',
+        loading: current?.loading || false,
+        reader: payload,
+      }));
     } catch (error) {
       setMessage(toErrorMessage(error, 'Unable to load story reader.'));
+    }
+  }, [activeLoopId, scopeOverrideToken, updateDraft]);
+
+  const ensureDraftLoaded = React.useCallback(async (targetPath: string) => {
+    if (!targetPath) return;
+    const existingDraft = draftsRef.current[targetPath];
+    if (existingDraft) return;
+
+    updateDraft(targetPath, () => ({
+      path: targetPath,
+      content: '',
+      baseline: '',
+      reader: null,
+      loading: true,
+    }));
+
+    try {
+      const payload = await fetchStoryPage({
+        path: targetPath,
+        loopId: activeLoopId,
+        domain: STORY_DOMAIN,
+        scopeOverrideToken: scopeOverrideToken.trim() || undefined,
+      });
+      if (!payload.ok) {
+        setMessage(payload.message || 'Unable to read story page.');
+        updateDraft(targetPath, (current) => current ? {
+          ...current,
+          loading: false,
+        } : undefined);
+        return;
+      }
+
+      updateDraft(targetPath, (current) => ({
+        path: targetPath,
+        content: payload.content || '',
+        baseline: payload.content || '',
+        reader: current?.reader || null,
+        loading: false,
+      }));
+      setMessage(`Loaded ${payload.path}.`);
+    } catch (error) {
+      setMessage(toErrorMessage(error, 'Unable to read story page.'));
+      updateDraft(targetPath, (current) => current ? {
+        ...current,
+        loading: false,
+      } : undefined);
+      return;
+    }
+
+    await refreshReader(targetPath);
+  }, [activeLoopId, refreshReader, scopeOverrideToken, updateDraft]);
+
+  const refreshTree = React.useCallback(async () => {
+    setLoadingTree(true);
+    try {
+      const payload = await fetchStoryTree({
+        loopId: activeLoopId,
+        domain: STORY_DOMAIN,
+        scopeOverrideToken: scopeOverrideToken.trim() || undefined,
+      });
+      if (!payload.ok) {
+        setMessage(payload.message || 'Unable to load story tree.');
+        return;
+      }
+
+      const acts = payload.tree?.acts || [];
+      const nextPages = flattenStoryPages(acts);
+      const nextPathSet = new Set(nextPages.map((page) => page.path));
+
+      setRoots(payload.roots || []);
+      setTree(acts);
+      setSelectedPath((current) => {
+        if (current && nextPathSet.has(current)) return current;
+        return nextPages[0]?.path || '';
+      });
+      setMessage(`Loaded story tree (${payload.tree?.pageCount || 0} pages).`);
+    } catch (error) {
+      setMessage(toErrorMessage(error, 'Unable to load story tree.'));
+    } finally {
+      setLoadingTree(false);
+      setHasLoadedTree(true);
     }
   }, [activeLoopId, scopeOverrideToken]);
 
@@ -141,163 +217,145 @@ export function StoryPanel({
     refreshTree().catch((error) => setMessage(String(error?.message || error)));
   }, [refreshTree]);
 
-  React.useEffect(() => {
-    if (!selectedPath) return;
-    loadPage(selectedPath).catch((error) => setMessage(String(error?.message || error)));
-    refreshReader(selectedPath).catch((error) => setMessage(String(error?.message || error)));
-  }, [selectedPath, loadPage, refreshReader]);
+  const openPageDraft = React.useCallback(async (targetPath: string) => {
+    if (!targetPath) return;
+    setSelectedPath(targetPath);
+    await ensureDraftLoaded(targetPath);
+    await refreshReader(targetPath);
+  }, [ensureDraftLoaded, refreshReader]);
 
-  const savePage = React.useCallback(async () => {
-    if (!selectedPath) return;
+  const setDraftContent = React.useCallback((targetPath: string, content: string) => {
+    updateDraft(targetPath, (current) => ({
+      path: targetPath,
+      content,
+      baseline: current?.baseline || '',
+      reader: current?.reader || null,
+      loading: false,
+    }));
+  }, [updateDraft]);
+
+  const getDraft = React.useCallback((targetPath: string) => draftsRef.current[targetPath] || null, []);
+
+  const isDirty = React.useCallback((targetPath: string) => {
+    const draft = draftsRef.current[targetPath];
+    if (!draft) return false;
+    return draft.content !== draft.baseline;
+  }, []);
+
+  const saveDraft = React.useCallback(async (targetPath: string) => {
+    const draft = draftsRef.current[targetPath];
+    if (!targetPath || !draft) return;
     try {
       const payload = await saveStoryPage({
-        path: selectedPath,
-        content,
+        path: targetPath,
+        content: draft.content,
         loopId: activeLoopId,
-        domain: 'story',
+        domain: STORY_DOMAIN,
         scopeOverrideToken: scopeOverrideToken.trim() || undefined,
       });
       if (!payload.ok) {
         setMessage(payload.message || 'Unable to save story page.');
         return;
       }
-      setBaseline(content);
-      setMessage(payload.message || `Saved ${selectedPath}.`);
-      await refreshReader(selectedPath);
+
+      updateDraft(targetPath, (current) => current ? {
+        ...current,
+        baseline: current.content,
+      } : current);
+      setMessage(payload.message || `Saved ${targetPath}.`);
+      await refreshReader(targetPath);
     } catch (error) {
       setMessage(toErrorMessage(error, 'Unable to save story page.'));
     }
-  }, [activeLoopId, content, refreshReader, scopeOverrideToken, selectedPath]);
+  }, [activeLoopId, refreshReader, scopeOverrideToken, updateDraft]);
 
-  const previewPublish = React.useCallback(async () => {
-    if (!selectedPath) return;
-    setPublishing(true);
-    try {
-      const payload = await previewStoryPublish({
-        path: selectedPath,
-        loopId: activeLoopId,
-        domain: 'story',
-        scopeOverrideToken: scopeOverrideToken.trim() || undefined,
-      });
-      if (!payload.ok) {
-        setMessage(payload.message || 'Unable to build publish preview.');
-        return;
-      }
-      setPublishPreview(payload);
-      setMessage(`Publish preview ready for ${selectedPath}.`);
-    } catch (error) {
-      setMessage(toErrorMessage(error, 'Unable to preview story publish.'));
-    } finally {
-      setPublishing(false);
-    }
-  }, [activeLoopId, scopeOverrideToken, selectedPath]);
+  const dropDraft = React.useCallback((targetPath: string) => {
+    updateDraft(targetPath, () => undefined);
+  }, [updateDraft]);
 
-  const queuePublish = React.useCallback(async () => {
-    if (!selectedPath) return;
-    setPublishing(true);
-    try {
-      const payload = await queueStoryPublish({
-        previewToken: publishPreview?.previewToken,
-        path: publishPreview?.previewToken ? undefined : selectedPath,
-        loopId: activeLoopId,
-        domain: 'story',
-        scopeOverrideToken: scopeOverrideToken.trim() || undefined,
-        assistantTarget: 'loop-assistant',
-      });
-      if (!payload.ok) {
-        setMessage(payload.message || 'Unable to queue publish proposal.');
-        return;
+  const pruneDrafts = React.useCallback((validPaths: Set<string>) => {
+    setDrafts((current) => {
+      let changed = false;
+      const next: Record<string, StoryPageDraft> = {};
+      for (const [path, draft] of Object.entries(current)) {
+        if (!validPaths.has(path)) {
+          changed = true;
+          continue;
+        }
+        next[path] = draft;
       }
-      if (payload.proposalId) {
-        setPublishProposalId(payload.proposalId);
-      }
-      setMessage(payload.message || 'Publish proposal queued.');
-    } catch (error) {
-      setMessage(toErrorMessage(error, 'Unable to queue publish proposal.'));
-    } finally {
-      setPublishing(false);
-    }
-  }, [activeLoopId, publishPreview?.previewToken, scopeOverrideToken, selectedPath]);
+      return changed ? next : current;
+    });
+  }, []);
 
-  const applyPublish = React.useCallback(async () => {
-    if (!selectedPath) return;
-    setPublishing(true);
-    try {
-      const payload = await applyStoryPublish({
-        proposalId: publishProposalId || undefined,
-        previewToken: publishProposalId ? undefined : publishPreview?.previewToken,
-        approved: true,
-      });
-      if (!payload.ok) {
-        setMessage(payload.message || 'Unable to apply story publish.');
-        return;
-      }
-      setMessage(payload.message || `Publish applied for ${selectedPath}.`);
-      await previewPublish();
-    } catch (error) {
-      setMessage(toErrorMessage(error, 'Unable to apply story publish.'));
-    } finally {
-      setPublishing(false);
-    }
-  }, [publishProposalId, publishPreview?.previewToken, previewPublish, selectedPath]);
+  const confirmClosePath = React.useCallback((targetPath: string) => {
+    if (!targetPath || !isDirty(targetPath)) return true;
+    if (typeof window === 'undefined') return false;
+    return window.confirm(`Discard unsaved story edits for "${targetPath}"?`);
+  }, [isDirty]);
 
-  const createCanonicalPage = React.useCallback(async () => {
-    try {
-      const payload = await createStoryPage({
-        actIndex: Number(createActIndex || '1'),
-        chapterIndex: Number(createChapterIndex || '1'),
-        pageIndex: Number(createPageIndex || '1'),
-        content: '',
-        loopId: activeLoopId,
-        domain: 'story',
-        scopeOverrideToken: scopeOverrideToken.trim() || undefined,
-      });
-      if (!payload.ok) {
-        setMessage(payload.message || 'Unable to create story page.');
-        return;
-      }
-      setMessage(payload.message || 'Created story page.');
-      await refreshTree();
-      if (payload.path) {
-        setSelectedPath(String(payload.path));
-      }
-    } catch (error) {
-      setMessage(toErrorMessage(error, 'Unable to create story page.'));
-    }
-  }, [activeLoopId, createActIndex, createChapterIndex, createPageIndex, refreshTree, scopeOverrideToken]);
+  return {
+    activeLoopId,
+    tree,
+    rows,
+    pages,
+    pagePathSet,
+    roots,
+    hasLoadedTree,
+    loadingTree,
+    scopeOverrideToken,
+    setScopeOverrideToken,
+    selectedPath,
+    setSelectedPath,
+    message,
+    refreshTree,
+    openPageDraft,
+    getDraft,
+    setDraftContent,
+    isDirty,
+    saveDraft,
+    refreshReader,
+    dropDraft,
+    pruneDrafts,
+    confirmClosePath,
+  };
+}
+
+export type StoryWorkspaceModel = ReturnType<typeof useStoryWorkspaceModel>;
+
+export interface StoryExplorerPanelProps {
+  model: StoryWorkspaceModel;
+  onOpenPath: (path: string) => void;
+}
+
+export function StoryExplorerPanel({ model, onOpenPath }: StoryExplorerPanelProps) {
+  const selectedPath = model.selectedPath;
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden p-2">
-      <Tabs value={storyTab} onValueChange={(v) => setStoryTab(v as typeof storyTab)} className="flex min-h-0 flex-1 flex-col">
-        <TabsList className="w-full shrink-0 justify-start">
-          <TabsTrigger value="outline">Outline</TabsTrigger>
-          <TabsTrigger value="page">Page</TabsTrigger>
-          <TabsTrigger value="reader">Reader</TabsTrigger>
-          <TabsTrigger value="create">Create</TabsTrigger>
-          <TabsTrigger value="publish">Publish</TabsTrigger>
-        </TabsList>
-        <TabsContent value="outline" className="min-h-0 flex-1 overflow-auto data-[state=inactive]:hidden">
+    <div className="flex h-full min-h-0 flex-col gap-2 overflow-auto p-2">
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Story Outline</CardTitle>
+          <CardTitle className="text-sm">Story Explorer</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <Badge variant="outline">loop: {activeLoopId}</Badge>
-            <Badge variant="outline">roots: {roots.join(', ') || 'content/story'}</Badge>
-            {loading ? <Badge variant="secondary">loading</Badge> : null}
+            <Badge variant="outline">loop: {model.activeLoopId}</Badge>
+            <Badge variant="outline">roots: {model.roots.join(', ') || 'content/story'}</Badge>
+            {model.loadingTree ? <Badge variant="secondary">loading</Badge> : null}
           </div>
+
           <div className="flex flex-wrap items-center gap-2">
             <Input
-              value={scopeOverrideToken}
-              onChange={(event) => setScopeOverrideToken(event.target.value)}
-              className="w-full md:w-[360px]"
+              value={model.scopeOverrideToken}
+              onChange={(event) => model.setScopeOverrideToken(event.target.value)}
+              className="w-full"
               placeholder="scope override token (optional)"
             />
-            <Button size="sm" variant="outline" onClick={() => refreshTree().catch(() => {})}>
+            <Button size="sm" variant="outline" onClick={() => model.refreshTree().catch(() => {})}>
               Refresh Story Tree
             </Button>
           </div>
+
           <div className="max-h-56 overflow-auto rounded-md border border-border">
             <Table>
               <TableHeader>
@@ -305,187 +363,122 @@ export function StoryPanel({
                   <TableHead>Act</TableHead>
                   <TableHead>Chapter</TableHead>
                   <TableHead>Page</TableHead>
-                  <TableHead>Path</TableHead>
+                  <TableHead>Open</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {tree.flatMap((act) => act.chapters.flatMap((chapter) => chapter.pages.map((page) => (
+                {model.rows.map(({ act, chapter, page }) => (
                   <TableRow
                     key={page.id}
                     className={page.path === selectedPath ? 'bg-muted/40' : ''}
-                    onClick={() => setSelectedPath(page.path)}
                   >
                     <TableCell>{act.name}</TableCell>
                     <TableCell>{chapter.name}</TableCell>
-                    <TableCell>{page.name}</TableCell>
-                    <TableCell className="font-mono text-xs">{page.path}</TableCell>
+                    <TableCell className="font-mono text-[11px]">{page.path}</TableCell>
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          model.setSelectedPath(page.path);
+                          onOpenPath(page.path);
+                        }}
+                      >
+                        Open
+                      </Button>
+                    </TableCell>
                   </TableRow>
-                ))))}
+                ))}
+                {model.rows.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-xs text-muted-foreground">
+                      No story pages found.
+                    </TableCell>
+                  </TableRow>
+                ) : null}
               </TableBody>
             </Table>
           </div>
         </CardContent>
       </Card>
-        </TabsContent>
-        <TabsContent value="page" className="min-h-0 flex-1 overflow-auto data-[state=inactive]:hidden">
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Story Page</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <Select value={selectedPath || ''} onValueChange={setSelectedPath}>
-              <SelectTrigger className="w-full md:w-[520px]">
-                <SelectValue placeholder="Select story page" />
-              </SelectTrigger>
-              <SelectContent>
-                {pages.length === 0 ? (
-                  <SelectItem value="__none__" disabled>No story pages found.</SelectItem>
-                ) : pages.map((page) => (
-                  <SelectItem key={page.id} value={page.path}>{page.path}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button size="sm" variant="outline" onClick={savePage} disabled={!selectedPath || !hasChanges}>
-              Save
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => onCopyText(content)} disabled={!selectedPath}>
-              Copy Page
-            </Button>
-            {hasChanges ? <Badge variant="secondary">unsaved</Badge> : <Badge variant="outline">saved</Badge>}
-          </div>
-          <div className="h-[48vh] min-h-0 overflow-hidden rounded-md border border-border">
-            <MonacoEditor
-              language="markdown"
-              theme="vs-dark"
-              value={content}
-              onChange={(value) => setContent(value || '')}
-              options={{
-                minimap: { enabled: false },
-                wordWrap: 'on',
-                automaticLayout: true,
-              }}
-            />
-          </div>
-        </CardContent>
-      </Card>
-        </TabsContent>
-        <TabsContent value="reader" className="min-h-0 flex-1 overflow-auto data-[state=inactive]:hidden">
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Story Reader</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => reader?.prev?.path && setSelectedPath(reader.prev.path)}
-              disabled={!reader?.prev}
-            >
-              Previous
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => reader?.next?.path && setSelectedPath(reader.next.path)}
-              disabled={!reader?.next}
-            >
-              Next
-            </Button>
-            <Badge variant="outline">{reader?.current?.path || 'no page selected'}</Badge>
-          </div>
-          <Textarea
-            readOnly
-            value={reader?.content || ''}
-            className="min-h-[180px] font-serif text-sm leading-6"
-          />
-        </CardContent>
-      </Card>
-        </TabsContent>
-        <TabsContent value="create" className="min-h-0 flex-1 overflow-auto data-[state=inactive]:hidden">
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Create Canonical Story Page</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
-            <Input value={createActIndex} onChange={(event) => setCreateActIndex(event.target.value)} placeholder="act index" />
-            <Input value={createChapterIndex} onChange={(event) => setCreateChapterIndex(event.target.value)} placeholder="chapter index" />
-            <Input value={createPageIndex} onChange={(event) => setCreatePageIndex(event.target.value)} placeholder="page index" />
-            <Button size="sm" variant="outline" onClick={createCanonicalPage}>
-              Create Canonical Page
-            </Button>
-          </div>
-          {message ? <p className="text-xs text-muted-foreground">{message}</p> : null}
-        </CardContent>
-      </Card>
-        </TabsContent>
-        <TabsContent value="publish" className="min-h-0 flex-1 overflow-auto data-[state=inactive]:hidden">
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Publish Pipeline</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <Button size="sm" variant="outline" onClick={previewPublish} disabled={!selectedPath || publishing}>
-              Preview Publish
-            </Button>
-            <Button size="sm" variant="outline" onClick={queuePublish} disabled={!selectedPath || publishing}>
-              Queue Publish
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={applyPublish}
-              disabled={!selectedPath || publishing || (!publishProposalId && !publishPreview?.previewToken)}
-            >
-              Apply Publish
-            </Button>
-            {publishing ? <Badge variant="secondary">working</Badge> : null}
-            {publishProposalId ? <Badge variant="outline">proposal: {publishProposalId}</Badge> : null}
-          </div>
 
-          {publishPreview?.ok ? (
-            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-              <div className="rounded-md border border-border p-2 text-xs">
-                <div className="font-semibold">Draft Page</div>
-                <div>path: {publishPreview.pageDraft?.sourcePath || selectedPath}</div>
-                <div>title: {publishPreview.pageDraft?.title || '(n/a)'}</div>
-                <div>slug: {publishPreview.pageDraft?.slug || '(n/a)'}</div>
-                <div>hash: {publishPreview.contentHash || '(n/a)'}</div>
-              </div>
-              <div className="rounded-md border border-border p-2 text-xs">
-                <div className="font-semibold">Changed Summary</div>
-                <div>changed: {publishPreview.changedSummary?.changed ? 'yes' : 'no'}</div>
-                <div>existing hash: {publishPreview.changedSummary?.existingHash || '(none)'}</div>
-                <div>previous blocks: {publishPreview.changedSummary?.previousBlockCount || 0}</div>
-                <div>next blocks: {publishPreview.changedSummary?.nextBlockCount || 0}</div>
-              </div>
-              <div className="rounded-md border border-border p-2 text-xs md:col-span-2">
-                <div className="font-semibold">Warnings</div>
-                {publishPreview.warnings && publishPreview.warnings.length > 0 ? (
-                  <ul className="mt-1 list-disc pl-4">
-                    {publishPreview.warnings.map((warning) => (
-                      <li key={warning}>{warning}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="mt-1 text-muted-foreground">No parser warnings.</p>
-                )}
-              </div>
-            </div>
-          ) : (
-            <p className="text-xs text-muted-foreground">
-              Generate preview to inspect page/block draft before queuing publish.
-            </p>
-          )}
-        </CardContent>
-      </Card>
-        </TabsContent>
-      </Tabs>
+      {model.message ? <p className="px-1 text-xs text-muted-foreground">{model.message}</p> : null}
     </div>
   );
 }
 
+export interface StoryPagePanelProps {
+  model: StoryWorkspaceModel;
+  path: string;
+  onCopyText: (text: string) => void;
+}
 
+export function StoryPagePanel({ model, path, onCopyText }: StoryPagePanelProps) {
+  const openPageDraft = model.openPageDraft;
+  React.useEffect(() => {
+    openPageDraft(path).catch(() => {});
+  }, [openPageDraft, path]);
+
+  const draft = model.getDraft(path);
+  const dirty = model.isDirty(path);
+
+  return (
+    <div className="flex h-full min-h-0 flex-col overflow-hidden">
+      <div className="flex h-[var(--tab-height)] shrink-0 items-center gap-2 border-b border-border px-2">
+        <Badge variant="outline" className="font-mono text-[10px]">
+          {path}
+        </Badge>
+        <Badge variant={dirty ? 'secondary' : 'outline'}>{dirty ? 'unsaved' : 'saved'}</Badge>
+        {draft?.loading ? <Badge variant="secondary">loading</Badge> : null}
+        <div className="ml-auto flex items-center gap-1">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => model.saveDraft(path).catch(() => {})}
+            disabled={!draft || draft.loading || !dirty}
+          >
+            Save
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onCopyText(draft?.content || '')}
+            disabled={!draft}
+          >
+            Copy Page
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => model.refreshReader(path).catch(() => {})}
+            disabled={!draft || draft.loading}
+          >
+            Refresh Reader
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)_180px] gap-2 p-2">
+        <div className="min-h-0 overflow-hidden rounded-md border border-border">
+          <MonacoEditor
+            language="markdown"
+            theme="vs-dark"
+            value={draft?.content || ''}
+            onChange={(value) => model.setDraftContent(path, value || '')}
+            options={{
+              minimap: { enabled: false },
+              wordWrap: 'on',
+              automaticLayout: true,
+            }}
+          />
+        </div>
+
+        <Textarea
+          readOnly
+          value={draft?.reader?.content || ''}
+          className="h-full min-h-0 resize-none font-serif text-sm leading-6"
+        />
+      </div>
+    </div>
+  );
+}

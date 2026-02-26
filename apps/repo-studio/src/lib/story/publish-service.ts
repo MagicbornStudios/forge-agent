@@ -326,7 +326,7 @@ export async function queueStoryPublishPreview(input: {
 
   const proposal = await upsertPendingProposal({
     id: `story-publish:${preview.token}`,
-    assistantTarget: String(input.assistantTarget || 'loop-assistant'),
+    assistantTarget: String(input.assistantTarget || 'forge'),
     loopId: preview.loopId,
     domain: preview.domain,
     scopeRoots: [path.dirname(preview.path)],

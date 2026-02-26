@@ -246,7 +246,7 @@ types/
 
 - **Entry**: `apps/studio/app/layout.tsx` -> `apps/studio/app/page.tsx`.
 - **AppShell**: Reads app-shell store and renders the active editor. Editor tabs use shared components from `@forge/shared`.
-- **Dialogue editor**: Composes `EditorShell` and `DockLayout` from `@forge/shared` with the GraphEditor as the main surface.
+- **Dialogue editor**: Composes `WorkspaceShell` and `DockLayout` from `@forge/shared` with the GraphEditor as the main surface.
 - **CopilotKit**: The active editor registers context + actions from system wiring; the chat uses those to propose edits.
 - **Payload**: Collections define persisted shapes; generated types are used by system logic for type safety.
 

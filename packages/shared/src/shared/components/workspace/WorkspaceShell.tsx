@@ -1,0 +1,175 @@
+'use client';
+
+import * as React from 'react';
+import { cn } from '@forge/shared/lib/utils';
+
+export interface WorkspaceShellProps {
+  /**
+   * Unique editor identifier (e.g. 'dialogue', 'character', 'video').
+   * Sets `data-editor-id` on the root element, used by the copilot
+   * system, settings resolution, and theme context.
+   */
+  editorId?: string;
+  /** Display title for the editor. */
+  title: string;
+  /** Optional subtitle (e.g. active document name). */
+  subtitle?: string;
+  /** Domain context for theming. Sets `data-domain` for CSS variable scoping. */
+  domain?: string;
+  /** Theme override. Sets `data-theme` for palette switching. */
+  theme?: string;
+  /** Density override. Sets `data-density` (compact/comfortable). */
+  density?: 'compact' | 'comfortable' | string;
+  className?: string;
+  /** Raw children (legacy) or slot components (WorkspaceShell.Header, .Toolbar, .Layout, .StatusBar, .Overlay, .Settings). When slots are used, only slot content is rendered in fixed order. */
+  children?: React.ReactNode;
+}
+
+const SLOT_NAMES = ['Header', 'Toolbar', 'Layout', 'StatusBar', 'Overlay', 'Settings'] as const;
+type WorkspaceShellSlotId = (typeof SLOT_NAMES)[number];
+
+function WorkspaceShellHeader({ children }: { children?: React.ReactNode }) {
+  return <>{children}</>;
+}
+WorkspaceShellHeader.displayName = 'WorkspaceShell.Header';
+
+function WorkspaceShellToolbar({ children }: { children?: React.ReactNode }) {
+  return <>{children}</>;
+}
+WorkspaceShellToolbar.displayName = 'WorkspaceShell.Toolbar';
+
+function WorkspaceShellLayout({ children }: { children?: React.ReactNode }) {
+  return <>{children}</>;
+}
+WorkspaceShellLayout.displayName = 'WorkspaceShell.Layout';
+
+function WorkspaceShellStatusBar({ children }: { children?: React.ReactNode }) {
+  return <>{children}</>;
+}
+WorkspaceShellStatusBar.displayName = 'WorkspaceShell.StatusBar';
+
+function WorkspaceShellOverlay({ children }: { children?: React.ReactNode }) {
+  return <>{children}</>;
+}
+WorkspaceShellOverlay.displayName = 'WorkspaceShell.Overlay';
+
+function WorkspaceShellSettings({ children }: { children?: React.ReactNode }) {
+  return <>{children}</>;
+}
+WorkspaceShellSettings.displayName = 'WorkspaceShell.Settings';
+
+const SHELL_SLOT_COMPONENTS: Record<WorkspaceShellSlotId, React.ComponentType<{ children?: React.ReactNode }>> = {
+  Header: WorkspaceShellHeader,
+  Toolbar: WorkspaceShellToolbar,
+  Layout: WorkspaceShellLayout,
+  StatusBar: WorkspaceShellStatusBar,
+  Overlay: WorkspaceShellOverlay,
+  Settings: WorkspaceShellSettings,
+};
+
+function collectShellSlots(children: React.ReactNode): Partial<Record<WorkspaceShellSlotId, React.ReactNode>> {
+  const collected: Partial<Record<WorkspaceShellSlotId, React.ReactNode>> = {};
+  React.Children.forEach(children, (child) => {
+    if (!React.isValidElement(child)) return;
+    const type = child.type as React.ComponentType<{ children?: React.ReactNode }>;
+    for (const slotId of SLOT_NAMES) {
+      if (type === SHELL_SLOT_COMPONENTS[slotId]) {
+        collected[slotId] = (child as React.ReactElement<{ children?: React.ReactNode }>).props.children;
+        break;
+      }
+    }
+  });
+  return collected;
+}
+
+function hasAnyShellSlot(children: React.ReactNode): boolean {
+  let found = false;
+  React.Children.forEach(children, (child) => {
+    if (!React.isValidElement(child)) return;
+    const type = child.type as React.ComponentType<{ children?: React.ReactNode }>;
+    for (const slotId of SLOT_NAMES) {
+      if (type === SHELL_SLOT_COMPONENTS[slotId]) {
+        found = true;
+        return;
+      }
+    }
+  });
+  return found;
+}
+
+/**
+ * WorkspaceShell - the outermost container for an editor.
+ *
+ * Legacy rename hard-cut complete. Every workspace (Dialogue, Character, Video, etc.)
+ * wraps its content in an `WorkspaceShell` which:
+ *
+ * 1. Sets `data-editor-id`, `data-domain`, `data-theme`, and `data-density` attributes
+ * 2. Provides the flex-column layout skeleton
+ * 3. Applies domain-specific theming via CSS custom properties
+ *
+ * When using slot components (WorkspaceShell.Header, .Toolbar, .Layout, .StatusBar, .Overlay, .Settings),
+ * content is rendered in fixed order. Toolbar and Settings share one row (toolbar left, settings right).
+ * When not using slots, children are rendered as-is (legacy).
+ *
+ * @example
+ * ```tsx
+ * <WorkspaceShell editorId="dialogue" title="Dialogue" domain="dialogue">
+ *   <WorkspaceShell.Toolbar>...</WorkspaceShell.Toolbar>
+ *   <WorkspaceShell.Layout><WorkspaceLayout>...</WorkspaceLayout></WorkspaceShell.Layout>
+ *   <WorkspaceShell.StatusBar>Ready</WorkspaceShell.StatusBar>
+ * </WorkspaceShell>
+ * ```
+ */
+function WorkspaceShellRoot({
+  editorId,
+  title,
+  subtitle,
+  domain,
+  theme,
+  density,
+  className,
+  children,
+}: WorkspaceShellProps) {
+  const useSlots = React.useMemo(() => hasAnyShellSlot(children), [children]);
+  const slots = React.useMemo(() => (useSlots ? collectShellSlots(children) : {}), [useSlots, children]);
+
+  const root = (
+    <div
+      className={cn('flex flex-col h-full min-h-0 overflow-hidden', className)}
+      {...(editorId ? { 'data-editor-id': editorId } : {})}
+      {...(domain ? { 'data-domain': domain } : {})}
+      {...(theme ? { 'data-theme': theme } : {})}
+      {...(density ? { 'data-density': density } : {})}
+      aria-label={subtitle ? `${title} - ${subtitle}` : title}
+    >
+      {useSlots ? (
+        <>
+          {slots.Header != null ? <>{slots.Header}</> : null}
+          {(slots.Toolbar != null || slots.Settings != null) ? (
+            <div className="flex items-center min-h-0 shrink-0">
+              <div className="flex-1 min-w-0">{slots.Toolbar}</div>
+              {slots.Settings != null ? <div className="shrink-0">{slots.Settings}</div> : null}
+            </div>
+          ) : null}
+          {slots.Layout != null ? (
+            <div className="flex-1 min-h-0 min-w-0 overflow-hidden">{slots.Layout}</div>
+          ) : null}
+          {slots.StatusBar != null ? <>{slots.StatusBar}</> : null}
+          {slots.Overlay != null ? <>{slots.Overlay}</> : null}
+        </>
+      ) : (
+        children
+      )}
+    </div>
+  );
+  return root;
+}
+
+export const WorkspaceShell = Object.assign(WorkspaceShellRoot, {
+  Header: WorkspaceShellHeader,
+  Toolbar: WorkspaceShellToolbar,
+  Layout: WorkspaceShellLayout,
+  StatusBar: WorkspaceShellStatusBar,
+  Overlay: WorkspaceShellOverlay,
+  Settings: WorkspaceShellSettings,
+});

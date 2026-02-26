@@ -5,11 +5,11 @@ import * as UI from '@forge/ui';
 import {
   WorkspaceLayout,
   WorkspacePanel,
-  EditorOverlaySurface,
-  EditorSettingsTrigger,
-  EditorShell,
-  EditorStatusBar,
-  EditorToolbar,
+  WorkspaceOverlaySurface,
+  WorkspaceSettingsTrigger,
+  WorkspaceShell,
+  WorkspaceStatusBar,
+  WorkspaceToolbar,
   SettingsTabs,
   type ActiveOverlay,
 } from '@forge/shared';
@@ -41,28 +41,28 @@ export function MockEditorWorkspace({
   const beatList = editorId === 'dialogue' ? DIALOGUE_BEATS : CHARACTER_BEATS;
 
   return (
-    <EditorShell editorId={editorId} title={`${editorMeta.label} Editor`} domain={editorId} className="h-full">
-      <EditorShell.Toolbar>
-        <EditorToolbar className="border-b px-2 py-1">
-          <EditorToolbar.Left>
+    <WorkspaceShell editorId={editorId} title={`${editorMeta.label} Editor`} domain={editorId} className="h-full">
+      <WorkspaceShell.Toolbar>
+        <WorkspaceToolbar className="border-b px-2 py-1">
+          <WorkspaceToolbar.Left>
             <span className="text-xs font-semibold">{editorMeta.label} Workspace</span>
-          </EditorToolbar.Left>
-          <EditorToolbar.Right>
+          </WorkspaceToolbar.Left>
+          <WorkspaceToolbar.Right>
             <UI.Button size="sm" variant="outline">
               Validate
             </UI.Button>
             <UI.Button size="sm">Save</UI.Button>
-          </EditorToolbar.Right>
-        </EditorToolbar>
-      </EditorShell.Toolbar>
+          </WorkspaceToolbar.Right>
+        </WorkspaceToolbar>
+      </WorkspaceShell.Toolbar>
 
-      <EditorShell.Settings>
+      <WorkspaceShell.Settings>
         <div className="pr-2">
-          <EditorSettingsTrigger tooltip="Open app settings" />
+          <WorkspaceSettingsTrigger tooltip="Open app settings" />
         </div>
-      </EditorShell.Settings>
+      </WorkspaceShell.Settings>
 
-      <EditorShell.Layout>
+      <WorkspaceShell.Layout>
         <WorkspaceLayout layoutId={`studio-workbench-${editorId}`} className="h-full">
           <WorkspaceLayout.Left>
             <WorkspacePanel panelId={`${editorId}-navigator`} title="Navigator">
@@ -121,14 +121,14 @@ export function MockEditorWorkspace({
             </WorkspaceLayout.Bottom>
           ) : null}
         </WorkspaceLayout>
-      </EditorShell.Layout>
+      </WorkspaceShell.Layout>
 
-      <EditorShell.StatusBar>
-        <EditorStatusBar>{editorMeta.label} editor - contributions active - mock data mode</EditorStatusBar>
-      </EditorShell.StatusBar>
+      <WorkspaceShell.StatusBar>
+        <WorkspaceStatusBar>{editorMeta.label} editor - contributions active - mock data mode</WorkspaceStatusBar>
+      </WorkspaceShell.StatusBar>
 
-      <EditorShell.Overlay>
-        <EditorOverlaySurface
+      <WorkspaceShell.Overlay>
+        <WorkspaceOverlaySurface
           overlays={[
             {
               id: 'studio-settings',
@@ -157,8 +157,8 @@ export function MockEditorWorkspace({
           activeOverlay={activeOverlay}
           onDismiss={onDismissOverlay}
         />
-      </EditorShell.Overlay>
-    </EditorShell>
+      </WorkspaceShell.Overlay>
+    </WorkspaceShell>
   );
 }
 

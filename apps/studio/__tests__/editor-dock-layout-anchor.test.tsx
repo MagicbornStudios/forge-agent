@@ -1,6 +1,6 @@
 import React from 'react';
 import TestRenderer, { act } from 'react-test-renderer';
-import { WorkspaceLayout } from '@forge/shared/components/editor';
+import { WorkspaceLayout } from '@forge/shared/components/workspace';
 
 jest.mock('dockview', () => {
   const React = require('react');

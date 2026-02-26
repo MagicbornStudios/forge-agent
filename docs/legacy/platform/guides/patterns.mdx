@@ -173,10 +173,10 @@ const viewMenuItems = useMemo(
 );
 
 // Render from config
-<EditorMenubarContribution>
-  <EditorMenubarMenuSlot id="file" label="File" items={fileMenuItems} />
-  <EditorMenubarMenuSlot id="view" label="View" items={viewMenuItems} />
-</EditorMenubarContribution>
+<WorkspaceMenubarContribution>
+  <WorkspaceMenubarMenuSlot id="file" label="File" items={fileMenuItems} />
+  <WorkspaceMenubarMenuSlot id="view" label="View" items={viewMenuItems} />
+</WorkspaceMenubarContribution>
 ```
 
 ### Benefits
@@ -1109,7 +1109,7 @@ const leftPanel = showLeftPanel === false ? undefined : (
 
 const rightPanel = showRightPanel === false ? undefined : (
   <EditorDockPanel panelId="dialogue-right" title="Inspector">
-    <EditorInspector />
+    <WorkspaceInspector />
   </EditorDockPanel>
 );
 ```
@@ -1163,7 +1163,7 @@ const overlays = useMemo<OverlaySpec[]>(
 );
 
 // Render overlay surface
-<EditorOverlaySurface
+<WorkspaceOverlaySurface
   overlays={overlays}
   activeOverlay={activeOverlay}
   onDismiss={dismissOverlay}

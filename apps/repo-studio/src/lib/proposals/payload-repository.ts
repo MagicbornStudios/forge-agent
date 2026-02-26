@@ -182,43 +182,6 @@ async function saveSqliteProposal(proposal: RepoProposal) {
   return toProposal(created as PayloadProposalDoc) || proposal;
 }
 
-export async function importLegacyProposalsToSqlite(entries: RepoProposal[]) {
-  let imported = 0;
-  let updated = 0;
-  let skipped = 0;
-
-  for (const entry of entries) {
-    const normalized = sanitizeProposal(entry);
-    const existingById = await findDoc({
-      proposalId: {
-        equals: normalized.id,
-      },
-    });
-    const existingByToken = !existingById && normalized.approvalToken
-      ? await findDoc({
-        approvalToken: {
-          equals: normalized.approvalToken,
-        },
-      })
-      : null;
-    const existing = existingById || existingByToken;
-    if (!existing) {
-      await saveSqliteProposal(normalized);
-      imported += 1;
-      continue;
-    }
-    const current = toProposal(existing);
-    if (current && current.status === normalized.status && current.diff === normalized.diff) {
-      skipped += 1;
-      continue;
-    }
-    await saveSqliteProposal(normalized);
-    updated += 1;
-  }
-
-  return { imported, updated, skipped };
-}
-
 export async function upsertSqlitePendingProposal(input: RepoProposalUpsertInput) {
   const token = String(input.approvalToken || '').trim();
   const existingByToken = token ? await findSqliteProposalByApprovalToken(token) : null;

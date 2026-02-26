@@ -33,15 +33,15 @@ export const SHOWCASE_CATALOG_DATA = {
       entries: [
         { id: 'dock-layout-demo', title: 'WorkspaceLayout', summary: 'Composable left/main/right/bottom layout with dock panel helpers.', demoId: 'dock-layout-demo', previewHeight: 620, code: { files: [PLACEHOLDER_CODE] } },
         { id: 'dock-panel-demo', title: 'WorkspacePanel', summary: 'Individual panel wrapper within WorkspaceLayout with title bar, scrolling, and tabs.', demoId: 'dock-panel-demo', code: { files: [PLACEHOLDER_CODE] } },
-        { id: 'editor-toolbar-demo', title: 'EditorToolbar', summary: 'Toolbar groups and actions for top-of-editor command surfaces.', demoId: 'editor-toolbar-demo', code: { files: [PLACEHOLDER_CODE] } },
-        { id: 'editor-inspector-demo', title: 'EditorInspector', summary: 'Selection-driven properties panel with conditional sections.', demoId: 'editor-inspector-demo', code: { files: [PLACEHOLDER_CODE] } },
-        { id: 'editor-overlay-demo', title: 'EditorOverlaySurface', summary: 'Declarative modal system for overlays, dialogs, and popovers.', demoId: 'editor-overlay-demo', code: { files: [PLACEHOLDER_CODE] } },
+        { id: 'workspace-toolbar-demo', title: 'WorkspaceToolbar', summary: 'Toolbar groups and actions for top-of-workspace command surfaces.', demoId: 'workspace-toolbar-demo', code: { files: [PLACEHOLDER_CODE] } },
+        { id: 'workspace-inspector-demo', title: 'WorkspaceInspector', summary: 'Selection-driven properties panel with conditional sections.', demoId: 'workspace-inspector-demo', code: { files: [PLACEHOLDER_CODE] } },
+        { id: 'workspace-overlay-demo', title: 'WorkspaceOverlaySurface', summary: 'Declarative modal system for overlays, dialogs, and popovers.', demoId: 'workspace-overlay-demo', code: { files: [PLACEHOLDER_CODE] } },
         { id: 'panel-tabs-demo', title: 'PanelTabs', summary: 'Tabbed panel content used by inspectors and assistant rails.', demoId: 'panel-tabs-demo', code: { files: [PLACEHOLDER_CODE] } },
         { id: 'settings-panel-demo', title: 'Settings Panel', summary: 'Settings-oriented layout pattern used for preference forms.', demoId: 'settings-panel-demo', code: { files: [PLACEHOLDER_CODE] } },
         { id: 'attachment-demo', title: 'Attachment', summary: 'Composer attachment UI for images and files in assistant threads.', demoId: 'attachment-demo', previewHeight: 420, code: { files: [PLACEHOLDER_CODE] } },
         { id: 'assistant-panel-demo', title: 'Assistant Panel', summary: 'Live assistant thread rendering with a local mocked runtime adapter.', demoId: 'assistant-panel-demo', previewHeight: 640, code: { files: [PLACEHOLDER_CODE] } },
         { id: 'plan-card-demo', title: 'Plan Card', summary: 'Structured plan response card used for AI-generated stepwise workflows.', demoId: 'plan-card-demo', code: { files: [PLACEHOLDER_CODE] } },
-        { id: 'toolbar-editor-settings-menu-demo', title: 'Toolbar Editor Settings Menu', summary: 'Settings menu items (Open Settings, Account) for the editor menubar.', demoId: 'toolbar-editor-settings-menu-demo', code: { files: [PLACEHOLDER_CODE] } },
+        { id: 'toolbar-workspace-settings-menu-demo', title: 'Toolbar Workspace Settings Menu', summary: 'Settings menu items (Open Settings, Account) for the workspace menubar.', demoId: 'toolbar-workspace-settings-menu-demo', code: { files: [PLACEHOLDER_CODE] } },
         { id: 'studio-menubar-contribution-demo', title: 'Studio Menubar Contribution', summary: 'App-tab menubar that merges shared menus with active-editor menu contributions.', demoId: 'studio-menubar-contribution-demo', previewHeight: 420, code: { files: [PLACEHOLDER_CODE] } },
         { id: 'dock-sidebar-demo', title: 'Dock Sidebar', summary: 'Grid-embedded sidebar for dock layout panels with menu and header.', demoId: 'dock-sidebar-demo', code: { files: [PLACEHOLDER_CODE] } },
         { id: 'plan-demo', title: 'Plan', summary: 'Tool-ui plan component for stepwise todo lists from AI workflows.', demoId: 'plan-demo', code: { files: [PLACEHOLDER_CODE] } },
@@ -53,7 +53,7 @@ export const SHOWCASE_CATALOG_DATA = {
       description:
         'Large composed surfaces that bring editor, assistant, and tooling layers together.',
       entries: [
-        { id: 'editor-shell-demo', title: 'EditorShell', summary: 'Declarative root for editor header, toolbar, layout, overlays, and status bar.', demoId: 'editor-shell-demo', previewHeight: 660, installCommand: 'pnpm --filter @forge/studio dev', code: { files: [PLACEHOLDER_CODE] } },
+        { id: 'workspace-shell-demo', title: 'WorkspaceShell', summary: 'Declarative root for workspace header, toolbar, layout, overlays, and status bar.', demoId: 'workspace-shell-demo', previewHeight: 660, installCommand: 'pnpm --filter @forge/studio dev', code: { files: [PLACEHOLDER_CODE] } },
         { id: 'settings-system-demo', title: 'Settings System', summary: 'Data-driven settings with inheritance, scopes, and code generation.', demoId: 'settings-system-demo', previewHeight: 520, code: { files: [PLACEHOLDER_CODE] } },
         { id: 'studio-workbench-demo', title: 'Studio Workbench (Mock)', summary: 'Studio-like shell with two editors, editor-scoped menu contributions, and settings contributions using static mock data.', demoId: 'studio-workbench-demo', previewHeight: 860, code: { files: [PLACEHOLDER_CODE] } },
         { id: 'codebase-agent-strategy-editor', title: 'Codebase Agent Strategy Editor', summary: 'End-to-end strategy editor surface with assistant-aware planning interactions.', demoId: 'codebase-agent-strategy-editor', previewHeight: 780, code: { files: [PLACEHOLDER_CODE] } },

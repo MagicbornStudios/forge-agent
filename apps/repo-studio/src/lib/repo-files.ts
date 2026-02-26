@@ -108,8 +108,9 @@ export async function listRepoFiles(options: {
   allowedRoots?: string[];
   maxItems?: number;
   maxDepth?: number;
+  repoRoot?: string;
 }) {
-  const repoRoot = resolveRepoRoot();
+  const repoRoot = options.repoRoot ? path.resolve(options.repoRoot) : resolveRepoRoot();
   const scopeRoots = await listScopeRoots(repoRoot, options.scope, options.loopId);
   const allowedRoots = (options.allowedRoots || [])
     .map((value) => normalizeRelPath(value))
@@ -181,8 +182,8 @@ export async function listRepoFiles(options: {
   };
 }
 
-export async function readRepoFile(repoRelativePath: string) {
-  const repoRoot = resolveRepoRoot();
+export async function readRepoFile(repoRelativePath: string, repoRootInput?: string) {
+  const repoRoot = repoRootInput ? path.resolve(repoRootInput) : resolveRepoRoot();
   const absolute = resolveSafeAbsolutePath(repoRoot, repoRelativePath);
   const stat = await fs.stat(absolute);
   if (stat.size > MAX_FILE_READ_BYTES) {
@@ -201,8 +202,9 @@ export async function writeRepoFile(input: {
   path: string;
   content: string;
   createIfMissing?: boolean;
+  repoRoot?: string;
 }) {
-  const repoRoot = resolveRepoRoot();
+  const repoRoot = input.repoRoot ? path.resolve(input.repoRoot) : resolveRepoRoot();
   const repoRelativePath = normalizeRelPath(input.path);
   const absolute = resolveSafeAbsolutePath(repoRoot, repoRelativePath);
   const parentDir = path.dirname(absolute);

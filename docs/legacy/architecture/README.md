@@ -16,7 +16,7 @@ updated: 2026-02-11
 |-------|------|---------|
 | **Studio** | `apps/studio/` | Next.js app: App Shell, editors (Dialogue, Character, Video, Strategy), CopilotKit, Payload config, API routes. |
 | **Platform** | `apps/platform/` | Customer-facing app: landing/docs/login plus app-shell routes (`/catalog`, `/dashboard/*`) for creator/account/commerce workflows. |
-| **Shared (editor kit)** | `packages/shared/src/shared/` | EditorShell, DockLayout, editor slots, headless contracts (Selection, OverlaySpec, capabilities). Consumed as `@forge/shared`. |
+| **Shared (editor kit)** | `packages/shared/src/shared/` | WorkspaceShell, DockLayout, editor slots, headless contracts (Selection, OverlaySpec, capabilities). Consumed as `@forge/shared`. |
 | **UI atoms** | `packages/ui/` | shadcn primitives; `@forge/ui`. |
 | **Types** | `packages/types/` | Payload-generated `payload-types.ts`; domain aliases (`payload.ts`, `graph.ts`). |
 | **Agent engine** | `packages/agent-engine/` | Workflow runtime (steps, events, SSE). |

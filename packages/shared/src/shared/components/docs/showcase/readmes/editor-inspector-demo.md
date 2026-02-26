@@ -1,4 +1,4 @@
-The **EditorInspector** is a selection-driven properties panel that displays context-sensitive forms and controls based on the current editor selection. It's the right-hand panel in most editors, showing node properties, edge settings, character details, or any other entity-specific information.
+The **WorkspaceInspector** is a selection-driven properties panel that displays context-sensitive forms and controls based on the current editor selection. It's the right-hand panel in most editors, showing node properties, edge settings, character details, or any other entity-specific information.
 
 ## Table of Contents
 
@@ -19,7 +19,7 @@ The **EditorInspector** is a selection-driven properties panel that displays con
 
 ```
 ┌──────────────────────────────────────────────┐
-│           EditorInspector                     │
+│           WorkspaceInspector                     │
 ├──────────────────────────────────────────────┤
 │                                               │
 │  1. Receives Selection                        │
@@ -216,10 +216,10 @@ const myInspectorSections: InspectorSection[] = [
 
 ## Component API
 
-### EditorInspector Props
+### WorkspaceInspector Props
 
 ```typescript
-export interface EditorInspectorProps {
+export interface WorkspaceInspectorProps {
   /** Selection from editor state */
   selection?: Selection | null;
 
@@ -251,10 +251,10 @@ function MyEditor() {
   ];
 
   return (
-    <EditorShell>
+    <WorkspaceShell>
       <EditorCanvas onSelectionChange={setSelection} />
-      <EditorInspector selection={selection} sections={sections} />
-    </EditorShell>
+      <WorkspaceInspector selection={selection} sections={sections} />
+    </WorkspaceShell>
   );
 }
 ```
@@ -266,16 +266,16 @@ function SimpleEditor() {
   const [selection, setSelection] = useState<Selection>({ type: 'none' });
 
   return (
-    <EditorShell>
+    <WorkspaceShell>
       <EditorCanvas onSelectionChange={setSelection} />
-      <EditorInspector selection={selection}>
+      <WorkspaceInspector selection={selection}>
         {isEntity(selection) ? (
           <PropertiesForm entityId={selection.id} />
         ) : (
           <EmptyState message="Select an item" />
         )}
-      </EditorInspector>
-    </EditorShell>
+      </WorkspaceInspector>
+    </WorkspaceShell>
   );
 }
 ```
@@ -424,13 +424,13 @@ function DialogueWorkspace() {
   const [selection, setSelection] = useState<Selection>({ type: 'none' });
 
   return (
-    <EditorShell>
+    <WorkspaceShell>
       <GraphEditor onSelectionChange={setSelection} />
-      <EditorInspector
+      <WorkspaceInspector
         selection={selection}
         sections={dialogueInspectorSections}
       />
-    </EditorShell>
+    </WorkspaceShell>
   );
 }
 ```
@@ -518,13 +518,13 @@ function MyEditor() {
   );
 
   return (
-    <EditorShell>
+    <WorkspaceShell>
       <GraphEditor
         onSelectionChange={setSelection}
         isHighlighted={isHighlighted}
       />
-      <EditorInspector selection={selection} sections={sections} />
-    </EditorShell>
+      <WorkspaceInspector selection={selection} sections={sections} />
+    </WorkspaceShell>
   );
 }
 ```
@@ -596,7 +596,7 @@ function MyEditor() {
   const [selection, setSelection] = useState<Selection>({ type: 'none' });
 
   return (
-    <EditorInspector selection={selection} sections={sections} />
+    <WorkspaceInspector selection={selection} sections={sections} />
   );
 }
 ```
@@ -822,12 +822,12 @@ function MyEditor() {
   };
 
   return (
-    <EditorShell>
+    <WorkspaceShell>
       <GraphEditor
         onSelectionChange={setSelection}
         onContextMenu={handleContextMenu}
       />
-      <EditorInspector selection={selection} sections={sections} />
+      <WorkspaceInspector selection={selection} sections={sections} />
 
       {contextMenu && (
         <ContextMenu
@@ -842,7 +842,7 @@ function MyEditor() {
           </ContextMenuItem>
         </ContextMenu>
       )}
-    </EditorShell>
+    </WorkspaceShell>
   );
 }
 ```
@@ -851,7 +851,7 @@ function MyEditor() {
 
 ## Summary
 
-The **EditorInspector** provides:
+The **WorkspaceInspector** provides:
 
 ✅ **Selection-driven UI** - Content adapts to what's selected
 ✅ **Type-safe selection** - Full TypeScript support with discriminant unions
@@ -862,6 +862,6 @@ The **EditorInspector** provides:
 ✅ **Common patterns** - Tabs, accordions, bulk actions, nested types
 
 **Next Steps:**
-- [EditorOverlaySurface Guide](./editor-overlay)
+- [WorkspaceOverlaySurface Guide](./workspace-overlay)
 - [PanelTabs Guide](./panel-tabs)
 - [Component Patterns](../guides/patterns.mdx)

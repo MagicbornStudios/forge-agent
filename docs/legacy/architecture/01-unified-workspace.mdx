@@ -16,12 +16,12 @@ The app uses a **Unified Editor** implemented as an **App Shell** that owns mult
   - State: `activeWorkspaceId`, `openWorkspaceIds`, `globalModals`, `workspaceThemes` (optional per-editor overrides)
   - Settings: `apps/studio/lib/settings/store.ts` provides app/editor/viewport settings with inheritance; settings sheets live in `apps/studio/components/settings/*`.
   - Theme: `apps/studio/components/providers/AppThemeProvider.tsx` binds `ui.theme` to `<html data-theme>` via `next-themes`.
-- App layout primitives: `packages/shared/src/shared/components/app/*` (EditorApp, Tabs, Tab, Content).
+- App layout primitives: `packages/shared/src/shared/components/app/*` (WorkspaceApp, Tabs, Tab, Content).
   - Actions: `setActiveWorkspace`, `openWorkspace`, `closeWorkspace`
   - Shell-level CopilotKit: `useCopilotReadable` (activeWorkspaceId, editor labels, editor summary), `useCopilotAction` (switchEditor, openEditor, closeEditor)
 
 - **Editors** (Dialogue, Video, Character, Strategy)
-  - Each editor uses `EditorShell` from `packages/shared/src/shared/components/editor`.
+  - Each editor uses `WorkspaceShell` from `packages/shared/src/shared/components/editor`.
   - Domain contract: `useForgeContract` / `useVideoContract` + `useDomainCopilot` register context, actions, and suggestions only when that editor is active (only one editor is mounted at a time).
   - CopilotKit provider reads merged app/editor/viewport settings for instructions, agent name, and temperature; editor/viewport model overrides are sent per-request via headers.
 

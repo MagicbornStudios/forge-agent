@@ -58,7 +58,7 @@ pnpm forge-repo-studio:reclaim:all
 2. `Env` tab: run `Doctor` (and `Reconcile` when needed).
 3. `Commands` tab: run allowlisted lifecycle scripts with confirmation.
 4. `Planning` tab: refresh and confirm next action changed.
-5. `Docs` tab: open runbooks while executing.
+5. `Assistant` tab: run forge/codex chat flows as needed.
 
 Runtime controls:
 
@@ -72,11 +72,3 @@ Desktop controls:
 - `forge-repo-studio open --desktop-runtime`
 - `forge-repo-studio stop --desktop-runtime`
 - `pnpm --filter @forge/repo-studio run desktop:build`
-
-## 4) Optional fallback UI
-
-Use only for emergency compatibility:
-
-```bash
-forge-repo-studio open --legacy-ui
-```

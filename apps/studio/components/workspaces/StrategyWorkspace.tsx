@@ -2,11 +2,11 @@
 
 import React, { useEffect, useMemo } from 'react';
 import {
-  EditorShell,
-  EditorHeader,
-  EditorToolbar,
-  EditorStatusBar,
-} from '@forge/shared/components/editor';
+  WorkspaceShell,
+  WorkspaceHeader,
+  WorkspaceToolbar,
+  WorkspaceStatusBar,
+} from '@forge/shared/components/workspace';
 import { FeatureGate } from '@forge/shared';
 import { CAPABILITIES } from '@forge/shared/entitlements';
 import { CodebaseAgentStrategyWorkspace } from '@forge/shared/components/assistant-ui';
@@ -21,6 +21,9 @@ import {
 import { ModelSwitcher } from '@/components/model-switcher';
 import { Badge } from '@forge/ui/badge';
 import { LayoutPanelTop, PanelLeft, PanelRight } from 'lucide-react';
+
+export const WORKSPACE_ID = 'strategy' as const;
+export const WORKSPACE_LABEL = 'Strategy';
 
 export function StrategyWorkspace() {
   const { visibility: panelVisibility, setVisible: setPanelVisible, restoreAll: restoreAllPanels, panelSpecs } = useWorkspacePanelVisibility('strategy');
@@ -86,7 +89,7 @@ export function StrategyWorkspace() {
   ) as boolean | undefined;
 
   return (
-    <EditorShell
+    <WorkspaceShell
       editorId="strategy"
       title="Strategy"
       subtitle="Codebase agent strategy"
@@ -95,27 +98,27 @@ export function StrategyWorkspace() {
       density={editorDensity}
       className="flex flex-col h-full min-h-0 bg-canvas"
     >
-      <EditorHeader>
-        <EditorHeader.Left>
+      <WorkspaceHeader>
+        <WorkspaceHeader.Left>
           <h1 className="text-lg font-bold">Strategy</h1>
-        </EditorHeader.Left>
-        <EditorHeader.Center>
+        </WorkspaceHeader.Left>
+        <WorkspaceHeader.Center>
           <span className="text-sm text-muted-foreground">Codebase Agent Strategy Editor</span>
-        </EditorHeader.Center>
-      </EditorHeader>
+        </WorkspaceHeader.Center>
+      </WorkspaceHeader>
 
-      <EditorToolbar className="bg-sidebar border-b border-sidebar-border">
-        <EditorToolbar.Left>
+      <WorkspaceToolbar className="bg-sidebar border-b border-sidebar-border">
+        <WorkspaceToolbar.Left>
           <span className="text-xs text-muted-foreground">Plan, document, and refine agent behavior.</span>
-        </EditorToolbar.Left>
-        <EditorToolbar.Right>
+        </WorkspaceToolbar.Left>
+        <WorkspaceToolbar.Right>
           {showAgentName !== false && (
             <Badge variant="secondary" className="text-xs">
               Agent: {agentName ?? 'Default'}
             </Badge>
           )}
-        </EditorToolbar.Right>
-      </EditorToolbar>
+        </WorkspaceToolbar.Right>
+      </WorkspaceToolbar>
 
       <WorkspaceContextProvider workspaceId={workspaceId} viewportId={viewportId}>
         <WorkspaceMenubarContribution>
@@ -135,7 +138,7 @@ export function StrategyWorkspace() {
         </FeatureGate>
       </WorkspaceContextProvider>
 
-      <EditorStatusBar>Strategy assistant ready</EditorStatusBar>
-    </EditorShell>
+      <WorkspaceStatusBar>Strategy assistant ready</WorkspaceStatusBar>
+    </WorkspaceShell>
   );
 }

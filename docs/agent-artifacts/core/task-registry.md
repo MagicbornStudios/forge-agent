@@ -28,7 +28,7 @@ Single entry point for "all work in tiers." For **granular, pickable tasks** (es
 | publish-host | Platform: publish and host builds (MVP: playable builds) | Large | open | — | [Next #7](./STATUS.md) |
 | developer-program | Developer program and editor ecosystem | Epic | open | TBD (task-breakdown-developer-program.md when lanes exist) | [Next #12](./STATUS.md) |
 | marketing-part-b | Marketing site overhaul (Part B) | Large | done | — | [Next #13](./STATUS.md) |
-| video-twick | Twick → VideoDoc persistence + plan/commit UI | Medium | open | — | [Next #14](./STATUS.md) |
+| video-twick | ~~Twick → VideoDoc persistence~~ (Twick removed; when Video unlocked, new stack) | — | cancelled | 2026-02-24 | — |
 | video-workflow | Video workflow panel | Medium | open | — | [Next #15](./STATUS.md) |
 | dev-kit-single-entrypoint | Dev-kit single entrypoint and docs (package + styles + customer/internal docs; optional create-forge-app) | Medium–Large | open | [breakdown](task-breakdown-dev-kit-single-entrypoint.md) | [Next § Dev-kit #18](./STATUS.md) |
 | creator-dashboard | Platform creator dashboard (my listings, my games, licenses, revenue) using Vercel-style shell; Studio minimal (publish/update in app bar only) | Large | in_progress | [breakdown](task-breakdown-creator-dashboard.md) | [Platform dashboard](../../roadmap/product.mdx) |
@@ -36,7 +36,7 @@ Single entry point for "all work in tiers." For **granular, pickable tasks** (es
 | platform-sanity-housekeeping | Platform SaaS housekeeping refactor (API decomposition, dashboard auth gate, constants, cleanup slices, quality guardrails) | Medium | in_progress | TBD (continue phased cleanup from 30 remaining knip files) | [STATUS](./STATUS.md) |
 | import-adapters | Adapters: Yarn (MVP), then Ink, Twine, Ren'Py; optional AI-assisted import (see [potential-ideas](../../roadmap/potential-ideas.md)) | Medium–Large | open | — | [Ecosystem and import](../../business/ecosystem-and-import-strategy.mdx) |
 | dock-rails | Dock rails and composable panels: config-driven left/main/right/bottom as panel lists; RailPanelDescriptor type and *Panels array API already exist in DockLayout; wire editors to array API; naming and docs | Medium | open | [breakdown](task-breakdown-dock-rails.md) | — |
-| editor-declarative-registries | Declarative editor components and registries: EditorRail/EditorPanel/EditorLayout, panel registry; SettingsSection/SettingsField, settings registry; EditorMenubarContribution; all editors migrated | Large | done | [breakdown](task-breakdown-editor-declarative-registries.md) | — |
+| editor-declarative-registries | Declarative editor components and registries: WorkspaceRail/WorkspaceRailPanel/EditorLayout, panel registry; SettingsSection/SettingsField, settings registry; WorkspaceMenubarContribution; all editors migrated | Large | done | [breakdown](task-breakdown-editor-declarative-registries.md) | — |
 | editor-registration-declarative | Register editors declaratively (like panels/settings): editor registry + Studio + menu registry + naming (StudioApp, StudioMenubarProvider, StudioSettingsProvider) | Small–Medium | done | Studio refactor plan | decisions.md § Studio as single entrypoint |
 
 ## Quick picks (Tier 3 or Tier 2, open, Small / Medium)

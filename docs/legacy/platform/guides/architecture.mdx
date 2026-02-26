@@ -29,13 +29,13 @@ Each editor is a **domain** with its own:
 - **Theme** — Domain-specific colors and styles
 
 ```tsx
-<EditorShell
+<WorkspaceShell
   editorId="character"
   domain="character"
   theme={theme}
 >
   {/* Character-specific UI */}
-</EditorShell>
+</WorkspaceShell>
 ```
 
 ### 2. Composition Over Configuration
@@ -43,18 +43,18 @@ Each editor is a **domain** with its own:
 **Slot-based composition** instead of monolithic components:
 
 ```tsx
-<EditorShell editorId="...">
-  <EditorShell.Toolbar>...</EditorShell.Toolbar>
-  <EditorShell.Layout>...</EditorShell.Layout>
-  <EditorShell.StatusBar>...</EditorShell.StatusBar>
-</EditorShell>
+<WorkspaceShell editorId="...">
+  <WorkspaceShell.Toolbar>...</WorkspaceShell.Toolbar>
+  <WorkspaceShell.Layout>...</WorkspaceShell.Layout>
+  <WorkspaceShell.StatusBar>...</WorkspaceShell.StatusBar>
+</WorkspaceShell>
 ```
 
 Not configuration objects:
 
 ```tsx
 // ❌ Avoid
-<EditorShell
+<WorkspaceShell
   config={{
     toolbar: { ... },
     layout: { ... },
@@ -118,15 +118,15 @@ CSS variables scope via `data-*` attributes:
 ### Component Hierarchy
 
 ```
-EditorShell
-├── EditorToolbar
-│   ├── EditorToolbar.Left
-│   │   ├── EditorMenubar (File, Edit, View)
+WorkspaceShell
+├── WorkspaceToolbar
+│   ├── WorkspaceToolbar.Left
+│   │   ├── WorkspaceMenubar (File, Edit, View)
 │   │   └── Status indicators
-│   └── EditorToolbar.Right
+│   └── WorkspaceToolbar.Right
 │       ├── Model switcher
 │       └── Action buttons
-├── EditorReviewBar (conditional)
+├── WorkspaceReviewBar (conditional)
 ├── EditorDockLayout
 │   ├── Left Rail (Navigator/Library)
 │   │   └── EditorDockPanel
@@ -136,13 +136,13 @@ EditorShell
 │   │       └── Canvas/Flow/Timeline
 │   ├── Right Rail (Inspector/Chat)
 │   │   └── EditorDockPanel
-│   │       ├── EditorInspector (properties)
+│   │       ├── WorkspaceInspector (properties)
 │   │       └── DialogueAssistantPanel (AI)
 │   └── Bottom Rail (optional)
 │       └── EditorDockPanel
 │           └── Workflow panel
-├── EditorStatusBar
-└── EditorOverlaySurface
+├── WorkspaceStatusBar
+└── WorkspaceOverlaySurface
     └── Modal dialogs
 ```
 
@@ -480,7 +480,7 @@ forge-agent/
 
 ```tsx
 // Shared components
-import { EditorShell, EditorDockLayout } from '@forge/shared/components/editor';
+import { WorkspaceShell, EditorDockLayout } from '@forge/shared/components/editor';
 
 // UI primitives
 import { Button, Input, Dialog } from '@forge/ui';
@@ -572,14 +572,14 @@ const editorTheme = useSettingsStore((s) =>
   s.getSettingValue('ui.theme', { editorId: 'dialogue' })
 ) as string | undefined;
 
-// Apply via EditorShell
-<EditorShell
+// Apply via WorkspaceShell
+<WorkspaceShell
   editorId="dialogue"
   domain="dialogue"
   theme={editorTheme}
 >
   {/* ... */}
-</EditorShell>
+</WorkspaceShell>
 
 // Sets data-theme attribute
 // <div data-theme="dark" data-domain="dialogue">
@@ -665,19 +665,19 @@ function NodeEditor({ node }: { node: Node }) {
 
 ```tsx
 import { render, screen, fireEvent } from '@testing-library/react';
-import { EditorToolbar } from '@forge/shared/components/editor';
+import { WorkspaceToolbar } from '@forge/shared/components/editor';
 
-describe('EditorToolbar', () => {
+describe('WorkspaceToolbar', () => {
   it('renders left and right sections', () => {
     render(
-      <EditorToolbar>
-        <EditorToolbar.Left>
+      <WorkspaceToolbar>
+        <WorkspaceToolbar.Left>
           <span>Left content</span>
-        </EditorToolbar.Left>
-        <EditorToolbar.Right>
+        </WorkspaceToolbar.Left>
+        <WorkspaceToolbar.Right>
           <span>Right content</span>
-        </EditorToolbar.Right>
-      </EditorToolbar>
+        </WorkspaceToolbar.Right>
+      </WorkspaceToolbar>
     );
 
     expect(screen.getByText('Left content')).toBeInTheDocument();
@@ -687,11 +687,11 @@ describe('EditorToolbar', () => {
   it('calls button onClick handler', () => {
     const onClick = jest.fn();
     render(
-      <EditorToolbar>
-        <EditorToolbar.Left>
-          <EditorToolbar.Button onClick={onClick}>Click me</EditorToolbar.Button>
-        </EditorToolbar.Left>
-      </EditorToolbar>
+      <WorkspaceToolbar>
+        <WorkspaceToolbar.Left>
+          <WorkspaceToolbar.Button onClick={onClick}>Click me</WorkspaceToolbar.Button>
+        </WorkspaceToolbar.Left>
+      </WorkspaceToolbar>
     );
 
     fireEvent.click(screen.getByText('Click me'));
@@ -766,13 +766,13 @@ NEXT_PUBLIC_LANGGRAPH_ENABLED="true"
 
 ```tsx
 // ✅ Good: Slot composition
-<EditorShell>
-  <EditorShell.Toolbar>...</EditorShell.Toolbar>
-  <EditorShell.Layout>...</EditorShell.Layout>
-</EditorShell>
+<WorkspaceShell>
+  <WorkspaceShell.Toolbar>...</WorkspaceShell.Toolbar>
+  <WorkspaceShell.Layout>...</WorkspaceShell.Layout>
+</WorkspaceShell>
 
 // ❌ Bad: Prop drilling
-<EditorShell
+<WorkspaceShell
   toolbar={...}
   layout={...}
 />
@@ -822,7 +822,7 @@ const response = await openai.chat.completions.create({...});
 ## Related Documentation
 
 - [Quick Start](../tutorials/quick-start.mdx) — Build your first editor
-- [EditorShell Reference](../components/editor-shell-complete.mdx) — Root component
+- [WorkspaceShell Reference](../components/editor-shell-complete.mdx) — Root component
 - [DockLayout Reference](../components/dock-layout-complete.mdx) — Layout system
 - [Settings System](./settings-system.mdx) — Settings architecture
 

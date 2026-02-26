@@ -4,12 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack -p 3025",
-    "build": "next build",
+    "build": "pnpm run codegen && next build",
+    "codegen": "node ../../packages/forge-codegen/cli.mjs all --config forge-codegen.config.mjs",
+    "check:codegen": "pnpm run codegen && git diff --exit-code lib/app-spec.generated.ts || (echo 'Generated files are out of date. Run pnpm run codegen.' && exit 1)",
     "start": "next start -p 3025",
     "lint": "next lint --max-warnings 0"
   },
   "dependencies": {
     "@forge/dev-kit": "workspace:*",
+    "@forge/shared": "workspace:*",
     "next": "15.5.9",
     "react": "^19.2.1",
     "react-dom": "^19.2.1"
@@ -23,7 +26,7 @@
     "eslint-config-next": "15.5.9",
     "postcss": "^8",
     "tailwindcss": "^4.0.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "@forge/forge-codegen": "workspace:*"
   }
 }
-

@@ -23,13 +23,16 @@ The `.tmp/` directory (and any path listed in .gitignore as agent-download/refer
 - Canonical runtime wrapper is shared: `@forge/shared/components/assistant-ui` `AssistantPanel`.
 - Do **not** add app-local wrappers that wire `AssistantRuntimeProvider`, `AssistantChatTransport`, or `useChatRuntime` in `apps/*`.
 - Companion runtime routing (Repo Studio detection + assistant URL resolution) must use shared workspace utilities, not app-local duplicates.
+- Repo Studio assistant UX is one panel/workspace (`assistant`) with runtime switching inside the panel (`forge` or `codex`); do not reintroduce split loop/codex assistant panels.
+- Repo Studio model options must come from runtime-scoped APIs (`/api/repo/models`); do not hardcode model arrays in app panels.
 
 ## Editor platform (shared)
 
 Owns **packages/shared/src/shared**: editor components, shared styles, and editor/selection/overlay/toolbar types (internal `shared/workspace`; consumed via `@forge/shared`).
 
 - **Loop**: Use GSD (Codex) `$gsd-*` skills for phases; run `forge-loop doctor` before major phase runs, then `forge-loop sync-legacy` to update snapshot sections in `docs/agent-artifacts/core/*`. Use RepoStudio Env workspace for guided headless/env remediation when interactive.
-- **Naming**: Use **EditorShell** for the declarative root (layout + slots). Do not introduce a separate "container" name for the same concept.
+- **Naming**: Use **WorkspaceShell** for the declarative root (layout + slots). Do not introduce a separate "container" name for the same concept.
+- **Studio app spec:** Repo-studio, studio, and consumer-studio use one generated app spec per app (`app-spec.generated.ts`): same canonical shape (workspaces, layout definitions, panel specs with rail, settings defaults, `PINNED_PANEL_IDS`). One import surface; no hand-maintained workspace id lists or layout tables. See [How-to 29 - Studio apps and app spec](docs/how-to/29-studio-apps-and-app-spec.mdx).
 - No imperative toolbar API; timeline is optional; no cross-domain imports in shared. Capabilities live in `packages/shared/src/shared/workspace/capabilities.ts` (contracts only).
 
 ## Studio and registries
@@ -40,7 +43,7 @@ Owns **packages/shared/src/shared**: editor components, shared styles, and edito
 
 ## Other agents
 
-When touching editors (Dialogue, Character, Video, Strategy): use the shared shell from `@forge/shared/components/editor`. Do not invent new layout patterns; extend via slots and document in shared AGENTS.
+When touching editors (Dialogue, Character, Video, Strategy): use the shared shell from `@forge/shared/components/workspace`. Do not invent new layout patterns; extend via slots and document in shared AGENTS.
 
 ## UI atoms
 
@@ -51,7 +54,7 @@ When touching editors (Dialogue, Character, Video, Strategy): use the shared she
 - Editor surfaces must use compact tokens (`--control-*`, `--panel-padding`, `--tab-height`).
 - Avoid ad-hoc `px-*` / `py-*` utilities in editor UIs; prefer token-based values.
 - Do not repeat context labels (project title, editor name) inside panels if already shown in the header.
-- If an editor overrides density, set `data-density` on `EditorShell`.
+- If an editor overrides density, set `data-density` on `WorkspaceShell`.
 
 ## Styling and UI
 
@@ -64,7 +67,6 @@ When touching editors (Dialogue, Character, Video, Strategy): use the shared she
 - Humans and agents follow the same process: [How-to 24 - Vendoring third-party code](docs/how-to/24-vendoring-third-party-code.mdx) for submodule updates, version alignment, pnpm overrides, and upstream PRs.
 - For local consumer repos, publish vendored packages to Verdaccio (see How-to 24 and [How-to 25](docs/how-to/25-verdaccio-local-registry.mdx)).
 - Forge publish flow: `registry:forge:build` + `registry:forge:publish:local`.
-- Twick publish flow: `vendor:twick:build` + `vendor:twick:publish:local`.
 - Verdaccio login is optional; 409 conflict fix is documented in How-to 25.
 
 ## Enhanced features / ideas backlog

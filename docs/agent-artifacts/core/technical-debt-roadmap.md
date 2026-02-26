@@ -35,13 +35,13 @@ Refactors, cleanup, and tech debt we address when we have capacity.
 | id | title | impact | status | note |
 |----|-------|--------|--------|------|
 | td-1 | Clarify or remove workspace from shared public API | Small | done | Index + AGENTS + editor README |
-| td-2 | Fix EditorShell JSDoc (data-mode-id) | Small | done | Removed data-mode-id from JSDoc and README |
+| td-2 | Fix WorkspaceShell JSDoc (data-mode-id) | Small | done | Removed data-mode-id from JSDoc and README |
 | td-3 | Single home for editor/shared types | Small | done | Verified: types only in workspace; note in editor README |
 | td-4 | Execute legacy removal plan (viewport, app-shell, settings, model-router) | Medium | done | ViewportMeta viewport-only attrs; openEditor editorId only; modes re-export removed |
 | td-5 | Remove or isolate deprecated components (WorkspaceEditor, GraphEditor prop, etc.) | Small–Medium | done | ViewportMeta is canonical; redundant modes/ removed; no deprecated props |
 | td-6 | Editor chrome token audit (replace ad-hoc px/py/gap/sizing) | Medium | done | Shared editor chrome now uses --control-*, --panel-padding |
 | td-7 | Studio UI token audit | Small–Medium | done | apps/studio components use --control-*, --panel-padding |
-| td-8 | Panel and tab accent pass (context-accent everywhere needed) | Medium | done | DockPanel header accent; PanelTabs/Dockview/EditorTab already had it |
+| td-8 | Panel and tab accent pass (context-accent everywhere needed) | Medium | done | DockPanel header accent; PanelTabs/Dockview/WorkspaceTab already had it |
 | td-9 | Section/list accent audit (SectionHeader, NodePalette, etc.) | Small | done | SectionHeader + NodePalette use --context-accent |
 | td-10 | Document editor color context (domain, tokens) | Small | done | Editor README + 01-styling-and-theming.mdx |
 | td-11 | Component-level context override (optional domain/context on sections) | Medium | done | SectionHeader context prop; doc in README + 01-styling-and-theming |

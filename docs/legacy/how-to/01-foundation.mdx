@@ -12,7 +12,7 @@ Repo structure, packages, and key concepts so you can run the app and navigate t
 ## Repo structure
 
 - **apps/studio/** - Next.js app: App Shell, editors, CopilotKit, Payload, API routes.
-- **packages/shared/** - Editor UI kit and headless contracts (`EditorShell`, `DockLayout`, toolbars, overlays).
+- **packages/shared/** - Editor UI kit and headless contracts (`WorkspaceShell`, `DockLayout`, toolbars, overlays).
 - **packages/domain-forge/** - Dialogue system (domain package): types, operations, Copilot contract (actions, context, suggestions).
 - **packages/ui/** - shadcn UI atoms (Button, Card, Dialog, etc.).
 - **packages/types/** - Payload-generated types and system/domain aliases (`ForgeGraphDoc`, etc.).
@@ -21,7 +21,7 @@ Repo structure, packages, and key concepts so you can run the app and navigate t
 ## Key concepts
 
 - **App Shell**: Owns editor tabs and the active editor. Only one editor is mounted at a time. See `apps/studio/components/AppShell.tsx` and `apps/studio/lib/app-shell/store.ts`.
-- **Editor**: A system-specific surface (Dialogue = graph, Video = timeline). Each uses `EditorShell` from shared and composes EditorHeader, EditorToolbar, DockLayout, EditorStatusBar, EditorOverlaySurface.
+- **Editor**: A system-specific surface (Dialogue = graph, Video = timeline). Each uses `WorkspaceShell` from shared and composes WorkspaceHeader, WorkspaceToolbar, DockLayout, WorkspaceStatusBar, WorkspaceOverlaySurface.
 - **System (domain package)**: Logic and Copilot contract for an editor (e.g. `packages/domain-forge`). Types come from `packages/types`.
 
 ## Running the app

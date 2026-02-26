@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { EditorBottomPanel } from '@forge/shared';
+import { WorkspaceBottomPanel } from '@forge/shared';
 
 export interface DialogueDrawerContentProps {
   workflowPanel?: React.ReactNode;
@@ -10,7 +10,7 @@ export interface DialogueDrawerContentProps {
 /** CopilotKit tab removed; Workflow tab only. */
 export function DialogueDrawerContent({ workflowPanel }: DialogueDrawerContentProps) {
   return (
-    <EditorBottomPanel>
+    <WorkspaceBottomPanel>
       <div className="flex flex-col h-full min-h-0 p-[var(--panel-padding)]">
         {workflowPanel ?? (
           <div className="text-xs text-muted-foreground">
@@ -18,6 +18,6 @@ export function DialogueDrawerContent({ workflowPanel }: DialogueDrawerContentPr
           </div>
         )}
       </div>
-    </EditorBottomPanel>
+    </WorkspaceBottomPanel>
   );
 }

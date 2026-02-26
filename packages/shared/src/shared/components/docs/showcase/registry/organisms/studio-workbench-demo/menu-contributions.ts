@@ -1,13 +1,13 @@
 'use client';
 
 import {
-  createEditorMenubarMenus,
-  EditorEditMenu,
-  EditorFileMenu,
-  EditorHelpMenu,
-  EditorSettingsMenu,
-  EditorViewMenu,
-  type EditorMenubarMenu,
+  createWorkspaceMenubarMenus,
+  WorkspaceEditMenu,
+  WorkspaceFileMenu,
+  WorkspaceHelpMenu,
+  WorkspaceSettingsMenu,
+  WorkspaceViewMenu,
+  type WorkspaceMenubarMenu,
 } from '@forge/shared';
 import type { DemoEditorId } from './types';
 
@@ -22,45 +22,45 @@ export interface BuildMenuContributionOptions {
 export function buildMenuContribution(
   editorId: DemoEditorId,
   options: BuildMenuContributionOptions,
-): EditorMenubarMenu[] {
+): WorkspaceMenubarMenu[] {
   const file =
     editorId === 'dialogue'
       ? [
-          EditorFileMenu.New({ shortcut: 'Ctrl+N' }),
-          EditorFileMenu.Open({ shortcut: 'Ctrl+O' }),
-          EditorFileMenu.Save({ shortcut: 'Ctrl+S' }),
+          WorkspaceFileMenu.New({ shortcut: 'Ctrl+N' }),
+          WorkspaceFileMenu.Open({ shortcut: 'Ctrl+O' }),
+          WorkspaceFileMenu.Save({ shortcut: 'Ctrl+S' }),
         ]
       : [
-          EditorFileMenu.New({ shortcut: 'Ctrl+Shift+N' }),
-          EditorFileMenu.Separator('file-char-sep'),
+          WorkspaceFileMenu.New({ shortcut: 'Ctrl+Shift+N' }),
+          WorkspaceFileMenu.Separator('file-char-sep'),
           { id: 'file-import-template', label: 'Import Character Template' },
-          EditorFileMenu.Save({ shortcut: 'Ctrl+S' }),
+          WorkspaceFileMenu.Save({ shortcut: 'Ctrl+S' }),
         ];
 
   const edit =
     editorId === 'dialogue'
       ? [
-          EditorEditMenu.Undo(),
-          EditorEditMenu.Redo(),
-          EditorEditMenu.Separator('edit-dialogue-sep'),
-          EditorEditMenu.Find(),
+          WorkspaceEditMenu.Undo(),
+          WorkspaceEditMenu.Redo(),
+          WorkspaceEditMenu.Separator('edit-dialogue-sep'),
+          WorkspaceEditMenu.Find(),
         ]
       : [
-          EditorEditMenu.Undo(),
-          EditorEditMenu.Redo(),
-          EditorEditMenu.Separator('edit-character-sep'),
-          EditorEditMenu.Copy(),
-          EditorEditMenu.Paste(),
+          WorkspaceEditMenu.Undo(),
+          WorkspaceEditMenu.Redo(),
+          WorkspaceEditMenu.Separator('edit-character-sep'),
+          WorkspaceEditMenu.Copy(),
+          WorkspaceEditMenu.Paste(),
         ];
 
   const view = [
-    EditorViewMenu.PanelToggle({
+    WorkspaceViewMenu.PanelToggle({
       id: 'inspector',
       label: 'Inspector',
       checked: options.showInspector,
       onSelect: options.toggleInspector,
     }),
-    EditorViewMenu.PanelToggle({
+    WorkspaceViewMenu.PanelToggle({
       id: 'assistant',
       label: 'Assistant',
       checked: options.showAssistant,
@@ -68,17 +68,17 @@ export function buildMenuContribution(
     }),
   ];
 
-  return createEditorMenubarMenus({
+  return createWorkspaceMenubarMenus({
     file,
     view,
     edit,
     settings: [
-      EditorSettingsMenu.OpenSettings({ onSelect: options.openSettings }),
-      EditorSettingsMenu.Separator('settings-sep'),
-      EditorSettingsMenu.User({
+      WorkspaceSettingsMenu.OpenSettings({ onSelect: options.openSettings }),
+      WorkspaceSettingsMenu.Separator('settings-sep'),
+      WorkspaceSettingsMenu.User({
         label: editorId === 'dialogue' ? 'Narrative Profile' : 'Character Profile',
       }),
     ],
-    help: [EditorHelpMenu.Welcome(), EditorHelpMenu.ShowCommands(), EditorHelpMenu.About()],
+    help: [WorkspaceHelpMenu.Welcome(), WorkspaceHelpMenu.ShowCommands(), WorkspaceHelpMenu.About()],
   });
 }

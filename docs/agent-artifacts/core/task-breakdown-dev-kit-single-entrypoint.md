@@ -28,10 +28,10 @@ One package (`@forge/dev-kit`), one style import (bundled dockview + overrides),
 
 | id | title | parent | tier | impact | status | doc |
 |----|-------|--------|------|--------|--------|-----|
-| dev-kit-docs-quickstart | Quick start: install, one style import, one snippet (AppProviders -> EditorApp -> EditorShell -> editor) | dev-kit-single-entrypoint | 2 | Medium | open | apps/platform/content/docs |
+| dev-kit-docs-quickstart | Quick start: install, one style import, one snippet (AppProviders -> WorkspaceApp -> WorkspaceShell -> editor) | dev-kit-single-entrypoint | 2 | Medium | open | apps/platform/content/docs |
 | dev-kit-docs-install | Install & setup: one package, peer deps, env (OPENROUTER_API_KEY) | dev-kit-single-entrypoint | 3 | Small | open | — |
 | dev-kit-docs-first-editor | Your first editor: Strategy (or Dialogue), wire /api/assistant-chat, run | dev-kit-single-entrypoint | 2 | Medium | open | — |
-| dev-kit-docs-layout | Layout and shell: EditorShell, DockLayout, DockPanel, PanelTabs from @forge/dev-kit | dev-kit-single-entrypoint | 3 | Small | open | — |
+| dev-kit-docs-layout | Layout and shell: WorkspaceShell, DockLayout, DockPanel, PanelTabs from @forge/dev-kit | dev-kit-single-entrypoint | 3 | Small | open | — |
 | dev-kit-docs-styling | Styling and theming: one style import; data-theme / data-density if supported | dev-kit-single-entrypoint | 3 | Small | open | — |
 | dev-kit-docs-api-keys | API keys and AI: OpenRouter (and others) in one place | dev-kit-single-entrypoint | 3 | Small | open | — |
 | dev-kit-docs-components | Expand component pages (dock-layout, editor-shell, panel-tabs): props, example, import from @forge/dev-kit | dev-kit-single-entrypoint | 2 | Medium | open | — |

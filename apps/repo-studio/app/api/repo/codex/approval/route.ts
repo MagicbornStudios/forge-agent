@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { resolveApproval } from '@/lib/codex-session';
-import { findProposalByApprovalToken } from '@/lib/proposals';
+import { findProposalByApprovalToken, isProposalStoreUnavailableError } from '@/lib/proposals';
 import { enforceScopeGuard } from '@/lib/scope-guard';
 
 export async function POST(request: Request) {
@@ -21,25 +21,38 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, message: 'decision must be "approve" or "reject".' }, { status: 400 });
   }
 
-  if (decision === 'approve') {
-    const proposal = await findProposalByApprovalToken(approvalToken);
-    if (proposal) {
-      const scope = await enforceScopeGuard({
-        operation: 'codex-approval',
-        paths: proposal.files || [],
-        domain: proposal.domain,
-        loopId: proposal.loopId,
-        overrideToken: proposal.scopeOverrideToken,
-      });
-      if (!scope.ok) {
-        return NextResponse.json({
-          ok: false,
-          message: scope.message || 'Approval blocked by scope policy.',
-          outOfScope: scope.outOfScope,
-          scope: scope.context,
-        }, { status: 403 });
+  try {
+    if (decision === 'approve') {
+      const proposal = await findProposalByApprovalToken(approvalToken);
+      if (proposal) {
+        const scope = await enforceScopeGuard({
+          operation: 'codex-approval',
+          paths: proposal.files || [],
+          domain: proposal.domain,
+          loopId: proposal.loopId,
+          overrideToken: proposal.scopeOverrideToken,
+        });
+        if (!scope.ok) {
+          return NextResponse.json({
+            ok: false,
+            message: scope.message || 'Approval blocked by scope policy.',
+            outOfScope: scope.outOfScope,
+            scope: scope.context,
+          }, { status: 403 });
+        }
       }
     }
+  } catch (error) {
+    if (isProposalStoreUnavailableError(error)) {
+      return NextResponse.json(
+        { ok: false, message: error.message, code: 'SQLITE_PROPOSALS_UNAVAILABLE' },
+        { status: 503 },
+      );
+    }
+    return NextResponse.json(
+      { ok: false, message: String((error as Error)?.message || error || 'Unable to resolve proposal approval.') },
+      { status: 500 },
+    );
   }
 
   const result = await resolveApproval(approvalToken, decision as 'approve' | 'reject');

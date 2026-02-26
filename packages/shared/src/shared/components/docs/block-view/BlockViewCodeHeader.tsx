@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { Check, Clipboard } from 'lucide-react';
-import { EditorButton } from '../../editor';
+import { WorkspaceButton } from '../../workspace';
 import { cn } from '@forge/ui/lib/utils';
 
 const COPIED_DURATION_MS = 1500;
@@ -68,7 +68,7 @@ export function BlockViewCodeHeader({
       <span className="truncate text-xs font-medium text-muted-foreground">
         {filePath}
       </span>
-      <EditorButton
+      <WorkspaceButton
         size="icon"
         variant="ghost"
         tooltip={copied ? 'Copied' : 'Copy file contents'}
@@ -82,7 +82,7 @@ export function BlockViewCodeHeader({
         <span className="sr-only">
           {copied ? 'Copied' : 'Copy file contents'}
         </span>
-      </EditorButton>
+      </WorkspaceButton>
     </div>
   );
 }

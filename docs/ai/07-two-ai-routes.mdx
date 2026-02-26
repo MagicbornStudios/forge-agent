@@ -17,13 +17,13 @@ We maintain **two distinct AI routes**. They are never merged or mixed in code.
 
 - **Purpose:** Coding agent; works on files. Mass/file work, repo or folder (e.g. create folder and run Codex there).
 - **Stack:** Codex SDK / app-server; CLI fallback (`codex-exec`). Does **not** use Open Router.
-- **Where:** Repo Studio only today: `apps/repo-studio/app/api/assistant-chat` with `editorTarget=codex-assistant`, [codex-session.ts](apps/repo-studio/src/lib/codex-session.ts). Other studios use Codex by calling Repo Studio when it is the selected runtime.
+- **Where:** Repo Studio only today: `apps/repo-studio/app/api/assistant-chat` with `assistantTarget=codex`, [codex-session.ts](apps/repo-studio/src/lib/codex-session.ts). Other studios use Codex by calling Repo Studio when it is the selected runtime.
 - **Auth:** Codex login/readiness; Repo Studio does not perform Payload user auth for Codex when used as companion.
 
 ## Separation rule
 
 - No code path shall call Open Router for "Codex" behavior, or Codex for "assistant tools/chat" behavior.
-- Routing is by `editorTarget` (or equivalent) in Repo Studio; in Studio, assistant-chat is Open Router only. When Studio uses Repo Studio as runtime, it can send either assistant (Open Router) or Codex requests to Repo Studio's `/api/assistant-chat` with the appropriate target.
+- Routing is by `assistantTarget` in Repo Studio (`forge` or `codex`); in Studio, assistant-chat is Open Router only. When Studio uses Repo Studio as runtime, it can send either assistant (Open Router) or Codex requests to Repo Studio's `/api/assistant-chat` with the appropriate target.
 
 **Next:** See `.planning/DECISIONS.md` (2026-02-23) and task registry for companion mode (detection, toggle, Repo Studio health, DB workspace).
 

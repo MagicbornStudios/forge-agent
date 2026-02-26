@@ -39,10 +39,10 @@ Start with the simplest layout: canvas + inspector.
 
 import { useState } from 'react';
 import {
-  EditorShell,
-  EditorToolbar,
-  EditorStatusBar,
-  EditorInspector,
+  WorkspaceShell,
+  WorkspaceToolbar,
+  WorkspaceStatusBar,
+  WorkspaceInspector,
   type Selection,
 } from '@forge/shared';
 import { isEntity } from '@forge/shared';
@@ -51,13 +51,13 @@ export function MyEditor() {
   const [selection, setSelection] = useState<Selection>({ type: 'none' });
 
   return (
-    <EditorShell>
+    <WorkspaceShell>
       {/* Toolbar */}
-      <EditorToolbar>
+      <WorkspaceToolbar>
         <div className="flex items-center gap-2">
           <h1 className="text-sm font-medium">My Editor</h1>
         </div>
-      </EditorToolbar>
+      </WorkspaceToolbar>
 
       {/* Main Content */}
       <div className="flex flex-1 min-h-0">
@@ -79,7 +79,7 @@ export function MyEditor() {
         </div>
 
         {/* Inspector */}
-        <EditorInspector selection={selection}>
+        <WorkspaceInspector selection={selection}>
           {isEntity(selection) ? (
             <div className="space-y-4">
               <div>
@@ -96,14 +96,14 @@ export function MyEditor() {
           ) : (
             <p className="text-sm text-muted-foreground">No selection</p>
           )}
-        </EditorInspector>
+        </WorkspaceInspector>
       </div>
 
       {/* Status Bar */}
-      <EditorStatusBar>
+      <WorkspaceStatusBar>
         <span className="text-xs">Ready</span>
-      </EditorStatusBar>
-    </EditorShell>
+      </WorkspaceStatusBar>
+    </WorkspaceShell>
   );
 }
 ```
@@ -181,12 +181,12 @@ export function MyEditor() {
   ];
 
   return (
-    <EditorShell>
-      <EditorToolbar>
+    <WorkspaceShell>
+      <WorkspaceToolbar>
         <div className="flex items-center gap-2">
           <h1 className="text-sm font-medium">My Editor</h1>
         </div>
-      </EditorToolbar>
+      </WorkspaceToolbar>
 
       <EditorDockLayout ref={layoutRef}>
         {/* Left Navigator */}
@@ -218,7 +218,7 @@ export function MyEditor() {
         </div>
 
         {/* Inspector */}
-        <EditorInspector selection={selection}>
+        <WorkspaceInspector selection={selection}>
           {isEntity(selection) ? (
             <div className="space-y-4">
               <div>
@@ -235,13 +235,13 @@ export function MyEditor() {
           ) : (
             <p className="text-sm text-muted-foreground">No selection</p>
           )}
-        </EditorInspector>
+        </WorkspaceInspector>
       </EditorDockLayout>
 
-      <EditorStatusBar>
+      <WorkspaceStatusBar>
         <span className="text-xs">Ready</span>
-      </EditorStatusBar>
-    </EditorShell>
+      </WorkspaceStatusBar>
+    </WorkspaceShell>
   );
 }
 ```
@@ -312,7 +312,7 @@ const inspectorTabs: PanelTabDef[] = [
   },
 ];
 
-// Replace EditorInspector with:
+// Replace WorkspaceInspector with:
 <EditorDockPanel
   id="right-inspector"
   title="Inspector"
@@ -393,8 +393,8 @@ function MyEditor() {
   const { isPanelVisible, togglePanel } = useEditorPanelVisibility('my-editor');
 
   return (
-    <EditorShell>
-      <EditorToolbar>
+    <WorkspaceShell>
+      <WorkspaceToolbar>
         <div className="flex items-center justify-between w-full">
           <h1 className="text-sm font-medium">My Editor</h1>
 
@@ -427,7 +427,7 @@ function MyEditor() {
             </Button>
           </div>
         </div>
-      </EditorToolbar>
+      </WorkspaceToolbar>
 
       <EditorDockLayout ref={layoutRef}>
         {isPanelVisible('left-nav') && (
@@ -454,10 +454,10 @@ function MyEditor() {
         )}
       </EditorDockLayout>
 
-      <EditorStatusBar>
+      <WorkspaceStatusBar>
         <span className="text-xs">Ready</span>
-      </EditorStatusBar>
-    </EditorShell>
+      </WorkspaceStatusBar>
+    </WorkspaceShell>
   );
 }
 ```
@@ -473,9 +473,9 @@ Here's the full editor with all panels:
 
 import { useState, useRef } from 'react';
 import {
-  EditorShell,
-  EditorToolbar,
-  EditorStatusBar,
+  WorkspaceShell,
+  WorkspaceToolbar,
+  WorkspaceStatusBar,
   EditorDockLayout,
   EditorDockPanel,
   PanelTabs,
@@ -642,8 +642,8 @@ export function MyEditor() {
   ];
 
   return (
-    <EditorShell>
-      <EditorToolbar>
+    <WorkspaceShell>
+      <WorkspaceToolbar>
         <div className="flex items-center justify-between w-full">
           <h1 className="text-sm font-medium">My Editor</h1>
 
@@ -676,7 +676,7 @@ export function MyEditor() {
             </Button>
           </div>
         </div>
-      </EditorToolbar>
+      </WorkspaceToolbar>
 
       <EditorDockLayout ref={layoutRef}>
         {isPanelVisible('left-nav') && (
@@ -732,10 +732,10 @@ export function MyEditor() {
         )}
       </EditorDockLayout>
 
-      <EditorStatusBar>
+      <WorkspaceStatusBar>
         <span className="text-xs">Ready</span>
-      </EditorStatusBar>
-    </EditorShell>
+      </WorkspaceStatusBar>
+    </WorkspaceShell>
   );
 }
 ```
@@ -757,4 +757,4 @@ You've built a complete multi-panel editor with:
 **Next Steps:**
 - [Tutorial: AI Integration](./ai-integration.mdx)
 - [Component Patterns Guide](../guides/patterns.mdx)
-- [EditorInspector Guide](../components/editor-inspector-complete.mdx)
+- [WorkspaceInspector Guide](../components/editor-inspector-complete.mdx)

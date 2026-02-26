@@ -27,7 +27,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@forge/ui/popover';
 import { Badge } from '@forge/ui/badge';
 import { Switch } from '@forge/ui/switch';
 import { Button } from '@forge/ui/button';
-import { EditorButton } from '@forge/shared';
+import { WorkspaceButton } from '@forge/shared';
 import { CAPABILITIES, useEntitlements } from '@forge/shared/entitlements';
 import { SettingsService } from '@/lib/api-client';
 import { clientLogger } from '@/lib/logger-client';
@@ -239,7 +239,7 @@ export function ModelSwitcher({ provider, variant = 'toolbar' }: ModelSwitcherPr
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <EditorButton
+        <WorkspaceButton
           variant={variant === 'composer' ? 'ghost' : 'outline'}
           size="sm"
           role="combobox"
@@ -274,7 +274,7 @@ export function ModelSwitcher({ provider, variant = 'toolbar' }: ModelSwitcherPr
               <ChevronsUpDown className="size-[var(--icon-size)] shrink-0 opacity-50" />
             </>
           )}
-        </EditorButton>
+        </WorkspaceButton>
       </PopoverTrigger>
 
       <PopoverContent

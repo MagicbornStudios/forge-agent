@@ -1,18 +1,5 @@
-export const REPO_WORKSPACE_IDS = [
-  'planning',
-  'env',
-  'commands',
-  'story',
-  'docs',
-  'database',
-  'git',
-  'loop-assistant',
-  'codex-assistant',
-  'diff',
-  'code',
-  'review-queue',
-] as const;
-export type RepoWorkspaceId = (typeof REPO_WORKSPACE_IDS)[number];
+/** Re-exported from app-spec (single source of truth). Prefer importing from @/lib/app-spec.generated. */
+export { WORKSPACE_IDS as REPO_WORKSPACE_IDS, type WorkspaceId as RepoWorkspaceId } from './app-spec.generated';
 
 export const REPO_COMMAND_VIEW_TABS = ['recommended', 'all', 'blocked'] as const;
 export type RepoCommandViewTab = (typeof REPO_COMMAND_VIEW_TABS)[number];

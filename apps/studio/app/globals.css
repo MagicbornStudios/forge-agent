@@ -1,5 +1,4 @@
 /* All @import must come first (CSS spec); dependencies may contain font @import url() */
-@import "@twick/studio/dist/studio.css";
 @import "../../../packages/shared/src/shared/styles/editor-surface.css";
 @import "tw-animate-css";
 @import "../../../packages/shared/src/shared/styles/graph.css";

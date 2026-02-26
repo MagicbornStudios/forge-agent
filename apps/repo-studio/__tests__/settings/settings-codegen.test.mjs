@@ -2,15 +2,15 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import * as registryModule from '../../src/lib/settings/registry.ts';
-import * as defaultsModule from '../../src/lib/settings/generated/defaults.ts';
+import * as appSpecModule from '../../src/lib/app-spec.generated.ts';
 
 const buildRepoSettingsDefaultsFromRegistry = (
   registryModule.buildRepoSettingsDefaultsFromRegistry
   || registryModule.default?.buildRepoSettingsDefaultsFromRegistry
 );
 const REPO_SETTINGS_GENERATED_DEFAULTS = (
-  defaultsModule.REPO_SETTINGS_GENERATED_DEFAULTS
-  || defaultsModule.default?.REPO_SETTINGS_GENERATED_DEFAULTS
+  appSpecModule.REPO_SETTINGS_GENERATED_DEFAULTS
+  || appSpecModule.default?.REPO_SETTINGS_GENERATED_DEFAULTS
 );
 
 test('repo-studio settings defaults stay deterministic against registry declarations', () => {

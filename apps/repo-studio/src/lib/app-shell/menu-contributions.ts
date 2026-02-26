@@ -1,12 +1,15 @@
 import {
-  createEditorMenubarMenus,
-  EditorHelpMenu,
-  type CreateEditorMenubarMenusOptions,
-  type EditorMenubarItem,
-  type EditorMenubarMenu,
-} from '@forge/shared/components/editor';
+  createWorkspaceMenubarMenus,
+  WorkspaceHelpMenu,
+  type CreateWorkspaceMenubarMenusOptions,
+  type WorkspaceMenubarItem,
+  type WorkspaceMenubarMenu,
+} from '@forge/shared/components/workspace';
 import { REPO_WORKSPACE_IDS, type RepoWorkspaceId } from '@/lib/types';
-import { REPO_WORKSPACE_LABELS } from './workspace-layout-definitions';
+import {
+  getWorkspacePanelSpecs,
+  WORKSPACE_LABELS,
+} from '../app-spec.generated';
 
 type RepoMenuContext = {
   workspaceId: RepoWorkspaceId;
@@ -18,10 +21,12 @@ type RepoMenuContext = {
   onFocusWorkspace: (workspaceId: RepoWorkspaceId, panelId?: string) => void;
   onOpenWorkspace: (workspaceId: RepoWorkspaceId) => void;
   onCopyText: (text: string) => void;
-  layoutViewItems: EditorMenubarItem[];
+  layoutViewItems: WorkspaceMenubarItem[];
 };
 
-type RepoWorkspaceMenuFactory = (context: RepoMenuContext) => Partial<CreateEditorMenubarMenusOptions>;
+type RepoWorkspaceMenuFactory = (context: RepoMenuContext) => Partial<CreateWorkspaceMenubarMenusOptions> & {
+  viewExtras?: WorkspaceMenubarItem[];
+};
 
 function focusItem(
   id: string,
@@ -29,7 +34,7 @@ function focusItem(
   context: RepoMenuContext,
   workspaceId: RepoWorkspaceId,
   panelId?: string,
-): EditorMenubarItem {
+): WorkspaceMenubarItem {
   return {
     id,
     label,
@@ -37,121 +42,76 @@ function focusItem(
   };
 }
 
+/** Per-workspace file and optional view extras (non-panel items). Focus items come from getWorkspacePanelSpecs. */
 const REPO_WORKSPACE_MENU_FACTORIES: Partial<Record<RepoWorkspaceId, RepoWorkspaceMenuFactory>> = {
   planning: (context) => ({
     file: [
-      {
-        id: 'file-refresh-loop-snapshot',
-        label: 'Refresh Loop Snapshot',
-        onSelect: context.onRefreshSnapshot,
-      },
-      {
-        id: 'file-copy-next-action',
-        label: 'Copy Next Loop Command',
-        onSelect: () => context.onCopyText(context.nextAction),
-      },
+      { id: 'file-refresh-loop-snapshot', label: 'Refresh Loop Snapshot', onSelect: context.onRefreshSnapshot },
+      { id: 'file-copy-next-action', label: 'Copy Next Loop Command', onSelect: () => context.onCopyText(context.nextAction) },
     ],
-    view: [
-      focusItem('view-focus-loop-assistant', 'Focus Loop Assistant', context, 'loop-assistant', 'loop-assistant'),
+    viewExtras: [
       focusItem('view-focus-commands', 'Focus Commands', context, 'commands', 'commands'),
     ],
   }),
   env: (context) => ({
     file: [
-      {
-        id: 'file-env-doctor',
-        label: 'Run Env Doctor',
-        onSelect: context.onRunEnvDoctor,
-      },
-      {
-        id: 'file-env-reconcile',
-        label: 'Run Env Reconcile',
-        onSelect: context.onRunEnvReconcile,
-      },
-    ],
-    view: [
-      focusItem('view-focus-env-panel', 'Focus Env Panel', context, 'env', 'env'),
-      focusItem('view-focus-planning-panel', 'Focus Planning Panel', context, 'planning', 'planning'),
+      { id: 'file-env-doctor', label: 'Run Env Doctor', onSelect: context.onRunEnvDoctor },
+      { id: 'file-env-reconcile', label: 'Run Env Reconcile', onSelect: context.onRunEnvReconcile },
     ],
   }),
   commands: (context) => ({
-    view: [
-      focusItem('view-focus-terminal-panel', 'Focus Terminal Panel', context, 'commands', 'terminal'),
-      focusItem('view-focus-review-queue-panel', 'Focus Review Queue', context, 'review-queue', 'review-queue'),
+    viewExtras: [
+      focusItem('view-focus-review-queue', 'Focus Review Queue', context, 'review-queue', 'review-queue'),
     ],
   }),
   code: (context) => ({
-    view: [
-      focusItem('view-focus-code-panel', 'Focus Code Panel', context, 'code', 'code'),
-      focusItem('view-focus-diff-panel', 'Focus Diff Panel', context, 'diff', 'diff'),
-      focusItem('view-focus-git-panel', 'Focus Git Panel', context, 'git', 'git'),
+    viewExtras: [
+      focusItem('view-focus-assistant-ws', 'Focus Assistant', context, 'assistant', 'assistant'),
+      focusItem('view-focus-diff-ws', 'Focus Diff', context, 'diff', 'diff'),
+      focusItem('view-focus-git-ws', 'Focus Git', context, 'git', 'git'),
     ],
   }),
   story: (context) => ({
-    view: [
-      focusItem('view-focus-story-panel', 'Focus Story Panel', context, 'story', 'story'),
-      focusItem('view-focus-codex-assistant', 'Focus Codex Assistant', context, 'codex-assistant', 'codex-assistant'),
-    ],
-  }),
-  docs: (context) => ({
-    view: [
-      focusItem('view-focus-docs-panel', 'Focus Docs Panel', context, 'docs', 'docs'),
-      focusItem('view-focus-planning-panel', 'Focus Planning Panel', context, 'planning', 'planning'),
-    ],
-  }),
-  database: (context) => ({
-    view: [
-      focusItem('view-focus-database-panel', 'Focus Database', context, 'database', 'database'),
+    viewExtras: [
+      focusItem('view-focus-assistant-ws', 'Focus Assistant', context, 'assistant', 'assistant'),
     ],
   }),
   git: (context) => ({
-    view: [
-      focusItem('view-focus-git-panel', 'Focus Git Panel', context, 'git', 'git'),
-      focusItem('view-focus-diff-panel', 'Focus Diff Panel', context, 'diff', 'diff'),
+    viewExtras: [
+      focusItem('view-focus-diff-ws', 'Focus Diff', context, 'diff', 'diff'),
     ],
   }),
   diff: (context) => ({
-    view: [
-      focusItem('view-focus-diff-panel', 'Focus Diff Panel', context, 'diff', 'diff'),
-      focusItem('view-focus-review-queue-panel', 'Focus Review Queue', context, 'review-queue', 'review-queue'),
+    viewExtras: [
+      focusItem('view-focus-review-queue-ws', 'Focus Review Queue', context, 'review-queue', 'review-queue'),
     ],
   }),
-  'loop-assistant': (context) => ({
-    view: [
-      focusItem('view-focus-loop-assistant', 'Focus Loop Assistant', context, 'loop-assistant', 'loop-assistant'),
-      focusItem('view-focus-planning-panel', 'Focus Planning Panel', context, 'planning', 'planning'),
-    ],
-  }),
-  'codex-assistant': (context) => ({
-    view: [
-      focusItem('view-focus-codex-assistant', 'Focus Codex Assistant', context, 'codex-assistant', 'codex-assistant'),
-      focusItem('view-focus-review-queue-panel', 'Focus Review Queue', context, 'review-queue', 'review-queue'),
-    ],
-  }),
-  'review-queue': (context) => ({
-    view: [
-      focusItem('view-focus-review-queue-panel', 'Focus Review Queue', context, 'review-queue', 'review-queue'),
-      focusItem('view-focus-diff-panel', 'Focus Diff Panel', context, 'diff', 'diff'),
+  assistant: (context) => ({
+    viewExtras: [
+      focusItem('view-focus-planning-ws', 'Focus Planning', context, 'planning', 'planning'),
     ],
   }),
 };
 
-function buildWorkspaceSubmenu(context: RepoMenuContext): EditorMenubarItem[] {
+function buildWorkspaceSubmenu(context: RepoMenuContext): WorkspaceMenubarItem[] {
   return REPO_WORKSPACE_IDS.map((workspaceId) => {
     const isOpen = context.openWorkspaceIds.includes(workspaceId);
     return {
       id: `workspace-${workspaceId}`,
-      label: `${isOpen ? 'Focus' : 'Open'} ${REPO_WORKSPACE_LABELS[workspaceId]}`,
+      label: `${isOpen ? 'Focus' : 'Open'} ${WORKSPACE_LABELS[workspaceId]}`,
       onSelect: () => context.onOpenWorkspace(workspaceId),
     };
   });
 }
 
-export function buildRepoWorkspaceMenus(context: RepoMenuContext): EditorMenubarMenu[] {
+export function buildRepoWorkspaceMenus(context: RepoMenuContext): WorkspaceMenubarMenu[] {
   const factory = REPO_WORKSPACE_MENU_FACTORIES[context.workspaceId];
   const contribution = factory ? factory(context) : {};
+  const focusItems = getWorkspacePanelSpecs(context.workspaceId).map((spec) =>
+    focusItem(`view-focus-${spec.id}`, `Focus ${spec.label}`, context, context.workspaceId, spec.id),
+  );
 
-  return createEditorMenubarMenus({
+  return createWorkspaceMenubarMenus({
     file: [
       {
         id: 'file-workspaces',
@@ -167,16 +127,17 @@ export function buildRepoWorkspaceMenus(context: RepoMenuContext): EditorMenubar
       ...(contribution.file || []),
     ],
     view: [
-      ...(contribution.view || []),
+      ...focusItems,
+      ...(contribution.viewExtras || []),
       { id: 'view-sep-layout', type: 'separator' },
       ...context.layoutViewItems,
     ],
     edit: contribution.edit || [],
     settings: contribution.settings || [],
     help: [
-      EditorHelpMenu.Welcome(),
-      EditorHelpMenu.ShowCommands(),
-      EditorHelpMenu.About(),
+      WorkspaceHelpMenu.Welcome(),
+      WorkspaceHelpMenu.ShowCommands(),
+      WorkspaceHelpMenu.About(),
       ...(contribution.help || []),
     ],
     extra: contribution.extra || [],

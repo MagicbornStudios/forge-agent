@@ -35,47 +35,47 @@ Create `TaskEditor.tsx`:
 
 import { useState } from 'react';
 import {
-  EditorShell,
-  EditorToolbar,
+  WorkspaceShell,
+  WorkspaceToolbar,
   EditorDockLayout,
   EditorDockPanel,
-  EditorStatusBar,
-  EditorOverlaySurface,
+  WorkspaceStatusBar,
+  WorkspaceOverlaySurface,
 } from '@forge/shared/components/editor';
 import { Plus } from 'lucide-react';
 
 export function TaskEditor() {
   return (
-    <EditorShell
+    <WorkspaceShell
       editorId="tasks"
       title="Tasks"
       domain="tasks"
       className="bg-canvas"
     >
-      <EditorToolbar className="bg-sidebar border-b">
-        <EditorToolbar.Left>
+      <WorkspaceToolbar className="bg-sidebar border-b">
+        <WorkspaceToolbar.Left>
           <span className="text-xs font-medium">Tasks</span>
-        </EditorToolbar.Left>
-        <EditorToolbar.Right>
-          <EditorToolbar.Button
+        </WorkspaceToolbar.Left>
+        <WorkspaceToolbar.Right>
+          <WorkspaceToolbar.Button
             size="sm"
             variant="outline"
             onClick={() => console.log('Create task')}
           >
             <Plus size={14} />
             New Task
-          </EditorToolbar.Button>
-        </EditorToolbar.Right>
-      </EditorToolbar>
+          </WorkspaceToolbar.Button>
+        </WorkspaceToolbar.Right>
+      </WorkspaceToolbar>
 
       <div className="flex-1 flex items-center justify-center">
         <p className="text-muted-foreground">Editor content goes here</p>
       </div>
 
-      <EditorStatusBar>
+      <WorkspaceStatusBar>
         Ready
-      </EditorStatusBar>
-    </EditorShell>
+      </WorkspaceStatusBar>
+    </WorkspaceShell>
   );
 }
 ```
@@ -96,12 +96,12 @@ Replace the placeholder content with `EditorDockLayout`:
 
 import { useState } from 'react';
 import {
-  EditorShell,
-  EditorToolbar,
+  WorkspaceShell,
+  WorkspaceToolbar,
   EditorDockLayout,
   EditorDockPanel,
-  EditorStatusBar,
-  EditorOverlaySurface,
+  WorkspaceStatusBar,
+  WorkspaceOverlaySurface,
 } from '@forge/shared/components/editor';
 import { Plus, ListTodo, FileEdit, ScanSearch } from 'lucide-react';
 import { Card } from '@forge/ui/card';
@@ -124,27 +124,27 @@ export function TaskEditor() {
   const activeTask = tasks.find((t) => t.id === activeTaskId);
 
   return (
-    <EditorShell
+    <WorkspaceShell
       editorId="tasks"
       title="Tasks"
       domain="tasks"
       className="bg-canvas"
     >
-      <EditorToolbar className="bg-sidebar border-b">
-        <EditorToolbar.Left>
+      <WorkspaceToolbar className="bg-sidebar border-b">
+        <WorkspaceToolbar.Left>
           <span className="text-xs font-medium">{tasks.length} tasks</span>
-        </EditorToolbar.Left>
-        <EditorToolbar.Right>
-          <EditorToolbar.Button
+        </WorkspaceToolbar.Left>
+        <WorkspaceToolbar.Right>
+          <WorkspaceToolbar.Button
             size="sm"
             variant="outline"
             onClick={() => console.log('Create task')}
           >
             <Plus size={14} />
             New Task
-          </EditorToolbar.Button>
-        </EditorToolbar.Right>
-      </EditorToolbar>
+          </WorkspaceToolbar.Button>
+        </WorkspaceToolbar.Right>
+      </WorkspaceToolbar>
 
       <EditorDockLayout
         layoutId="tasks-editor"
@@ -215,10 +215,10 @@ export function TaskEditor() {
         </EditorDockLayout.Right>
       </EditorDockLayout>
 
-      <EditorStatusBar>
+      <WorkspaceStatusBar>
         {activeTask ? `Editing: ${activeTask.title}` : 'Ready'}
-      </EditorStatusBar>
-    </EditorShell>
+      </WorkspaceStatusBar>
+    </WorkspaceShell>
   );
 }
 ```
@@ -242,12 +242,12 @@ Add create, update, and delete operations:
 
 import { useState, useCallback } from 'react';
 import {
-  EditorShell,
-  EditorToolbar,
+  WorkspaceShell,
+  WorkspaceToolbar,
   EditorDockLayout,
   EditorDockPanel,
-  EditorStatusBar,
-  EditorOverlaySurface,
+  WorkspaceStatusBar,
+  WorkspaceOverlaySurface,
 } from '@forge/shared/components/editor';
 import type { OverlaySpec, ActiveOverlay } from '@forge/shared';
 import { Plus, ListTodo, FileEdit, ScanSearch, Trash } from 'lucide-react';
@@ -312,27 +312,27 @@ export function TaskEditor() {
   ];
 
   return (
-    <EditorShell
+    <WorkspaceShell
       editorId="tasks"
       title="Tasks"
       domain="tasks"
       className="bg-canvas"
     >
-      <EditorToolbar className="bg-sidebar border-b">
-        <EditorToolbar.Left>
+      <WorkspaceToolbar className="bg-sidebar border-b">
+        <WorkspaceToolbar.Left>
           <span className="text-xs font-medium">{tasks.length} tasks</span>
-        </EditorToolbar.Left>
-        <EditorToolbar.Right>
-          <EditorToolbar.Button
+        </WorkspaceToolbar.Left>
+        <WorkspaceToolbar.Right>
+          <WorkspaceToolbar.Button
             size="sm"
             variant="outline"
             onClick={() => setActiveOverlay({ id: 'create-task' })}
           >
             <Plus size={14} />
             New Task
-          </EditorToolbar.Button>
-        </EditorToolbar.Right>
-      </EditorToolbar>
+          </WorkspaceToolbar.Button>
+        </WorkspaceToolbar.Right>
+      </WorkspaceToolbar>
 
       <EditorDockLayout
         layoutId="tasks-editor"
@@ -440,16 +440,16 @@ export function TaskEditor() {
         </EditorDockLayout.Right>
       </EditorDockLayout>
 
-      <EditorStatusBar>
+      <WorkspaceStatusBar>
         {activeTask ? `Editing: ${activeTask.title}` : 'Ready'}
-      </EditorStatusBar>
+      </WorkspaceStatusBar>
 
-      <EditorOverlaySurface
+      <WorkspaceOverlaySurface
         overlays={overlays}
         activeOverlay={activeOverlay}
         onDismiss={() => setActiveOverlay(null)}
       />
-    </EditorShell>
+    </WorkspaceShell>
   );
 }
 
@@ -544,7 +544,7 @@ export function TaskEditor() {
   // ... rest of state
 
   return (
-    <EditorShell
+    <WorkspaceShell
       editorId={editorId}
       title="Tasks"
       domain="tasks"
@@ -573,7 +573,7 @@ export function TaskEditor() {
       </EditorDockLayout>
 
       {/* ... status bar, overlays */}
-    </EditorShell>
+    </WorkspaceShell>
   );
 }
 ```
@@ -613,10 +613,10 @@ The full editor is ~250 lines and includes:
 
 ## Key Takeaways
 
-1. **EditorShell** — Root container with theme/density/domain
+1. **WorkspaceShell** — Root container with theme/density/domain
 2. **EditorDockLayout** — Resizable panel layout system
 3. **EditorDockPanel** — Individual panel wrapper
-4. **EditorOverlaySurface** — Modal dialog system
+4. **WorkspaceOverlaySurface** — Modal dialog system
 5. **Settings store** — Centralized settings with scope resolution
 
 With these 5 components, you can build any editor in the Forge platform.

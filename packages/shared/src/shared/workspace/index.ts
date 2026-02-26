@@ -13,3 +13,4 @@ export * from './toolbar';
 export * from './overlays';
 export * from './inspector';
 export * from './workspace-ui-spec';
+export type { PanelRail, WorkspacePanelSpec, WorkspaceLayoutDefinition } from './app-spec-types';

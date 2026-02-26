@@ -7,7 +7,7 @@ import { Input } from '@forge/ui/input';
 import { CharacterList } from './CharacterList';
 import { RelationshipsList } from './RelationshipsList';
 import type { CharacterDoc, RelationshipDoc } from '@/lib/domains/character/types';
-import { PanelTabs } from '@forge/shared/components/editor';
+import { PanelTabs } from '@forge/shared/components/workspace';
 import { NodePalette, type NodePaletteItem } from '@/components/graph/NodePalette';
 
 interface Props {

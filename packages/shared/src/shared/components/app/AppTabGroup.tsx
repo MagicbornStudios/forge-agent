@@ -2,12 +2,12 @@
 
 import * as React from 'react';
 import { cn } from '@forge/shared/lib/utils';
-import { EditorTabGroup, type EditorTabGroupProps } from '@forge/shared';
+import { WorkspaceTabGroup, type WorkspaceTabGroupProps } from '@forge/shared';
 
-export interface AppTabGroupProps extends EditorTabGroupProps {
+export interface AppTabGroupProps extends WorkspaceTabGroupProps {
   className?: string;
 }
 
 export function AppTabGroup({ className, ...props }: AppTabGroupProps) {
-  return <EditorTabGroup {...props} className={cn('shrink-0', className)} />;
+  return <WorkspaceTabGroup {...props} className={cn('shrink-0', className)} />;
 }

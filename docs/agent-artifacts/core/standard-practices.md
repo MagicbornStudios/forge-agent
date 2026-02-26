@@ -52,8 +52,8 @@ Single checklist for agents and humans. Where things live and when to revisit.
 
 ## Tooltips (buttons)
 
-- **Now:** Studio does not use Radix tooltips. Shared editor components (EditorButton, EditorTab, TooltipIconButton) use native `title` only when a tooltip string is provided. Add Radix tooltips back when Radix ships the React 19 fix (PR #3804). Base Radix tooltip primitives remain in `@forge/ui` for Platform and future use.
-- **Editor chrome:** `EditorButton` with `tooltip?: string` renders native `title`; no Radix Tooltip.
+- **Now:** Studio does not use Radix tooltips. Shared editor components (WorkspaceButton, WorkspaceTab, TooltipIconButton) use native `title` only when a tooltip string is provided. Add Radix tooltips back when Radix ships the React 19 fix (PR #3804). Base Radix tooltip primitives remain in `@forge/ui` for Platform and future use.
+- **Editor chrome:** `WorkspaceButton` with `tooltip?: string` renders native `title`; no Radix Tooltip.
 - **Rich tooltips:** Radix Tooltip is acceptable for non-Studio apps (e.g. Platform sidebar when collapsed). See errors-and-attempts.
 
 ## Security and resilience (soon)

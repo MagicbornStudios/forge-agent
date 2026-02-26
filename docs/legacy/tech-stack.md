@@ -21,7 +21,7 @@ Reference for agents and humans. Update when adding or removing major choices.
 | Persistence (client) | localStorage (versioned keys) | App shell route and last document ids; no backend required. |
 | AI/chat | CopilotKit + OpenRouter | Agent UX and model routing. |
 | Styling | Tailwind + shadcn (packages/ui) | Consistent design system. |
-| Shared editor kit | packages/shared (EditorShell, DockLayout) | Single layout/contract for Dialogue, Video, Character, Strategy. |
+| Shared editor kit | packages/shared (WorkspaceShell, DockLayout) | Single layout/contract for Dialogue, Video, Character, Strategy. |
 
 ---
 

@@ -181,3 +181,12 @@
 - [x] Companion apps could not call Repo Studio assistant/health endpoints cross-origin without explicit CORS support.
   - Root cause: routes lacked OPTIONS handlers and origin-scoped CORS response headers.
   - Resolution: added localhost allowlisted companion CORS headers + OPTIONS handlers for `GET /api/repo/health` and `POST /api/assistant-chat`.
+
+## 2026-02-25
+
+- [x] Repo Studio assistant UX regressed into split runtimes with inconsistent model routing and no deterministic GitHub auth flow.
+  - Root cause: split `loop-assistant`/`codex-assistant` surfaces, hardcoded/partial model handling, and legacy GitHub CLI auth dependency in app bar status/login.
+  - Resolution: unified to one `assistant` panel/workspace with runtime list (`forge`/`codex`), API-backed runtime model catalogs (`/api/repo/models`), codex `model/list` cache+warn fallback, and GitHub OAuth device-flow routes (`/api/repo/github/oauth/device/*`, `/api/repo/github/logout`) wired into app bar polling login.
+- [x] Git/file/diff/search actions were not consistently scoped to active project roots.
+  - Root cause: operations still defaulted to workspace root via `resolveRepoRoot()`.
+  - Resolution: added project manager backend (`repo-projects` collection + `/api/repo/projects*` routes), active-root resolver wiring into git/diff/search/files paths, and git pull/push endpoints; updated Git panel with project import/clone/active switching controls.
