@@ -149,7 +149,7 @@ jobs:
             echo "::error title=desktop-package::Packaging failed with exit code ${PACKAGE_EXIT}"
             while IFS= read -r line; do
               printf '::error title=desktop-package-tail::%s\n' "$line"
-            done < <(tail -n 120 "$LOG_FILE")
+            done < <(tr '\r' '\n' < "$LOG_FILE" | tail -n 120)
             exit "$PACKAGE_EXIT"
           fi
 
