@@ -1,5 +1,7 @@
 import type { NextConfig } from 'next';
 import crypto from 'node:crypto';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const HASH_PATCH_MARKER = Symbol.for('forge.repo-studio.hash-update-undefined-patch');
 const globalForHashPatch = globalThis as Record<string | symbol, unknown>;
@@ -18,8 +20,11 @@ if (!globalForHashPatch[HASH_PATCH_MARKER]) {
   globalForHashPatch[HASH_PATCH_MARKER] = true;
 }
 
+const APP_ROOT = path.dirname(fileURLToPath(import.meta.url));
+
 const nextConfig: NextConfig = {
   ...(process.env.REPO_STUDIO_STANDALONE === '1' ? { output: 'standalone' } : {}),
+  outputFileTracingRoot: path.resolve(APP_ROOT, '../..'),
   transpilePackages: ['@forge/shared', '@forge/ui'],
   webpack: (config, { webpack }) => {
     config.output = config.output || {};
