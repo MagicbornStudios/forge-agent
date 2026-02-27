@@ -266,6 +266,9 @@
 - [x] Semantic guard scripts failed on Windows and generic CI shells when `rg` was unavailable (`'rg' is not recognized` / `/bin/sh: rg: not found`).
   - Root cause: `guard-assistant-canonical.mjs` and `guard-workspace-semantics.mjs` depended on external ripgrep at runtime.
   - Resolution: replaced shell `rg` invocations with Node-based guard search (`scripts/lib/guard-search.mjs`) using `git ls-files` + regex scanning; guards now run cross-platform without ripgrep.
+- [x] CI `Semantic Guards` step still failed after guard portability fix due missing extension-registry submodule paths.
+  - Root cause: `guard-workspace-semantics` validates `vendor/repo-studio-extensions/*`, but `ci.yml` did not initialize the submodule before running guards.
+  - Resolution: added submodule sync/update init step in CI workflow before dependency install and guard execution.
 - [x] Downloadable `v0.1.1` release did not include desktop hotfix commits.
   - Root cause: release pipeline is tag-driven and `v0.1.1` points to commit `41846a7`; later hotfix commits on `main` are not published until a new tag is pushed.
   - Resolution: release follow-up now requires tagging current `main` (next cut) after hotfix validation.
