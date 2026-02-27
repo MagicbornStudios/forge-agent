@@ -98,6 +98,7 @@
 | FRG-1526 | 15 | 15-10 | In progress | Forge Agent release push cut: single commit to `main`, annotated tag `v0.1.1`, and GitHub Release publication verification. |
 | FRG-1527 | 15 | 15-10 | Complete | Closeout artifacts sync complete: STATE/DECISIONS/ERRORS/STATUS updated with release outcomes, crash hotfix, and remaining CI rerun risk. |
 | FRG-1528 | 15 | 15-10 | Complete | Desktop runtime hotfix: fixed packaged startup crash by bundling security modules and upgraded terminal PTY fallback to a real stream shell when `node-pty` is unavailable. |
+| FRG-1529 | 15 | 15-10 | Complete | Semantic guard portability hardening: removed ripgrep runtime dependency by switching guard scripts to Node/git-file search fallback, fixing Windows + CI guard failures. |
 | FRG-1601 | 16 | 16-01 | Pending | Add submodule vendor/repo-studio → MagicbornStudios/RepoStudio; update .gitmodules. |
 | FRG-1602 | 16 | 16-01 | Pending | Release workflow: init vendor/repo-studio in verify and package_windows jobs. |
 | FRG-1603 | 16 | 16-01 | Pending | Verify: Repo on GitHub and pullable; document. |

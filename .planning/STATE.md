@@ -5,7 +5,7 @@
 Phase: 15
 Plan: 15-01
 Status: Execution in progress
-Last activity: 2026-02-27 - Desktop hotfix validated: packaged app startup crash fixed (`credential-manager.mjs` bundle path) and terminal degraded mode now runs a real stream shell fallback
+Last activity: 2026-02-27 - Guard portability hotfix validated: semantic guards no longer require ripgrep; release follow-up is tagging a new desktop cut that includes startup/terminal fixes
 
 ## Execution
 

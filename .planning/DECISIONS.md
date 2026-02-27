@@ -192,6 +192,8 @@
 - [x] Release package job runs as explicit step chain (`build.mjs --require-standalone` -> standalone verifier -> `electron-builder`) to isolate hard-gate failures and avoid opaque nested script failures.
 - [x] Desktop package file allowlist must include runtime-imported security modules (`src/security/**`) and supporting library modules (`src/lib/**`); excluding them can crash packaged startup with `ERR_MODULE_NOT_FOUND`.
 - [x] Terminal degraded mode contract is a real shell fallback: when `node-pty` is unavailable, spawn a stream shell process (PowerShell/login shell) and reserve echo-only behavior as final emergency fallback only.
+- [x] Semantic guard scripts must not depend on external `rg` binaries; guard checks are now Node/git-file based so local Windows shells and CI runners pass without extra ripgrep installation.
+- [x] Desktop distribution remains strictly tag-driven; hotfixes on `main` are not downloadable until a new release tag is pushed.
 
 ## 2026-02-27 (Phase 16: Repo Studio canonical submodule)
 

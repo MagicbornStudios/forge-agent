@@ -178,16 +178,26 @@ jobs:
         shell: pwsh
         run: |
           $artifactDir = "packages/repo-studio/dist/desktop"
-          $setupPath = Join-Path $artifactDir "RepoStudio Setup 0.1.1.exe"
-          $portablePath = Join-Path $artifactDir "RepoStudio 0.1.1.exe"
+          $setupFile = Get-ChildItem -Path (Join-Path $artifactDir "RepoStudio Setup *.exe") |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+          $portableFile = Get-ChildItem -Path (Join-Path $artifactDir "RepoStudio *.exe") |
+            Where-Object { $_.Name -notlike "RepoStudio Setup *.exe" } |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+          if (-not $setupFile -or -not $portableFile) {
+            Write-Host "::error title=desktop-artifacts::Could not locate setup/portable executables in $artifactDir"
+            Get-ChildItem -Path $artifactDir | Select-Object Name, Length, LastWriteTime | Format-Table -AutoSize
+            exit 1
+          }
           $outFile = Join-Path $artifactDir "RepoStudio-$env:GITHUB_REF_NAME-sha256.txt"
 
-          $setupHash = (Get-FileHash -Path $setupPath -Algorithm SHA256).Hash.ToLowerInvariant()
-          $portableHash = (Get-FileHash -Path $portablePath -Algorithm SHA256).Hash.ToLowerInvariant()
+          $setupHash = (Get-FileHash -Path $setupFile.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          $portableHash = (Get-FileHash -Path $portableFile.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
 
           @(
-            "$setupHash  RepoStudio Setup 0.1.1.exe"
-            "$portableHash  RepoStudio 0.1.1.exe"
+            "$setupHash  $($setupFile.Name)"
+            "$portableHash  $($portableFile.Name)"
           ) | Set-Content -Path $outFile
           Get-Content $outFile
 
@@ -196,11 +206,11 @@ jobs:
         with:
           name: repostudio-desktop-windows
           path: |
-            packages/repo-studio/dist/desktop/RepoStudio Setup 0.1.1.exe
-            packages/repo-studio/dist/desktop/RepoStudio Setup 0.1.1.exe.blockmap
-            packages/repo-studio/dist/desktop/RepoStudio 0.1.1.exe
-            packages/repo-studio/dist/desktop/RepoStudio 0.1.1.exe.blockmap
-            packages/repo-studio/dist/desktop/RepoStudio-v0.1.1-sha256.txt
+            packages/repo-studio/dist/desktop/RepoStudio Setup *.exe
+            packages/repo-studio/dist/desktop/RepoStudio Setup *.exe.blockmap
+            packages/repo-studio/dist/desktop/RepoStudio [0-9]*.exe
+            packages/repo-studio/dist/desktop/RepoStudio [0-9]*.exe.blockmap
+            packages/repo-studio/dist/desktop/RepoStudio-*.txt
 
   release:
     runs-on: ubuntu-latest
@@ -221,8 +231,8 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            release-artifacts/RepoStudio Setup 0.1.1.exe
-            release-artifacts/RepoStudio Setup 0.1.1.exe.blockmap
-            release-artifacts/RepoStudio 0.1.1.exe
-            release-artifacts/RepoStudio 0.1.1.exe.blockmap
-            release-artifacts/RepoStudio-v0.1.1-sha256.txt
+            release-artifacts/RepoStudio Setup *.exe
+            release-artifacts/RepoStudio Setup *.exe.blockmap
+            release-artifacts/RepoStudio [0-9]*.exe
+            release-artifacts/RepoStudio [0-9]*.exe.blockmap
+            release-artifacts/RepoStudio-*.txt

@@ -1,18 +1,13 @@
 #!/usr/bin/env node
 
-import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { searchPattern } from './lib/guard-search.mjs';
 
-function run(command) {
-  try {
-    return execSync(command, { stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf8' }).trim();
-  } catch (error) {
-    const stdout = error?.stdout ? String(error.stdout).trim() : '';
-    const stderr = error?.stderr ? String(error.stderr).trim() : '';
-    return [stdout, stderr].filter(Boolean).join('\n').trim();
-  }
-}
+const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.mjs', '.js'];
+const WORKSPACE_EXTENSIONS = ['.ts', '.tsx', '.mjs'];
+const SOURCE_EXCLUDES = ['scripts/guard-workspace-semantics.mjs', '/legacy/', '/archive/'];
+const SOURCE_EXCLUDES_WITH_DOC_ARCHIVE = [...SOURCE_EXCLUDES, 'docs/legacy/', 'apps/docs/content/archive/'];
 
 function fail(header, details) {
   console.error(`[guard-workspace-semantics] ${header}`);
@@ -22,9 +17,11 @@ function fail(header, details) {
   process.exitCode = 1;
 }
 
-const renderHelperMatches = run(
-  'rg -n "render[A-Za-z0-9]*DockPanel|PanelSlot" apps/repo-studio/src/components/workspaces --glob "**/*.{ts,tsx}"',
-);
+const renderHelperMatches = searchPattern({
+  pattern: 'render[A-Za-z0-9]*DockPanel|PanelSlot',
+  roots: ['apps/repo-studio/src/components/workspaces'],
+  extensions: ['.ts', '.tsx'],
+});
 if (renderHelperMatches) {
   fail(
     'Repo Studio workspace files must inline WorkspaceLayout.Panel JSX. Render helpers / *Slot names are forbidden.',
@@ -32,16 +29,20 @@ if (renderHelperMatches) {
   );
 }
 
-const editorTargetMatches = run(
-  'rg -n "editorTarget" apps/repo-studio packages/repo-studio --glob "**/*.{ts,tsx,mjs}"',
-);
+const editorTargetMatches = searchPattern({
+  pattern: 'editorTarget',
+  roots: ['apps/repo-studio', 'packages/repo-studio'],
+  extensions: WORKSPACE_EXTENSIONS,
+});
 if (editorTargetMatches) {
   fail('Repo Studio contracts must use assistantTarget (editorTarget is forbidden).', editorTargetMatches);
 }
 
-const deprecatedDockSymbolMatches = run(
-  'rg -n "EditorDockLayout|EditorDockPanel" apps packages --glob "**/*.{ts,tsx,mjs}"',
-);
+const deprecatedDockSymbolMatches = searchPattern({
+  pattern: 'EditorDockLayout|EditorDockPanel',
+  roots: ['apps', 'packages'],
+  extensions: WORKSPACE_EXTENSIONS,
+});
 if (deprecatedDockSymbolMatches) {
   fail(
     'Deprecated dock symbols detected (EditorDockLayout / EditorDockPanel). Use WorkspaceLayout / WorkspacePanel.',
@@ -49,9 +50,12 @@ if (deprecatedDockSymbolMatches) {
   );
 }
 
-const deprecatedWorkspaceImportMatches = run(
-  'rg -n "@forge/shared/components/editor" apps packages scripts --glob "**/*.{ts,tsx,mjs,js}" --glob "!scripts/guard-workspace-semantics.mjs" --glob "!**/legacy/**" --glob "!**/archive/**"',
-);
+const deprecatedWorkspaceImportMatches = searchPattern({
+  pattern: '@forge/shared/components/editor',
+  roots: ['apps', 'packages', 'scripts'],
+  extensions: SOURCE_EXTENSIONS,
+  excludeSubpaths: SOURCE_EXCLUDES,
+});
 if (deprecatedWorkspaceImportMatches) {
   fail(
     'Deprecated import path detected (@forge/shared/components/editor). Use @forge/shared/components/workspace.',
@@ -59,9 +63,13 @@ if (deprecatedWorkspaceImportMatches) {
   );
 }
 
-const deprecatedEditorComponentMatches = run(
-  'rg -n "\\b(EditorShell|EditorHeader|EditorToolbar|EditorStatusBar|EditorReviewBar|EditorOverlaySurface|EditorSettingsTrigger|EditorButton|EditorTooltip|EditorInspector|EditorSidebar|EditorTabGroup|EditorTab|EditorBottomPanel|EditorMenubar|EditorFileMenu|EditorEditMenu|EditorViewMenu|EditorSettingsMenu|EditorHelpMenu|EditorProjectSelect|EditorRail|EditorPanel|EditorApp|createEditorMenubarMenus)\\b" apps packages scripts --glob "**/*.{ts,tsx,mjs,js}" --glob "!scripts/guard-workspace-semantics.mjs" --glob "!**/legacy/**" --glob "!**/archive/**"',
-);
+const deprecatedEditorComponentMatches = searchPattern({
+  pattern:
+    '\\b(EditorShell|EditorHeader|EditorToolbar|EditorStatusBar|EditorReviewBar|EditorOverlaySurface|EditorSettingsTrigger|EditorButton|EditorTooltip|EditorInspector|EditorSidebar|EditorTabGroup|EditorTab|EditorBottomPanel|EditorMenubar|EditorFileMenu|EditorEditMenu|EditorViewMenu|EditorSettingsMenu|EditorHelpMenu|EditorProjectSelect|EditorRail|EditorPanel|EditorApp|createEditorMenubarMenus)\\b',
+  roots: ['apps', 'packages', 'scripts'],
+  extensions: SOURCE_EXTENSIONS,
+  excludeSubpaths: SOURCE_EXCLUDES,
+});
 if (deprecatedEditorComponentMatches) {
   fail(
     'Deprecated Editor* workspace component symbols detected. Use Workspace* names.',
@@ -115,9 +123,12 @@ const LEGACY_HARD_CUT_CHECKS = [
 ];
 
 for (const check of LEGACY_HARD_CUT_CHECKS) {
-  const matches = run(
-    `rg -n --glob "**/*.{ts,tsx,mjs,js}" --glob "!scripts/guard-workspace-semantics.mjs" --glob "!**/legacy/**" --glob "!**/archive/**" --glob "!docs/legacy/**" --glob "!apps/docs/content/archive/**" -- "${check.pattern}" apps packages scripts`,
-  );
+  const matches = searchPattern({
+    pattern: check.pattern,
+    roots: ['apps', 'packages', 'scripts'],
+    extensions: SOURCE_EXTENSIONS,
+    excludeSubpaths: SOURCE_EXCLUDES_WITH_DOC_ARCHIVE,
+  });
   if (matches) {
     fail(check.message, matches);
   }
@@ -141,9 +152,11 @@ if (workspaceFileMapMatch && /\benv\s*:/.test(workspaceFileMapMatch[1])) {
   );
 }
 
-const builtinStoryAppSpecMatches = run(
-  'rg -n "WORKSPACE_IDS\\s*=\\s*\\[[^\\]]*\"story\"" apps/repo-studio/src/lib/app-spec.generated.ts',
-);
+const builtinStoryAppSpecMatches = searchPattern({
+  pattern: 'WORKSPACE_IDS\\s*=\\s*\\[[^\\]]*"story"',
+  roots: ['apps/repo-studio/src/lib/app-spec.generated.ts'],
+  extensions: ['.ts'],
+});
 if (builtinStoryAppSpecMatches) {
   fail(
     'Story must not remain in generated built-in WORKSPACE_IDS. It is extension-backed.',
@@ -151,9 +164,11 @@ if (builtinStoryAppSpecMatches) {
   );
 }
 
-const storyFallbackCatalogMatches = run(
-  'rg -n "workspaceKind\\s*===\\s*[\\\'\\\"]story[\\\'\\\"]|panel\\.visible\\.ext\\..*story|repo-ext-story" apps/repo-studio/src/lib/workspace-catalog.ts',
-);
+const storyFallbackCatalogMatches = searchPattern({
+  pattern: String.raw`workspaceKind\s*===\s*['"]story['"]|panel\.visible\.ext\..*story|repo-ext-story`,
+  roots: ['apps/repo-studio/src/lib/workspace-catalog.ts'],
+  extensions: ['.ts'],
+});
 if (storyFallbackCatalogMatches) {
   fail(
     'Story-specific catalog fallback is forbidden. Extension layout must come from extension payload or generated extension layout getter.',
@@ -161,9 +176,11 @@ if (storyFallbackCatalogMatches) {
   );
 }
 
-const extensionsWorkspaceCodegenMatches = run(
-  'rg -n "\\bextensions\\s*:\\s*[\\\'\\\"]ExtensionsWorkspace\\.tsx[\\\'\\\"]" apps/repo-studio/forge-codegen.config.mjs',
-);
+const extensionsWorkspaceCodegenMatches = searchPattern({
+  pattern: String.raw`\bextensions\s*:\s*['"]ExtensionsWorkspace\.tsx['"]`,
+  roots: ['apps/repo-studio/forge-codegen.config.mjs'],
+  extensions: ['.mjs'],
+});
 if (!extensionsWorkspaceCodegenMatches) {
   fail(
     'Extensions workspace must be present in built-in repo-studio codegen workspace map.',
@@ -171,9 +188,11 @@ if (!extensionsWorkspaceCodegenMatches) {
   );
 }
 
-const extensionsWorkspaceGeneratedMatches = run(
-  'rg -n "WORKSPACE_IDS\\s*=\\s*\\[[^\\]]*\\\"extensions\\\"" apps/repo-studio/src/lib/app-spec.generated.ts',
-);
+const extensionsWorkspaceGeneratedMatches = searchPattern({
+  pattern: 'WORKSPACE_IDS\\s*=\\s*\\[[^\\]]*"extensions"',
+  roots: ['apps/repo-studio/src/lib/app-spec.generated.ts'],
+  extensions: ['.ts'],
+});
 if (!extensionsWorkspaceGeneratedMatches) {
   fail(
     'Generated built-in WORKSPACE_IDS must include extensions workspace.',
@@ -181,9 +200,11 @@ if (!extensionsWorkspaceGeneratedMatches) {
   );
 }
 
-const storyInstallPromptMatches = run(
-  'rg -n "showStoryInstallPrompt|extensionRegistryHasStory|Story extension is available from registry but not installed" apps/repo-studio/src/components/RepoStudioRoot.tsx',
-);
+const storyInstallPromptMatches = searchPattern({
+  pattern: 'showStoryInstallPrompt|extensionRegistryHasStory|Story extension is available from registry but not installed',
+  roots: ['apps/repo-studio/src/components/RepoStudioRoot.tsx'],
+  extensions: ['.tsx'],
+});
 if (storyInstallPromptMatches) {
   fail(
     'Story-specific install prompt logic in RepoStudioRoot is forbidden. Extensions discovery should be workspace-driven.',
@@ -209,9 +230,11 @@ if (missingRegistryPaths.length > 0) {
   );
 }
 
-const exampleInstallablePathMatches = run(
-  'rg -n "extensions/(assistant-only|character-workspace|dialogue-workspace)" vendor/repo-studio-extensions --glob "**/*"',
-);
+const exampleInstallablePathMatches = searchPattern({
+  pattern: 'extensions/(assistant-only|character-workspace|dialogue-workspace)',
+  roots: ['vendor/repo-studio-extensions'],
+  extensions: ['.json', '.md', '.txt', '.ts', '.tsx', '.js', '.mjs', '.yml', '.yaml'],
+});
 if (exampleInstallablePathMatches) {
   fail(
     'Studio examples must not be treated as installable extensions under vendor/repo-studio-extensions/extensions.',
@@ -219,9 +242,14 @@ if (exampleInstallablePathMatches) {
   );
 }
 
-const loopSwitcherMatches = run(
-  'rg -n "Select\\s+value=\\{activeLoopId\\}" apps/repo-studio/src/components/workspaces/PlanningWorkspace.tsx packages/repo-studio-extension-adapters/src/StoryExtensionWorkspaceAdapter.tsx',
-);
+const loopSwitcherMatches = searchPattern({
+  pattern: 'Select\\s+value=\\{activeLoopId\\}',
+  roots: [
+    'apps/repo-studio/src/components/workspaces/PlanningWorkspace.tsx',
+    'packages/repo-studio-extension-adapters/src/StoryExtensionWorkspaceAdapter.tsx',
+  ],
+  extensions: ['.tsx'],
+});
 if (loopSwitcherMatches) {
   fail(
     'Loop switcher Select controls must not remain in Planning/Story toolbars.',
@@ -229,9 +257,11 @@ if (loopSwitcherMatches) {
   );
 }
 
-const removedBuiltinWorkspaceMatches = run(
-  'rg -n "\\b(env|commands|assistant|diff|review-queue)\\s*:\\s*[\'\\\"][A-Za-z0-9_-]+Workspace\\.tsx[\'\\\"]" apps/repo-studio/forge-codegen.config.mjs',
-);
+const removedBuiltinWorkspaceMatches = searchPattern({
+  pattern: String.raw`\b(env|commands|assistant|diff|review-queue)\s*:\s*['"][A-Za-z0-9_-]+Workspace\.tsx['"]`,
+  roots: ['apps/repo-studio/forge-codegen.config.mjs'],
+  extensions: ['.mjs'],
+});
 if (removedBuiltinWorkspaceMatches) {
   fail(
     'Removed built-in workspaces detected in repo-studio codegen map. Built-ins must be planning/extensions/database/git/code only.',
@@ -252,9 +282,11 @@ if (forbiddenAppLocalWorkspaceHits.length > 0) {
   );
 }
 
-const removedWorkspaceFocusMenuMatches = run(
-  'rg -n "Focus\\s+(Commands|Diff|Review Queue)|view-focus-(assistant-ws|diff-ws|review-queue|commands)" apps/repo-studio/src/lib/app-shell/menu-contributions.ts',
-);
+const removedWorkspaceFocusMenuMatches = searchPattern({
+  pattern: 'Focus\\s+(Commands|Diff|Review Queue)|view-focus-(assistant-ws|diff-ws|review-queue|commands)',
+  roots: ['apps/repo-studio/src/lib/app-shell/menu-contributions.ts'],
+  extensions: ['.ts'],
+});
 if (removedWorkspaceFocusMenuMatches) {
   fail(
     'Legacy workspace focus menu items detected for removed standalone workspaces.',

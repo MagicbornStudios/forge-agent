@@ -1,16 +1,6 @@
 #!/usr/bin/env node
 
-import { execSync } from 'node:child_process';
-
-function run(command) {
-  try {
-    return execSync(command, { stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf8' }).trim();
-  } catch (error) {
-    const stdout = error?.stdout ? String(error.stdout).trim() : '';
-    const stderr = error?.stderr ? String(error.stderr).trim() : '';
-    return [stdout, stderr].filter(Boolean).join('\n').trim();
-  }
-}
+import { searchPattern } from './lib/guard-search.mjs';
 
 function fail(header, details) {
   console.error(`[guard-assistant-canonical] ${header}`);
@@ -20,9 +10,12 @@ function fail(header, details) {
   process.exitCode = 1;
 }
 
-const runtimeWrapperMatches = run(
-  'rg -n "AssistantRuntimeProvider|useChatRuntime|AssistantChatTransport" apps --glob "**/*.{ts,tsx}" --glob "!apps/docs/**"',
-);
+const runtimeWrapperMatches = searchPattern({
+  pattern: 'AssistantRuntimeProvider|useChatRuntime|AssistantChatTransport',
+  roots: ['apps'],
+  extensions: ['.ts', '.tsx'],
+  excludeSubpaths: ['apps/docs/'],
+});
 
 if (runtimeWrapperMatches) {
   fail(
@@ -36,4 +29,3 @@ if (process.exitCode) {
 }
 
 console.log('[guard-assistant-canonical] OK');
-

@@ -263,6 +263,12 @@
 - [x] `verify` failed at `Guard Workspace Semantics` with `/bin/sh: rg: not found`.
   - Root cause: CI Ubuntu runner does not include ripgrep by default while guard script shells out to `rg`.
   - Resolution: added explicit `apt-get install ripgrep` in release workflow verify job.
+- [x] Semantic guard scripts failed on Windows and generic CI shells when `rg` was unavailable (`'rg' is not recognized` / `/bin/sh: rg: not found`).
+  - Root cause: `guard-assistant-canonical.mjs` and `guard-workspace-semantics.mjs` depended on external ripgrep at runtime.
+  - Resolution: replaced shell `rg` invocations with Node-based guard search (`scripts/lib/guard-search.mjs`) using `git ls-files` + regex scanning; guards now run cross-platform without ripgrep.
+- [x] Downloadable `v0.1.1` release did not include desktop hotfix commits.
+  - Root cause: release pipeline is tag-driven and `v0.1.1` points to commit `41846a7`; later hotfix commits on `main` are not published until a new tag is pushed.
+  - Resolution: release follow-up now requires tagging current `main` (next cut) after hotfix validation.
 
 - [~] `verify` on Ubuntu intermittently failed on docs/hydration checks with low-signal output while desktop artifact path remained healthy.
   - Mitigation: converted Linux docs and hydration checks to non-blocking smoke checks; kept strict blocking on codegen/spec/platform/guard and on package standalone+artifact generation.
