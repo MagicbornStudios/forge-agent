@@ -88,22 +88,29 @@ export async function runDesktopBuild(options = {}) {
   const standalone = resolveRepoStudioStandaloneServer(workspaceRoot);
   const appRoot = standalone.appRoot;
   const standaloneSymlinkFallbackPatch = path.join(appRoot, 'scripts', 'standalone-symlink-fallback.cjs');
-  const standaloneBuildEnv = {
-    REPO_STUDIO_STANDALONE: '1',
-  };
+  const standaloneBuildEnv = { REPO_STUDIO_STANDALONE: '1' };
+  const standaloneNextBuildEnv = { ...standaloneBuildEnv };
   if (fsSync.existsSync(standaloneSymlinkFallbackPatch)) {
-    standaloneBuildEnv.NODE_OPTIONS = appendNodeRequireOption(
+    standaloneNextBuildEnv.NODE_OPTIONS = appendNodeRequireOption(
       process.env.NODE_OPTIONS,
       standaloneSymlinkFallbackPatch,
     );
   }
 
-  const standaloneBuild = run('pnpm', ['--filter', '@forge/repo-studio-app', 'build'], {
+  const standaloneCodegen = run('pnpm', ['--filter', '@forge/repo-studio-app', 'run', 'codegen'], {
     cwd: workspaceRoot,
-    env: standaloneBuildEnv,
     shell: process.platform === 'win32',
     allowFailure: true,
   });
+  const standaloneBuild = standaloneCodegen.ok
+    ? run('pnpm', ['--filter', '@forge/repo-studio-app', 'exec', 'next', 'build'], {
+        cwd: workspaceRoot,
+        env: standaloneNextBuildEnv,
+        shell: process.platform === 'win32',
+        allowFailure: true,
+      })
+    : standaloneCodegen;
+  const standaloneBuildPhase = standaloneCodegen.ok ? 'next-build' : 'codegen';
 
   const buildRoot = resolveDesktopBuildRoot();
   const resolved = resolveRepoStudioStandaloneServer(workspaceRoot);
@@ -125,6 +132,7 @@ export async function runDesktopBuild(options = {}) {
             appRoot,
             requireStandalone,
             standaloneBuild,
+            standaloneBuildPhase,
             resolvedStandalone: resolved.resolved,
             standaloneCandidates: resolved.candidates.map((candidatePath) => ({
               path: candidatePath,
@@ -142,6 +150,7 @@ export async function runDesktopBuild(options = {}) {
           `buildExit=${standaloneBuild.code}`,
           `buildSignal=${standaloneBuild.signal ?? 'none'}`,
           `buildError=${standaloneBuild.errorMessage ?? 'none'}`,
+          `buildPhase=${standaloneBuildPhase}`,
           `resolvedStandalone=${resolved.resolved ?? 'none'}`,
           `diagnosticsPath=${diagnosticsPath}`,
           `standaloneCandidates=${candidateStatuses}`,
