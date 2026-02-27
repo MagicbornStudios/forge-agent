@@ -25,9 +25,15 @@ function run(command, args, options = {}) {
       ...process.env,
       ...(options.env || {}),
     },
-    stdio: 'inherit',
+    stdio: ['ignore', 'pipe', 'pipe'],
     shell: options.shell === true,
   });
+  if (result.stdout) {
+    process.stdout.write(String(result.stdout));
+  }
+  if (result.stderr) {
+    process.stderr.write(String(result.stderr));
+  }
   const ok = (result.status ?? 1) === 0;
   if (!ok && options.allowFailure !== true) {
     throw new Error(`Command failed: ${command} ${args.join(' ')}`);
