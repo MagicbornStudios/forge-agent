@@ -39,13 +39,16 @@ function run(command, args, options = {}) {
     throw new Error(`Command failed (${command} ${args.join(' ')}): ${result.error.message}`);
   }
   const ok = (result.status ?? 1) === 0;
+  const commandResult = {
+    ok,
+    code: result.status ?? 1,
+    signal: result.signal ?? null,
+    errorMessage: result.error ? String(result.error.message || result.error) : null,
+  };
   if (!ok && options.allowFailure !== true) {
     throw new Error(`Command failed: ${command} ${args.join(' ')}`);
   }
-  return {
-    ok,
-    code: result.status ?? 1,
-  };
+  return commandResult;
 }
 
 async function copyDir(source, target) {
@@ -94,11 +97,36 @@ export async function runDesktopBuild(options = {}) {
       const candidateStatuses = resolved.candidates
         .map((candidatePath) => `${candidatePath}:${fsSync.existsSync(candidatePath) ? 'present' : 'missing'}`)
         .join(', ');
+      const diagnosticsPath = path.join(buildRoot, 'failure-diagnostics.json');
+      await fs.mkdir(buildRoot, { recursive: true });
+      await fs.writeFile(
+        diagnosticsPath,
+        `${JSON.stringify(
+          {
+            builtAt: new Date().toISOString(),
+            workspaceRoot,
+            appRoot,
+            requireStandalone,
+            standaloneBuild,
+            resolvedStandalone: resolved.resolved,
+            standaloneCandidates: resolved.candidates.map((candidatePath) => ({
+              path: candidatePath,
+              exists: fsSync.existsSync(candidatePath),
+            })),
+          },
+          null,
+          2,
+        )}\n`,
+        'utf8',
+      );
       throw new Error(
         [
           'Standalone build unavailable and --require-standalone was set. Refusing fallback packaging mode.',
           `buildExit=${standaloneBuild.code}`,
+          `buildSignal=${standaloneBuild.signal ?? 'none'}`,
+          `buildError=${standaloneBuild.errorMessage ?? 'none'}`,
           `resolvedStandalone=${resolved.resolved ?? 'none'}`,
+          `diagnosticsPath=${diagnosticsPath}`,
           `standaloneCandidates=${candidateStatuses}`,
         ].join(' '),
       );

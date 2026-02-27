@@ -146,7 +146,15 @@ jobs:
           STANDALONE_EXIT="${PIPESTATUS[0]}"
           set -e
           if [ "$STANDALONE_EXIT" -ne 0 ]; then
+            DIAG_FILE="packages/repo-studio/.desktop-build/failure-diagnostics.json"
             echo "::error title=desktop-standalone-build::Standalone build failed with exit code ${STANDALONE_EXIT}"
+            if [ -f "$DIAG_FILE" ]; then
+              echo "::group::Standalone diagnostics JSON"
+              cat "$DIAG_FILE"
+              echo "::endgroup::"
+              DIAG_ONE_LINE="$(tr '\n' ' ' < "$DIAG_FILE" | sed -E 's/[[:space:]]+/ /g')"
+              printf '::error title=desktop-standalone-diagnostics::%s\n' "$DIAG_ONE_LINE"
+            fi
             while IFS= read -r line; do
               printf '::error title=desktop-standalone-build-tail::%s\n' "$line"
             done < <(tr '\r' '\n' < "$LOG_FILE" | tail -n 160)
