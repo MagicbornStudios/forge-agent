@@ -34,6 +34,11 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      - name: Seed CI Env Files
+        run: |
+          cp apps/repo-studio/.env.example apps/repo-studio/.env
+          cp apps/platform/.env.example apps/platform/.env
+
       - name: Verify Codegen
         run: pnpm --filter @forge/repo-studio-app run codegen
 
@@ -84,6 +89,10 @@ jobs:
 
       - name: Install
         run: pnpm install --frozen-lockfile
+
+      - name: Seed Repo Studio CI Env
+        shell: pwsh
+        run: Copy-Item -Path apps/repo-studio/.env.example -Destination apps/repo-studio/.env -Force
 
       - name: Package RepoStudio Windows Desktop
         run: pnpm --filter @forge/repo-studio run desktop:package:win
