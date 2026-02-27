@@ -89,10 +89,23 @@ export async function runDesktopBuild(options = {}) {
   const workspaceRoot = findWorkspaceRoot(process.cwd());
   const standalone = resolveRepoStudioStandaloneServer(workspaceRoot);
   const appRoot = standalone.appRoot;
+  const buildRoot = resolveDesktopBuildRoot();
+  const desktopHomeRoot = path.join(buildRoot, 'home');
+  const desktopHomeRoaming = path.join(desktopHomeRoot, 'AppData', 'Roaming');
+  const desktopHomeLocal = path.join(desktopHomeRoot, 'AppData', 'Local');
+  const desktopHomeTemp = path.join(desktopHomeLocal, 'Temp');
+  await fs.mkdir(desktopHomeRoaming, { recursive: true });
+  await fs.mkdir(desktopHomeTemp, { recursive: true });
   const standaloneSymlinkFallbackPatch = path.join(appRoot, 'scripts', 'standalone-symlink-fallback.cjs');
   const standaloneBuildEnv = {
     REPO_STUDIO_STANDALONE: '1',
     REPO_STUDIO_OUTPUT_FILE_TRACING_ROOT: workspaceRoot,
+    HOME: desktopHomeRoot,
+    USERPROFILE: desktopHomeRoot,
+    APPDATA: desktopHomeRoaming,
+    LOCALAPPDATA: desktopHomeLocal,
+    TMP: desktopHomeTemp,
+    TEMP: desktopHomeTemp,
   };
   const standaloneNextBuildEnv = { ...standaloneBuildEnv };
   if (fsSync.existsSync(standaloneSymlinkFallbackPatch)) {
@@ -117,7 +130,6 @@ export async function runDesktopBuild(options = {}) {
     : standaloneCodegen;
   const standaloneBuildPhase = standaloneCodegen.ok ? 'next-build' : 'codegen';
 
-  const buildRoot = resolveDesktopBuildRoot();
   const resolved = resolveRepoStudioStandaloneServer(workspaceRoot);
   const standaloneSucceeded = standaloneBuild.ok && Boolean(resolved.resolved);
 
