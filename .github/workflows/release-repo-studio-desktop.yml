@@ -125,6 +125,11 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      - name: Pin pnpm store to workspace drive
+        shell: pwsh
+        run: |
+          pnpm config set store-dir "$env:GITHUB_WORKSPACE\\.pnpm-store"
+
       - name: Install
         run: pnpm install --frozen-lockfile
 
