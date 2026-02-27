@@ -91,8 +91,16 @@ export async function runDesktopBuild(options = {}) {
 
   if (!standaloneSucceeded) {
     if (requireStandalone) {
+      const candidateStatuses = resolved.candidates
+        .map((candidatePath) => `${candidatePath}:${fsSync.existsSync(candidatePath) ? 'present' : 'missing'}`)
+        .join(', ');
       throw new Error(
-        'Standalone build unavailable and --require-standalone was set. Refusing fallback packaging mode.',
+        [
+          'Standalone build unavailable and --require-standalone was set. Refusing fallback packaging mode.',
+          `buildExit=${standaloneBuild.code}`,
+          `resolvedStandalone=${resolved.resolved ?? 'none'}`,
+          `standaloneCandidates=${candidateStatuses}`,
+        ].join(' '),
       );
     }
 
