@@ -6,7 +6,8 @@
   "main": "src/index.ts",
   "dependencies": {
     "@forge/shared": "workspace:*",
-    "@forge/ui": "workspace:*"
+    "@forge/ui": "workspace:*",
+    "lucide-react": "^0.468.0"
   },
   "peerDependencies": {
     "react": "^19",
