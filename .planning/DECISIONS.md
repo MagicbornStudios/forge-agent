@@ -123,6 +123,22 @@
 - [x] GitHub auth in Repo Studio is OAuth device-flow based (in-app start/poll/logout routes backed by encrypted token persistence), not CLI-presence gated.
 - [x] Repo Studio git/files/diff/search operations resolve against active project root when configured; fallback remains workspace root only when no active project exists.
 
+## 2026-02-26
+
+- [x] Story is no longer a built-in generated workspace id; Story is extension-backed from `.repo-studio/extensions/story/manifest.json` and host-rendered via `workspaceKind: "story"`.
+- [x] Repo Studio extension model in this slice is manifest-only host rendering (no arbitrary extension JS execution from extension folders).
+- [x] Forge extension tools are composed only for the active workspace. Story proof tool contract is `forge_open_about_workspace` with About Workspace modal payload from manifest metadata.
+- [x] Planning and Story loop switcher UI is removed; `activeLoopId` remains runtime state for scope/API/viewport keys.
+- [x] Repo Studio built-in workspaces are hard-cut to `planning`, `env`, `database`, `git`, `code`; removed built-in workspace ids are `assistant`, `diff`, `commands`, `review-queue`.
+- [x] Assistant is a global right-rail panel in every built-in workspace and is toggled globally (not a standalone workspace tab).
+- [x] Terminal is a global bottom dock with multi-session profiles launched from File menu (`New Terminal`, `Launch Codex CLI`, `Launch Claude Code CLI`).
+- [x] Planning is PRD-first with canonical `.planning/PRD.md` surfaced in dedicated PRD/status/decisions/regression panels.
+- [x] Git command execution resolves through a shared executable contract (`REPO_STUDIO_GIT_PATH` -> bundled Windows candidate -> system `git`) rather than hardcoded `git`.
+- [x] Extension layout contract is single-source and priority-ordered: discovered extension `layout` payload -> generated in-app extension layout definitions -> generic fallback only (no story-specific catalog hardcode).
+- [x] Story extension is optional per project; Repo Studio does not require local `.repo-studio/extensions/story` and instead surfaces a non-blocking install prompt when registry has Story but the active project does not.
+- [x] Extension registry source is host-submodule-backed (`vendor/repo-studio-extensions/extensions`), not direct runtime GitHub fetch; install actions copy into active project `.repo-studio/extensions/<id>`.
+- [x] Repo Studio built-in workspace set now includes `extensions` as the extension marketplace/management surface while extension rendering remains host-kind adapter based (no arbitrary extension JS execution).
+
 ## 2026-02-23 (AI runtimes and companion mode)
 
 - [x] **Two distinct AI routes (no merging):** (1) **Open Router assistant** — tools, general chat, dialogue nodes, domain tools; uses Open Router (streamText, model registry, persistence). (2) **Codex** — coding agent; works on files via Codex SDK; never uses Open Router. Codex is implemented only in Repo Studio (`editorTarget=codex-assistant`); Open Router path is in Studio and will be shareable. No code path shall mix Codex with Open Router.
@@ -132,3 +148,43 @@
 - [x] Database workspace in Repo Studio: SQL-capable viewer (Drizzle Studio style) for Payload SQLite; run SQL in a dedicated workspace tab.
 - [x] 401 fix for Dialogue assistant: ensure transport sends credentials; LocalDevAuthGate ready before first assistant request; optional local-dev bypass (synthetic admin auth when `NEXT_PUBLIC_LOCAL_DEV_AUTO_ADMIN=1`).
 - [x] AI runtimes and Database workspace work are tracked under **Phase 13** (forge-loop); similar work must use discuss → plan → execute → verify → sync-legacy. Database workspace in Repo Studio uses embedded Drizzle Studio (Payload-recommended); custom SQL runner and better-sqlite3 removed.
+
+## 2026-02-26 (Phase 15 — Strategic shift: Repo Studio + Platform focus)
+
+- [ ] **Studio app archived:** The application in `apps/studio` (Character workspace, Dialogue workspace) is archived. No new feature work; preserved for reference or extraction only. Character and Dialogue are moved to an extensions repo/submodule before any deletion of Studio app code.
+- [ ] **Character workspace → extensions:** Character workspace is extracted and moved to an extensions submodule (or separate repo) and consumed as an extension; it is no longer part of the main monorepo apps.
+- [ ] **Dialogue workspace → extensions:** Dialogue workspace lives in the other repo (extensions), not in main apps. Yarn Spinner dialogue support on the platform is deprecated.
+- [ ] **Consumer-studio as extension:** `apps/consumer-studio` is not a main app. It is turned into a bare-bones extension (in the extensions repo) that people can use as a reference to build their own studios.
+- [ ] **Platform: forge graphs and Yarn Spinner deprecated.** Forge graphs are deprecated; we will not work on graph support for a long time. Yarn Spinner dialogue support is deprecated. Platform roadmap prioritizes support for Repo Studio (desktop auth, API keys, OpenRouter proxy, connection validation).
+- [ ] **Primary product focus:** We are working on Repo Studio and the platform behind it. All strategic planning and loop work use .planning (phases, tasks, decisions, PRD); discussion loops are discuss → plan → execute → verify.
+
+## 2026-02-26 (Phase 15 execution cut - extension registry and examples)
+
+- [x] Installable registry entries are only sourced from `vendor/repo-studio-extensions/extensions/*`.
+- [x] Studio/consumer migrations are represented as browse-only examples under `vendor/repo-studio-extensions/examples/studios/*`.
+- [x] Example ids are non-installable and rejected by install API (installables only).
+- [x] Repo Studio Extensions workspace is split into `Installable Extensions` and `Studio Examples` sections.
+- [x] Story-specific install prompt logic is removed from root shell; extension discovery/install is workspace-driven.
+- [x] Local `.repo-studio/extensions/story` remains installed in this monorepo for Repo Studio development baseline.
+
+## 2026-02-27
+
+- [x] Repo Studio Story/Env workspace ownership is extension-only in app runtime; app-local Story/Env workspace implementations are removed and extension kinds are rendered via `@forge/repo-studio-extension-adapters`.
+- [x] Repo Studio built-in workspace set is hard-cut to `planning`, `extensions`, `database`, `git`, `code`; legacy built-in `env` is removed and migrated via alias (`env` -> installed `env-workspace` when present, otherwise `planning`).
+- [x] Repo Studio extension layout resolution is payload-first (`extension.layout`) with one generic fallback path; no story/env-specific panel hardcoding in catalog.
+- [x] Studio and consumer-studio are moved out of active monorepo apps to `legacy/studio-apps/*`; root scripts and verification flows are Repo Studio-first.
+- [x] `@forge/dev-kit` / `@forge/shared` is the canonical extension authoring UI surface; extension code must not depend on host app aliases (for example `@/`).
+- [x] `WorkspaceViewport` is promoted to shared workspace primitives (`@forge/shared`) so extensions and adapters can use the same viewport contract as host workspaces.
+- [x] Project-scoped extension iteration is install-once/edit-in-place under `<activeProject>/.repo-studio/extensions/<id>`; runtime should reload extensions without requiring reinstall.
+- [x] Extension discovery/readiness hardening is no-store and fail-safe: `/api/repo/extensions` and `/api/repo/extensions/registry` responses disable caching, client fetches use `cache: "no-store"`, and root refresh keeps installed extension state on transient refresh failures.
+- [x] Repo Studio root now refreshes extension/project/auth state on app focus and `visibilitychange` (in addition to interval/event refresh) so in-place edits under project `.repo-studio/extensions` are recognized quickly.
+- [x] First Electron packaging cut is accepted for this loop: Windows installer and portable artifacts are generated from `packages/repo-studio/dist/desktop` while standalone asset bundling remains a follow-up hardening task.
+- [x] Electron packaging config is constrained for current Windows environments: `electron` is treated as a `devDependency` for electron-builder compatibility and `win.signAndEditExecutable` is disabled to avoid blocking code-sign helper extraction paths.
+
+## 2026-02-27 (Phase 15 release cut `v0.1.1`)
+
+- [x] GitHub desktop distribution is tag-driven: push tag `v*` triggers `release-repo-studio-desktop.yml` (`verify` -> `package_windows` -> `release`) and publishes Windows artifacts to GitHub Releases.
+- [x] Desktop packaging is now strict for release: `desktop:package:win` requires standalone bundle availability (`node src/desktop/build.mjs --require-standalone`) and blocks fallback-manifest packaging.
+- [x] Standalone release bundle contract is enforced before upload: `.desktop-build/next/BUILD_ID`, `.desktop-build/next/static`, and standalone server entry (`server.js` candidate) must be present.
+- [x] Release verification now includes `@forge/platform` and `@forge/docs` builds in addition to Repo Studio app/guards.
+- [x] Extension registry source-of-truth for release is pinned submodule SHA: `vendor/repo-studio-extensions` must reference a pushed upstream commit containing installables (`story`, `env-workspace`) and required examples.

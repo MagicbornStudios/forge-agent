@@ -12,6 +12,7 @@ import {
   type RepoProposal,
   upsertPendingProposal,
 } from '@/lib/proposals';
+import { resolveHostWorkspaceRoot } from '@/lib/project-root';
 import { resolveRepoRoot } from '@/lib/repo-files';
 import { enforceScopeGuard } from '@/lib/scope-guard';
 import { recordReviewQueueAutoApply, resolveReviewQueueTrustMode } from '@/lib/proposals/trust-mode';
@@ -293,7 +294,7 @@ async function resolveCodexConfig(): Promise<CodexConfig> {
 }
 
 function runCodexStatusCheck() {
-  const cliPath = path.join(resolveRepoRoot(), 'packages', 'repo-studio', 'src', 'cli.mjs');
+  const cliPath = path.join(resolveHostWorkspaceRoot(), 'packages', 'repo-studio', 'src', 'cli.mjs');
   const result = spawnSync(process.execPath, [cliPath, 'codex-status', '--json'], {
     cwd: resolveRepoRoot(),
     encoding: 'utf8',

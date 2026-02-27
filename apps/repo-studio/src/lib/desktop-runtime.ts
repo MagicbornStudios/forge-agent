@@ -33,6 +33,12 @@ export type DesktopRuntimeBridge = {
   subscribeRuntimeEvents: (listener: (event: DesktopRuntimeEvent) => void) => () => void;
   runtimeStatus?: () => Promise<unknown>;
   stopRuntime?: () => Promise<unknown>;
+  pickProjectFolder?: () => Promise<{
+    ok: boolean;
+    canceled?: boolean;
+    path?: string;
+    message?: string;
+  }>;
   authStatus?: () => Promise<DesktopAuthStatus>;
   authConnect?: (payload: { baseUrl: string; token: string }) => Promise<DesktopAuthStatus>;
   authDisconnect?: () => Promise<DesktopAuthStatus>;

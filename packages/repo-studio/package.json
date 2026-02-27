@@ -17,19 +17,20 @@
     "test": "node --test \"src/__tests__/*.test.mjs\"",
     "desktop:dev": "node src/cli.mjs open --desktop-runtime --foreground",
     "desktop:build": "node src/desktop/build.mjs",
-    "desktop:package:win": "node src/desktop/build.mjs && electron-builder --config electron-builder.json --win nsis portable",
+    "desktop:verify:standalone": "node src/desktop/verify-standalone.mjs",
+    "desktop:package:win": "node src/desktop/build.mjs --require-standalone && node src/desktop/verify-standalone.mjs && electron-builder --config electron-builder.json --win nsis portable",
     "publish": "npm publish"
   },
   "dependencies": {
     "@openai/codex": "^0.104.0",
     "chokidar": "^4.0.3",
-    "electron": "^37.2.6",
     "yaml": "^2.8.1"
   },
   "optionalDependencies": {
     "keytar": "^7.9.0"
   },
   "devDependencies": {
+    "electron": "^37.2.6",
     "electron-builder": "^26.0.12"
   }
 }

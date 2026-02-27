@@ -1,0 +1,30 @@
+{
+  "manifestVersion": 1,
+  "id": "story",
+  "label": "Story",
+  "workspaceId": "story",
+  "workspaceKind": "story",
+  "description": "Story workspace extension",
+  "layoutSpecPath": "layout.generated.json",
+  "assistant": {
+    "forge": {
+      "aboutWorkspace": {
+        "title": "Story Workspace",
+        "summary": "Author and review story pages under content/story with AI-assisted context.",
+        "context": [
+          "content/story",
+          "story page editing",
+          "publish flow"
+        ]
+      },
+      "tools": [
+        {
+          "name": "forge_open_about_workspace",
+          "action": "open_about_workspace",
+          "label": "Open About Workspace",
+          "description": "Open workspace context modal"
+        }
+      ]
+    }
+  }
+}

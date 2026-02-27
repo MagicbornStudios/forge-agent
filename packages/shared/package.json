@@ -11,7 +11,9 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
+    "./components/workspace": "./src/shared/components/workspace/index.ts",
     "./components/docs": "./src/shared/components/docs/index.ts",
+    "./lib/utils": "./src/shared/lib/utils.ts",
     "./styles/editor": "./dist/styles/editor.css",
     "./assistant": "./src/shared/assistant/index.ts"
   },

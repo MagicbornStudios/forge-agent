@@ -2,6 +2,7 @@ export const DESKTOP_IPC = {
   runtimeEvent: 'repo-studio:runtime:event',
   runtimeStatus: 'repo-studio:runtime:status',
   runtimeStop: 'repo-studio:runtime:stop',
+  projectPickFolder: 'repo-studio:project:pick-folder',
   authStatus: 'repo-studio:auth:status',
   authConnect: 'repo-studio:auth:connect',
   authDisconnect: 'repo-studio:auth:disconnect',

@@ -1,7 +1,9 @@
 import { postJson, getJson } from '@/lib/api/http';
 import type {
   EnvDoctorResponse,
+  EnvFilesResponse,
   EnvReconcileResponse,
+  EnvScopesResponse,
   EnvTargetPayload,
   RepoMode,
 } from '@/lib/api/types';
@@ -48,5 +50,18 @@ export async function saveEnvTarget(input: {
       fallbackMessage: `Unable to save env target ${input.targetId}.`,
     },
   );
+}
+
+export async function fetchEnvScopes() {
+  return getJson<EnvScopesResponse>('/api/repo/env/scopes', {
+    fallbackMessage: 'Unable to load env scopes.',
+  });
+}
+
+export async function fetchEnvFiles(dir: string) {
+  const params = new URLSearchParams({ dir });
+  return getJson<EnvFilesResponse>(`/api/repo/env/files?${params.toString()}`, {
+    fallbackMessage: `Unable to load env files for ${dir}.`,
+  });
 }
 

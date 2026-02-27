@@ -1,28 +1,29 @@
 import type { ComponentType } from 'react';
 import type { RepoWorkspaceId } from '@/lib/types';
-import { AssistantWorkspace } from './AssistantWorkspace';
 import { CodeWorkspace } from './CodeWorkspace';
-import { CommandsWorkspace } from './CommandsWorkspace';
 import { DatabaseWorkspace } from './DatabaseWorkspace';
-import { DiffWorkspace } from './DiffWorkspace';
-import { EnvWorkspace } from './EnvWorkspace';
+import { ExtensionsWorkspace } from './ExtensionsWorkspace';
 import { GitWorkspace } from './GitWorkspace';
 import { PlanningWorkspace } from './PlanningWorkspace';
-import { ReviewQueueWorkspace } from './ReviewQueueWorkspace';
-import { StoryWorkspace } from './StoryWorkspace';
 import type { RepoWorkspaceProps } from './types';
+import {
+  EnvExtensionWorkspaceAdapter,
+  GenericExtensionWorkspaceAdapter,
+  StoryExtensionWorkspaceAdapter,
+} from '@forge/repo-studio-extension-adapters';
 
 export type { RepoWorkspaceProps, RepoStudioPanelContext } from './types';
 
-export const REPO_WORKSPACE_COMPONENTS: Record<RepoWorkspaceId, ComponentType<RepoWorkspaceProps>> = {
+export const BUILTIN_REPO_WORKSPACE_COMPONENTS: Record<RepoWorkspaceId, ComponentType<RepoWorkspaceProps>> = {
   planning: PlanningWorkspace,
-  env: EnvWorkspace,
-  commands: CommandsWorkspace,
-  story: StoryWorkspace,
+  extensions: ExtensionsWorkspace,
   database: DatabaseWorkspace,
   git: GitWorkspace,
-  assistant: AssistantWorkspace,
-  diff: DiffWorkspace,
   code: CodeWorkspace,
-  'review-queue': ReviewQueueWorkspace,
+};
+
+export const EXTENSION_WORKSPACE_COMPONENTS: Record<string, ComponentType<RepoWorkspaceProps>> = {
+  story: StoryExtensionWorkspaceAdapter,
+  env: EnvExtensionWorkspaceAdapter,
+  generic: GenericExtensionWorkspaceAdapter,
 };

@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 import { execSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
 
 function run(command) {
   try {
@@ -119,6 +121,145 @@ for (const check of LEGACY_HARD_CUT_CHECKS) {
   if (matches) {
     fail(check.message, matches);
   }
+}
+
+const repoStudioCodegenPath = 'apps/repo-studio/forge-codegen.config.mjs';
+const repoStudioCodegenSource = fs.existsSync(repoStudioCodegenPath)
+  ? fs.readFileSync(repoStudioCodegenPath, 'utf8')
+  : '';
+const workspaceFileMapMatch = repoStudioCodegenSource.match(/const\s+WORKSPACE_FILE_MAP\s*=\s*\{([\s\S]*?)\};/);
+if (workspaceFileMapMatch && /\bstory\s*:/.test(workspaceFileMapMatch[1])) {
+  fail(
+    'Story must not remain in built-in WORKSPACE_FILE_MAP. Story is extension-backed (extensionWorkspaceFiles only).',
+    repoStudioCodegenPath,
+  );
+}
+if (workspaceFileMapMatch && /\benv\s*:/.test(workspaceFileMapMatch[1])) {
+  fail(
+    'Env must not remain in built-in WORKSPACE_FILE_MAP. Env is extension-backed.',
+    repoStudioCodegenPath,
+  );
+}
+
+const builtinStoryAppSpecMatches = run(
+  'rg -n "WORKSPACE_IDS\\s*=\\s*\\[[^\\]]*\"story\"" apps/repo-studio/src/lib/app-spec.generated.ts',
+);
+if (builtinStoryAppSpecMatches) {
+  fail(
+    'Story must not remain in generated built-in WORKSPACE_IDS. It is extension-backed.',
+    builtinStoryAppSpecMatches,
+  );
+}
+
+const storyFallbackCatalogMatches = run(
+  'rg -n "workspaceKind\\s*===\\s*[\\\'\\\"]story[\\\'\\\"]|panel\\.visible\\.ext\\..*story|repo-ext-story" apps/repo-studio/src/lib/workspace-catalog.ts',
+);
+if (storyFallbackCatalogMatches) {
+  fail(
+    'Story-specific catalog fallback is forbidden. Extension layout must come from extension payload or generated extension layout getter.',
+    storyFallbackCatalogMatches,
+  );
+}
+
+const extensionsWorkspaceCodegenMatches = run(
+  'rg -n "\\bextensions\\s*:\\s*[\\\'\\\"]ExtensionsWorkspace\\.tsx[\\\'\\\"]" apps/repo-studio/forge-codegen.config.mjs',
+);
+if (!extensionsWorkspaceCodegenMatches) {
+  fail(
+    'Extensions workspace must be present in built-in repo-studio codegen workspace map.',
+    'apps/repo-studio/forge-codegen.config.mjs',
+  );
+}
+
+const extensionsWorkspaceGeneratedMatches = run(
+  'rg -n "WORKSPACE_IDS\\s*=\\s*\\[[^\\]]*\\\"extensions\\\"" apps/repo-studio/src/lib/app-spec.generated.ts',
+);
+if (!extensionsWorkspaceGeneratedMatches) {
+  fail(
+    'Generated built-in WORKSPACE_IDS must include extensions workspace.',
+    'apps/repo-studio/src/lib/app-spec.generated.ts',
+  );
+}
+
+const storyInstallPromptMatches = run(
+  'rg -n "showStoryInstallPrompt|extensionRegistryHasStory|Story extension is available from registry but not installed" apps/repo-studio/src/components/RepoStudioRoot.tsx',
+);
+if (storyInstallPromptMatches) {
+  fail(
+    'Story-specific install prompt logic in RepoStudioRoot is forbidden. Extensions discovery should be workspace-driven.',
+    storyInstallPromptMatches,
+  );
+}
+
+const registryRequiredPaths = [
+  'vendor/repo-studio-extensions/extensions/story',
+  'vendor/repo-studio-extensions/extensions/env-workspace',
+  'vendor/repo-studio-extensions/examples/studios/character-workspace',
+  'vendor/repo-studio-extensions/examples/studios/dialogue-workspace',
+  'vendor/repo-studio-extensions/examples/studios/assistant-only',
+  'vendor/repo-studio-extensions/examples/studios/character-workspace/example.json',
+  'vendor/repo-studio-extensions/examples/studios/dialogue-workspace/example.json',
+  'vendor/repo-studio-extensions/examples/studios/assistant-only/example.json',
+];
+const missingRegistryPaths = registryRequiredPaths.filter((target) => !fs.existsSync(path.resolve(target)));
+if (missingRegistryPaths.length > 0) {
+  fail(
+    'Missing required RepoStudio extension registry paths (installables/examples).',
+    missingRegistryPaths.join('\n'),
+  );
+}
+
+const exampleInstallablePathMatches = run(
+  'rg -n "extensions/(assistant-only|character-workspace|dialogue-workspace)" vendor/repo-studio-extensions --glob "**/*"',
+);
+if (exampleInstallablePathMatches) {
+  fail(
+    'Studio examples must not be treated as installable extensions under vendor/repo-studio-extensions/extensions.',
+    exampleInstallablePathMatches,
+  );
+}
+
+const loopSwitcherMatches = run(
+  'rg -n "Select\\s+value=\\{activeLoopId\\}" apps/repo-studio/src/components/workspaces/PlanningWorkspace.tsx packages/repo-studio-extension-adapters/src/StoryExtensionWorkspaceAdapter.tsx',
+);
+if (loopSwitcherMatches) {
+  fail(
+    'Loop switcher Select controls must not remain in Planning/Story toolbars.',
+    loopSwitcherMatches,
+  );
+}
+
+const removedBuiltinWorkspaceMatches = run(
+  'rg -n "\\b(env|commands|assistant|diff|review-queue)\\s*:\\s*[\'\\\"][A-Za-z0-9_-]+Workspace\\.tsx[\'\\\"]" apps/repo-studio/forge-codegen.config.mjs',
+);
+if (removedBuiltinWorkspaceMatches) {
+  fail(
+    'Removed built-in workspaces detected in repo-studio codegen map. Built-ins must be planning/extensions/database/git/code only.',
+    removedBuiltinWorkspaceMatches,
+  );
+}
+
+const forbiddenAppLocalWorkspaceFiles = [
+  'apps/repo-studio/src/components/workspaces/StoryWorkspace.tsx',
+  'apps/repo-studio/src/components/workspaces/EnvWorkspace.tsx',
+  'apps/repo-studio/src/components/workspaces/GenericExtensionWorkspace.tsx',
+];
+const forbiddenAppLocalWorkspaceHits = forbiddenAppLocalWorkspaceFiles.filter((target) => fs.existsSync(path.resolve(target)));
+if (forbiddenAppLocalWorkspaceHits.length > 0) {
+  fail(
+    'App-local Story/Env/Generic extension workspace implementations are forbidden. Use @forge/repo-studio-extension-adapters.',
+    forbiddenAppLocalWorkspaceHits.join('\n'),
+  );
+}
+
+const removedWorkspaceFocusMenuMatches = run(
+  'rg -n "Focus\\s+(Commands|Diff|Review Queue)|view-focus-(assistant-ws|diff-ws|review-queue|commands)" apps/repo-studio/src/lib/app-shell/menu-contributions.ts',
+);
+if (removedWorkspaceFocusMenuMatches) {
+  fail(
+    'Legacy workspace focus menu items detected for removed standalone workspaces.',
+    removedWorkspaceFocusMenuMatches,
+  );
 }
 
 if (process.exitCode) {

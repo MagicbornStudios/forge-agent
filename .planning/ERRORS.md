@@ -1,5 +1,11 @@
 # Errors and Attempts
 
+## 2026-02-26
+
+- [x] Extension API test assumed Story extension is always installed in repo-local `.repo-studio/extensions`.
+  - Root cause: Story is now optional per project in extension-registry install model.
+  - Resolution: relaxed route test contract to validate payload shape always, and validate Story tool contract only when Story entry exists.
+
 ## 2026-02-13
 
 - [x] RepoStudio env actions could fail with `'forge-env' is not recognized` on Windows.
@@ -190,3 +196,51 @@
 - [x] Git/file/diff/search actions were not consistently scoped to active project roots.
   - Root cause: operations still defaulted to workspace root via `resolveRepoRoot()`.
   - Resolution: added project manager backend (`repo-projects` collection + `/api/repo/projects*` routes), active-root resolver wiring into git/diff/search/files paths, and git pull/push endpoints; updated Git panel with project import/clone/active switching controls.
+
+## 2026-02-26
+
+- [x] Repo Studio API route tests failed after open-folder work with Payload env bootstrap errors (`payload/dist/bin/loadEnv.js`), including extension route tests that should not require Payload startup.
+  - Root cause: `project-root.ts` eagerly imported `payload-client` at module load, so routes that only needed active-root resolution still triggered Payload runtime bootstrapping in test mode.
+  - Resolution: changed `project-root.ts` to lazy-load payload client only inside project persistence/list operations (`saveProject`, `listRepoProjects`, `setActiveRepoProject`), keeping root resolution paths payload-free.
+- [x] Repo Studio build failed on Next lint rule `@next/next/no-assign-module-variable` in the new lazy import helper.
+  - Root cause: helper used `const module = await import(...)`, which violates Next lint rule.
+  - Resolution: renamed local binding to `payloadClientModule`; build/tests pass after change.
+- [x] Repo Studio product hard-cut build failed with `react-hooks/rules-of-hooks` in `AssistantPanel.tsx`.
+  - Root cause: quick-prompt callback was named `useQuickPrompt`, so eslint treated it as a hook call in a callback context.
+  - Resolution: renamed callback to `handleQuickPrompt` and updated usage sites; `pnpm --filter @forge/repo-studio-app build` now passes.
+- [x] `check:codegen` appeared failing even after code generation during hard-cut verification.
+  - Root cause: script compares generated file against git HEAD (`git diff --exit-code src/lib/app-spec.generated.ts`), so it reports failure whenever generated output is intentionally changed but not committed yet.
+  - Resolution: treat as expected on a dirty branch during migration; rely on successful `codegen` + `build` + tests for in-session verification.
+
+## 2026-02-26 (Phase 15 execution cut)
+
+- [x] Repo Studio extension registry initially appeared healthy but submodule content was empty after attach.
+  - Root cause: `vendor/repo-studio-extensions` pointer existed without required `extensions/*` and `examples/studios/*` content.
+  - Resolution: populated submodule with installable `story` extension and required studio examples (`character-workspace`, `dialogue-workspace`, `assistant-only`), then enforced presence in health/guard scripts.
+
+## 2026-02-27
+
+- [x] `pnpm hydration:doctor` failed after moving `apps/studio` to legacy.
+  - Root cause: `scripts/hydration-nesting-doctor.mjs` had hardcoded scan target `apps/studio`.
+  - Resolution: updated scan roots to active app paths (`apps/repo-studio`, `apps/platform`, `packages/shared`, `packages/ui`) with existence filtering and optional legacy path support.
+
+- [x] `check:codegen` still reports generated diff during extraction cut.
+  - Root cause: script compares generated file against git HEAD, so intentional generated hard-cut changes fail until committed.
+  - Resolution: treated as expected in dirty migration state; validated using successful `codegen`, `build`, API/shell tests, guard, hydration, and extension registry health checks.
+- [x] Extension authors can accidentally ship app-alias imports (`@/`) that will not resolve in project-installed extensions.
+  - Root cause: vendor extension source snapshots were authored against monorepo app internals, not portable dev-kit/shared imports.
+  - Resolution: documented dev-kit/shared-only authoring contract in extension README/docs and tracked follow-up task FRG-1519 for discovery/reload hardening and stricter extension recognition validation.
+- [x] Windows desktop packaging initially failed because electron-builder rejects `electron` in runtime dependencies.
+  - Root cause: `packages/repo-studio/package.json` had `electron` in `dependencies` instead of `devDependencies`.
+  - Resolution: moved `electron` to `devDependencies`, refreshed lockfile, and reran packaging successfully.
+- [x] Windows packaging failed extracting `winCodeSign` cache due symlink privilege errors (`A required privilege is not held by the client`).
+  - Root cause: code-sign helper archive extraction attempted to create symlinks in user cache on a non-privileged Windows environment.
+  - Resolution: set `win.signAndEditExecutable: false` in `packages/repo-studio/electron-builder.json`; packaging succeeded and produced installer/portable artifacts.
+- [ ] Desktop package currently builds in fallback mode when Next standalone symlink creation fails (`EPERM`), so `.desktop-build/next` resources are absent.
+  - Root cause: Next standalone tracing on this Windows environment requires symlink privileges; fallback build path emits manifest-only output.
+  - Mitigation now: first installer/portable artifacts are generated for pipeline validation.
+  - Follow-up: tracked as FRG-1521 to harden standalone asset bundling and remove fallback-only packaging behavior.
+- [x] Strict desktop package gate now fails local packaging on non-privileged Windows shells (`desktop:package:win` exits when standalone trace symlinks fail).
+  - Root cause: Next standalone output still requires symlink creation (`EPERM`) in this local environment.
+  - Resolution: made failure explicit and blocking for release (`--require-standalone` + standalone verifier) so fallback artifacts can no longer ship.
+  - Operational outcome: local packaging may fail without Developer Mode/admin symlink privileges; release packaging is expected to run on CI Windows runner where symlink creation is available.

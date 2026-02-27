@@ -11,6 +11,11 @@ export async function POST(request: Request) {
       cwd: body?.cwd,
       cols: body?.cols,
       rows: body?.rows,
+      command: body?.command,
+      args: body?.args,
+      profileId: body?.profileId,
+      name: body?.name,
+      setActive: body?.setActive !== false,
     });
     return NextResponse.json({
       ok: result.ok,

@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { EventEmitter } from 'node:events';
+import { resolveActiveProjectRoot } from '@/lib/project-root';
 
 type RunStatus = 'running' | 'completed' | 'failed' | 'stopped';
 
@@ -8,6 +9,7 @@ export type RepoRun = {
   id: string;
   commandId: string;
   command: string;
+  cwd: string;
   status: RunStatus;
   code: number | null;
   startedAt: string;
@@ -35,14 +37,16 @@ function nowIso() {
   return new Date().toISOString();
 }
 
-function spawnShell(commandText: string) {
+function spawnShell(commandText: string, cwd: string) {
   if (process.platform === 'win32') {
     return spawn('cmd.exe', ['/d', '/s', '/c', commandText], {
+      cwd,
       stdio: ['ignore', 'pipe', 'pipe'],
       windowsHide: true,
     });
   }
   return spawn('sh', ['-lc', commandText], {
+    cwd,
     stdio: ['ignore', 'pipe', 'pipe'],
   });
 }
@@ -68,11 +72,13 @@ function setFinished(run: RepoRun, status: RunStatus, code: number | null) {
   });
 }
 
-export function startRepoRun(commandId: string, commandText: string) {
+export function startRepoRun(commandId: string, commandText: string, cwdInput?: string) {
+  const cwd = String(cwdInput || '').trim() || resolveActiveProjectRoot();
   const run: RepoRun = {
     id: randomUUID(),
     commandId,
     command: commandText,
+    cwd,
     status: 'running',
     code: null,
     startedAt: nowIso(),
@@ -82,7 +88,7 @@ export function startRepoRun(commandId: string, commandText: string) {
     child: null,
   };
 
-  const child = spawnShell(commandText);
+  const child = spawnShell(commandText, cwd);
   run.child = child;
 
   child.stdout.on('data', (chunk) => appendOutput(run, 'stdout', chunk));
@@ -139,6 +145,7 @@ export function serializeRun(run: RepoRun) {
     id: run.id,
     commandId: run.commandId,
     command: run.command,
+    cwd: run.cwd,
     status: run.status,
     code: run.code,
     startedAt: run.startedAt,

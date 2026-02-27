@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { resolveRepoStudioGitExecutable } from '@/lib/git-resolver';
 import { resolveRepoRoot } from '@/lib/repo-files';
 
 export type DependencyHealth = {
@@ -9,6 +10,8 @@ export type DependencyHealth = {
   sharedStylesResolved: boolean;
   cssPackagesResolved: boolean;
   runtimePackagesResolved: boolean;
+  gitExecutablePath: string;
+  gitExecutableSource: 'env' | 'bundled' | 'system';
   postcssConfigResolved: boolean;
   tailwindPostcssResolved: boolean;
   tailwindPipelineResolved: boolean;
@@ -152,6 +155,7 @@ export function getDependencyHealth(startCwd = process.cwd()): DependencyHealth 
   const repoRoot = resolveRepoRoot(startCwd);
   const appRoot = resolveAppRoot(repoRoot, startCwd);
   const messages: string[] = [];
+  const gitExecutable = resolveRepoStudioGitExecutable();
 
   const resolvedDockview = resolveDockviewInstall(repoRoot, appRoot);
   const dockviewPackagePath = resolvedDockview.packagePath;
@@ -234,6 +238,7 @@ export function getDependencyHealth(startCwd = process.cwd()): DependencyHealth 
   if (messages.length === 0) {
     messages.push('Dockview package/CSS, shared styles, Tailwind/PostCSS pipeline, required CSS packages, and bundled runtime dependencies resolved.');
   }
+  messages.push(`Git executable: ${gitExecutable.path} (${gitExecutable.source}).`);
 
   return {
     dockviewPackageResolved,
@@ -241,6 +246,8 @@ export function getDependencyHealth(startCwd = process.cwd()): DependencyHealth 
     sharedStylesResolved,
     cssPackagesResolved,
     runtimePackagesResolved,
+    gitExecutablePath: gitExecutable.path,
+    gitExecutableSource: gitExecutable.source,
     postcssConfigResolved,
     tailwindPostcssResolved,
     tailwindPipelineResolved,

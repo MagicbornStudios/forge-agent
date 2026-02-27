@@ -15,7 +15,7 @@ Run **`pnpm knip`** at repo root to find unused files, unused exports, and unuse
 - **What it does:** Knip analyzes the monorepo for unused files, unused exports, unused dependencies, and unlisted dependencies. It uses the pnpm workspace layout ([pnpm-workspace.yaml](../../../pnpm-workspace.yaml)) and each package’s `package.json` and tsconfig to infer entry points and project files.
 - **Entry vs project:** Entry files are the roots (e.g. `src/index.ts`, Next.js pages and layout). Project files are everything else. Exports from entry files are not reported as "unused" by default; exports from non-entry files are reported if nothing imports them.
 - **Our config:** Root [knip.json](../../../knip.json):
-  - **ignoreWorkspaces:** `examples/*` — those workspaces are not analyzed. (Twick was removed; no vendor/twick.)
+  - **ignoreWorkspaces:** `examples/*` — those workspaces are not analyzed. (Twick fully removed 2026-02-26; no vendor/twick.)
   - **ignoreFiles:** `.tmp/**`, `**/.source/**`, `**/dist/**`, `**/node_modules/**` — those paths are excluded from the "unused files" check only (still analyzed for exports/deps where applicable).
 - **Running:** `pnpm knip` at repo root. Exit code 1 when there are findings.
 - **Caveats:** Barrel re-exports (index.ts), Next.js dynamic imports, Payload/OpenAPI-generated code, and CSS/side-effect imports often produce false positives. Triage before removing anything.
@@ -50,7 +50,7 @@ Root `app/`, `lib/`, and `types/` are **legacy** from pre-monorepo. The real app
 
 **td-14 (unused files) triage:** Extended ignoreFiles for entry/config (`jest.config.js`, `jest.setup.js`), `scripts/**`, `__mocks__/**`, `__tests__/**`, `vendor/twick/scripts/**`, and `packages/shared/src/shared/styles/*.css`. Removed `apps/studio/lib/graph-to-sequence.ts` (rg-confirmed no imports). Other reported files left as-is (barrels, components, or used at runtime).
 
-**td-15 (unused dependencies) triage:** Added **ignoreDependencies** in knip.json for Radix UI packages (used transitively via @forge/ui or by framework), @twick/*, fumadocs-ui, next-mdx-remote, react-markdown, remark-gfm, vaul, cmdk, class-variance-authority, posthog-js, next-themes, cobe, tailwindcss-animate, and devDependencies (tsup, @testing-library/*, eslint, eslint-config-next, jest-environment-jsdom, tailwindcss, payload). No dependencies removed; all kept or ignored per plan.
+**td-15 (unused dependencies) triage:** Added **ignoreDependencies** in knip.json for Radix UI packages (used transitively via @forge/ui or by framework), fumadocs-ui, next-mdx-remote, react-markdown, remark-gfm, vaul, cmdk, class-variance-authority, posthog-js, next-themes, cobe, tailwindcss-animate, and devDependencies (tsup, @testing-library/*, eslint, eslint-config-next, jest-environment-jsdom, tailwindcss, payload). No dependencies removed; all kept or ignored per plan.
 
 **td-17 (unused exports) triage:** Added **ignoreIssues** in knip.json for `**/index.ts`, `**/payload-types.ts`, `**/payload/collections/*.ts`, and `**/source.config.ts` with issue types `["exports","types"]` so barrel and Payload/generated exports are not reported. No exports removed; barrel/runtime/generated ignored per plan.
 

@@ -3,22 +3,21 @@
 import * as React from 'react';
 import { BookOpen, Bot } from 'lucide-react';
 import { WorkspaceLayout, WorkspaceToolbar } from '@forge/shared/components/workspace';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@forge/ui/select';
-import { AssistantPanel } from '@/components/features/assistant/AssistantPanel';
+import { WorkspaceViewport } from '@forge/shared';
+import { AssistantPanel } from '../../../apps/repo-studio/src/components/features/assistant/AssistantPanel';
 import {
   getStoryPathFromViewportPanelId,
   getStoryViewportPanelId,
   StoryExplorerPanel,
   StoryPagePanel,
   useStoryWorkspaceModel,
-} from '@/components/features/story/StoryPanel';
-import { WorkspaceViewport } from '@/components/viewport/WorkspaceViewport';
-import { WORKSPACE_LABELS } from '@/lib/app-spec.generated';
-import { useRepoStudioShellStore } from '@/lib/app-shell/store';
-import { createHiddenPanelSet, isPanelVisible, type RepoWorkspaceProps } from './types';
-
-export const WORKSPACE_ID = 'story' as const;
-export const WORKSPACE_LABEL = 'Story';
+} from '../../../apps/repo-studio/src/components/features/story/StoryPanel';
+import { useRepoStudioShellStore } from '../../../apps/repo-studio/src/lib/app-shell/store';
+import {
+  createHiddenPanelSet,
+  isPanelVisible,
+  type RepoWorkspaceProps,
+} from '../../../apps/repo-studio/src/components/workspaces/types';
 
 function normalizeStoryViewportPanelIds(panelIds: string[] | undefined) {
   const seen = new Set<string>();
@@ -46,7 +45,7 @@ function getStoryTabTitle(path: string) {
   return parts[parts.length - 1] || normalized;
 }
 
-export function StoryWorkspace({
+export function StoryExtensionWorkspaceAdapter({
   layoutId,
   layoutJson,
   onLayoutChange,
@@ -178,30 +177,13 @@ export function StoryWorkspace({
     [model, openPanelIds, panelContext.onCopyText],
   );
 
-  const { loopEntries, onSwitchLoop } = panelContext;
   return (
     <div className="flex h-full min-h-0 flex-col">
       <WorkspaceToolbar className="shrink-0 border-b border-border px-2 py-1">
-        <WorkspaceToolbar.Left>
-          <div className="flex items-center gap-1.5">
-            <BookOpen size={14} className="shrink-0 text-muted-foreground" aria-hidden />
-            <Select value={activeLoopId} onValueChange={onSwitchLoop}>
-              <SelectTrigger className="h-7 w-[180px] text-xs">
-                <SelectValue placeholder="Loop" />
-              </SelectTrigger>
-              <SelectContent>
-                {loopEntries.map((entry) => (
-                  <SelectItem key={entry.id} value={entry.id}>
-                    {entry.name} ({entry.id})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </WorkspaceToolbar.Left>
+        <WorkspaceToolbar.Left />
         <WorkspaceToolbar.Center>
           <span className="text-xs text-muted-foreground">
-            {WORKSPACE_LABELS.story}
+            Story
           </span>
         </WorkspaceToolbar.Center>
       </WorkspaceToolbar>
@@ -213,43 +195,43 @@ export function StoryWorkspace({
         onPanelClosed={onPanelClosed}
         className="min-h-0 flex-1"
       >
-      <WorkspaceLayout.Left hideTabBar>
-        {isPanelVisible(hiddenPanels, 'story') ? (
-          <WorkspaceLayout.Panel id="story" title="Story" icon={<BookOpen size={14} />}>
-            <StoryExplorerPanel
-              model={model}
-              onOpenPath={openStoryPath}
+        <WorkspaceLayout.Left hideTabBar>
+          {isPanelVisible(hiddenPanels, 'story') ? (
+            <WorkspaceLayout.Panel id="story" title="Story" icon={<BookOpen size={14} />}>
+              <StoryExplorerPanel
+                model={model}
+                onOpenPath={openStoryPath}
+              />
+            </WorkspaceLayout.Panel>
+          ) : null}
+        </WorkspaceLayout.Left>
+
+        <WorkspaceLayout.Main hideTabBar>
+          <WorkspaceLayout.Panel id="viewport" title="Viewport" icon={<BookOpen size={14} />}>
+            <WorkspaceViewport
+              panels={viewportPanels}
+              openIds={openPanelIds}
+              activeId={activePanelId}
+              onOpenChange={handleViewportOpenChange}
+              onActiveChange={handleViewportActiveChange}
+              allowEmpty
+              onBeforeCloseTab={handleBeforeCloseTab}
+              emptyState={(
+                <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
+                  Open a page from Story panel.
+                </div>
+              )}
             />
           </WorkspaceLayout.Panel>
-        ) : null}
-      </WorkspaceLayout.Left>
+        </WorkspaceLayout.Main>
 
-      <WorkspaceLayout.Main hideTabBar>
-        <WorkspaceLayout.Panel id="viewport" title="Viewport" icon={<BookOpen size={14} />}>
-          <WorkspaceViewport
-            panels={viewportPanels}
-            openIds={openPanelIds}
-            activeId={activePanelId}
-            onOpenChange={handleViewportOpenChange}
-            onActiveChange={handleViewportActiveChange}
-            allowEmpty
-            onBeforeCloseTab={handleBeforeCloseTab}
-            emptyState={
-              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                Open a page from Story panel.
-              </div>
-            }
-          />
-        </WorkspaceLayout.Panel>
-      </WorkspaceLayout.Main>
-
-      <WorkspaceLayout.Right hideTabBar>
-        {isPanelVisible(hiddenPanels, 'assistant') ? (
-          <WorkspaceLayout.Panel id="assistant" title="Assistant" icon={<Bot size={14} />}>
-            <AssistantPanel defaultRuntime="forge" />
-          </WorkspaceLayout.Panel>
-        ) : null}
-      </WorkspaceLayout.Right>
+        <WorkspaceLayout.Right hideTabBar>
+          {isPanelVisible(hiddenPanels, 'assistant') ? (
+            <WorkspaceLayout.Panel id="assistant" title="Assistant" icon={<Bot size={14} />}>
+              <AssistantPanel defaultRuntime="forge" />
+            </WorkspaceLayout.Panel>
+          ) : null}
+        </WorkspaceLayout.Right>
       </WorkspaceLayout>
     </div>
   );

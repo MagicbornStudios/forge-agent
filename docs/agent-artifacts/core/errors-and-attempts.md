@@ -1,4 +1,4 @@
----
+﻿---
 title: Errors and attempts
 created: 2026-02-04
 updated: 2026-02-26
@@ -14,7 +14,74 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ---
 
-## Twick undo-redo: localStorage is not defined (Studio SSR) — OBSOLETE
+## Repo Studio folder-as-workspace expectation (2026-02-26)
+
+**Problem**: Repo Studio behavior drifted from expected editor UX. The app exposed workspace/panel actions but did not expose a first-class File menu open-folder workflow, and push-to-GitHub was not surfaced from File menu with auth-aware gating. Several runtime surfaces still resolved data from host workspace assumptions.
+
+**User correction**:
+- Repo Studio must behave like VSCode/Cursor: `File > Open Project Folder...` sets active workspace folder.
+- Viewport/workspace data should target the opened folder.
+- Forge tooling should remain provided by Repo Studio host, not required inside opened folders.
+- `File > Push to GitHub` should exist and be enabled only when signed in and the active folder is a git repo.
+
+**Fix**:
+- Added File menu actions (`Open Project Folder...`, `Recent Projects`, gated `Push to GitHub`) through `menu-contributions.ts`.
+- Added desktop native folder picker IPC bridge and web input-dialog fallback.
+- Relaxed project import from git-only to any existing directory; compute `isGitRepo` dynamically in project records/API payloads.
+- Hard-cut data root resolution to active project root across repo-studio workspace loaders/routes.
+- Split root semantics explicitly:
+  - host workspace root for tool binary resolution,
+  - active project root for runtime data and command cwd.
+
+**Guardrail**:
+- Do not reintroduce host-root fallback for workspace data paths.
+- Keep tool resolution host-rooted while executing against active project cwd.
+- Keep File menu Open Folder + Push affordances visible and deterministic.
+
+---
+
+## Repo Studio extension layout drift + Story hard requirement (2026-02-26)
+
+**Problem**: Extension panel layout was still partially hardcoded in `workspace-catalog.ts` (`workspaceKind === "story"` branch), and guardrails/tests still assumed Story manifest must exist locally in this repo.
+
+**User correction**:
+- Story is optional/community-distributed per project.
+- Extensions must live in the active project folder and be installable from a registry source.
+- Host should not hardcode Story layout specs when extension specs are available.
+
+**Fix (phase 14/15 cutover)**:
+- Added extension layout resolution priority: extension payload layout -> generated extension layout getter -> generic fallback.
+- Removed story-specific catalog fallback branch.
+- Added extension registry APIs (`/api/repo/extensions/registry`, `/install`, `/remove`) and project-scoped install flow.
+- Added built-in Extensions workspace for browse/install/update/remove.
+- Added registry examples feed (`examples/studios/*`) as browse-only reference cards.
+- Removed Story-specific install prompt from root shell; extension discovery/install is Extensions-workspace-driven.
+
+**Guardrail**:
+- Do not reintroduce story-specific layout hardcoding in workspace catalog.
+- Do not treat studio example ids as installable extension targets.
+- Keep extension execution host-rendered by workspaceKind; no arbitrary extension JS loading.
+
+---
+
+## Repo Studio product hard cut verification pitfalls (2026-02-26)
+
+**Problem**: During the product hard-cut slice (core workspace reduction + global assistant/terminal), `next build` failed with a hook-rule error that was easy to miss because webpack cache warnings flooded logs.
+
+**Root cause**:
+- `AssistantPanel` quick-prompt handler was named `useQuickPrompt`, so eslint interpreted it as an invalid hook call inside a callback context.
+- Build output contained heavy webpack cache noise (`PackFileCacheStrategy` warnings), which obscured the actionable lint line.
+
+**Fix**:
+- Renamed callback to `handleQuickPrompt` and updated button handlers.
+- Captured build logs to file and tailed the final section to isolate lint/type failures from cache warnings.
+
+**Guardrail**:
+- Do not prefix non-hook callbacks with `use`.
+- When Next build logs are noisy, capture output and inspect tail/error sections before changing unrelated code.
+
+---
+## Twick undo-redo: localStorage is not defined (Studio SSR) â€” OBSOLETE
 
 **Obsolete (2026-02-24)**: Twick was fully removed from the repo. This entry is kept for historical reference only.
 
@@ -71,7 +138,7 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ## Repo Studio viewport-as-canvas correction (2026-02-26)
 
-**Problem**: Repo Studio treated `viewport` as an explicit dock tab in the main rail. This produced a redundant “Viewport” tab header and blocked the expected VS Code-style center canvas behavior, especially in Story where the user expected a left explorer and closable page tabs in the center.
+**Problem**: Repo Studio treated `viewport` as an explicit dock tab in the main rail. This produced a redundant â€œViewportâ€ tab header and blocked the expected VS Code-style center canvas behavior, especially in Story where the user expected a left explorer and closable page tabs in the center.
 
 **Root cause**:
 - `WorkspaceLayout.Main` did not support `hideTabBar`, so only left/right rails could hide outer Dockview headers.
@@ -122,12 +189,12 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ## Repo Studio: Payload "Is X column created or renamed?" prompt in dev (2026-02-26)
 
-**Problem**: When running Repo Studio in dev, Payload CMS (collections in dev mode) prompted interactively: "Is assistant_target column in repo_proposals table created or renamed from another column?" after renaming a collection field (e.g. `editor_target` → `assistant_target`). This blocked non-interactive dev and required one-off migration scripts.
+**Problem**: When running Repo Studio in dev, Payload CMS (collections in dev mode) prompted interactively: "Is assistant_target column in repo_proposals table created or renamed from another column?" after renaming a collection field (e.g. `editor_target` â†’ `assistant_target`). This blocked non-interactive dev and required one-off migration scripts.
 
 **Root cause**: Payload sees schema drift (old column gone, new column present) and asks whether to treat it as a rename or a create. We do not want to rely on persistent dev DB data or answer prompts.
 
 **Fix (2026-02-26)**:
-- Dev runs `db:reset-dev` before starting Next + Drizzle Studio. That deletes the Repo Studio SQLite file (same path as `payload.config.ts`), so Payload always starts with no DB and creates tables from current collection config—no prompt.
+- Dev runs `db:reset-dev` before starting Next + Drizzle Studio. That deletes the Repo Studio SQLite file (same path as `payload.config.ts`), so Payload always starts with no DB and creates tables from current collection configâ€”no prompt.
 - Removed one-off script `scripts/migrate-assistant-target.mjs` and `db:migrate:assistant-target`. Standalone wipe: `pnpm --filter @forge/repo-studio-app db:reset-dev`.
 - Documented in [decisions.md](./decisions.md): Repo Studio dev DB is ephemeral; Payload owns schema; Drizzle is pull-only.
 
@@ -222,15 +289,15 @@ when `apps/repo-studio/app/globals.css` imports packages not installed in `apps/
 
 ---
 
-## Universal padding/margin reset — CRITICAL: never add to `*`
+## Universal padding/margin reset â€” CRITICAL: never add to `*`
 
-**Problem**: A universal selector `* { padding: 0; margin: 0 }` (or equivalent in `@layer base` or CSS reset) strips default padding and margin from **all** elements — buttons, labels, inputs, badges. This caused days of debugging: buttons and labels looked cramped everywhere, even with explicit utility classes. Tailwind preflight already normalizes; adding our own `*` reset stacks and breaks UI.
+**Problem**: A universal selector `* { padding: 0; margin: 0 }` (or equivalent in `@layer base` or CSS reset) strips default padding and margin from **all** elements â€” buttons, labels, inputs, badges. This caused days of debugging: buttons and labels looked cramped everywhere, even with explicit utility classes. Tailwind preflight already normalizes; adding our own `*` reset stacks and breaks UI.
 
 **Fix**:
 - **Do NOT add** `padding: 0` or `margin: 0` to the universal selector `*` in `globals.css` or any base layer.
 - Keep only intended `*` rules (e.g. `border-border`, `outline-ring/50`). Do not add box-model resets to `*`.
-- If components still look cramped, add explicit padding via utilities or design tokens (`--control-padding-x`, `--panel-padding`, etc.), or adjust component styles — never strip globally.
-- Before changing base/globals CSS, read this entry and [styling-and-ui-consistency.md](styling-and-ui-consistency.md) § No universal padding/margin reset.
+- If components still look cramped, add explicit padding via utilities or design tokens (`--control-padding-x`, `--panel-padding`, etc.), or adjust component styles â€” never strip globally.
+- Before changing base/globals CSS, read this entry and [styling-and-ui-consistency.md](styling-and-ui-consistency.md) Â§ No universal padding/margin reset.
 
 **Documentation**: See `apps/studio/app/globals.css` comment above `@layer base` and styling-and-ui-consistency rule 26.
 
@@ -246,11 +313,11 @@ when `apps/repo-studio/app/globals.css` imports packages not installed in `apps/
 
 ## MDX agent blocks: use Callout, not details
 
-**Problem**: Raw HTML `<details><summary>…</summary>…</details>` in MDX can cause build error: `Unexpected character ! (U+0021) before name`. Fumadocs/MDX parsers can choke on details content.
+**Problem**: Raw HTML `<details><summary>â€¦</summary>â€¦</details>` in MDX can cause build error: `Unexpected character ! (U+0021) before name`. Fumadocs/MDX parsers can choke on details content.
 
 **Fix**: Use `<Callout variant="note" title="For coding agents">` instead. Callout is registered in mdx-components and parses correctly.
 
-**Do not**: Use raw `<details>` or `<summary>` for agent blocks; use Callout. See [docs-building § Agent blocks](docs-building.md).
+**Do not**: Use raw `<details>` or `<summary>` for agent blocks; use Callout. See [docs-building Â§ Agent blocks](docs-building.md).
 
 ---
 
@@ -416,17 +483,17 @@ when `apps/repo-studio/app/globals.css` imports packages not installed in `apps/
 **Problem**: The Dialogue assistant in Studio (Dialogue editor) can appear to return a standard or canned response instead of streaming real model output from Open Router. The assistant must use the same AI infrastructure (Open Router) and stream real responses; any fallback to a non-Open-Router path or a generic message is unacceptable.
 
 **Trace (review when debugging)**:
-- **Client**: `DialogueAssistantPanel` uses `API_ROUTES.ASSISTANT_CHAT` and `transportHeaders` from `DialogueEditor` (`x-forge-ai-domain`, `x-forge-ai-editor-id`, `x-forge-ai-viewport-id`, `x-forge-ai-project-id` when LangGraph enabled). Transport is `AssistantChatTransport` from `@assistant-ui/react-ai-sdk`; requests go to Studio’s `/api/assistant-chat`.
+- **Client**: `DialogueAssistantPanel` uses `API_ROUTES.ASSISTANT_CHAT` and `transportHeaders` from `DialogueEditor` (`x-forge-ai-domain`, `x-forge-ai-editor-id`, `x-forge-ai-viewport-id`, `x-forge-ai-project-id` when LangGraph enabled). Transport is `AssistantChatTransport` from `@assistant-ui/react-ai-sdk`; requests go to Studioâ€™s `/api/assistant-chat`.
 - **Server**: `apps/studio/app/api/assistant-chat/route.ts` uses `getOpenRouterConfig()` (module load; requires `OPENROUTER_API_KEY`), `requireAiRequestAuth` (401 if missing), model from `getPersistedModelIdForProvider(req, 'assistantUi')` and `resolveModelIdFromRegistry(selectedModel, registry)`. If registry is empty or model invalid, fallback may apply. Then `streamAssistantResponse` (OpenAI SDK + `config.baseUrl`) streams. Early returns: 503 if no API key, 401 if unauth, 400 if invalid JSON.
 
 **Things to check when the assistant does not use Open Router**:
 - Env: `OPENROUTER_API_KEY` and `OPENROUTER_BASE_URL` (e.g. `pnpm env:setup --app studio`). If the key is missing at module load, the route returns 503 and the client may show a generic error or placeholder.
-- Auth: Unauthorized (401) causes a JSON error response; the client might surface it as a “standard” message.
+- Auth: Unauthorized (401) causes a JSON error response; the client might surface it as a â€œstandardâ€ message.
 - Model resolution: Empty OpenRouter registry or invalid persisted model ID can trigger fallback; ensure `resolveModelIdFromRegistry` returns a valid model and that the model list loads (`GET /api/model-settings`).
 - Do not bypass the Open Router path for chat; do not return a non-stream JSON body for normal chat requests when auth and config are valid.
 
 **Guardrail**:
-- When changing **assistant panels** (e.g. Repo Studio chat-only UI, tooltips, shared `Thread` or transport), do **not** change Studio’s Dialogue assistant transport URL, headers, or provider wiring unless the change is explicitly to fix Open Router. Repo Studio uses a different app and route; keep `API_ROUTES.ASSISTANT_CHAT` and `DialogueAssistantPanel` wiring unchanged for Studio.
+- When changing **assistant panels** (e.g. Repo Studio chat-only UI, tooltips, shared `Thread` or transport), do **not** change Studioâ€™s Dialogue assistant transport URL, headers, or provider wiring unless the change is explicitly to fix Open Router. Repo Studio uses a different app and route; keep `API_ROUTES.ASSISTANT_CHAT` and `DialogueAssistantPanel` wiring unchanged for Studio.
 - After any change that touches shared assistant UI or the assistant-chat route, **verify** that the Studio Dialogue assistant still streams real model responses (e.g. open Dialogue editor, send a message, confirm streamed reply from the selected model).
 
 ---
@@ -526,23 +593,23 @@ This removes the local prebuild dependency on `packages/shared/dist/styles/edito
 **Context**: User reports Repo Studio UI has not loaded for a while due to errors.
 
 **Investigation steps**:
-1. **Build**: `pnpm --filter @forge/repo-studio-app build` — if it passes, compile is fine.
+1. **Build**: `pnpm --filter @forge/repo-studio-app build` â€” if it passes, compile is fine.
 2. **Port**: `pnpm dev:repo-studio` uses 3010; `EADDRINUSE` means another process has it. Stop conflicting process or use different port.
 3. **Browser console**: If page loads but breaks, capture console errors (hydration, dockview, missing provider).
 4. **Dockview CSS**: Repo Studio uses Dockview; ensure `dockview.css` and overrides load. See Studio CSS import failure entry for pattern.
 5. **Bootstrap**: `forge-repo-studio run` or `open` may need to be running; config in `.repo-studio/`.
 
-**Gap**: Root cause TBD. Document findings in repo_studio_analysis GAPS § UI Load / Runtime and here when identified.
+**Gap**: Root cause TBD. Document findings in repo_studio_analysis GAPS Â§ UI Load / Runtime and here when identified.
 
 ---
 
-## Repo Studio layout defaults: declarative code IS the default — do not ask
+## Repo Studio layout defaults: declarative code IS the default â€” do not ask
 
 **Rule**: The declarative code in the codebase (e.g. `PlanningWorkspace`, `EditorDockLayout` children) **is** the default layout. There is no separate config or manifest that defines "the default." Reset layout restores what's in code. Codegen may produce artifacts from that code (e.g. for reset), but the source of truth is the code.
 
 **Do not**: Ask "should default layout be in code or config?" or "code vs manifest for layout defaults." The answer is always: code. The code the user sees is the default.
 
-**Reference**: repo_studio_analysis DECISIONS-WORKSPACE-PANELS § Layout and Flexibility.
+**Reference**: repo_studio_analysis DECISIONS-WORKSPACE-PANELS Â§ Layout and Flexibility.
 
 ---
 
@@ -568,7 +635,7 @@ The failure originates from `packages/ui/dist/index.mjs` being treated as a serv
 
 **Problem**: Selecting a node in one graph did not show the selection in the Inspector until the user focused another panel (e.g. the other graph). State (selection, activeScope) updated correctly, but the right-panel (slot) content did not re-render because Dockview controls when `SlotPanel` is rendered; when only React context changed (new `right={inspectorContent}` from the editor), Dockview did not re-render the panel.
 
-**Fix**: Use a **slot content store** (Zustand) so slot content drives re-renders independently of Dockview. In `EditorDockLayout.tsx`: (1) Create a module-level store holding `slots: Record<string, React.ReactNode>` and a `version` that bumps on each write. (2) In `DockLayoutRoot`, sync the resolved context value (left, main, right, rightInspector, rightSettings, bottom) into the store in `useLayoutEffect` when it changes. (3) In `SlotPanel`, subscribe to the store by `slotId` (e.g. `useSlotContentStore(s => ({ content: s.slots[slotId], version: s.version }))`) and render the stored content, with context as fallback. Then when the editor passes new `right={inspectorContent}`, the store updates and `SlotPanel` re-renders without requiring focus elsewhere. Ensure editor slot content (e.g. Inspector) is not over-memoized—dependency arrays should include `activeSelection`, `inspectorSections`, etc. When using a selector that returns an object or array, wrap with **useShallow** to avoid getSnapshot infinite loop (see next entry).
+**Fix**: Use a **slot content store** (Zustand) so slot content drives re-renders independently of Dockview. In `EditorDockLayout.tsx`: (1) Create a module-level store holding `slots: Record<string, React.ReactNode>` and a `version` that bumps on each write. (2) In `DockLayoutRoot`, sync the resolved context value (left, main, right, rightInspector, rightSettings, bottom) into the store in `useLayoutEffect` when it changes. (3) In `SlotPanel`, subscribe to the store by `slotId` (e.g. `useSlotContentStore(s => ({ content: s.slots[slotId], version: s.version }))`) and render the stored content, with context as fallback. Then when the editor passes new `right={inspectorContent}`, the store updates and `SlotPanel` re-renders without requiring focus elsewhere. Ensure editor slot content (e.g. Inspector) is not over-memoizedâ€”dependency arrays should include `activeSelection`, `inspectorSections`, etc. When using a selector that returns an object or array, wrap with **useShallow** to avoid getSnapshot infinite loop (see next entry).
 
 ---
 
@@ -622,13 +689,13 @@ References:
 
 ## Settings inner tabs (AI / Appearance / Panels / Other) not updating until focus on graph
 
-**Problem**: In the Settings panel (right dock panel → Settings tab), switching between the inner tabs (AI, Appearance, Panels, Other) did not update the tab highlight or content until the user focused the **graph panel** (not the library or other areas). The tab state lived inside `AppSettingsPanelContent`; when it updated, only that subtree re-rendered. The right slot content is provided to Dockview via context; `SlotPanel` only re-renders when the context value (the `right` element) changes. That value is created by the layout parent (e.g. DialogueEditor). So when only `AppSettingsPanelContent`'s state changed, the parent did not re-render, the context value did not change, and the slot did not re-render—so the tab visual did not update until something else (e.g. focusing the graph) caused the layout parent to re-render and refresh the slot.
+**Problem**: In the Settings panel (right dock panel â†’ Settings tab), switching between the inner tabs (AI, Appearance, Panels, Other) did not update the tab highlight or content until the user focused the **graph panel** (not the library or other areas). The tab state lived inside `AppSettingsPanelContent`; when it updated, only that subtree re-rendered. The right slot content is provided to Dockview via context; `SlotPanel` only re-renders when the context value (the `right` element) changes. That value is created by the layout parent (e.g. DialogueEditor). So when only `AppSettingsPanelContent`'s state changed, the parent did not re-render, the context value did not change, and the slot did not re-renderâ€”so the tab visual did not update until something else (e.g. focusing the graph) caused the layout parent to re-render and refresh the slot.
 
 **Preferred fix**: **Universal Settings Sidebar (right rail).** Use a single Settings Sidebar at app shell level (shadcn `Sidebar` with `side="right"`), containing `AppSettingsPanelContent`. When Settings is the root of its own surface (sidebar or a dedicated dock panel), inner tab state updates re-render correctly. AppShell wraps content in `SidebarProvider` and renders the Settings Sidebar with `activeEditorId`, `activeProjectId`, and `settingsViewportId` from the store; editors set `setSettingsViewportId(viewportId)` when their viewport/scope changes so the Panels tab shows the right context (e.g. narrative vs storylet). "Open Settings" opens the sidebar. The right dock is Inspector-only (single `right` panel). If the right dock showed empty ("nothing is rendering"), the cause was often a saved layout with panel id `right` while the app only provided `right-inspector`/`right-settings` content; reverting to a single `right` panel and moving Settings to the sidebar fixes both.
 
 **Alternative (legacy) fix**: **Lift the inner tab state** to the parent that owns the slot content so that when the user changes the inner tab, that parent re-renders and the slot context value updates. (1) In the editor, add state for the Settings inner category (e.g. `settingsInnerCategory` / `setSettingsInnerCategory`). (2) Pass it to `AppSettingsPanelContent` as a controlled prop (e.g. `controlledCategory={{ appUserCategory, onAppUserCategoryChange }}`). (3) In `AppSettingsPanelContent`, support optional `controlledCategory`; when provided, use it instead of internal state. (4) Include the inner category in the **key** of the right-panel content so the slot content identity changes and Dockview/SlotPanel receive a fresh tree. (5) Keep `key={value}` on the Radix Tabs in SettingsTabs as a secondary aid. When the component is used outside the dock (e.g. in AppSettingsSheet), omit `controlledCategory` so it keeps using internal state.
 
-**Wrong fix (do not repeat):** (1) Fixing the **Inspector/Settings** two-tab strip instead of the **Settings inner tabs**. (2) Adding only `key={value}` to the Radix `Tabs` in SettingsTabs—that alone does not fix it when the slot content is rendered by Dockview and does not re-render on inner state change.
+**Wrong fix (do not repeat):** (1) Fixing the **Inspector/Settings** two-tab strip instead of the **Settings inner tabs**. (2) Adding only `key={value}` to the Radix `Tabs` in SettingsTabsâ€”that alone does not fix it when the slot content is rendered by Dockview and does not re-render on inner state change.
 
 ---
 
@@ -849,7 +916,7 @@ References:
 - Improve TOC spacing/legibility in `RightToc`:
   - add padded rounded TOC container,
   - add more link padding/vertical rhythm,
-  - shift and shorten hierarchy connector lines so they don’t crowd numbered text.
+  - shift and shorten hierarchy connector lines so they donâ€™t crowd numbered text.
 
 References:
 
@@ -983,7 +1050,7 @@ References:
 
 **Problem**: Using `bg-background` or `text-foreground` inside a different surface (e.g. sidebar, app bar strip) can produce wrong contrast (e.g. dark text on dark background), because those tokens are global.
 
-**Fix**: Use surface-specific tokens. Inside sidebar use `bg-sidebar` / `text-sidebar-foreground` (and `sidebar-accent` for hover). For popovers use `bg-popover` / `text-popover-foreground`; for cards/panels use `bg-card` / `text-card-foreground`. Do not use `bg-background` or `text-foreground` in non-body surfaces. See [01 - Styling and theming — Token system](../../design/01-styling-and-theming.mdx#token-system-layers-and-when-to-use-which).
+**Fix**: Use surface-specific tokens. Inside sidebar use `bg-sidebar` / `text-sidebar-foreground` (and `sidebar-accent` for hover). For popovers use `bg-popover` / `text-popover-foreground`; for cards/panels use `bg-card` / `text-card-foreground`. Do not use `bg-background` or `text-foreground` in non-body surfaces. See [01 - Styling and theming â€” Token system](../../design/01-styling-and-theming.mdx#token-system-layers-and-when-to-use-which).
 
 ---
 
@@ -999,7 +1066,7 @@ References:
 
 ## Model routing: server-state only (single chat provider)
 
-**Design**: One slot — `assistantUiModelId` — in in-memory server-state for chat. **No model ID in request**: assistant-chat handler uses only `getAssistantUiModelId()`; do not send `x-forge-model` or body `modelName`. Client updates model only via POST to `/api/model-settings` with `{ provider: 'assistantUi', modelId }`. **ModelSwitcher** with `provider="assistantUi"`. Default from code via `getDefaultChatModelId()`. Use naming `assistantUi` (type `ModelProviderId`). See [03-model-routing-openrouter.mdx](../../architecture/03-model-routing-openrouter.mdx).
+**Design**: One slot â€” `assistantUiModelId` â€” in in-memory server-state for chat. **No model ID in request**: assistant-chat handler uses only `getAssistantUiModelId()`; do not send `x-forge-model` or body `modelName`. Client updates model only via POST to `/api/model-settings` with `{ provider: 'assistantUi', modelId }`. **ModelSwitcher** with `provider="assistantUi"`. Default from code via `getDefaultChatModelId()`. Use naming `assistantUi` (type `ModelProviderId`). See [03-model-routing-openrouter.mdx](../../architecture/03-model-routing-openrouter.mdx).
 
 ---
 
@@ -1075,7 +1142,7 @@ References:
 
 **Problem**: Using raw `fetch` for collection or app API bypasses the Payload SDK / generated client and duplicates logic; it breaks type safety and makes it easy to drift from the contract.
 
-**Fix**: For collection CRUD (forge-graphs, video-docs), use the Payload SDK (`lib/api-client/payload-sdk.ts`) via the TanStack Query hooks. For custom endpoints (auth, settings, AI), use the generated services or **manual client modules** in `lib/api-client/` (e.g. elevenlabs, media, workflows), or **vendor SDKs** where appropriate. Do not call `fetch` for `/api/*` from components or stores. **New endpoints:** add a manual client module in `lib/api-client/` or use a vendor SDK. The OpenAPI spec is for **documentation only**; OpenAPI client generators do not support streaming responses—use manual modules (e.g. workflows.ts) for SSE/streaming endpoints. Do not rely on extending the spec to generate new clients.
+**Fix**: For collection CRUD (forge-graphs, video-docs), use the Payload SDK (`lib/api-client/payload-sdk.ts`) via the TanStack Query hooks. For custom endpoints (auth, settings, AI), use the generated services or **manual client modules** in `lib/api-client/` (e.g. elevenlabs, media, workflows), or **vendor SDKs** where appropriate. Do not call `fetch` for `/api/*` from components or stores. **New endpoints:** add a manual client module in `lib/api-client/` or use a vendor SDK. The OpenAPI spec is for **documentation only**; OpenAPI client generators do not support streaming responsesâ€”use manual modules (e.g. workflows.ts) for SSE/streaming endpoints. Do not rely on extending the spec to generate new clients.
 
 ## Duplicating collection CRUD in custom routes
 
@@ -1093,13 +1160,13 @@ References:
 
 ---
 
-## Twick CSS/JS resolution (build) — OBSOLETE
+## Twick CSS/JS resolution (build) â€” OBSOLETE
 
 **Obsolete (2026-02-24)**: Twick was fully removed. Kept for historical reference.
 
 ---
 
-## Twick: useTimelineContext must be used within a TimelineProvider (VideoEditor) — OBSOLETE
+## Twick: useTimelineContext must be used within a TimelineProvider (VideoEditor) â€” OBSOLETE
 
 **Obsolete (2026-02-24)**: Twick was fully removed. Video editor remains capability-locked; when re-enabled, use a new timeline/editor stack.
 
@@ -1154,7 +1221,7 @@ References:
 
 ## FlexLayout panels not showing (only overlays visible)
 
-**Problem**: After the Dockview→FlexLayout swap, only overlay UI (e.g. app bar, modals) was visible; no Library/Main/Inspector/Workbench panels.
+**Problem**: After the Dockviewâ†’FlexLayout swap, only overlay UI (e.g. app bar, modals) was visible; no Library/Main/Inspector/Workbench panels.
 
 **Fix**: FlexLayout was removed; DockLayout is back to **Dockview**. If panels disappear, reset the Dockview layout (`resetLayout()` or clear `localStorage['dockview-{layoutId}']`) rather than reintroducing FlexLayout.
 
@@ -1172,7 +1239,7 @@ created: 2026-02-07
 updated: 2026-02-08
 ---
 ```
-For the ongoing convention (new or moved docs), see [standard-practices](standard-practices.md) § Docs (MDX build).
+For the ongoing convention (new or moved docs), see [standard-practices](standard-practices.md) Â§ Docs (MDX build).
 
 ---
 
@@ -1180,7 +1247,7 @@ For the ongoing convention (new or moved docs), see [standard-practices](standar
 
 **Problem**: `pnpm --filter @forge/studio build` failed during "Creating an optimized production build" with `TypeError: The "data" argument must be of type string or an instance of Buffer, TypedArray, or DataView. Received undefined` (code `ERR_INVALID_ARG_TYPE`). No stack trace in output; typically from `Buffer.from(undefined)`, `fs.writeFile(path, undefined)`, or `crypto.Hash.update(undefined)`.
 
-**Fixes applied**: (1) **api-client request.ts** — `base64(str)` now guards: if `str` is null/undefined or not a string, return empty-base64 instead of calling `Buffer.from(str)`. (2) **generate-openapi.mjs** — never pass undefined to `writeFileSync`: use `spec != null ? JSON.stringify(spec, null, 2) : '{}'`. (3) **next.config.ts SanitizeUndefinedAssetSourcePlugin** — guard `sanitizeUndefinedSources(compilation, assets)` so if `assets` is null/undefined we return immediately (avoids `Object.entries(assets)` throwing when processAssets calls the hook with undefined at some stages). Re-run build after changes; if the error persists, the source may be inside a dependency (e.g. hashing in webpack).
+**Fixes applied**: (1) **api-client request.ts** â€” `base64(str)` now guards: if `str` is null/undefined or not a string, return empty-base64 instead of calling `Buffer.from(str)`. (2) **generate-openapi.mjs** â€” never pass undefined to `writeFileSync`: use `spec != null ? JSON.stringify(spec, null, 2) : '{}'`. (3) **next.config.ts SanitizeUndefinedAssetSourcePlugin** â€” guard `sanitizeUndefinedSources(compilation, assets)` so if `assets` is null/undefined we return immediately (avoids `Object.entries(assets)` throwing when processAssets calls the hook with undefined at some stages). Re-run build after changes; if the error persists, the source may be inside a dependency (e.g. hashing in webpack).
 
 ---
 
@@ -1220,25 +1287,25 @@ For the ongoing convention (new or moved docs), see [standard-practices](standar
 
 ---
 
-## "Maximum update depth exceeded" — Radix composeRefs hypothesis (FALSE POSITIVE)
+## "Maximum update depth exceeded" â€” Radix composeRefs hypothesis (FALSE POSITIVE)
 
 **Context**: Error surfaces at Radix UI `setRef` / `ScrollAreaPrimitive.Root` / `WorkspaceTooltip` in the stack. External reports (Radix #3799) cite composeRefs + React 19 as cause.
 
-**FALSE POSITIVE in this codebase**: The user explicitly confirmed that (a) Radix tooltip was **not** the cause — stripping tooltips did not fix the error; (b) Radix ScrollArea / replacing with native overflow is **forbidden** — "absolutely not"; (c) the composeRefs hypothesis was wrong for this repo. Many projects use Radix without issue.
+**FALSE POSITIVE in this codebase**: The user explicitly confirmed that (a) Radix tooltip was **not** the cause â€” stripping tooltips did not fix the error; (b) Radix ScrollArea / replacing with native overflow is **forbidden** â€” "absolutely not"; (c) the composeRefs hypothesis was wrong for this repo. Many projects use Radix without issue.
 
 **Do not**: Replace Radix ScrollArea, Tooltip, or other primitives with native alternatives based solely on the composeRefs hypothesis. Do not assume stack-trace location equals root cause.
 
-**Actual cause**: Under investigation. See "Maximum update depth — panel/slot cascade" for attempted fixes. Tooltip strip and native-title migration remain for other reasons; Radix primitives stay in packages/ui.
+**Actual cause**: Under investigation. See "Maximum update depth â€” panel/slot cascade" for attempted fixes. Tooltip strip and native-title migration remain for other reasons; Radix primitives stay in packages/ui.
 
 ---
 
-## Maximum update depth — panel registration and slot store cascade
+## Maximum update depth â€” panel registration and slot store cascade
 
-**Problem**: "Maximum update depth exceeded" in WorkspaceInspector / EditorDockPanel / ScrollArea path (Dialogue and Character editors). The panel registration cascade (WorkspaceRail → setRailPanels → EditorLayout → setSlots → SlotPanel) may contribute.
+**Problem**: "Maximum update depth exceeded" in WorkspaceInspector / EditorDockPanel / ScrollArea path (Dialogue and Character editors). The panel registration cascade (WorkspaceRail â†’ setRailPanels â†’ EditorLayout â†’ setSlots â†’ SlotPanel) may contribute.
 
 **Attempted fix (reverted)**: Deferring setRailPanels/setSlots via requestAnimationFrame caused graph panels to stop rendering (black/empty). rAF deferral reverted.
 
-**Fix (slotIdsKey + shallow compare)**: Guard the `setSlots` effect in DockLayout so we only call `useSlotContentStore.getState().setSlots(resolvedSlots)` when the slots actually changed. Use a `prevSlotsRef` and compare keys + slot content by reference; skip if identical. Add `slotIdsKey = Object.keys(resolvedSlots).sort().join('|')` for effect stability. Do **not** remove `resolvedSlots` from the effect deps entirely—that caused main/right/bottom panels to not render while left worked (effect ran before all rails had populated or ran too rarely).
+**Fix (slotIdsKey + shallow compare)**: Guard the `setSlots` effect in DockLayout so we only call `useSlotContentStore.getState().setSlots(resolvedSlots)` when the slots actually changed. Use a `prevSlotsRef` and compare keys + slot content by reference; skip if identical. Add `slotIdsKey = Object.keys(resolvedSlots).sort().join('|')` for effect stability. Do **not** remove `resolvedSlots` from the effect deps entirelyâ€”that caused main/right/bottom panels to not render while left worked (effect ran before all rails had populated or ran too rarely).
 
 **Anti-pattern (left-only render)**: When the setSlots effect was changed to run only on `slotIdsKey` (and not `resolvedSlots`), the effect could run before all rails had populated, so only left was synced. Always ensure the effect runs with the complete resolvedSlots when structure or content changes.
 
@@ -1252,7 +1319,7 @@ For the ongoing convention (new or moved docs), see [standard-practices](standar
 
 ## Panel registry recursion fix (UI-first layout)
 
-**Problem**: The imperative panel flow (WorkspaceRail effect → setRailPanels → panel registry store → EditorLayout subscribes → DockLayout) caused store update cascades and "Maximum update depth exceeded".
+**Problem**: The imperative panel flow (WorkspaceRail effect â†’ setRailPanels â†’ panel registry store â†’ EditorLayout subscribes â†’ DockLayout) caused store update cascades and "Maximum update depth exceeded".
 
 **Fix**: Replaced with **UI-first declarative API**. Editors compose `EditorDockLayout.Left` / `.Main` / `.Right` / `.Bottom` slot children with `EditorDockLayout.Panel` children. DockLayout collects panels from JSX in render; no store-driven registration, no effects for panel registration. `EditorLayoutProvider` now provides only `{ editorId }`; `WorkspaceRail`, `WorkspaceRailPanel`, and `EditorLayout` are deprecated. `useEditorPanelVisibility` uses `EDITOR_PANEL_SPECS` fallback when `useEditorPanels` returns empty.
 
@@ -1380,9 +1447,9 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 **Cause**: BuiltInAgent uses the OpenAI **responses** API by default. Models that return v3 responses (Gemini, Claude) are incompatible and crash.
 
 **Fix**:
-- Add responses‑compatibility metadata to the model registry (`supportsResponsesV2`).
-- Filter CopilotKit model selection to responses‑v2 compatible models, with a safe fallback (e.g. `openai/gpt-4o-mini`).
-- Keep assistant‑ui chat on the **chat** pipeline so it can use a broader set of models.
+- Add responsesâ€‘compatibility metadata to the model registry (`supportsResponsesV2`).
+- Filter CopilotKit model selection to responsesâ€‘v2 compatible models, with a safe fallback (e.g. `openai/gpt-4o-mini`).
+- Keep assistantâ€‘ui chat on the **chat** pipeline so it can use a broader set of models.
 
 ---
 
@@ -1428,9 +1495,9 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 
 ## Model switcher errors and excess Studio calls on load (planned work)
 
-**Problem**: Model switcher is producing many errors; Studio makes too many calls on app load. Related: registry hydration, settings ⇄ router sync (see "Model switcher registry empty" and "Model switcher manual mode oscillation" in this file).
+**Problem**: Model switcher is producing many errors; Studio makes too many calls on app load. Related: registry hydration, settings â‡„ router sync (see "Model switcher registry empty" and "Model switcher manual mode oscillation" in this file).
 
-**Planned work**: (0) **AI agent and model provider plan** — discuss/document single source of truth, who provides models, avoid duplicate fetches and sync loops. (1) **Model switcher stability** — single source of truth, registry hydrated once, no oscillation. (2) **Reduce Studio calls on load** — fewer calls, defer/batch, single init path. See [STATUS § Next](./STATUS.md) and initiative `model-routing-stability` in [task-registry](./task-registry.md). Architecture: [03-model-routing-openrouter.mdx](../../architecture/03-model-routing-openrouter.mdx).
+**Planned work**: (0) **AI agent and model provider plan** â€” discuss/document single source of truth, who provides models, avoid duplicate fetches and sync loops. (1) **Model switcher stability** â€” single source of truth, registry hydrated once, no oscillation. (2) **Reduce Studio calls on load** â€” fewer calls, defer/batch, single init path. See [STATUS Â§ Next](./STATUS.md) and initiative `model-routing-stability` in [task-registry](./task-registry.md). Architecture: [03-model-routing-openrouter.mdx](../../architecture/03-model-routing-openrouter.mdx).
 
 ---
 
@@ -1454,7 +1521,7 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 
 **Problem**: Clicking Settings (app bar or editor toolbar) or Workbench (Dialogue editor) did not open the Sheet or Drawer; panels appeared not to respond.
 
-**Cause**: Stacking order: CopilotKit sidebar and other UI (e.g. Dockview) use z-index 30–50. Our Sheet and Drawer used z-50 / z-100 and could render behind another layer or a floating layer could capture clicks before they reached the buttons.
+**Cause**: Stacking order: CopilotKit sidebar and other UI (e.g. Dockview) use z-index 30â€“50. Our Sheet and Drawer used z-50 / z-100 and could render behind another layer or a floating layer could capture clicks before they reached the buttons.
 
 **Fix**: (1) Raise overlay z-index for Sheet, Drawer, and DropdownMenu in `packages/ui`: use `z-[200]` for overlay and content so they sit above CopilotKit and Dockview. (2) In `apps/studio/app/globals.css`, add `.copilotKitSidebar { z-index: 20; }` so the CopilotKit sidebar stays below our overlays. (3) Ensure DropdownMenuContent (editor Settings menu) uses the same z-[200]. See [styling-and-ui-consistency.md](./styling-and-ui-consistency.md) for UI debugging.
 
@@ -1530,7 +1597,7 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 3. Strict type-checking surfaced implicit-any callbacks in shared docs sidebar (`DocsSidebar.tsx`), blocking app build.
 
 **Causes**:
-- Webpack wasm hash path instability under this environment’s Node 24 runtime.
+- Webpack wasm hash path instability under this environmentâ€™s Node 24 runtime.
 - PTY startup path threw without fallback, so route-level catch returned `500`.
 - Untyped callback parameters in `.some(...)` calls under strict TS settings.
 
@@ -1662,6 +1729,109 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
   - `scripts/guard-workspace-semantics.mjs`
 - Wired guard scripts into root `lint` and CI workflow.
 - Updated AGENTS guidance to codify chat-first + shared assistant canonical policy.
+
+---
+
+## Repo Studio extensions-first hard cut: payload bootstrap coupling in route tests (2026-02-26)
+
+**Problems**:
+1. Repo Studio API test suite failed on multiple routes with Payload bootstrap crash:
+   - `TypeError: Cannot destructure property 'loadEnvConfig' of 'import_env.default' as it is undefined`
+   - surfaced in `test:api` after adding extension discovery and active-project root routing.
+2. Extension route test (`/api/repo/extensions`) failed even though extension discovery itself should be filesystem-only.
+
+**Causes**:
+- `apps/repo-studio/src/lib/project-root.ts` imported `payload-client` at module scope.
+- Routes that only needed `resolveActiveProjectRoot()` still loaded Payload runtime transitively during module evaluation.
+
+**Fix**:
+- Switched `project-root.ts` to lazy payload loading:
+  - added `getRepoStudioPayloadLazy()` with dynamic import,
+  - moved payload access behind async project persistence/list functions only (`saveProject`, `listRepoProjects`, `setActiveRepoProject`),
+  - kept root resolution/browse paths payload-free.
+- Fixed Next lint blocker introduced by dynamic import helper by renaming local binding from `module` to `payloadClientModule` (`@next/next/no-assign-module-variable`).
+
+**Guardrails / verification**:
+- `pnpm --filter @forge/repo-studio-app run test:api` (pass)
+- `node --import tsx --test "apps/repo-studio/__tests__/shell/*.test.mjs"` (pass)
+- `pnpm --filter @forge/repo-studio-app build` (pass; warnings remain)
+- `pnpm guard:workspace-semantics` (pass)
+- `pnpm hydration:doctor` (pass)
+
+---
+
+## Repo Studio extraction cut: hydration doctor root drift after legacy move (2026-02-27)
+
+**Problems**:
+1. `pnpm hydration:doctor` failed with `rg: apps/studio: The system cannot find the file specified` after moving Studio sources to `legacy/studio-apps/studio`.
+2. Verification closeout for extraction slice could not pass root guardrail set while hydration doctor still assumed old app paths.
+
+**Causes**:
+- `scripts/hydration-nesting-doctor.mjs` hardcoded `ROOT_GLOBS = ["apps/studio", "apps/platform", ...]`.
+- After legacy move, `apps/studio` no longer exists.
+
+**Fix**:
+- Updated hydration doctor scan roots to active targets:
+  - `apps/repo-studio`
+  - `apps/platform`
+  - `packages/shared`
+  - `packages/ui`
+- Added existence filtering before running `rg`, so missing roots do not fail the command.
+
+**Guardrails / verification**:
+- `pnpm hydration:doctor` (pass)
+- `pnpm guard:workspace-semantics` (pass)
+- `node scripts/build.mjs` in `vendor/repo-studio-extensions` (pass)
+
+---
+
+## Repo Studio desktop packaging cut: Windows builder blockers and first artifact output (2026-02-27)
+
+**Problems**:
+1. Electron packaging initially failed with electron-builder constraint: `Package "electron" is only allowed in "devDependencies"`.
+2. Windows code-sign helper extraction failed with symlink privilege errors while unpacking `winCodeSign` cache archives.
+3. Next standalone build still fails in this environment with `EPERM` symlink errors, triggering fallback desktop build mode.
+
+**Causes**:
+- `packages/repo-studio/package.json` had `electron` under `dependencies`.
+- Electron-builder default Windows path tried to extract helper artifacts requiring symlink privileges unavailable in this user context.
+- Next standalone tracing under pnpm store attempted symlink operations requiring elevated privileges.
+
+**Fix**:
+- Moved `electron` to `devDependencies` in `packages/repo-studio/package.json`.
+- Updated `packages/repo-studio/electron-builder.json` with `win.signAndEditExecutable = false` to avoid blocking winCodeSign extraction path in this environment.
+- Re-ran packaging to successful artifact output:
+  - `packages/repo-studio/dist/desktop/RepoStudio Setup 0.1.1.exe`
+  - `packages/repo-studio/dist/desktop/RepoStudio 0.1.1.exe`
+
+**Remaining follow-up**:
+- FRG-1521 tracks removing fallback-only packaging behavior by resolving standalone asset bundling (`.desktop-build/next`) when symlink privileges are unavailable.
+
+---
+
+## Repo Studio release hard gate: strict standalone packaging vs local Windows symlink permissions (2026-02-27)
+
+**Problems**:
+1. After enforcing strict release packaging (`desktop:package:win` requires standalone), local packaging now exits hard-fail in non-privileged Windows shells.
+2. Without an explicit gate, fallback manifest mode could still produce installers that lacked bundled runtime web assets.
+
+**Causes**:
+- Next standalone tracing still performs symlink creation under pnpm store paths.
+- Local shell lacks symlink privilege (`EPERM`), so standalone output is incomplete.
+
+**Fix**:
+- Added strict mode to desktop build:
+  - `node src/desktop/build.mjs --require-standalone` refuses fallback mode.
+- Added standalone verifier:
+  - `packages/repo-studio/src/desktop/verify-standalone.mjs`
+  - enforces `.desktop-build/next/BUILD_ID`, `.desktop-build/next/static`, and standalone server candidate presence.
+- Updated packaging command:
+  - `desktop:package:win` now runs strict build + verifier before `electron-builder`.
+- Added tag-driven release workflow (`.github/workflows/release-repo-studio-desktop.yml`) that runs verify gates and standalone assertions before artifact upload.
+
+**Operational note**:
+- Local strict packaging may still fail without symlink privilege (expected).
+- Release packaging is delegated to CI Windows runners where symlink creation is expected to be available.
 
 ---
 

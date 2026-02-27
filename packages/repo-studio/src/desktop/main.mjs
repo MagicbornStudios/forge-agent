@@ -2,7 +2,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
-import { app, BrowserWindow, ipcMain, safeStorage } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, safeStorage } from 'electron';
 
 import { createDesktopWatcher } from './watcher.mjs';
 import { DESKTOP_IPC, DESKTOP_RUNTIME_EVENT_TYPES } from './ipc-channels.mjs';
@@ -268,6 +268,34 @@ function registerIpcHandlers() {
   ipcMain.handle(DESKTOP_IPC.runtimeStop, async () => {
     app.quit();
     return { ok: true, message: 'Desktop runtime stop requested.' };
+  });
+
+  ipcMain.handle(DESKTOP_IPC.projectPickFolder, async () => {
+    const targetWindow = mainWindow && !mainWindow.isDestroyed() ? mainWindow : null;
+    try {
+      const result = await dialog.showOpenDialog(targetWindow || undefined, {
+        properties: ['openDirectory'],
+        title: 'Open Project Folder',
+      });
+      if (result.canceled || !Array.isArray(result.filePaths) || result.filePaths.length === 0) {
+        return {
+          ok: false,
+          canceled: true,
+          message: 'Folder selection canceled.',
+        };
+      }
+      return {
+        ok: true,
+        canceled: false,
+        path: String(result.filePaths[0] || ''),
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        canceled: false,
+        message: toSafeMessage(error, 'Unable to open folder picker.'),
+      };
+    }
   });
 
   ipcMain.handle(DESKTOP_IPC.authStatus, async () => {

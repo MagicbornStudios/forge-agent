@@ -1,10 +1,9 @@
-import path from 'node:path';
-
 import { RepoStudioRoot } from '@/components/RepoStudioRoot';
+import { resolveActiveProjectRoot } from '@/lib/project-root';
 import { loadRepoStudioSnapshot } from '@/lib/repo-data';
 
 export default async function Page() {
-  const repoRoot = path.resolve(process.cwd(), '..', '..');
+  const repoRoot = resolveActiveProjectRoot();
   const snapshot = await loadRepoStudioSnapshot(repoRoot);
   return (
     <RepoStudioRoot
@@ -14,4 +13,3 @@ export default async function Page() {
     />
   );
 }
-

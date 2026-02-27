@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { X } from 'lucide-react';
-import { cn } from '@forge/ui/lib/utils';
+import { cn } from '@forge/shared/lib/utils';
 
 /** Descriptor for one viewport panel (tab + content). */
 export interface ViewportPanelDescriptor {
@@ -100,7 +100,7 @@ export async function resolveViewportCloseState(
 
 /**
  * Viewport container: tab bar (scrollable, close per tab) + content area.
- * Used in Repo Studio main slot to host viewport panels (Phases/Tasks/Documents, file editors, etc.).
+ * Used in Repo Studio main slot to host viewport panels (planning docs, file editors, etc).
  */
 export function WorkspaceViewport({
   panels,

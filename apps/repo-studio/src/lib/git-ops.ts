@@ -1,20 +1,21 @@
-import { spawnSync } from 'node:child_process';
-
 import { resolveActiveProjectRoot } from '@/lib/project-root';
+import { resolveRepoStudioGitExecutable, runGitSpawnSync } from '@/lib/git-resolver';
 import { isSafeRepoPath, normalizeRelPath } from '@/lib/repo-files';
 
 function runGit(args: string[]) {
   const root = resolveActiveProjectRoot();
-  const result = spawnSync('git', args, {
+  const git = resolveRepoStudioGitExecutable();
+  const result = runGitSpawnSync(args, {
     cwd: root,
-    encoding: 'utf8',
   });
   return {
     ok: (result.status ?? 1) === 0,
     code: result.status ?? 1,
     stdout: String(result.stdout || ''),
     stderr: String(result.stderr || ''),
-    command: `git ${args.join(' ')}`,
+    command: `${git.command} ${args.join(' ')}`,
+    gitPath: git.path,
+    gitSource: git.source,
   };
 }
 

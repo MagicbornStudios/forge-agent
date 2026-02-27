@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { resolveRepoRoot } from './cli-runner';
+import { resolveActiveProjectRoot, resolveHostWorkspaceRoot } from '@/lib/project-root';
 
 type Attempt = {
   command: string;
@@ -56,27 +56,32 @@ function appendScriptArgs(scriptName: string, subArgs: string[]) {
   return ['run', scriptName, '--', ...subArgs];
 }
 
-function buildAttempts(toolName: string, subArgs: string[], repoRoot: string): Attempt[] {
+function buildAttempts(toolName: string, subArgs: string[], hostRoot: string): Attempt[] {
   const attempts: Attempt[] = [];
-  const localCli = localCliPath(toolName, repoRoot);
+  const localCli = localCliPath(toolName, hostRoot);
   const scriptName = toolName;
   if (localCli) {
     attempts.push({ command: process.execPath, args: [localCli, ...subArgs] });
   }
-  attempts.push({ command: 'pnpm', args: appendScriptArgs(scriptName, subArgs) });
-  attempts.push({ command: 'pnpm', args: ['exec', toolName, ...subArgs] });
+  attempts.push({ command: 'pnpm', args: ['--dir', hostRoot, ...appendScriptArgs(scriptName, subArgs)] });
+  attempts.push({ command: 'pnpm', args: ['--dir', hostRoot, 'exec', toolName, ...subArgs] });
   attempts.push({ command: toolName, args: [...subArgs] });
   return attempts;
 }
 
-export function runToolCommand(toolName: string, subArgs: string[] = []) {
-  const repoRoot = resolveRepoRoot();
-  const attempts = buildAttempts(toolName, subArgs, repoRoot);
+export function runToolCommand(
+  toolName: string,
+  subArgs: string[] = [],
+  options: { cwd?: string } = {},
+) {
+  const hostRoot = resolveHostWorkspaceRoot();
+  const targetCwd = options.cwd ? path.resolve(options.cwd) : resolveActiveProjectRoot();
+  const attempts = buildAttempts(toolName, subArgs, hostRoot);
   const attemptResults: AttemptResult[] = [];
   let last: ReturnType<typeof runAttempt> | null = null;
 
   for (const attempt of attempts) {
-    const result = runAttempt(attempt, repoRoot);
+    const result = runAttempt(attempt, targetCwd);
     const detail = {
       command: result.command,
       ok: result.ok,
@@ -123,4 +128,3 @@ export function runToolCommand(toolName: string, subArgs: string[] = []) {
     spawnFailed: false,
   };
 }
-

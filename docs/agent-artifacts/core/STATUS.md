@@ -1,7 +1,7 @@
 ---
 title: Agent artifacts status
 created: 2026-02-04
-updated: 2026-02-26
+updated: 2026-02-27
 ---
 
 Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx).
@@ -14,8 +14,8 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 
 - **Production target:** 2/14. Core and Ralph Wiggum loop only; no legacy or deprecated code in the editor platform.
 - **Product vision**: Forge Agent is an AI-first interactive narrative storytelling engine (game/narrative content authoring, thin engine, AI- and chat-first) with Yarn Spinner compatible dialogue editing (Yarn export in MVP), character relationship graphs, video timeline (not in MVP), and Codebase Agent Strategy (downloadable core in scope; Strategy editor not in MVP). First revenue: **paid clone/download**. **MVP editors** = Dialogue, Character, Writer, GamePlayer. **Video** and **Strategy (codebase) editor** are **not in MVP**. **Creators list from day one.** **MVP infra** = Vercel + Payload. **Platform** = `apps/platform` (landing + customer platform). **MVP success** = first paid clone completed end-to-end. **Publish and host playable builds** is part of MVP so authors can publish a build and others can play via URL. **TRACE** = part of MVP for Strategy (downloadable core) proof only; not for Studio or platform. Paid + free tier; catalog (users + orgs); clone semantics; revenue share. Writer = Lexical, branching, Yarn Games. MVP technical bar: simple game on graphs, all AI/image/audio/gen working, AI-first. Dev-kit: editor components for AI; OpenRouter first-class; ElevenLabs + Sora for advanced; cloud subscription for standard users. See [product roadmap](../../roadmap/product.mdx), [MVP and first revenue](../../product/mvp-and-revenue.mdx), and [Dev-kit and keys](../../product/dev-kit-and-keys.mdx).
-- **Apps**: Studio in `apps/studio`; customer-facing platform app in `apps/platform` (landing, docs, login, account, billing, catalog, checkout, waitlist/newsletter/blog compatibility pages). Platform shares Payload (Studio) for auth and data; set `NEXT_PUBLIC_STUDIO_APP_URL` for API and "Open Studio" links.
-- **pnpm workspaces**: Root scripts keep Studio defaults and now include platform commands (`dev:platform`, `build:platform`, `start:platform`, `css:doctor:platform`) plus temporary compatibility aliases (`dev:marketing`, `css:doctor:marketing`) pointing to platform.
+- **Apps**: Active product apps are Repo Studio (`apps/repo-studio`) and Platform (`apps/platform`). Legacy Studio/Consumer sources are retained under `legacy/studio-apps/*` for provenance.
+- **pnpm workspaces**: Root scripts/workflows are Repo Studio-first and platform-compatible; legacy studio app commands are intentionally removed from active dev/build/test defaults.
 - **Shared UI kit**: `packages/shared/src/shared` provides WorkspaceShell, DockLayout (Dockview docking + floating groups), DockPanel, PanelTabs, and theme tokens. Design language: [03-design-language.mdx](../../design/03-design-language.mdx) (Spotify tone, soft-modern, shadcn-first; Unreal/Unity for structure only).
 - **Assistant UI + tool UI**: shared components live in `packages/shared/src/shared/components/assistant-ui` and `packages/shared/src/shared/components/tool-ui` for strategy surfaces and consumer studio apps.
 - **Shared atoms**: `packages/ui` hosts shadcn primitives used across the app and shared UI.
@@ -30,7 +30,7 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 - **GamePlayer**: MVP editor (playable runtime for Yarn Games); to be built.
 - **Strategy editor**: Not in MVP; downloadable core + TRACE in scope for MVP. In-app Strategy editor ships after MVP.
 - **Studio**: AppProviders owns the full shell (SidebarProvider, Settings sidebar, OpenSettingsSheetProvider, StudioMenubarProvider). Studio is content-only (tabs, editor content, sheets, toaster). Host renders AppProviders > AppShell > Studio. Editor registry (defaults on components, bootstrap at load), menu registry (tree-based, scope/context/target), panel and settings registries unchanged. Chat is in the right-rail Chat panel only; no Cmd+K popup. Help menu: Welcome, About.
-- **Consumer studio app**: `apps/consumer-studio` is the chat-only dev-kit reference that uses companion runtime routing (no local `/api/assistant-chat` route). Uses the same app-spec codegen pattern as repo-studio and studio (one `app-spec.generated.ts`, workspace component + config).
+- **Consumer studio app**: archived as a reference under `legacy/studio-apps/consumer-studio` and mirrored as example-only content in `vendor/repo-studio-extensions/examples/studios/assistant-only`.
 - **Docs**: Studio docs use the shared docs shell (`DocsLayoutShell`) with headless Fumadocs source (serialized page tree + custom MDX components). Runtime Fumadocs layout/page imports are disabled on the current stack.
 - **Dialogue editor**: Dual narrative/storylet graphs per project with shared chrome (DockLayout dockable panels, PanelTabs). Right rail: Inspector, Yarn (Monaco preview + Download), Chat (DialogueAssistantPanel). Project is selected at app level (see below). Yarn Spinner: `@forge/yarn-converter`; `POST /api/forge/yarn-export` for full export with storylet/detour resolution; Monaco panel for preview; Download button for resolved .yarn file.
 - **Editors as MCP Apps**: Architecture defined; each editor exposable as MCP App (tool + UI resource) for external hosts. See [04 - Editors as MCP Apps](../../architecture/04-editors-as-mcp-apps.mdx).
@@ -41,6 +41,53 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 - **Settings overrides persisted**: Yes. Overrides are stored in `settings-overrides`; loaded on init via `GET /api/settings` and `hydrateFromOverrides`; saved explicitly via Save button and `POST /api/settings`. When authenticated, overrides are per-user (optional `user` relation; GET/POST filter by current user).
 
 ## Ralph Wiggum loop
+
+- In progress (2026-02-27): Phase 15 release cut `v0.1.1`:
+  - added tag-driven GitHub desktop release workflow (`.github/workflows/release-repo-studio-desktop.yml`) with verify -> windows package -> release jobs,
+  - enforced strict standalone desktop gate in `@forge/repo-studio` (`--require-standalone` + `src/desktop/verify-standalone.mjs`) so fallback packaging cannot publish,
+  - fixed release build blockers for `@forge/platform` and `@forge/docs` (dependency matrix + docs source/page-tree serialization contract),
+  - published `vendor/repo-studio-extensions` README update to upstream `main` and prepared forge-agent submodule pointer update.
+- Done (2026-02-27): Dev-kit extension authoring surface alignment:
+  - moved `WorkspaceViewport` from app-local Repo Studio component path into shared workspace primitives (`packages/shared/src/shared/components/workspace/WorkspaceViewport.tsx`),
+  - exported viewport component + helper contracts from `@forge/shared` workspace index and updated Repo Studio workspaces/adapter package/shell tests to consume shared export,
+  - removed app-local `apps/repo-studio/src/components/viewport/WorkspaceViewport.tsx`.
+- Done (2026-02-27): RepoStudio-Extensions authoring README refresh:
+  - documented dev-kit/shared authoring contract (`@forge/dev-kit` / `@forge/shared`, no app alias imports),
+  - documented install target path (`<activeProject>/.repo-studio/extensions/<id>`) and install-once/edit-in-place iteration flow,
+  - preserved installables/examples directory contracts and validation instructions in one README.
+- Done (2026-02-27): Repo Studio hard extraction cut (extension-only Story/Env + legacy move):
+  - Story/Env app-local workspace ownership removed from `apps/repo-studio/src/components/workspaces`; extension kinds now render via `@forge/repo-studio-extension-adapters`.
+  - Built-in workspace set hard-cut to `planning`, `extensions`, `database`, `git`, `code`; legacy `env` now resolves to installed `env-workspace` extension when present (otherwise `planning` fallback).
+  - `apps/studio` and `apps/consumer-studio` moved to `legacy/studio-apps/*`; root scripts and checks now assume Repo Studio-first active scope.
+  - Verification pass: Repo Studio codegen/build/tests, workspace guard, hydration doctor, extension registry health, and `vendor/repo-studio-extensions` build.
+- Done (2026-02-26): Phase 15 execution cut - Repo Studio focus shift to extension registry + studio examples:
+  - registry API now returns `entries` (installables) and `examples` (studio references) from `vendor/repo-studio-extensions`,
+  - Extensions workspace now renders split sections: `Installable Extensions` (install/update/remove) and `Studio Examples` (link-out only),
+  - story-specific install prompt was removed from `RepoStudioRoot`; install flow is workspace-driven,
+  - submodule content now includes installable `extensions/story` plus required examples `character-workspace`, `dialogue-workspace`, and `assistant-only`,
+  - registry guard/health checks now enforce required installables/examples presence and non-installable example handling.
+- Done (2026-02-26): Legacy Studio surfaces marked archived in-monorepo:
+  - added `legacy/studio-apps/studio/ARCHIVED.md` and `legacy/studio-apps/consumer-studio/ARCHIVED.md` as explicit archive notices,
+  - active product scope remains Repo Studio + platform while studio/consumer implementations are retained for extraction provenance.
+- Done (2026-02-26): Repo Studio product hard cut (core workspaces + global assistant + global terminal + PRD-first planning):
+  - **Built-in workspace set:** hard-cut generated built-ins to `planning`, `extensions`, `database`, `git`, `code`; removed standalone built-ins `assistant`, `diff`, `commands`, `review-queue` (and later removed built-in `env` in extraction cut).
+  - **Assistant model:** assistant is now a right-rail panel across all built-in workspaces (default visible), with global menu actions for focus and global show/hide.
+  - **Terminal model:** added global bottom terminal dock with multi-session tabs and launch profiles from File menu: `New Terminal`, `Launch Codex CLI`, `Launch Claude Code CLI`.
+  - **Planning PRD-first surfaces:** added canonical PRD/status/decisions/regression panels; PRD contract is `.planning/PRD.md` with explicit missing-state behavior.
+  - **Git execution contract:** all git operations now resolve executable through shared resolver (`REPO_STUDIO_GIT_PATH` override, bundled Windows candidate, fallback system `git`), with dependency diagnostics exposing source/path.
+  - **Verification:** `pnpm --filter @forge/repo-studio-app build`, `pnpm --filter @forge/repo-studio-app run test:api`, `node --import tsx --test "apps/repo-studio/__tests__/shell/*.test.mjs"`, `pnpm guard:workspace-semantics`, and `pnpm hydration:doctor` pass.
+- Done (2026-02-26): Env workspace redesign (monorepo scopes + file tree + Monaco):
+  - **Scope:** Root (`.`) + each app under `apps/`; no manifest as source of truth. APIs: `GET /api/repo/env/scopes`, `GET /api/repo/env/files?dir=...`; client helpers in `lib/api/services/env.ts`; types in `lib/api/types.ts`.
+  - **Layout:** Env workspace is Env-only: Left = EnvScopeListPanel (tree of scopes and `.env*` files via headless-tree); Main = WorkspaceViewport with tabs per open file. Planning and old Env right panel removed from Env workspace.
+  - **Editor:** EnvFileEditorPanel loads file via `fetchRepoFile`, edits in Monaco (`language="properties"`), save/revert; dirty state and `onBeforeCloseTab` confirm. Viewport state key `env::${layoutId}` in shell store.
+  - **Polish:** Empty state “Select an env file from the tree”; loading states in tree and editor; error messages in destructive style for read/write failures. Encryption (in-repo `.env.secret.enc`) deferred to phase 2.
+- Done (2026-02-26): Repo Studio open-folder hard cut (VSCode-style) implemented:
+  - File menu now includes `Open Project Folder...`, `Recent Projects`, and gated `Push to GitHub` actions.
+  - Open folder supports desktop native picker (`repoStudioDesktop.pickProjectFolder`) with in-app path dialog fallback for browser mode.
+  - Project import now accepts any existing directory; `isGitRepo` is computed from folder state and surfaced in project API payloads.
+  - Active folder is now the runtime data root across workspaces (planning/loops/commands/story/file operations), with non-forge folders yielding empty/default workspace states instead of host-root fallback.
+  - Tooling remains host-provided: forge/repo-studio CLI path resolution stays host-rooted while command execution uses active-project cwd.
+  - Shell parity cleanup completed by collapsing duplicate `RepoStudioShell` implementation to re-export the canonical `RepoStudioRoot`.
 
 - Done (2026-02-26): Planning doc viewer: markdown syntax highlighting + doc list as tree:
   - **Markdown:** PlanningDocPagePanel uses Monaco Editor in read-only mode with `language="markdown"` (same as Story/Diff panels); no new dependency.
@@ -62,6 +109,12 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
   - removed JSON proposal fallback/migration path and enforced SQLite-only proposals with explicit 503 unavailability responses,
   - removed compatibility surfaces (`LoopAssistantWorkspace`, `CodexAssistantWorkspace`, legacy `/api/repo/github/login` route),
   - removed package runtime `--legacy-ui` and package UI docs tab/view.
+- Done (2026-02-26): Repo Studio extensions-first Story hard cut completed:
+  - removed loop switcher UI from Planning/Story toolbars (single-loop UI, `activeLoopId` retained for runtime scope),
+  - removed static built-in Story registration from repo-studio codegen/app-spec; Story now discovered from `.repo-studio/extensions/story/manifest.json`,
+  - added runtime extension discovery API (`GET /api/repo/extensions`), dynamic workspace catalog merge (built-ins + extensions), and dynamic workspace menu/store sanitization,
+  - wired active-workspace Forge extension tool proof (`forge_open_about_workspace`) and About Workspace modal,
+  - added extension template/docs (`templates/repo-studio-extension`, `docs/repo-studio-extensions.md`) and guardrail checks for required Story manifest/tool contract.
 - Done (2026-02-26): Repo Studio dev DB: wipe at dev start so Payload never prompts "create or rename?"; removed one-off migrate script. `pnpm dev:repo-studio` runs `db:reset-dev` then Next + Drizzle Studio. Payload owns schema; Drizzle pull-only. See decisions.md and errors-and-attempts.md.
 - Done (2026-02-25): Workspace naming hard-cut for shared components completed:
   - moved shared component surface from `packages/shared/src/shared/components/editor` to `.../components/workspace` and finalized `Workspace*` symbols (`WorkspaceShell`, `WorkspaceToolbar`, `WorkspaceMenubar`, `WorkspaceFileMenu`, `WorkspaceApp`, etc.),
@@ -96,6 +149,7 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
   - app bar GitHub auth moved to OAuth device flow (`/api/repo/github/oauth/device/start`, `/poll`, `/logout`) and no CLI-gated disabled icon path,
   - project manager backend added (`repo-projects` collection + `/api/repo/projects*`) and Git panel now supports project import/clone/active switching,
   - git/files/diff/search paths now resolve against active project root; git pull/push routes added.
+- Done (2026-02-26): Twick fully removed: `vendor/twick` directory deleted; `@twick/*` removed from verdaccio.yaml; no Twick installed or publishable. See 2026-02-24 entry for code/UI removal.
 - Done (2026-02-24): Twick removed: all @twick deps, LivePlayerProvider/TimelineProvider, TwickProviders, TwickTimeline/TwickTrackList, vendor/twick submodule and workspace/overrides; Studio layout and AppProviders no longer use Twick; DirtyBeforeUnload no longer uses video store; globals.css and next.config updated; docs and AGENTS updated.
 - Done (2026-02-24): Studio app bar sign-in and log out: auth client (`lib/api-client/auth.ts`) for Payload login/logout; SignInSheet (email/password, right-side sheet); AppBarUser dropdown has Sign in (opens sheet) when not signed in and Log out (invalidates me query, refresh) when signed in.
 - Done (2026-02-24): Studio bar: AppBarUser in Tabs.Right; CompanionIndicator always visible (icon + tooltip, toggles when Repo Studio detected). Companion detection re-pings every 8s when unavailable, 30s when available. Repo Studio dev CORS defaults to localhost:3000/3010 so Studio can reach GET /api/repo/health.
@@ -363,6 +417,7 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 
 ## What changed (recent)
 
+- **Extension recognition + first desktop package cut (2026-02-27)**: Repo Studio extension discovery hardening is complete (no-store extension APIs, no-store client fetches, focus/visibility refresh, and fail-safe retention of installed extensions on transient refresh failures). First Windows Electron artifacts were generated at `packages/repo-studio/dist/desktop` (`RepoStudio Setup 0.1.1.exe`, `RepoStudio 0.1.1.exe`). Packaging config now uses `electron` in `devDependencies` and `win.signAndEditExecutable=false`; follow-up FRG-1521 tracks removal of fallback-only standalone asset warnings.
 - **Semantic hard-cut follow-up completed (workspace-first contracts)**: shared naming is now `WorkspaceLayout`/`WorkspacePanel` + `CodebaseAgentStrategyWorkspace`; Studio shell export is `StudioRoot`; settings scope hard-cut is `workspace` (no `editor` fallback path in active API/store); assistant transport/runtime contracts now use `x-forge-ai-workspace-id` and `workspaceId`. Also fixed payload type generation resolution (`scripts/generate-payload-types.mjs`) to import Payload adapters/tools from the Studio workspace package context and avoid package export-path failures.
 - **Repo Studio workspace-as-layout refactor completed**: each workspace tab now mounts its own `EditorDockLayout` (`components/layouts/*Layout.tsx`) with declarative `EditorDockLayout.Panel` composition only; preset-based visibility plumbing was removed; panel visibility remains workspace-scoped with restore/reset actions; per-workspace layout persistence now uses `repo-<workspaceId>` ids with migration from legacy `repo-studio-main`. Naming is normalized to `*Layout` (tab-level) and `*Panel` (panel content exports, with compatibility aliases).
 - **Repo Studio build/runtime hardening follow-up**: fixed Node 24 build crash path by forcing non-wasm webpack hashing in Repo Studio Next config (`output.hashFunction = 'sha256'`), added degraded terminal-session fallback when `node-pty` spawn fails (no `500` start route), and closed strict TS build blockers in shared docs sidebar (`Node` callback typings). Verification: `@forge/repo-studio` tests, Repo Studio API/style tests, `@forge/repo-studio-app` build, and doctor all pass.

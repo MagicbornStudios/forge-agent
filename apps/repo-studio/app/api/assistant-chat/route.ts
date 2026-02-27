@@ -235,17 +235,22 @@ function updateLatestUserMessage(messages: any[], text: string) {
 function buildEnrichedPrompt(input: {
   userPrompt: string;
   systemPrompt: string;
+  planningContext: string;
   mentionContext: string;
 }) {
   const basePrompt = String(input.userPrompt || '').trim();
   if (!basePrompt) return '';
   const systemPrompt = String(input.systemPrompt || '').trim();
+  const planningContext = String(input.planningContext || '').trim();
   const mentionContext = String(input.mentionContext || '').trim();
-  if (!systemPrompt && !mentionContext) return basePrompt;
+  if (!systemPrompt && !planningContext && !mentionContext) return basePrompt;
   const parts: string[] = [];
   if (systemPrompt) {
     parts.push('## Assistant System Prompt');
     parts.push(systemPrompt);
+  }
+  if (planningContext) {
+    parts.push(planningContext);
   }
   if (mentionContext) {
     parts.push(mentionContext);
@@ -270,6 +275,32 @@ async function buildAssistantRequestContext(input: {
     3000,
     '',
   );
+  const planningContext = await withTimeout((async () => {
+    try {
+      const snapshot = await loadRepoStudioSnapshot(resolveRepoRoot(), { loopId });
+      const openTasks = Number(snapshot.planning.openTaskCount || 0);
+      const completeTasks = Number(snapshot.planning.completeTaskCount || 0);
+      const decisionOpen = Number(snapshot.planning.decisionOpen || 0);
+      const errorOpen = Number(snapshot.planning.errorOpen || 0);
+      const prdText = String(snapshot.planning.prdContent || '').trim();
+      const prdSummary = prdText
+        ? prdText.split('\n').map((line) => line.trim()).filter(Boolean).slice(0, 3).join(' | ').slice(0, 320)
+        : 'PRD missing at .planning/PRD.md';
+      return [
+        '## Loop Context',
+        `Loop ID: ${snapshot.planning.loopId}`,
+        `Planning Root: ${snapshot.planning.planningRoot}`,
+        `Next Action: ${snapshot.planning.nextAction || '-'}`,
+        `Progress: ${snapshot.planning.percent}%`,
+        `Tasks: ${openTasks} open / ${completeTasks} complete`,
+        `Decisions Open: ${decisionOpen}`,
+        `Regression Open: ${errorOpen}`,
+        `PRD Summary: ${prdSummary}`,
+      ].join('\n');
+    } catch {
+      return '';
+    }
+  })(), 3000, '');
 
   let mentionContext = '';
   if (userPrompt.includes('@planning/')) {
@@ -289,6 +320,7 @@ async function buildAssistantRequestContext(input: {
   const enrichedPrompt = buildEnrichedPrompt({
     userPrompt,
     systemPrompt,
+    planningContext,
     mentionContext,
   });
 

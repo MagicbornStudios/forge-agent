@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import * as viewportModule from '../../src/components/viewport/WorkspaceViewport.tsx';
+import * as viewportModule from '@forge/shared/components/workspace';
 
 const resolveViewportOpenIds = (
   viewportModule.resolveViewportOpenIds

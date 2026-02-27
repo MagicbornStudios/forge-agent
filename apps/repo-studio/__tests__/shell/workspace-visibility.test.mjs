@@ -20,8 +20,8 @@ test('workspace hidden panel sanitization drops unknown panel ids', () => {
 
 test('workspace hidden panel sanitization keeps at least one main panel visible', () => {
   assert.equal(typeof getWorkspaceLayoutDefinition, 'function');
-  const definition = getWorkspaceLayoutDefinition('review-queue');
-  const hidden = sanitizeWorkspaceHiddenPanelIds('review-queue', definition.mainPanelIds);
+  const definition = getWorkspaceLayoutDefinition('git');
+  const hidden = sanitizeWorkspaceHiddenPanelIds('git', definition.mainPanelIds);
   const hiddenSet = new Set(hidden);
   const visibleMainPanels = definition.mainPanelIds.filter((panelId) => !hiddenSet.has(panelId));
 

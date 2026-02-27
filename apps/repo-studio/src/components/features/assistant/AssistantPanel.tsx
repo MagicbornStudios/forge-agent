@@ -1,10 +1,9 @@
 'use client';
 
 import * as React from 'react';
-import { Bot, Code2, LoaderCircle, MessageSquare, Settings2 } from 'lucide-react';
+import { Bot, Code2, Lightbulb, LoaderCircle, MessageSquare, Settings2 } from 'lucide-react';
 import {
   FORGE_RUNTIME_TOOL_DEFINITIONS,
-  createForgeRuntimeContract,
   type ForgeRuntimeAboutMe,
   type ForgeRuntimeToolEnabledMap,
 } from '@forge/shared';
@@ -36,6 +35,9 @@ import {
 import type { AssistantRuntime, Proposal } from '@/lib/api/types';
 import { useRepoStudioShellStore } from '@/lib/app-shell/store';
 import { useRepoAssistantModelStore } from '@/lib/assistant/model-router-store';
+import { createRepoForgeRuntimeContract } from '@/lib/assistant/forge-contract';
+import { useRepoStudioContextOptional } from '@/lib/app-shell/RepoStudioContext';
+import type { RepoWorkspaceExtensionAboutWorkspace } from '@/lib/api/types';
 
 export interface AssistantPanelProps {
   defaultRuntime?: AssistantRuntime;
@@ -129,6 +131,7 @@ function toForgeSettingsPayload(settings: ForgeAssistantSettings) {
 export function AssistantPanel({
   defaultRuntime,
 }: AssistantPanelProps) {
+  const repoContext = useRepoStudioContextOptional();
   const activeWorkspaceId = useRepoStudioShellStore((state) => state.route.activeWorkspaceId);
   const activeLoopId = useRepoStudioShellStore((state) => state.activeLoopId);
 
@@ -148,6 +151,13 @@ export function AssistantPanel({
   const [aboutMeOpen, setAboutMeOpen] = React.useState(false);
   const [aboutMeDraft, setAboutMeDraft] = React.useState<ForgeRuntimeAboutMe>(DEFAULT_FORGE_ABOUT_ME);
   const [aboutMeSaving, setAboutMeSaving] = React.useState(false);
+  const [aboutWorkspaceOpen, setAboutWorkspaceOpen] = React.useState(false);
+  const [aboutWorkspacePayload, setAboutWorkspacePayload] = React.useState<
+    (RepoWorkspaceExtensionAboutWorkspace & { workspaceId: string; label: string }) | null
+  >(null);
+  const [quickPromptMessage, setQuickPromptMessage] = React.useState('');
+
+  const activeWorkspaceExtension = repoContext?.workspaceExtensionMap?.[activeWorkspaceId] || null;
 
   React.useEffect(() => {
     const fallbackRuntime = defaultRuntime || defaultRuntimeForWorkspace(activeWorkspaceId);
@@ -216,14 +226,20 @@ export function AssistantPanel({
     return tasks.filter((proposal) => toRuntime(proposal.assistantTarget) === runtime).slice(0, 12);
   }, [runtime, tasks]);
 
-  const forgeContract = React.useMemo(() => createForgeRuntimeContract({
+  const forgeContract = React.useMemo(() => createRepoForgeRuntimeContract({
+    activeWorkspaceId,
+    extension: activeWorkspaceExtension,
     toolEnabled: forgeSettings.toolEnabled,
     aboutMe: forgeSettings.aboutMe,
     onOpenAboutMe: (aboutMe) => {
       setAboutMeDraft(normalizeAboutMe(aboutMe));
       setAboutMeOpen(true);
     },
-  }), [forgeSettings.aboutMe, forgeSettings.toolEnabled]);
+    onOpenAboutWorkspace: (payload) => {
+      setAboutWorkspacePayload(payload);
+      setAboutWorkspaceOpen(true);
+    },
+  }), [activeWorkspaceExtension, activeWorkspaceId, forgeSettings.aboutMe, forgeSettings.toolEnabled]);
 
   const handleRuntimeSelect = React.useCallback((next: AssistantRuntime) => {
     setRuntime(next);
@@ -330,6 +346,28 @@ export function AssistantPanel({
       showResponsesV2Badge={runtime === 'forge'}
     />
   );
+
+  const quickPrompts = React.useMemo(
+    () => [
+      {
+        label: 'Make Plan',
+        prompt: 'Make a plan using the current PRD and active loop context.',
+      },
+      {
+        label: 'Update Status',
+        prompt: 'Update status from current tasks and decisions, then suggest next action.',
+      },
+    ],
+    [],
+  );
+
+  const handleQuickPrompt = React.useCallback((prompt: string) => {
+    const text = String(prompt || '').trim();
+    if (!text) return;
+    navigator.clipboard?.writeText(text).catch(() => {});
+    setQuickPromptMessage('Prompt copied. Paste into composer to run.');
+    window.setTimeout(() => setQuickPromptMessage(''), 1500);
+  }, []);
 
   return (
     <div className="grid h-full min-h-0 grid-cols-[240px_minmax(0,1fr)] overflow-hidden">
@@ -452,6 +490,26 @@ export function AssistantPanel({
             </Badge>
           </div>
         </div>
+        <div className="flex flex-wrap items-center gap-1 border-b border-border/60 px-3 py-2">
+          <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+            <Lightbulb className="size-3" />
+            Quick prompts
+          </span>
+          {quickPrompts.map((item) => (
+            <Button
+              key={item.label}
+              size="sm"
+              variant="outline"
+              className="h-6 text-[10px]"
+              onClick={() => handleQuickPrompt(item.prompt)}
+            >
+              {item.label}
+            </Button>
+          ))}
+          {quickPromptMessage ? (
+            <span className="text-[10px] text-muted-foreground">{quickPromptMessage}</span>
+          ) : null}
+        </div>
         <div className="min-h-0 flex-1 overflow-hidden">
           <SharedAssistantPanel
             apiUrl={apiUrl}
@@ -514,6 +572,47 @@ export function AssistantPanel({
             <Button onClick={saveAboutMe} disabled={aboutMeSaving}>
               {aboutMeSaving ? 'Saving...' : 'Save'}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={aboutWorkspaceOpen} onOpenChange={setAboutWorkspaceOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>About Workspace</DialogTitle>
+            <DialogDescription>
+              Active extension workspace context surfaced through Forge tools.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2 text-sm">
+            <div className="rounded-md border border-border p-2">
+              <p className="text-xs text-muted-foreground">Workspace</p>
+              <p className="font-medium">{aboutWorkspacePayload?.label || aboutWorkspacePayload?.workspaceId || activeWorkspaceId}</p>
+              {aboutWorkspacePayload?.title ? (
+                <p className="mt-1 text-xs text-muted-foreground">{aboutWorkspacePayload.title}</p>
+              ) : null}
+            </div>
+            {aboutWorkspacePayload?.summary ? (
+              <div className="rounded-md border border-border p-2">
+                <p className="text-xs text-muted-foreground">Summary</p>
+                <p>{aboutWorkspacePayload.summary}</p>
+              </div>
+            ) : null}
+            {Array.isArray(aboutWorkspacePayload?.context) && aboutWorkspacePayload.context.length > 0 ? (
+              <div className="rounded-md border border-border p-2">
+                <p className="text-xs text-muted-foreground">Context</p>
+                <ul className="mt-1 list-disc space-y-1 pl-5 text-xs">
+                  {aboutWorkspacePayload.context.map((entry) => (
+                    <li key={entry}>{entry}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setAboutWorkspaceOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

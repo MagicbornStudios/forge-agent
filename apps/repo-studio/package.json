@@ -17,6 +17,7 @@
     "test:review-queue": "node --import tsx --test \"__tests__/review-queue/*.test.mjs\"",
     "check:direct-fetch": "node scripts/check-direct-fetch.mjs",
     "check:direct-fetch:strict": "node scripts/check-direct-fetch.mjs --strict",
+    "extensions:registry:health": "node scripts/check-extension-registry.mjs",
     "db:reset-dev": "node scripts/reset-dev-db.mjs",
     "db:pull": "drizzle-kit pull",
     "db:studio": "drizzle-kit studio --port=4983"
@@ -31,6 +32,7 @@
     "@xterm/xterm": "^5.5.0",
     "@assistant-ui/react": "^0.12.9",
     "@assistant-ui/react-ai-sdk": "^1.3.6",
+    "@forge/repo-studio-extension-adapters": "workspace:*",
     "@forge/shared": "workspace:*",
     "@forge/ui": "workspace:*",
     "@payloadcms/db-sqlite": "^3.0.0",

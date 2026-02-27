@@ -5,15 +5,10 @@
  */
 const WORKSPACE_FILE_MAP = {
   planning: 'PlanningWorkspace.tsx',
-  env: 'EnvWorkspace.tsx',
-  commands: 'CommandsWorkspace.tsx',
-  story: 'StoryWorkspace.tsx',
+  extensions: 'ExtensionsWorkspace.tsx',
   database: 'DatabaseWorkspace.tsx',
   git: 'GitWorkspace.tsx',
-  assistant: 'AssistantWorkspace.tsx',
-  diff: 'DiffWorkspace.tsx',
   code: 'CodeWorkspace.tsx',
-  'review-queue': 'ReviewQueueWorkspace.tsx',
 };
 
 export default {
@@ -26,6 +21,8 @@ export default {
   appSpecOutputPath: 'src/lib/app-spec.generated.ts',
   layoutIdPrefix: 'repo',
   panelKeyPrefix: 'panel.visible.repo',
+  extensionLayoutIdPrefix: 'repo-ext',
+  extensionPanelKeyFormat: 'panel.visible.ext.{workspaceId}.{panelId}',
   fallbackWorkspaceId: 'planning',
   pinnedPanelIds: ['viewport'],
   settingsRegistryPath: 'src/lib/settings/registry.ts',

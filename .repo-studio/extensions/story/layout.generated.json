@@ -1,0 +1,10 @@
+{
+  "workspaceId": "story",
+  "panelSpecs": [
+    { "id": "story", "label": "Story", "rail": "left" },
+    { "id": "viewport", "label": "Viewport", "rail": "main" },
+    { "id": "assistant", "label": "Assistant", "rail": "right" }
+  ],
+  "mainPanelIds": ["viewport"],
+  "mainAnchorPanelId": "viewport"
+}

@@ -13,6 +13,9 @@ type PtyLike = {
 
 type TerminalSessionState = {
   sessionId: string;
+  profileId: string;
+  name: string;
+  startupCommand: string;
   shell: string;
   cwd: string;
   pty: PtyLike;
@@ -58,6 +61,22 @@ function resolveShell() {
     shell: process.env.SHELL || '/bin/bash',
     args: ['-l'],
   };
+}
+
+function shellEscapeArg(value: string) {
+  const text = String(value || '');
+  if (!text) return '""';
+  if (/^[A-Za-z0-9_./:\\-]+$/.test(text)) return text;
+  return `"${text.replace(/(["`$\\])/g, '\\$1')}"`;
+}
+
+function buildStartupCommand(command?: string, args?: string[]) {
+  const binary = String(command || '').trim();
+  if (!binary) return '';
+  const commandArgs = Array.isArray(args)
+    ? args.map((arg) => String(arg || '').trim()).filter(Boolean)
+    : [];
+  return [binary, ...commandArgs.map(shellEscapeArg)].join(' ').trim();
 }
 
 function toErrorMessage(error: unknown) {
@@ -115,6 +134,9 @@ function normalizeBuffer(value: string) {
 function serializeSession(session: TerminalSessionState) {
   return {
     sessionId: session.sessionId,
+    profileId: session.profileId,
+    name: session.name,
+    startupCommand: session.startupCommand,
     running: session.running,
     pid: session.pty?.pid || null,
     cwd: session.cwd,
@@ -150,6 +172,11 @@ export function startTerminalSession(input: {
   cwd?: string;
   cols?: number;
   rows?: number;
+  command?: string;
+  args?: string[];
+  profileId?: string;
+  name?: string;
+  setActive?: boolean;
 } = {}) {
   cleanupStaleSessions();
   const sessions = getSessionsStore();
@@ -169,6 +196,9 @@ export function startTerminalSession(input: {
   const cols = Number.isInteger(input.cols) ? Math.max(20, Number(input.cols)) : 120;
   const rows = Number.isInteger(input.rows) ? Math.max(8, Number(input.rows)) : 32;
   const shell = resolveShell();
+  const startupCommand = buildStartupCommand(input.command, input.args);
+  const profileId = String(input.profileId || '').trim() || (startupCommand ? 'command' : 'shell');
+  const sessionName = String(input.name || '').trim() || (startupCommand ? startupCommand : profileId);
   let degraded = false;
   let fallbackReason: string | null = null;
   let pty: PtyLike;
@@ -195,6 +225,9 @@ export function startTerminalSession(input: {
 
   const session: TerminalSessionState = {
     sessionId: randomUUID(),
+    profileId,
+    name: sessionName,
+    startupCommand,
     shell: shell.shell,
     cwd,
     pty,
@@ -227,7 +260,12 @@ export function startTerminalSession(input: {
   });
 
   sessions.set(session.sessionId, session);
-  global.__repoStudioActiveTerminalSessionId__ = session.sessionId;
+  if (input.setActive !== false) {
+    global.__repoStudioActiveTerminalSessionId__ = session.sessionId;
+  }
+  if (startupCommand) {
+    session.pty.write(`${startupCommand}\r`);
+  }
   return {
     ok: true,
     reused: false,
@@ -235,6 +273,18 @@ export function startTerminalSession(input: {
     message: degraded
       ? 'Terminal started in fallback mode (PTY unavailable).'
       : 'Terminal session started.',
+  };
+}
+
+export function listTerminalSessions() {
+  cleanupStaleSessions();
+  const sessions = [...getSessionsStore().values()]
+    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    .map((session) => serializeSession(session));
+  return {
+    ok: true,
+    activeSessionId: global.__repoStudioActiveTerminalSessionId__ || null,
+    sessions,
   };
 }
 

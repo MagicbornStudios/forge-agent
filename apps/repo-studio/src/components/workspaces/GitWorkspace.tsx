@@ -1,8 +1,9 @@
 'use client';
 
 import * as React from 'react';
-import { GitCompareArrows, TerminalSquare } from 'lucide-react';
+import { Bot, GitCompareArrows, TerminalSquare } from 'lucide-react';
 import { WorkspaceLayout } from '@forge/shared/components/workspace';
+import { AssistantPanel } from '@/components/features/assistant/AssistantPanel';
 import { CodePanel } from '@/components/features/code/CodePanel';
 import { DiffPanel } from '@/components/features/diff/DiffPanel';
 import { GitPanel } from '@/components/features/git/GitPanel';
@@ -53,6 +54,13 @@ export function GitWorkspace({
           </WorkspaceLayout.Panel>
         ) : null}
       </WorkspaceLayout.Bottom>
+      <WorkspaceLayout.Right hideTabBar>
+        {isPanelVisible(hiddenPanels, 'assistant') ? (
+          <WorkspaceLayout.Panel id="assistant" title="Assistant" icon={<Bot size={14} />}>
+            <AssistantPanel defaultRuntime="codex" />
+          </WorkspaceLayout.Panel>
+        ) : null}
+      </WorkspaceLayout.Right>
     </WorkspaceLayout>
   );
 }

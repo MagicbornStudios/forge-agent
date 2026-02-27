@@ -45,15 +45,12 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 2. Build: `pnpm registry:forge:build`
 3. Publish: `pnpm registry:forge:publish:local`
 
-Twick: [24 - Vendoring](24-vendoring-third-party-code) for Twick build + publish.
-
 ## Consume from another repo
 
 1. **`.npmrc`** in consumer root:
 
 ```ini
 @forge:registry=http://localhost:4873
-@twick:registry=http://localhost:4873
 ```
 
 2. **`package.json`**: add `"@forge/dev-kit": "^0.1.0"`

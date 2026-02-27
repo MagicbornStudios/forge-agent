@@ -1,5 +1,10 @@
-/** Re-exported from app-spec (single source of truth). Prefer importing from @/lib/app-spec.generated. */
-export { WORKSPACE_IDS as REPO_WORKSPACE_IDS, type WorkspaceId as RepoWorkspaceId } from './app-spec.generated';
+import { WORKSPACE_IDS } from './app-spec.generated';
+
+/** Built-in workspace ids generated from app-spec (extensions are runtime dynamic). */
+export const REPO_WORKSPACE_IDS = WORKSPACE_IDS as readonly string[];
+
+/** Repo Studio workspace ids are dynamic (built-ins + discovered extensions). */
+export type RepoWorkspaceId = string;
 
 export const REPO_COMMAND_VIEW_TABS = ['recommended', 'all', 'blocked'] as const;
 export type RepoCommandViewTab = (typeof REPO_COMMAND_VIEW_TABS)[number];

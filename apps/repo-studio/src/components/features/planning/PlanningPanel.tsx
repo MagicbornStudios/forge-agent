@@ -20,8 +20,7 @@ import { fetchPlanningModel } from '@/lib/api/services';
 import type { PlanningStructuredModelResponse } from '@/lib/api/types';
 import type { PlanningSnapshot, RepoLoopEntry } from '@/lib/repo-data';
 
-const PLANNING_TAB_IDS = ['phases', 'tasks', 'documents'] as const;
-type PlanningTabId = (typeof PLANNING_TAB_IDS)[number];
+type PlanningTabId = 'phases' | 'tasks' | 'documents';
 
 function normalizeStatus(status: string) {
   return String(status || '').toLowerCase().replace(/\s+/g, '-');
@@ -43,12 +42,9 @@ export interface PlanningPanelProps {
 
 export function PlanningPanel({
   planning,
-  loops,
   activeLoopId,
-  switchingLoop = false,
   selectedDocId,
   onSelectDoc,
-  onSwitchLoop,
   onCopyMentionToken,
   onCopyText,
   onOpenAssistant,

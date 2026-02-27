@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { loadCommandsModel } from '@/lib/command-policy';
+import { resolveActiveProjectRoot } from '@/lib/project-root';
 import { serializeRun, startRepoRun } from '@/lib/run-manager';
 
 export async function POST(request: Request) {
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, message: reason }, { status: 400 });
   }
 
-  const run = startRepoRun(commandId, entry.command);
+  const run = startRepoRun(commandId, entry.command, resolveActiveProjectRoot());
   return NextResponse.json({
     ok: true,
     run: serializeRun(run),

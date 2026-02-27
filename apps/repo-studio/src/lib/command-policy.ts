@@ -1,6 +1,6 @@
-import path from 'node:path';
 import { loadRepoStudioSnapshot, type RepoCommandEntry } from '@/lib/repo-data';
 import { readRepoStudioConfig } from '@/lib/repo-studio-config';
+import { resolveRepoRoot } from '@/lib/repo-files';
 import { getRepoSettingsSnapshot } from '@/lib/settings/repository';
 
 export type RepoCommandPolicyEntry = RepoCommandEntry & {
@@ -67,7 +67,7 @@ function dedupeCommands(entries: RepoCommandEntry[]) {
 }
 
 export async function loadCommandsModel(options: LoadCommandsModelOptions = {}): Promise<LoadCommandsModelResult> {
-  const repoRoot = path.resolve(process.cwd(), '..', '..');
+  const repoRoot = resolveRepoRoot();
   const workspaceId = String(options.workspaceId || 'planning');
   const loopId = String(options.loopId || 'default');
   const [snapshot, config, settings] = await Promise.all([
@@ -125,4 +125,3 @@ export async function loadCommandsModel(options: LoadCommandsModelOptions = {}):
     requireConfirm,
   };
 }
-

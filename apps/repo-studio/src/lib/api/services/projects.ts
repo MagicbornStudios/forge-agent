@@ -1,5 +1,5 @@
 import { getJson, postJson } from '@/lib/api/http';
-import type { RepoProjectMutationResponse, RepoProjectsResponse } from '@/lib/api/types';
+import type { RepoProjectBrowseResponse, RepoProjectMutationResponse, RepoProjectsResponse } from '@/lib/api/types';
 
 export async function fetchRepoProjects() {
   return getJson<RepoProjectsResponse>('/api/repo/projects', {
@@ -35,3 +35,11 @@ export async function cloneRepoProject(input: { remoteUrl: string; targetPath: s
   });
 }
 
+export async function browseRepoProjectDirectories(input?: { path?: string }) {
+  const queryPath = String(input?.path || '').trim();
+  const query = queryPath ? `?path=${encodeURIComponent(queryPath)}` : '';
+  return getJson<RepoProjectBrowseResponse>(`/api/repo/projects/browse${query}`, {
+    fallbackMessage: 'Unable to browse local folders.',
+    timeoutMs: 15000,
+  });
+}

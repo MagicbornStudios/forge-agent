@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import type { SerializedPageTree } from 'fumadocs-core/source/client';
+import type { Root } from 'fumadocs-core/page-tree';
 import { BookOpenText, Github } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
@@ -24,7 +24,7 @@ interface DocsTopTab {
 }
 
 export interface DocsLayoutShellProps {
-  serializedTree: SerializedPageTree;
+  pageTree: Root;
   toc: TableOfContents;
   children: React.ReactNode;
   baseUrl?: string;
@@ -35,7 +35,7 @@ export interface DocsLayoutShellProps {
 }
 
 export function DocsLayoutShell({
-  serializedTree,
+  pageTree,
   toc,
   children,
   baseUrl = '/docs',
@@ -80,7 +80,7 @@ export function DocsLayoutShell({
           </Link>
         </div>
         <DocsSidebar
-          serializedTree={serializedTree}
+          pageTree={pageTree}
           pathname={pathname}
           baseUrl={baseUrl}
           audience={currentAudience}

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { spawnSync } from 'node:child_process';
 
 import { loadCommandsModel } from '@/lib/command-policy';
+import { resolveActiveProjectRoot } from '@/lib/project-root';
 
 export async function POST(request: Request) {
   let body: { commandId?: string; confirm?: boolean } = {};
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
     ? ['/d', '/s', '/c', entry.command]
     : ['-lc', entry.command];
   const result = spawnSync(command, args, {
-    cwd: process.cwd(),
+    cwd: resolveActiveProjectRoot(),
     encoding: 'utf8',
     shell: false,
     windowsHide: true,

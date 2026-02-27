@@ -7,7 +7,7 @@ import { AssistantPanel } from '@/components/features/assistant/AssistantPanel';
 import { CodePanel } from '@/components/features/code/CodePanel';
 import { DiffPanel } from '@/components/features/diff/DiffPanel';
 import { GitPanel } from '@/components/features/git/GitPanel';
-import { WorkspaceViewport } from '@/components/viewport/WorkspaceViewport';
+import { WorkspaceViewport } from '@forge/shared';
 import { createHiddenPanelSet, isPanelVisible, type RepoWorkspaceProps } from './types';
 
 export const WORKSPACE_ID = 'code' as const;

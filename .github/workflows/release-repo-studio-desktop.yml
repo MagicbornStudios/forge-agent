@@ -1,0 +1,117 @@
+name: Release RepoStudio Desktop
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.5
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify Repo Studio and Platform Gates
+        run: |
+          pnpm --filter @forge/repo-studio-app run codegen
+          pnpm --filter @forge/repo-studio-app run check:codegen
+          pnpm --filter @forge/repo-studio-app build
+          pnpm --filter @forge/repo-studio-app run extensions:registry:health
+          pnpm --filter @forge/platform build
+          pnpm --filter @forge/docs build
+          pnpm guard:workspace-semantics
+          pnpm hydration:doctor
+
+  package_windows:
+    runs-on: windows-latest
+    needs: verify
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.5
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Package RepoStudio Windows Desktop
+        run: pnpm --filter @forge/repo-studio run desktop:package:win
+
+      - name: Assert Standalone Desktop Bundle
+        run: pnpm --filter @forge/repo-studio run desktop:verify:standalone
+
+      - name: Generate SHA256 Checksums
+        shell: pwsh
+        run: |
+          $artifactDir = "packages/repo-studio/dist/desktop"
+          $outFile = "$artifactDir/RepoStudio-$env:GITHUB_REF_NAME-sha256.txt"
+          Get-FileHash "$artifactDir/RepoStudio Setup 0.1.1.exe" -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  RepoStudio Setup 0.1.1.exe" } | Out-File -FilePath $outFile -Encoding ascii
+          Get-FileHash "$artifactDir/RepoStudio 0.1.1.exe" -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  RepoStudio 0.1.1.exe" } | Add-Content -Path $outFile -Encoding ascii
+          Get-Content $outFile
+
+      - name: Upload Desktop Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: repostudio-desktop-windows
+          path: |
+            packages/repo-studio/dist/desktop/RepoStudio Setup 0.1.1.exe
+            packages/repo-studio/dist/desktop/RepoStudio Setup 0.1.1.exe.blockmap
+            packages/repo-studio/dist/desktop/RepoStudio 0.1.1.exe
+            packages/repo-studio/dist/desktop/RepoStudio 0.1.1.exe.blockmap
+            packages/repo-studio/dist/desktop/RepoStudio-v0.1.1-sha256.txt
+
+  release:
+    runs-on: ubuntu-latest
+    needs: package_windows
+    steps:
+      - name: Download Desktop Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: repostudio-desktop-windows
+          path: release-artifacts
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: RepoStudio ${{ github.ref_name }}
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+          files: |
+            release-artifacts/RepoStudio Setup 0.1.1.exe
+            release-artifacts/RepoStudio Setup 0.1.1.exe.blockmap
+            release-artifacts/RepoStudio 0.1.1.exe
+            release-artifacts/RepoStudio 0.1.1.exe.blockmap
+            release-artifacts/RepoStudio-v0.1.1-sha256.txt

@@ -125,6 +125,19 @@ export type { WorkspaceTabGroupProps } from './WorkspaceTabGroup';
 export { WorkspaceBottomPanel } from './WorkspaceBottomPanel';
 export type { WorkspaceBottomPanelProps } from './WorkspaceBottomPanel';
 
+export { WorkspaceViewport } from './WorkspaceViewport';
+export type {
+  ViewportPanelDescriptor,
+  WorkspaceViewportProps,
+  ViewportCloseStateInput,
+  ViewportCloseStateResult,
+} from './WorkspaceViewport';
+export {
+  resolveViewportOpenIds,
+  resolveViewportActiveId,
+  resolveViewportCloseState,
+} from './WorkspaceViewport';
+
 export { WorkspaceStatusBar } from './WorkspaceStatusBar';
 export type { WorkspaceStatusBarProps } from './WorkspaceStatusBar';
 

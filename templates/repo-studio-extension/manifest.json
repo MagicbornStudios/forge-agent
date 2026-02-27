@@ -1,0 +1,29 @@
+{
+  "manifestVersion": 1,
+  "id": "example",
+  "label": "Example Workspace",
+  "workspaceId": "ext-example",
+  "workspaceKind": "generic",
+  "description": "Example extension workspace",
+  "layoutSpecPath": "layout.generated.json",
+  "assistant": {
+    "forge": {
+      "aboutWorkspace": {
+        "title": "Example Workspace",
+        "summary": "Describe the workspace purpose and where its context lives.",
+        "context": [
+          "path/one",
+          "path/two"
+        ]
+      },
+      "tools": [
+        {
+          "name": "forge_open_about_workspace",
+          "action": "open_about_workspace",
+          "label": "Open About Workspace",
+          "description": "Open workspace context modal"
+        }
+      ]
+    }
+  }
+}

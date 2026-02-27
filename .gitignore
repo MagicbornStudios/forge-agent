@@ -44,6 +44,7 @@ coverage/
 media/
 apps/studio/data/
 apps/studio/media/
+legacy/studio-apps/studio/data/
 
 # Repo Studio local DB
 apps/repo-studio/data/

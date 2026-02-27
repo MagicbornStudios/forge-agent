@@ -49,7 +49,14 @@ function resolveDesktopBuildRoot() {
   return path.join(packageRoot, '.desktop-build');
 }
 
-export async function runDesktopBuild() {
+function parseDesktopBuildArgs(argv = process.argv.slice(2)) {
+  return {
+    requireStandalone: argv.includes('--require-standalone'),
+  };
+}
+
+export async function runDesktopBuild(options = {}) {
+  const requireStandalone = options.requireStandalone === true;
   const workspaceRoot = findWorkspaceRoot(process.cwd());
   const standalone = resolveRepoStudioStandaloneServer(workspaceRoot);
   const appRoot = standalone.appRoot;
@@ -68,6 +75,12 @@ export async function runDesktopBuild() {
   const standaloneSucceeded = standaloneBuild.ok && Boolean(resolved.resolved);
 
   if (!standaloneSucceeded) {
+    if (requireStandalone) {
+      throw new Error(
+        'Standalone build unavailable and --require-standalone was set. Refusing fallback packaging mode.',
+      );
+    }
+
     // eslint-disable-next-line no-console
     console.warn('Standalone build unavailable (likely Windows symlink permissions). Falling back to standard app build.');
     run('pnpm', ['--filter', '@forge/repo-studio-app', 'build'], {
@@ -93,12 +106,15 @@ export async function runDesktopBuild() {
   const standaloneTarget = path.join(buildRoot, 'next', 'standalone');
   const staticSource = path.join(appRoot, '.next', 'static');
   const staticTarget = path.join(buildRoot, 'next', 'static');
+  const buildIdSource = path.join(appRoot, '.next', 'BUILD_ID');
+  const buildIdTarget = path.join(buildRoot, 'next', 'BUILD_ID');
   const publicSource = path.join(appRoot, 'public');
   const publicTarget = path.join(buildRoot, 'next', 'public');
 
   await fs.rm(buildRoot, { recursive: true, force: true });
   await copyDir(path.dirname(resolved.resolved), standaloneTarget);
   await copyDir(staticSource, staticTarget);
+  await fs.copyFile(buildIdSource, buildIdTarget);
   await copyDir(publicSource, publicTarget).catch(() => {});
 
   const manifest = {
@@ -109,6 +125,7 @@ export async function runDesktopBuild() {
     copied: {
       standaloneTarget,
       staticTarget,
+      buildIdTarget,
       publicTarget,
     },
   };
@@ -119,7 +136,7 @@ export async function runDesktopBuild() {
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
-  runDesktopBuild().catch((error) => {
+  runDesktopBuild(parseDesktopBuildArgs()).catch((error) => {
     // eslint-disable-next-line no-console
     console.error(`repo-studio desktop build failed: ${error.message}`);
     process.exitCode = 1;

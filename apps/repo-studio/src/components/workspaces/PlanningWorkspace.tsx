@@ -1,16 +1,19 @@
 'use client';
 
 import * as React from 'react';
-import { BookOpen, Bot, FileText, Layers, ListTodo } from 'lucide-react';
+import { AlertTriangle, Bot, FileText, Layers, ListTodo, Scale } from 'lucide-react';
 import { WorkspaceLayout, WorkspaceToolbar } from '@forge/shared/components/workspace';
 import { Badge } from '@forge/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@forge/ui/select';
 import { AssistantPanel } from '@/components/features/assistant/AssistantPanel';
+import { DecisionsPanel } from '@/components/features/planning/DecisionsPanel';
 import { PhasesPanel } from '@/components/features/planning/PhasesPanel';
 import { PlanningDocListPanel } from '@/components/features/planning/PlanningDocListPanel';
 import { PlanningDocPagePanel } from '@/components/features/planning/PlanningDocPagePanel';
+import { PrdPanel } from '@/components/features/planning/PrdPanel';
+import { RegressionPanel } from '@/components/features/planning/RegressionPanel';
+import { StatusPanel } from '@/components/features/planning/StatusPanel';
 import { TasksPanel } from '@/components/features/planning/TasksPanel';
-import { WorkspaceViewport } from '@/components/viewport/WorkspaceViewport';
+import { WorkspaceViewport } from '@forge/shared';
 import { useRepoStudioShellStore } from '@/lib/app-shell/store';
 import { createHiddenPanelSet, isPanelVisible, type RepoWorkspaceProps } from './types';
 
@@ -41,9 +44,7 @@ export function PlanningWorkspace({
   const hiddenPanels = React.useMemo(() => createHiddenPanelSet(hiddenPanelIds), [hiddenPanelIds]);
   const {
     planningSnapshot,
-    loopEntries,
     activeLoopId,
-    onSwitchLoop,
     selectedDocId,
     onSelectDoc,
   } = panelContext;
@@ -148,37 +149,21 @@ export function PlanningWorkspace({
   return (
     <div className="flex h-full min-h-0 flex-col">
       <WorkspaceToolbar className="shrink-0 border-b border-border px-2 py-1">
-        <WorkspaceToolbar.Left>
-          <div className="flex items-center gap-1.5">
-            <BookOpen size={14} className="shrink-0 text-muted-foreground" aria-hidden />
-            <Select value={activeLoopId} onValueChange={onSwitchLoop}>
-              <SelectTrigger className="h-7 w-[180px] text-xs">
-                <SelectValue placeholder="Loop" />
-              </SelectTrigger>
-              <SelectContent>
-                {loopEntries.map((entry) => (
-                  <SelectItem key={entry.id} value={entry.id}>
-                    {entry.name} ({entry.id})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </WorkspaceToolbar.Left>
+        <WorkspaceToolbar.Left />
         <WorkspaceToolbar.Center>
           <span
             className="max-w-[50vw] truncate text-xs text-muted-foreground"
             title={planningSnapshot.nextAction}
           >
-            {planningSnapshot.nextAction || '—'}
+            {planningSnapshot.nextAction || '-'}
           </span>
         </WorkspaceToolbar.Center>
         <WorkspaceToolbar.Right>
           <Badge variant="secondary" className="font-normal">
-            {planningSnapshot.percent}% · {planningSnapshot.rows.length} phases
+            {planningSnapshot.percent}% | {planningSnapshot.rows.length} phases
           </Badge>
           <Badge variant="outline" className="font-normal">
-            {planningSnapshot.tasks.filter((t) => String(t.status || '').toLowerCase().replace(/\s+/g, '-') !== 'complete').length} open tasks
+            {planningSnapshot.openTaskCount} open tasks
           </Badge>
         </WorkspaceToolbar.Right>
       </WorkspaceToolbar>
@@ -191,6 +176,25 @@ export function PlanningWorkspace({
         className="min-h-0 flex-1"
       >
         <WorkspaceLayout.Left>
+          <WorkspaceLayout.Panel id="planning-prd" title="PRD" icon={<FileText size={14} />}>
+            <PrdPanel
+              planning={planningSnapshot}
+              onRefresh={panelContext.onRefreshLoopSnapshot}
+              onCopyText={panelContext.onCopyText}
+            />
+          </WorkspaceLayout.Panel>
+          <WorkspaceLayout.Panel id="planning-status" title="Status" icon={<Scale size={14} />}>
+            <StatusPanel planning={planningSnapshot} />
+          </WorkspaceLayout.Panel>
+          <WorkspaceLayout.Panel id="planning-decisions" title="Decisions" icon={<FileText size={14} />}>
+            <DecisionsPanel
+              planning={planningSnapshot}
+              onCopyText={panelContext.onCopyText}
+            />
+          </WorkspaceLayout.Panel>
+          <WorkspaceLayout.Panel id="planning-regression" title="Regression" icon={<AlertTriangle size={14} />}>
+            <RegressionPanel planning={planningSnapshot} />
+          </WorkspaceLayout.Panel>
           <WorkspaceLayout.Panel id="planning-phases" title="Phases" icon={<Layers size={14} />}>
             <PhasesPanel planning={planningSnapshot} />
           </WorkspaceLayout.Panel>

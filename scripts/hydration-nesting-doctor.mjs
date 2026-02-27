@@ -1,11 +1,17 @@
 #!/usr/bin/env node
 
 import fs from "node:fs/promises";
+import { existsSync } from "node:fs";
 import process from "node:process";
 import { execSync } from "node:child_process";
 import ts from "typescript";
 
-const ROOT_GLOBS = ["apps/studio", "apps/platform", "packages/shared", "packages/ui"];
+const ROOT_GLOBS = [
+  "apps/repo-studio",
+  "apps/platform",
+  "packages/shared",
+  "packages/ui",
+];
 
 const interactiveNative = new Set(["button", "a", "input", "select", "textarea"]);
 const forgeUIButtonLike = new Set([
@@ -104,7 +110,10 @@ function classifyElement(tagName, attributes, importMap) {
 }
 
 function listTsxFiles() {
-  const targets = ROOT_GLOBS.join(" ");
+  const targets = ROOT_GLOBS.filter((target) => existsSync(target)).join(" ");
+  if (!targets) {
+    throw new Error("No scan targets exist for hydration nesting doctor.");
+  }
   const output = execSync(`rg --files ${targets} -g "*.tsx"`, {
     encoding: "utf8",
   });

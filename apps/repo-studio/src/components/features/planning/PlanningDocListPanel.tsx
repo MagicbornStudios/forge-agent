@@ -21,12 +21,7 @@ export function PlanningDocListPanel({
   planning,
   selectedDocId,
   onOpenDoc,
-  onCopyMentionToken,
-  onCopyText,
-  onOpenAssistant,
 }: PlanningDocListPanelProps) {
-  const selectedDoc = planning.docs.find((doc) => doc.id === selectedDocId) ?? null;
-
   const treeData = React.useMemo(
     () => buildPlanningDocTreeData(planning.docs),
     [planning.docs],

@@ -2,8 +2,6 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import type { SerializedPageTree } from 'fumadocs-core/source/client';
-import { deserializePageTree } from 'fumadocs-core/source/client';
 import type { Folder, Item, Node, Root, Separator } from 'fumadocs-core/page-tree';
 import {
   BookOpenText,
@@ -354,26 +352,25 @@ function NavNodes({
 }
 
 export interface DocsSidebarProps {
-  serializedTree: SerializedPageTree;
+  pageTree: Root;
   pathname: string;
   baseUrl?: string;
   audience: DocsAudience;
 }
 
 export function DocsSidebar({
-  serializedTree,
+  pageTree,
   pathname,
   baseUrl = '/docs',
   audience,
 }: DocsSidebarProps) {
-  const tree = React.useMemo(() => deserializePageTree(serializedTree) as Root, [serializedTree]);
   const [query, setQuery] = React.useState('');
   const [openMap, setOpenMap] = React.useState<Record<string, boolean>>({});
   const normalizedQuery = query.trim().toLowerCase();
 
   const audienceNodes = React.useMemo(
-    () => filterNodesForAudience(tree.children, audience, baseUrl),
-    [audience, baseUrl, tree.children],
+    () => filterNodesForAudience(pageTree.children, audience, baseUrl),
+    [audience, baseUrl, pageTree.children],
   );
 
   const onToggleFolder = React.useCallback((key: string, next: boolean) => {

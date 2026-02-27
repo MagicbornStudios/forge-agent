@@ -1,6 +1,7 @@
-import { postJson } from '@/lib/api/http';
+import { getJson, postJson } from '@/lib/api/http';
 import type {
   TerminalSessionInputResponse,
+  TerminalSessionListResponse,
   TerminalSessionResizeResponse,
   TerminalSessionStartResponse,
   TerminalSessionStopResponse,
@@ -11,9 +12,20 @@ export async function startTerminalSession(input: {
   cwd?: string;
   cols?: number;
   rows?: number;
+  command?: string;
+  args?: string[];
+  profileId?: string;
+  name?: string;
+  setActive?: boolean;
 } = {}) {
   return postJson<TerminalSessionStartResponse>('/api/repo/terminal/session/start', input, {
     fallbackMessage: 'Unable to start terminal session.',
+  });
+}
+
+export async function fetchTerminalSessions() {
+  return getJson<TerminalSessionListResponse>('/api/repo/terminal/session/list', {
+    fallbackMessage: 'Unable to list terminal sessions.',
   });
 }
 

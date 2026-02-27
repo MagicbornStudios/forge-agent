@@ -38,17 +38,8 @@ test('workspace layout definitions keep valid main anchors and panel rails', () 
   }
 });
 
-test('story workspace layout includes explorer left rail and viewport main canvas', () => {
-  const definition = getWorkspaceLayoutDefinition('story');
-  const panelSpecs = getWorkspacePanelSpecs('story');
-  const panelById = new Map(panelSpecs.map((panel) => [panel.id, panel]));
-
-  assert.ok(panelById.has('story'));
-  assert.ok(panelById.has('viewport'));
-  assert.ok(panelById.has('assistant'));
-  assert.equal(panelById.get('story')?.rail, 'left');
-  assert.equal(panelById.get('viewport')?.rail, 'main');
-  assert.equal(panelById.get('assistant')?.rail, 'right');
-  assert.ok(definition.mainPanelIds.includes('viewport'));
-  assert.equal(definition.mainAnchorPanelId, 'viewport');
+test('story workspace is no longer statically generated in built-in app-spec', () => {
+  assert.ok(Array.isArray(WORKSPACE_IDS));
+  assert.ok(WORKSPACE_IDS.includes('extensions'));
+  assert.ok(!WORKSPACE_IDS.includes('story'));
 });

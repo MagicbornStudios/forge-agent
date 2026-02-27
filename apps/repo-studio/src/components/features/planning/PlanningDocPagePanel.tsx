@@ -2,8 +2,7 @@
 
 import * as React from 'react';
 import dynamic from 'next/dynamic';
-import { Bot, ClipboardCopy, FileText } from 'lucide-react';
-import { Button } from '@forge/ui/button';
+import { FileText } from 'lucide-react';
 import type { PlanningSnapshot } from '@/lib/repo-data';
 
 const MonacoEditor = dynamic(
@@ -14,15 +13,11 @@ const MonacoEditor = dynamic(
 export interface PlanningDocPagePanelProps {
   docId: string;
   planning: PlanningSnapshot;
-  onCopyText: (text: string) => void;
-  onOpenAssistant: () => void;
 }
 
 export function PlanningDocPagePanel({
   docId,
   planning,
-  onCopyText,
-  onOpenAssistant,
 }: PlanningDocPagePanelProps) {
   const doc = React.useMemo(
     () => planning.docs.find((d) => d.id === docId) ?? null,

@@ -1,8 +1,9 @@
 'use client';
 
 import * as React from 'react';
-import { Database } from 'lucide-react';
+import { Bot, Database } from 'lucide-react';
 import { WorkspaceLayout } from '@forge/shared/components/workspace';
+import { AssistantPanel } from '@/components/features/assistant/AssistantPanel';
 import { DatabasePanel } from '@/components/features/database/DatabasePanel';
 import { createHiddenPanelSet, isPanelVisible, type RepoWorkspaceProps } from './types';
 
@@ -35,6 +36,13 @@ export function DatabaseWorkspace({
           </WorkspaceLayout.Panel>
         ) : null}
       </WorkspaceLayout.Main>
+      <WorkspaceLayout.Right hideTabBar>
+        {isPanelVisible(hiddenPanels, 'assistant') ? (
+          <WorkspaceLayout.Panel id="assistant" title="Assistant" icon={<Bot size={14} />}>
+            <AssistantPanel defaultRuntime="codex" />
+          </WorkspaceLayout.Panel>
+        ) : null}
+      </WorkspaceLayout.Right>
     </WorkspaceLayout>
   );
 }

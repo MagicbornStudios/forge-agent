@@ -3,12 +3,15 @@
 import * as React from 'react';
 import type { RepoAuthStatusResponse } from '@/lib/api/types';
 import type { RepoMode } from '@/lib/api/types';
+import type { RepoWorkspaceExtension } from '@/lib/api/types';
 
 export type RepoStudioContextValue = {
   profile: string;
   mode: RepoMode;
   platformStatus: RepoAuthStatusResponse | null;
   copyText: (text: string) => void;
+  workspaceExtensions: RepoWorkspaceExtension[];
+  workspaceExtensionMap: Record<string, RepoWorkspaceExtension>;
 };
 
 const RepoStudioContext = React.createContext<RepoStudioContextValue | null>(null);

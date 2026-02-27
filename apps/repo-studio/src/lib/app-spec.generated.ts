@@ -10,20 +10,15 @@ import type { WorkspacePanelSpec, WorkspaceLayoutDefinition } from '@forge/share
 export const APP_ID = "repo-studio";
 export const APP_LABEL = "Repo Studio";
 
-export const WORKSPACE_IDS = ["planning","env","commands","story","database","git","assistant","diff","code","review-queue"] as const;
+export const WORKSPACE_IDS = ["planning","extensions","database","git","code"] as const;
 export type WorkspaceId = (typeof WORKSPACE_IDS)[number];
 
 export const WORKSPACE_LABELS: Record<WorkspaceId, string> = {
   "planning": "Planning",
-  "env": "Env",
-  "commands": "Commands",
-  "story": "Story",
+  "extensions": "Extensions",
   "database": "Database",
   "git": "Git",
-  "assistant": "Assistant",
-  "diff": "Diff",
-  "code": "Code",
-  "review-queue": "Review Queue"
+  "code": "Code"
 };
 
 /** Panel ids that must never be hidden (e.g. viewport-as-canvas). */
@@ -39,6 +34,30 @@ const LAYOUT_DEFINITIONS: Record<WorkspaceId, WorkspaceLayoutDefinition> = {
       "viewport"
     ],
     "panelSpecs": [
+      {
+        "id": "planning-prd",
+        "rail": "left",
+        "label": "PRD",
+        "key": "panel.visible.repo-planning-prd"
+      },
+      {
+        "id": "planning-status",
+        "rail": "left",
+        "label": "Status",
+        "key": "panel.visible.repo-planning-status"
+      },
+      {
+        "id": "planning-decisions",
+        "rail": "left",
+        "label": "Decisions",
+        "key": "panel.visible.repo-planning-decisions"
+      },
+      {
+        "id": "planning-regression",
+        "rail": "left",
+        "label": "Regression",
+        "key": "panel.visible.repo-planning-regression"
+      },
       {
         "id": "planning-phases",
         "rail": "left",
@@ -71,72 +90,26 @@ const LAYOUT_DEFINITIONS: Record<WorkspaceId, WorkspaceLayoutDefinition> = {
       }
     ]
   },
-  "env": {
-    "workspaceId": "env",
-    "label": "Env",
-    "layoutId": "repo-env",
-    "mainAnchorPanelId": "planning",
+  "extensions": {
+    "workspaceId": "extensions",
+    "label": "Extensions",
+    "layoutId": "repo-extensions",
+    "mainAnchorPanelId": "extensions-registry",
     "mainPanelIds": [
-      "planning"
+      "extensions-registry"
     ],
     "panelSpecs": [
       {
-        "id": "planning",
-        "rail": "main",
-        "label": "Planning",
-        "key": "panel.visible.repo-planning"
-      },
-      {
-        "id": "env",
-        "rail": "right",
-        "label": "Env",
-        "key": "panel.visible.repo-env"
-      }
-    ]
-  },
-  "commands": {
-    "workspaceId": "commands",
-    "label": "Commands",
-    "layoutId": "repo-commands",
-    "mainAnchorPanelId": "commands",
-    "mainPanelIds": [
-      "commands"
-    ],
-    "panelSpecs": [
-      {
-        "id": "commands",
-        "rail": "main",
-        "label": "Commands",
-        "key": "panel.visible.repo-commands"
-      },
-      {
-        "id": "terminal",
-        "rail": "bottom",
-        "label": "Terminal",
-        "key": "panel.visible.repo-terminal"
-      }
-    ]
-  },
-  "story": {
-    "workspaceId": "story",
-    "label": "Story",
-    "layoutId": "repo-story",
-    "mainAnchorPanelId": "viewport",
-    "mainPanelIds": [
-      "viewport"
-    ],
-    "panelSpecs": [
-      {
-        "id": "story",
+        "id": "extensions-installed",
         "rail": "left",
-        "label": "Story",
-        "key": "panel.visible.repo-story"
+        "label": "Installed",
+        "key": "panel.visible.repo-extensions-installed"
       },
       {
-        "id": "viewport",
+        "id": "extensions-registry",
         "rail": "main",
-        "label": "Viewport",
-        "key": "panel.visible.repo-viewport"
+        "label": "Registry",
+        "key": "panel.visible.repo-extensions-registry"
       },
       {
         "id": "assistant",
@@ -160,6 +133,12 @@ const LAYOUT_DEFINITIONS: Record<WorkspaceId, WorkspaceLayoutDefinition> = {
         "rail": "main",
         "label": "Database",
         "key": "panel.visible.repo-database"
+      },
+      {
+        "id": "assistant",
+        "rail": "right",
+        "label": "Assistant",
+        "key": "panel.visible.repo-assistant"
       }
     ]
   },
@@ -190,60 +169,12 @@ const LAYOUT_DEFINITIONS: Record<WorkspaceId, WorkspaceLayoutDefinition> = {
         "rail": "bottom",
         "label": "Diff",
         "key": "panel.visible.repo-diff"
-      }
-    ]
-  },
-  "assistant": {
-    "workspaceId": "assistant",
-    "label": "Assistant",
-    "layoutId": "repo-assistant",
-    "mainAnchorPanelId": "planning",
-    "mainPanelIds": [
-      "planning",
-      "assistant"
-    ],
-    "panelSpecs": [
-      {
-        "id": "planning",
-        "rail": "main",
-        "label": "Planning",
-        "key": "panel.visible.repo-planning"
       },
       {
         "id": "assistant",
-        "rail": "main",
+        "rail": "right",
         "label": "Assistant",
         "key": "panel.visible.repo-assistant"
-      }
-    ]
-  },
-  "diff": {
-    "workspaceId": "diff",
-    "label": "Diff",
-    "layoutId": "repo-diff",
-    "mainAnchorPanelId": "code",
-    "mainPanelIds": [
-      "code",
-      "diff"
-    ],
-    "panelSpecs": [
-      {
-        "id": "code",
-        "rail": "main",
-        "label": "Code",
-        "key": "panel.visible.repo-code"
-      },
-      {
-        "id": "diff",
-        "rail": "main",
-        "label": "Diff",
-        "key": "panel.visible.repo-diff"
-      },
-      {
-        "id": "git",
-        "rail": "bottom",
-        "label": "Git",
-        "key": "panel.visible.repo-git"
       }
     ]
   },
@@ -281,44 +212,10 @@ const LAYOUT_DEFINITIONS: Record<WorkspaceId, WorkspaceLayoutDefinition> = {
         "key": "panel.visible.repo-git"
       }
     ]
-  },
-  "review-queue": {
-    "workspaceId": "review-queue",
-    "label": "Review Queue",
-    "layoutId": "repo-review-queue",
-    "mainAnchorPanelId": "code",
-    "mainPanelIds": [
-      "code",
-      "review-queue"
-    ],
-    "panelSpecs": [
-      {
-        "id": "code",
-        "rail": "main",
-        "label": "Code",
-        "key": "panel.visible.repo-code"
-      },
-      {
-        "id": "review-queue",
-        "rail": "main",
-        "label": "Review Queue",
-        "key": "panel.visible.repo-review-queue"
-      },
-      {
-        "id": "assistant",
-        "rail": "right",
-        "label": "Assistant",
-        "key": "panel.visible.repo-assistant"
-      },
-      {
-        "id": "diff",
-        "rail": "bottom",
-        "label": "Diff",
-        "key": "panel.visible.repo-diff"
-      }
-    ]
   }
 };
+
+const EXTENSION_LAYOUT_DEFINITIONS: Record<string, WorkspaceLayoutDefinition> = {};
 
 const FALLBACK_WORKSPACE_ID: WorkspaceId = "planning";
 
@@ -338,6 +235,10 @@ function getDefinitionSafe(workspaceId: string): WorkspaceLayoutDefinition {
 
 export function getWorkspaceLayoutDefinition(workspaceId: WorkspaceId): WorkspaceLayoutDefinition {
   return LAYOUT_DEFINITIONS[workspaceId];
+}
+
+export function getExtensionWorkspaceLayoutDefinition(workspaceId: string): WorkspaceLayoutDefinition | undefined {
+  return EXTENSION_LAYOUT_DEFINITIONS[String(workspaceId || '').trim()];
 }
 
 export function getWorkspaceLayoutId(workspaceId: string): string {

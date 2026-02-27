@@ -21,7 +21,9 @@
 export function emitAppSpec(layouts, settings, options = {}) {
   const workspaceIds = layouts.map((l) => l.workspaceId);
   const workspaceLabels = Object.fromEntries(layouts.map((l) => [l.workspaceId, l.label]));
+  const extensionLayouts = Array.isArray(options.extensionLayouts) ? options.extensionLayouts : [];
   const layoutIdPrefix = options.layoutIdPrefix ?? 'repo';
+  const extensionLayoutIdPrefix = options.extensionLayoutIdPrefix ?? `${layoutIdPrefix}-ext`;
   const fallbackWorkspaceId = options.fallbackWorkspaceId ?? workspaceIds[0];
   const pinnedPanelIds = options.pinnedPanelIds ?? [];
   const extraPanels = options.extraPanels ?? {};
@@ -30,46 +32,77 @@ export function emitAppSpec(layouts, settings, options = {}) {
   const appId = options.appId ?? null;
   const appLabel = options.appLabel ?? null;
 
-  function panelKey(panelId, workspaceId) {
-    if (options.panelKeyPrefix) {
-      return `${options.panelKeyPrefix}-${panelId}`;
+  function panelKey(panelId, workspaceId, inputOptions = {}) {
+    const hasOwn = Object.prototype.hasOwnProperty;
+    const keyPrefix = hasOwn.call(inputOptions, 'panelKeyPrefix')
+      ? inputOptions.panelKeyPrefix
+      : options.panelKeyPrefix;
+    const keyFormat = hasOwn.call(inputOptions, 'panelKeyFormat')
+      ? inputOptions.panelKeyFormat
+      : options.panelKeyFormat;
+    if (keyPrefix) {
+      return `${keyPrefix}-${panelId}`;
     }
-    if (options.panelKeyFormat) {
-      return options.panelKeyFormat.replace('{workspaceId}', workspaceId).replace('{panelId}', panelId);
+    if (keyFormat) {
+      return keyFormat.replace('{workspaceId}', workspaceId).replace('{panelId}', panelId);
     }
     return `panel.visible.${workspaceId}-${panelId}`;
   }
 
-  const layoutDefinitions = {};
-  for (const layout of layouts) {
-    const baseSpecs = layout.panels.map((p) => ({
-      id: p.id,
-      rail: p.rail,
-      label: p.title,
-      key: panelKey(p.id, layout.workspaceId),
-    }));
-    const extra = (extraPanels[layout.workspaceId] ?? []).map((e) => ({
-      id: e.id,
-      label: e.label,
-      key: e.key,
-      rail: 'main',
-    }));
-    const panelSpecs = [...baseSpecs, ...extra];
-    const mainPanels = panelSpecs.filter((p) => p.rail === 'main');
-    const mainAnchorPanelId = mainPanels[0]?.id ?? panelSpecs[0]?.id ?? '';
-    const mainPanelIds = mainPanels.map((p) => p.id);
+  function buildLayoutDefinitions(inputLayouts, inputOptions = {}) {
+    const layoutDefinitions = {};
+    for (const layout of inputLayouts) {
+      const baseSpecs = layout.panels.map((p) => (p.key
+        ? {
+            id: p.id,
+            rail: p.rail,
+            label: p.title,
+            key: p.key,
+          }
+        : {
+            id: p.id,
+            rail: p.rail,
+            label: p.title,
+            key: panelKey(p.id, layout.workspaceId, inputOptions),
+          }));
+      const extra = (inputOptions.extraPanels?.[layout.workspaceId] ?? []).map((e) => ({
+        id: e.id,
+        label: e.label,
+        key: e.key,
+        rail: 'main',
+      }));
+      const panelSpecs = [...baseSpecs, ...extra];
+      const mainPanels = panelSpecs.filter((p) => p.rail === 'main');
+      const mainAnchorPanelId = mainPanels[0]?.id ?? panelSpecs[0]?.id ?? '';
+      const mainPanelIds = mainPanels.map((p) => p.id);
 
-    layoutDefinitions[layout.workspaceId] = {
-      workspaceId: layout.workspaceId,
-      label: layout.label,
-      layoutId: `${layoutIdPrefix}-${layout.workspaceId}`,
-      mainAnchorPanelId,
-      mainPanelIds,
-      panelSpecs,
-    };
+      layoutDefinitions[layout.workspaceId] = {
+        workspaceId: layout.workspaceId,
+        label: layout.label,
+        layoutId: `${inputOptions.layoutIdPrefix}-${layout.workspaceId}`,
+        mainAnchorPanelId,
+        mainPanelIds,
+        panelSpecs,
+      };
+    }
+    return layoutDefinitions;
   }
 
+  const layoutDefinitions = buildLayoutDefinitions(layouts, {
+    layoutIdPrefix,
+    panelKeyPrefix: options.panelKeyPrefix,
+    panelKeyFormat: options.panelKeyFormat,
+    extraPanels,
+  });
+  const extensionLayoutDefinitions = buildLayoutDefinitions(extensionLayouts, {
+    layoutIdPrefix: extensionLayoutIdPrefix,
+    panelKeyPrefix: options.extensionPanelKeyPrefix,
+    panelKeyFormat: options.extensionPanelKeyFormat ?? 'panel.visible.ext.{workspaceId}.{panelId}',
+    extraPanels: {},
+  });
+
   const layoutDefJson = JSON.stringify(layoutDefinitions, null, 2);
+  const extensionLayoutDefJson = JSON.stringify(extensionLayoutDefinitions, null, 2);
   const settingsJson = JSON.stringify(settings ?? {}, null, 2);
 
   return `/**
@@ -90,6 +123,8 @@ export const PINNED_PANEL_IDS: readonly string[] = ${JSON.stringify(pinnedPanelI
 
 const LAYOUT_DEFINITIONS: Record<WorkspaceId, WorkspaceLayoutDefinition> = ${layoutDefJson};
 
+const EXTENSION_LAYOUT_DEFINITIONS: Record<string, WorkspaceLayoutDefinition> = ${extensionLayoutDefJson};
+
 const FALLBACK_WORKSPACE_ID: WorkspaceId = ${JSON.stringify(fallbackWorkspaceId)};
 
 function getDefinitionSafe(workspaceId: string): WorkspaceLayoutDefinition {
@@ -108,6 +143,10 @@ function getDefinitionSafe(workspaceId: string): WorkspaceLayoutDefinition {
 
 export function getWorkspaceLayoutDefinition(workspaceId: WorkspaceId): WorkspaceLayoutDefinition {
   return LAYOUT_DEFINITIONS[workspaceId];
+}
+
+export function getExtensionWorkspaceLayoutDefinition(workspaceId: string): WorkspaceLayoutDefinition | undefined {
+  return EXTENSION_LAYOUT_DEFINITIONS[String(workspaceId || '').trim()];
 }
 
 export function getWorkspaceLayoutId(workspaceId: string): string {

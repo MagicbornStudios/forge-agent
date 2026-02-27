@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { resolveHostWorkspaceRoot } from '@/lib/project-root';
 
 export type RepoCommandEntry = {
   id: string;
@@ -46,10 +47,15 @@ export type RepoLoopEntry = {
 export type PlanningSnapshot = {
   loopId: string;
   planningRoot: string;
+  prdPath: string;
+  prdExists: boolean;
+  prdContent: string;
   nextAction: string;
   percent: number;
   rows: PlanningPhaseRow[];
   tasks: PlanningTaskRow[];
+  openTaskCount: number;
+  completeTaskCount: number;
   summaries: number;
   verifications: number;
   decisionOpen: number;
@@ -226,7 +232,8 @@ function parseProgressPayload(payload: any): { nextAction: string; percent: numb
 }
 
 function runForgeLoopProgressJson(repoRoot: string, loopId?: string) {
-  const cliPath = path.join(repoRoot, 'packages', 'forge-loop', 'src', 'cli.mjs');
+  const hostRoot = resolveHostWorkspaceRoot();
+  const cliPath = path.join(hostRoot, 'packages', 'forge-loop', 'src', 'cli.mjs');
   const args = [cliPath, 'progress', '--json'];
   if (loopId && loopId !== 'default') {
     args.push('--loop', loopId);
@@ -249,6 +256,7 @@ async function collectPlanningDocs(repoRoot: string, planningRootRel: string): P
   const docs: PlanningDocEntry[] = [];
   const planningRoot = path.join(repoRoot, planningRootRel);
   const coreFiles = [
+    'PRD.md',
     'PROJECT.md',
     'REQUIREMENTS.md',
     'ROADMAP.md',
@@ -399,14 +407,16 @@ export async function loadRepoStudioSnapshot(
   const planningRootRel = String(activeLoop?.planningRoot || '.planning').replace(/\\/g, '/');
   const planningRoot = path.join(repoRoot, planningRootRel);
   const phasesRoot = path.join(planningRoot, 'phases');
+  const prdPath = path.join(planningRoot, 'PRD.md');
 
-  const [stateContent, decisionsContent, errorsContent, taskRegistryContent, docs, commands] = await Promise.all([
+  const [stateContent, decisionsContent, errorsContent, taskRegistryContent, docs, commands, prdContent] = await Promise.all([
     readText(path.join(planningRoot, 'STATE.md'), ''),
     readText(path.join(planningRoot, 'DECISIONS.md'), ''),
     readText(path.join(planningRoot, 'ERRORS.md'), ''),
     readText(path.join(planningRoot, 'TASK-REGISTRY.md'), ''),
     collectPlanningDocs(repoRoot, planningRootRel),
     collectWorkspaceScripts(repoRoot),
+    readText(prdPath, ''),
   ]);
 
   const progressPayload = runForgeLoopProgressJson(repoRoot, activeLoopId);
@@ -416,6 +426,17 @@ export async function loadRepoStudioSnapshot(
     countBySuffix(phasesRoot, '-SUMMARY.md'),
     countBySuffix(phasesRoot, '-VERIFICATION.md'),
   ]);
+  const tasks = parseTaskRegistry(taskRegistryContent);
+  const completeTaskCount = tasks.filter((task) =>
+    String(task.status || '').toLowerCase().replace(/\s+/g, '-') === 'complete').length;
+  const openTaskCount = Math.max(0, tasks.length - completeTaskCount);
+  let prdExists = false;
+  try {
+    const stat = await fs.stat(prdPath);
+    prdExists = stat.isFile();
+  } catch {
+    prdExists = false;
+  }
 
   return {
     commands,
@@ -430,10 +451,15 @@ export async function loadRepoStudioSnapshot(
     planning: {
       loopId: activeLoopId,
       planningRoot: planningRootRel,
+      prdPath: path.relative(repoRoot, prdPath).replace(/\\/g, '/'),
+      prdExists,
+      prdContent,
       nextAction: parsedProgress.nextAction,
       percent: parsedProgress.percent,
       rows: parsedProgress.rows,
-      tasks: parseTaskRegistry(taskRegistryContent),
+      tasks,
+      openTaskCount,
+      completeTaskCount,
       summaries,
       verifications,
       decisionOpen: countChecklistOpen(decisionsContent),

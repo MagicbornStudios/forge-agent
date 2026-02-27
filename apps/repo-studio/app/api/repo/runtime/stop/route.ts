@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 
 import { runRepoStudioCli } from '@/lib/cli-runner';
+import { resolveHostWorkspaceRoot } from '@/lib/project-root';
 
 export async function POST() {
-  const result = runRepoStudioCli(['stop', '--json']);
+  const result = runRepoStudioCli(['stop', '--json'], { cwd: resolveHostWorkspaceRoot() });
   const payload = result.payload || {};
   return NextResponse.json({
     ok: payload.ok ?? result.ok,

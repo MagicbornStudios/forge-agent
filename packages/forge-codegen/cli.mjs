@@ -88,12 +88,16 @@ async function runSettings(config, cwd) {
 async function runAppSpec(config, cwd) {
   const {
     workspaceFiles,
+    extensionWorkspaceFiles = [],
     appSpecOutputPath,
     appId,
     appLabel,
     layoutIdPrefix,
+    extensionLayoutIdPrefix,
     panelKeyFormat,
     panelKeyPrefix,
+    extensionPanelKeyFormat,
+    extensionPanelKeyPrefix,
     fallbackWorkspaceId,
     pinnedPanelIds,
     extraPanels,
@@ -106,6 +110,7 @@ async function runAppSpec(config, cwd) {
     throw new Error('Config must have workspaceFiles and appSpecOutputPath for app-spec');
   }
   const layouts = extractLayoutFromWorkspaceFiles(workspaceFiles, cwd);
+  const extensionLayouts = extractLayoutFromWorkspaceFiles(extensionWorkspaceFiles, cwd);
   let settings = {};
   if (settingsRegistryPath) {
     const fromRegistry = await loadRegistryDefaults(settingsRegistryPath, cwd);
@@ -118,11 +123,15 @@ async function runAppSpec(config, cwd) {
     appId: config.appId ?? layoutOptions.appId,
     appLabel: config.appLabel ?? layoutOptions.appLabel,
     layoutIdPrefix: layoutIdPrefix ?? layoutOptions.layoutIdPrefix ?? 'repo',
+    extensionLayoutIdPrefix: extensionLayoutIdPrefix ?? layoutOptions.extensionLayoutIdPrefix,
     panelKeyFormat: panelKeyFormat ?? layoutOptions.panelKeyFormat,
     panelKeyPrefix: panelKeyPrefix ?? layoutOptions.panelKeyPrefix,
+    extensionPanelKeyFormat: extensionPanelKeyFormat ?? layoutOptions.extensionPanelKeyFormat,
+    extensionPanelKeyPrefix: extensionPanelKeyPrefix ?? layoutOptions.extensionPanelKeyPrefix,
     fallbackWorkspaceId: fallbackWorkspaceId ?? layoutOptions.fallbackWorkspaceId ?? layouts[0]?.workspaceId,
     pinnedPanelIds: pinnedPanelIds ?? [],
     extraPanels: extraPanels ?? layoutOptions.extraPanels ?? {},
+    extensionLayouts,
     settingsExportName,
     sharedTypesImport: sharedTypesImport ?? '@forge/shared',
   });

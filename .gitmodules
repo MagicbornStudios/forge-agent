@@ -1,3 +1,6 @@
 [submodule "vendor/get-shit-done"]
 	path = vendor/get-shit-done
 	url = https://github.com/MagicbornStudios/get-shit-done.git
+[submodule "vendor/repo-studio-extensions"]
+	path = vendor/repo-studio-extensions
+	url = https://github.com/MagicbornStudios/RepoStudio-Extensions.git

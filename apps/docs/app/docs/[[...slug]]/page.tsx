@@ -75,7 +75,7 @@ export default async function DocPage({
   const page = source.getPage(slugs) ?? (slugs.length === 0 ? source.getPage(['index']) : undefined);
   if (!page) notFound();
 
-  const serializedTree = await source.serializePageTree(source.getPageTree());
+  const pageTree = source.getPageTree();
   const toc = (page.data as { toc?: { title: string; url: string; depth: number }[] }).toc ?? [];
   const body = (page.data as unknown as { body?: React.ReactNode }).body;
   const title = (page.data as { title?: string }).title ?? 'Documentation';
@@ -85,7 +85,7 @@ export default async function DocPage({
   }> | null;
 
   return (
-    <DocsShell serializedTree={serializedTree} toc={toc} baseUrl="/docs" audience={audience}>
+    <DocsShell pageTree={pageTree} toc={toc} baseUrl="/docs" audience={audience}>
       <article className={DOCS_ARTICLE_CLASS}>
         <h1>{title}</h1>
         {description ? <p>{description}</p> : null}

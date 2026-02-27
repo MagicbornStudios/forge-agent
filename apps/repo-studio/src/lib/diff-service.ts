@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
 
+import { runGitSpawnSync } from '@/lib/git-resolver';
 import { resolveActiveProjectRoot } from '@/lib/project-root';
 import { isPathWithinRoots, isSafeRepoPath, listScopeRoots, normalizeRelPath } from '@/lib/repo-files';
 import { readRepoStudioConfig, storyRootsFromConfig } from '@/lib/repo-studio-config';
@@ -26,9 +26,8 @@ function parseStatus(stdout: string) {
 }
 
 function runGit(args: string[]) {
-  return spawnSync('git', args, {
+  return runGitSpawnSync(args, {
     cwd: resolveActiveProjectRoot(),
-    encoding: 'utf8',
   });
 }
 

@@ -67,3 +67,33 @@
 | FRG-1402 | 14 | 14-02 | Complete | Hard-cut Repo Studio assistant contracts to `assistantTarget`, inlined workspace panel JSX composition, and added companion CORS OPTIONS/headers. |
 | FRG-1403 | 14 | 14-03 | Complete | Added shared companion runtime store/switch/useCompanionAssistantUrl and migrated Studio to shared companion primitives. |
 | FRG-1404 | 14 | 14-04 | Complete | Removed `examples/consumer`, added `apps/consumer-studio`, and added AI/chat-first semantic guard scripts wired to lint/CI. |
+| FRG-1405 | 14 | 14-05 | Complete | Extensions-first hard cut: removed static Story registration, added `.repo-studio/extensions` discovery/catalog, removed Planning/Story loop switchers, and wired active-workspace Forge extension tool proof (`forge_open_about_workspace`). |
+| FRG-1406 | 14 | 14-06 | Complete | Repo Studio product hard cut: built-in workspaces reduced to planning/env/database/git/code, assistant moved to global right panel, terminal moved to global bottom dock with launch profiles, planning gained PRD/status/decisions/regression panels, and git execution moved to shared Windows-first resolver. |
+| FRG-1407 | 14 | 14-07 | Complete | Extension layout consolidation hard cut: generated extension layout definitions, project-scoped registry install flow, and built-in Extensions workspace (Story-specific prompt removed in Phase 15 cut). |
+| FRG-1501 | 15 | 15-01 | In progress | Archive Studio app: document, mark archived in ROADMAP/STATE/docs; add `apps/studio/ARCHIVED.md` and `apps/consumer-studio/ARCHIVED.md`. |
+| FRG-1502 | 15 | 15-02 | Pending | Rescoped: Character moved to RepoStudio-Extensions as studio example (`examples/studios/character-workspace`), not installable runtime extension. |
+| FRG-1503 | 15 | 15-02 | Pending | Add Character extension to extensions repo/submodule; document install and manifest. |
+| FRG-1504 | 15 | 15-03 | Pending | Rescoped: Dialogue moved to RepoStudio-Extensions as studio example (`examples/studios/dialogue-workspace`), not installable runtime extension. |
+| FRG-1505 | 15 | 15-03 | Pending | Add Dialogue extension to extensions repo; document; deprecate Yarn Spinner in platform docs. |
+| FRG-1506 | 15 | 15-04 | Pending | Rescoped: consumer-studio moved as `assistant-only` studio example (`examples/studios/assistant-only`), non-installable. |
+| FRG-1507 | 15 | 15-04 | Pending | Move consumer-studio surface to extensions repo; update monorepo and docs. |
+| FRG-1508 | 15 | 15-05 | Pending | Document platform deprecations (forge graphs, Yarn Spinner) and Repo Studio–first roadmap. |
+| FRG-1509 | 15 | 15-05 | Pending | Audit platform API surface; optional: add requirement for platform Repo Studio support. |
+| FRG-1510 | 15 | 15-01 | In progress | Phase 15 plan 01 documentation pass: master plan, CONTEXT, PRD, ROADMAP, DECISIONS, TASK-REGISTRY, STATE updated. |
+| FRG-1511 | 15 | 15-06 | In progress | Repo Studio extension registry split: installables vs studio examples APIs/types/UI; remove story-specific install prompt. |
+| FRG-1512 | 15 | 15-06 | In progress | Submodule sync and content publish: installable `story` + studio examples (`character-workspace`, `dialogue-workspace`, `assistant-only`). |
+| FRG-1513 | 15 | 15-07 | Complete | Repo Studio extraction cut complete: Story/Env renderers moved to `@forge/repo-studio-extension-adapters`; app-local Story/Env/Generic extension workspace files removed from Repo Studio app folder. |
+| FRG-1514 | 15 | 15-07 | Complete | Built-in hard cut complete: built-ins now `planning/extensions/database/git/code`; added legacy `env` -> installed `env-workspace` alias route sanitization. |
+| FRG-1515 | 15 | 15-07 | Complete | `apps/studio` and `apps/consumer-studio` moved to `legacy/studio-apps/*`; root scripts switched to Repo Studio-first active flows. |
+| FRG-1516 | 15 | 15-07 | Complete | Verification/docs/guard closeout complete: build/tests/guard/registry health pass; hydration doctor updated to active app roots after legacy move. |
+| FRG-1517 | 15 | 15-08 | Complete | Dev-kit surface alignment: moved `WorkspaceViewport` into `@forge/shared` and updated Repo Studio + extension adapters + shell tests to consume shared export. |
+| FRG-1518 | 15 | 15-08 | Complete | Extensions authoring docs refresh: updated `vendor/repo-studio-extensions/README.md` and `docs/repo-studio-extensions.md` with dev-kit contract, install location, and edit-in-place flow. |
+| FRG-1519 | 15 | 15-08 | Complete | Extension recognition hardening landed: extension APIs are no-store, root refresh preserves installed extensions on transient failures, and focus/visibility refresh picks up in-place extension edits reliably. |
+| FRG-1520 | 15 | 15-09 | Complete | First Electron packaging cut completed for Repo Studio: produced Windows installer + portable artifacts under `packages/repo-studio/dist/desktop`. |
+| FRG-1521 | 15 | 15-09 | In progress | Desktop standalone reliability hardening: remove fallback-only packaging path by resolving Next standalone symlink limitations and ensuring packaged app bundles runtime web assets (`.desktop-build/next`). |
+| FRG-1522 | 15 | 15-10 | In progress | Add tag-driven GitHub release workflow for Repo Studio desktop artifacts (`v*` tags) with verify -> windows package -> release publish jobs. |
+| FRG-1523 | 15 | 15-10 | Complete | Release gate remediation: fixed `@forge/platform`/`@forge/docs` dependency matrix so both builds pass in release verification flow. |
+| FRG-1524 | 15 | 15-10 | Complete | Published `vendor/repo-studio-extensions` updates to upstream `main` and prepared forge-agent submodule pointer update to pushed SHA. |
+| FRG-1525 | 15 | 15-10 | Complete | Enforced hard desktop standalone gate for packaging (`--require-standalone` + `verify-standalone` checks + CI assertion before artifact upload). |
+| FRG-1526 | 15 | 15-10 | In progress | Forge Agent release push cut: single commit to `main`, annotated tag `v0.1.1`, and GitHub Release publication verification. |
+| FRG-1527 | 15 | 15-10 | Pending | Closeout artifacts sync: update STATE/DECISIONS/ERRORS/STATUS for release cut outcomes and remaining risks. |

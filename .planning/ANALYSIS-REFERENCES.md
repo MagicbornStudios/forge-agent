@@ -24,6 +24,7 @@ Source map for planning decisions ingested on 2026-02-15. These analysis artifac
 | `ide_navigation_analysis/FINDINGS.md` | Navigation/search implementation findings | Phase 06 plan decomposition |
 | `https://developers.openai.com/codex/app-server` | Codex app-server protocol and session semantics | Phase 12 runner transport and readiness contracts |
 | `https://developers.openai.com/codex/sdk` | Codex SDK capability reference used for transport tradeoff decisions | Phase 12 non-SDK decision justification |
+| `.planning/phases/15-strategic-shift-repo-studio-platform-focus/` | Phase 15 strategic shift: archive Studio, Character/Dialogue to extensions, consumer-studio as extension, platform deprecations, Repo Studio + platform focus | Phase 15; DECISIONS 2026-02-26; ROADMAP Phase 15 |
 
 ## Traceability Rules
 

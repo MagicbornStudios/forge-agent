@@ -1,0 +1,19 @@
+{
+  "workspaceId": "ext-example",
+  "mainPanelIds": [
+    "workspace"
+  ],
+  "mainAnchorPanelId": "workspace",
+  "panelSpecs": [
+    {
+      "id": "workspace",
+      "label": "Workspace",
+      "rail": "main"
+    },
+    {
+      "id": "assistant",
+      "label": "Assistant",
+      "rail": "right"
+    }
+  ]
+}

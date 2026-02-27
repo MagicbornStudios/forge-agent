@@ -8,7 +8,9 @@ Operational roadmap for Forge Loop lifecycle delivery in RepoStudio, aligned to 
 - `forge_env_analysis/`
 - `ide_navigation_analysis/`
 
-Phase 12 implementation is in final closeout (`12-05`). Phase 13 (AI runtimes correction and Database workspace) completed. Phase 14 (AI/chat-first hard-cut + consumer studio) is active.
+Phase 12 implementation is in final closeout (`12-05`). Phase 13 (AI runtimes correction and Database workspace) completed. Phase 14 (AI/chat-first hard-cut + consumer studio) completed. Phase 15 (Strategic shift: Repo Studio + Platform focus) is active in execution.
+
+Phase 15 archive execution note: `apps/studio` and `apps/consumer-studio` are now marked archived while capability extraction proceeds through RepoStudio-Extensions installables/examples.
 
 ## Phases
 
@@ -25,7 +27,8 @@ Phase 12 implementation is in final closeout (`12-05`). Phase 13 (AI runtimes co
 - [x] **Phase 11: Review Queue persistence and diff UX** - Move proposals to SQLite source-of-truth, add one-file Monaco diff review, and enforce scope-safe global trust-mode auto-apply
 - [x] **Phase 12: Codex-interactive Ralph Loop CLI** - Add provider-based interactive CLI runtime with Codex app-server primary, prompt-pack fallback, and run-event telemetry
 - [x] **Phase 13: AI runtimes correction and Database workspace** - Register AI runtimes/companion work in the loop, fix Database workspace to use embedded Drizzle Studio, and sync legacy artifacts
-- [ ] **Phase 14: AI/chat-first hard-cut and consumer studio reference** - Canonical shared assistant surface, inline workspace panel composition, `assistantTarget` contracts, companion runtime reuse, and chat-only consumer app
+- [x] **Phase 14: AI/chat-first hard-cut and consumer studio reference** - Canonical shared assistant surface, inline workspace panel composition, `assistantTarget` contracts, companion runtime reuse, and chat-only consumer app
+- [ ] **Phase 15: Strategic shift — Repo Studio + Platform focus** - Archive Studio app; move Character and Dialogue workspaces to extensions (other repo); turn consumer-studio into extension; deprecate forge graphs and Yarn Spinner dialogue on platform; platform supports Repo Studio first
 
 ## Phase Details
 
@@ -216,4 +219,5 @@ Plans:
 | 11. Review Queue persistence and diff UX | 4/4 | Complete | 2026-02-17 |
 | 12. Codex-interactive Ralph Loop CLI | 4/5 | In progress | - |
 | 13. AI runtimes correction and Database workspace | 2/2 | Complete | 2026-02-23 |
-| 14. AI/chat-first hard-cut and consumer studio reference | 4/4 | Complete | 2026-02-24 |
+| 14. AI/chat-first hard-cut and consumer studio reference | 7/7 | Complete | 2026-02-26 |
+| 15. Strategic shift — Repo Studio + Platform focus | 1/1+ | In progress | - |

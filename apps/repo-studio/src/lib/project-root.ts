@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { getRepoStudioPayload } from '@/lib/payload-client';
+import os from 'node:os';
+import { runGitSpawnSync } from '@/lib/git-resolver';
 
 const PNPM_WORKSPACE_FILE = 'pnpm-workspace.yaml';
 const PROJECTS_COLLECTION = 'repo-projects';
@@ -21,6 +21,11 @@ type PayloadProjectDoc = {
   createdAtIso?: string;
 };
 
+async function getRepoStudioPayloadLazy() {
+  const payloadClientModule = await import('./payload-client');
+  return payloadClientModule.getRepoStudioPayload();
+}
+
 export type RepoProjectRecord = {
   projectId: string;
   name: string;
@@ -28,15 +33,28 @@ export type RepoProjectRecord = {
   remoteUrl: string;
   provider: string;
   defaultBranch: string;
+  isGitRepo: boolean;
   active: boolean;
   createdAt: string;
+};
+
+export type RepoProjectBrowseEntry = {
+  name: string;
+  path: string;
+};
+
+export type RepoProjectBrowseResult = {
+  cwd: string;
+  parent: string | null;
+  roots: string[];
+  entries: RepoProjectBrowseEntry[];
 };
 
 function nowIso() {
   return new Date().toISOString();
 }
 
-export function resolveWorkspaceRoot(cwd: string = process.cwd()): string {
+export function resolveHostWorkspaceRoot(cwd: string = process.cwd()): string {
   const direct = path.resolve(cwd);
   if (fs.existsSync(path.join(direct, PNPM_WORKSPACE_FILE))) return direct;
   const parent = path.resolve(direct, '..');
@@ -47,7 +65,13 @@ export function resolveWorkspaceRoot(cwd: string = process.cwd()): string {
 }
 
 function runtimeStatePath() {
-  return path.join(resolveWorkspaceRoot(), ACTIVE_PROJECT_RUNTIME_FILE);
+  return path.join(resolveHostWorkspaceRoot(), ACTIVE_PROJECT_RUNTIME_FILE);
+}
+
+function isGitRepoPath(rootPath: string) {
+  const absolute = path.resolve(String(rootPath || '').trim());
+  if (!absolute || !fs.existsSync(absolute)) return false;
+  return fs.existsSync(path.join(absolute, '.git'));
 }
 
 function normalizeProjectRecord(input: PayloadProjectDoc): RepoProjectRecord | null {
@@ -61,6 +85,7 @@ function normalizeProjectRecord(input: PayloadProjectDoc): RepoProjectRecord | n
     remoteUrl: String(input.remoteUrl || '').trim(),
     provider: String(input.provider || '').trim(),
     defaultBranch: String(input.defaultBranch || '').trim(),
+    isGitRepo: isGitRepoPath(rootPath),
     active: input.active === true,
     createdAt: String(input.createdAtIso || nowIso()),
   };
@@ -77,7 +102,7 @@ export function resolveActiveProjectRoot() {
   } catch {
     // ignore runtime state read failures
   }
-  return resolveWorkspaceRoot();
+  return resolveHostWorkspaceRoot();
 }
 
 async function writeActiveProjectRuntime(project: RepoProjectRecord | null) {
@@ -99,9 +124,8 @@ function inferProvider(remoteUrl: string) {
 }
 
 function readGitRemote(rootPath: string) {
-  const result = spawnSync('git', ['remote', 'get-url', 'origin'], {
+  const result = runGitSpawnSync(['remote', 'get-url', 'origin'], {
     cwd: rootPath,
-    encoding: 'utf8',
     timeout: 5000,
   });
   if ((result.status ?? 1) !== 0) return '';
@@ -109,16 +133,15 @@ function readGitRemote(rootPath: string) {
 }
 
 function readDefaultBranch(rootPath: string) {
-  const result = spawnSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+  const result = runGitSpawnSync(['rev-parse', '--abbrev-ref', 'HEAD'], {
     cwd: rootPath,
-    encoding: 'utf8',
     timeout: 5000,
   });
   if ((result.status ?? 1) !== 0) return '';
   return String(result.stdout || '').trim();
 }
 
-function assertGitRepo(rootPath: string) {
+function assertProjectDirectory(rootPath: string) {
   const absolute = path.resolve(String(rootPath || '').trim());
   if (!absolute) {
     throw new Error('rootPath is required.');
@@ -126,15 +149,65 @@ function assertGitRepo(rootPath: string) {
   if (!fs.existsSync(absolute)) {
     throw new Error(`Path does not exist: ${absolute}`);
   }
-  const gitDir = path.join(absolute, '.git');
-  if (!fs.existsSync(gitDir)) {
-    throw new Error(`Path is not a git repository: ${absolute}`);
+  let stat: fs.Stats;
+  try {
+    stat = fs.statSync(absolute);
+  } catch {
+    throw new Error(`Unable to access path: ${absolute}`);
+  }
+  if (!stat.isDirectory()) {
+    throw new Error(`Path is not a directory: ${absolute}`);
   }
   return absolute;
 }
 
+function listDirectoryRoots() {
+  const roots = new Set<string>();
+  if (process.platform === 'win32') {
+    for (let code = 65; code <= 90; code += 1) {
+      const drive = `${String.fromCharCode(code)}:\\`;
+      if (fs.existsSync(drive)) roots.add(drive);
+    }
+  } else {
+    roots.add(path.parse(resolveHostWorkspaceRoot()).root || '/');
+  }
+  roots.add(resolveHostWorkspaceRoot());
+  roots.add(resolveActiveProjectRoot());
+  const home = os.homedir();
+  if (home && fs.existsSync(home)) roots.add(path.resolve(home));
+  return Array.from(roots)
+    .map((entry) => path.resolve(entry))
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b));
+}
+
+export async function browseProjectDirectories(input: { path?: string; limit?: number }) : Promise<RepoProjectBrowseResult> {
+  const roots = listDirectoryRoots();
+  const requestedPath = String(input.path || '').trim();
+  const fallbackRoot = roots[0] || resolveHostWorkspaceRoot();
+  const cwd = assertProjectDirectory(requestedPath || fallbackRoot);
+  const parent = path.dirname(cwd);
+  const parentPath = parent && parent !== cwd ? parent : null;
+  const dirEntries = await fsp.readdir(cwd, { withFileTypes: true });
+  const limit = Number.isFinite(input.limit) ? Math.max(1, Math.floor(Number(input.limit))) : 300;
+  const entries = dirEntries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => ({
+      name: entry.name,
+      path: path.join(cwd, entry.name),
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .slice(0, limit);
+  return {
+    cwd,
+    parent: parentPath,
+    roots,
+    entries,
+  };
+}
+
 async function saveProject(project: RepoProjectRecord) {
-  const payload = await getRepoStudioPayload();
+  const payload = await getRepoStudioPayloadLazy();
   const existing = await payload.find({
     collection: PROJECTS_COLLECTION,
     where: {
@@ -162,7 +235,7 @@ async function saveProject(project: RepoProjectRecord) {
 }
 
 export async function listRepoProjects() {
-  const payload = await getRepoStudioPayload();
+  const payload = await getRepoStudioPayloadLazy();
   const result = await payload.find({
     collection: PROJECTS_COLLECTION,
     limit: 500,
@@ -182,7 +255,7 @@ export async function getActiveRepoProject() {
 }
 
 export async function importLocalRepoProject(input: { rootPath: string; name?: string }) {
-  const rootPath = assertGitRepo(input.rootPath);
+  const rootPath = assertProjectDirectory(input.rootPath);
   const remoteUrl = readGitRemote(rootPath);
   const project: RepoProjectRecord = {
     projectId: randomUUID(),
@@ -191,6 +264,7 @@ export async function importLocalRepoProject(input: { rootPath: string; name?: s
     remoteUrl,
     provider: inferProvider(remoteUrl),
     defaultBranch: readDefaultBranch(rootPath),
+    isGitRepo: isGitRepoPath(rootPath),
     active: true,
     createdAt: nowIso(),
   };
@@ -218,9 +292,8 @@ export async function cloneRepoProject(input: { remoteUrl: string; targetPath: s
     throw new Error('targetPath is required.');
   }
   await fsp.mkdir(path.dirname(targetPath), { recursive: true });
-  const result = spawnSync('git', ['clone', remoteUrl, targetPath], {
-    cwd: resolveWorkspaceRoot(),
-    encoding: 'utf8',
+  const result = runGitSpawnSync(['clone', remoteUrl, targetPath], {
+    cwd: resolveHostWorkspaceRoot(),
     timeout: 180000,
   });
   if ((result.status ?? 1) !== 0) {
@@ -237,7 +310,7 @@ export async function setActiveRepoProject(projectId: string) {
   if (!normalizedProjectId) {
     throw new Error('projectId is required.');
   }
-  const payload = await getRepoStudioPayload();
+  const payload = await getRepoStudioPayloadLazy();
   const projects = await listRepoProjects();
   const target = projects.find((entry) => entry.projectId === normalizedProjectId);
   if (!target) {

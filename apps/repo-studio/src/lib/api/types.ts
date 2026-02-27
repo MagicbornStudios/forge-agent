@@ -1,4 +1,4 @@
-﻿export type RepoMode = 'local' | 'preview' | 'production' | 'headless';
+export type RepoMode = 'local' | 'preview' | 'production' | 'headless';
 export type RepoScope = 'workspace' | 'loop';
 export type RepoCommandSource = 'root-scripts' | 'workspace-scripts' | 'forge-builtins';
 export type RepoEnvScope = 'root' | 'app' | 'package' | 'vendor';
@@ -53,6 +53,7 @@ export type RepoRunPayload = {
   id: string;
   commandId: string;
   command: string;
+  cwd: string;
   status: string;
   code: number | null;
   startedAt: string;
@@ -76,6 +77,9 @@ export type StopRunResponse = {
 
 export type TerminalSessionStatus = {
   sessionId: string;
+  profileId?: string;
+  name?: string;
+  startupCommand?: string;
   running: boolean;
   pid: number | null;
   cwd: string;
@@ -91,6 +95,13 @@ export type TerminalSessionStartResponse = {
   ok: boolean;
   reused?: boolean;
   session?: TerminalSessionStatus;
+  message?: string;
+};
+
+export type TerminalSessionListResponse = {
+  ok: boolean;
+  activeSessionId?: string | null;
+  sessions: TerminalSessionStatus[];
   message?: string;
 };
 
@@ -117,6 +128,8 @@ export type DependencyHealth = {
   sharedStylesResolved: boolean;
   cssPackagesResolved: boolean;
   runtimePackagesResolved: boolean;
+  gitExecutablePath?: string;
+  gitExecutableSource?: 'env' | 'bundled' | 'system';
   postcssConfigResolved?: boolean;
   tailwindPostcssResolved?: boolean;
   tailwindPipelineResolved?: boolean;
@@ -360,10 +373,15 @@ export type PlanningDocEntry = {
 export type PlanningSnapshot = {
   loopId: string;
   planningRoot: string;
+  prdPath: string;
+  prdExists: boolean;
+  prdContent: string;
   nextAction: string;
   percent: number;
   rows: PlanningPhaseRow[];
   tasks: PlanningTaskRow[];
+  openTaskCount: number;
+  completeTaskCount: number;
   summaries: number;
   verifications: number;
   decisionOpen: number;
@@ -708,6 +726,7 @@ export type RepoProject = {
   remoteUrl: string;
   provider: string;
   defaultBranch: string;
+  isGitRepo: boolean;
   active: boolean;
   createdAt: string;
 };
@@ -724,6 +743,149 @@ export type RepoProjectMutationResponse = {
   ok: boolean;
   project: RepoProject | null;
   activeRoot?: string;
+  message?: string;
+};
+
+export type RepoProjectBrowseEntry = {
+  name: string;
+  path: string;
+};
+
+export type RepoProjectBrowseResponse = {
+  ok: boolean;
+  cwd: string;
+  parent: string | null;
+  roots: string[];
+  entries: RepoProjectBrowseEntry[];
+  message?: string;
+};
+
+export type RepoWorkspaceExtensionKind = 'story' | 'env' | 'generic';
+
+export type RepoWorkspaceExtensionPanelRail = 'left' | 'main' | 'right' | 'bottom';
+
+export type RepoWorkspaceExtensionForgeTool = {
+  name: string;
+  action: string;
+  label: string;
+  description: string;
+};
+
+export type RepoWorkspaceExtensionAboutWorkspace = {
+  title: string;
+  summary: string;
+  context: string[];
+};
+
+export type RepoWorkspaceExtensionLayoutPanelSpec = {
+  id: string;
+  label: string;
+  rail: RepoWorkspaceExtensionPanelRail;
+  key?: string;
+};
+
+export type RepoWorkspaceExtensionLayoutSpec = {
+  workspaceId: string;
+  layoutId?: string;
+  panelSpecs: RepoWorkspaceExtensionLayoutPanelSpec[];
+  mainPanelIds: string[];
+  mainAnchorPanelId: string;
+};
+
+export type RepoWorkspaceExtensionManifest = {
+  manifestVersion: number;
+  id: string;
+  label: string;
+  workspaceId: string;
+  workspaceKind: RepoWorkspaceExtensionKind;
+  description?: string;
+  layoutSpecPath?: string;
+  assistant?: {
+    forge?: {
+      aboutWorkspace?: RepoWorkspaceExtensionAboutWorkspace;
+      tools?: RepoWorkspaceExtensionForgeTool[];
+    };
+  };
+};
+
+export type RepoWorkspaceExtension = {
+  id: string;
+  label: string;
+  workspaceId: string;
+  workspaceKind: RepoWorkspaceExtensionKind;
+  manifestPath: string;
+  description: string;
+  layoutSpecPath?: string;
+  layout?: RepoWorkspaceExtensionLayoutSpec;
+  assistant?: RepoWorkspaceExtensionManifest['assistant'];
+};
+
+export type RepoWorkspaceExtensionsResponse = {
+  ok: boolean;
+  activeRoot: string;
+  extensions: RepoWorkspaceExtension[];
+  warnings: string[];
+  message?: string;
+};
+
+export type RepoWorkspaceRegistryEntry = {
+  id: string;
+  label: string;
+  workspaceId: string;
+  workspaceKind: RepoWorkspaceExtensionKind;
+  description: string;
+  manifestPath: string;
+  layoutSpecPath?: string;
+  layout?: RepoWorkspaceExtensionLayoutSpec;
+  assistant?: RepoWorkspaceExtensionManifest['assistant'];
+  installed: boolean;
+  installedManifestPath?: string | null;
+};
+
+export type RepoWorkspaceRegistryExample = {
+  id: string;
+  label: string;
+  category: 'studio-example';
+  summary: string;
+  sourceRepoUrl: string;
+  sourcePath: string;
+  docsUrl?: string;
+  tags: string[];
+  metadataPath: string;
+};
+
+export type RepoWorkspaceRegistryResponse = {
+  ok: boolean;
+  activeRoot: string;
+  registryRoot: string;
+  submoduleReady: boolean;
+  entries: RepoWorkspaceRegistryEntry[];
+  examples: RepoWorkspaceRegistryExample[];
+  warnings: string[];
+  message?: string;
+};
+
+export type RepoWorkspaceInstallRequest = {
+  extensionId: string;
+  replace?: boolean;
+};
+
+export type RepoWorkspaceInstallResponse = {
+  ok: boolean;
+  activeRoot: string;
+  extension: RepoWorkspaceExtension | null;
+  warnings?: string[];
+  message?: string;
+};
+
+export type RepoWorkspaceRemoveRequest = {
+  extensionId: string;
+};
+
+export type RepoWorkspaceRemoveResponse = {
+  ok: boolean;
+  activeRoot: string;
+  removed: boolean;
   message?: string;
 };
 
@@ -747,6 +909,29 @@ export type FileWriteResponse = {
   ok: boolean;
   path?: string;
   size?: number;
+  message?: string;
+};
+
+export type EnvScopeEntry = {
+  id: string;
+  dir: string;
+  label: string;
+};
+
+export type EnvScopesResponse = {
+  ok: boolean;
+  scopes: EnvScopeEntry[];
+  message?: string;
+};
+
+export type EnvFileEntry = {
+  path: string;
+  name: string;
+};
+
+export type EnvFilesResponse = {
+  ok: boolean;
+  files: EnvFileEntry[];
   message?: string;
 };
 
@@ -853,4 +1038,3 @@ export type RepoSearchResponse = {
   truncated?: boolean;
   message?: string;
 };
-

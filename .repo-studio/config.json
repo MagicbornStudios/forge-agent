@@ -28,14 +28,10 @@
     "order": [
       "planning",
       "env",
-      "commands",
-      "story",
+      "extensions",
       "database",
       "git",
-      "assistant",
-      "diff",
-      "code",
-      "review-queue"
+      "code"
     ],
     "hidden": [],
     "defaultView": "planning"

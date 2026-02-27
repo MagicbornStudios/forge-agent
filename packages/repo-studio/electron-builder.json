@@ -19,6 +19,7 @@
     }
   ],
   "win": {
+    "signAndEditExecutable": false,
     "target": [
       "nsis",
       "portable"
@@ -35,4 +36,3 @@
     ]
   }
 }
-

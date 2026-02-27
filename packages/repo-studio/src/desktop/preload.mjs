@@ -19,6 +19,7 @@ contextBridge.exposeInMainWorld('repoStudioDesktop', {
   subscribeRuntimeEvents: onRuntimeEvent,
   runtimeStatus: () => ipcRenderer.invoke(DESKTOP_IPC.runtimeStatus),
   stopRuntime: () => ipcRenderer.invoke(DESKTOP_IPC.runtimeStop),
+  pickProjectFolder: () => ipcRenderer.invoke(DESKTOP_IPC.projectPickFolder),
   authStatus: () => ipcRenderer.invoke(DESKTOP_IPC.authStatus),
   authConnect: (payload) => ipcRenderer.invoke(DESKTOP_IPC.authConnect, payload || {}),
   authDisconnect: () => ipcRenderer.invoke(DESKTOP_IPC.authDisconnect),
