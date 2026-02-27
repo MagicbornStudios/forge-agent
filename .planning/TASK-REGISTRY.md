@@ -90,10 +90,45 @@
 | FRG-1518 | 15 | 15-08 | Complete | Extensions authoring docs refresh: updated `vendor/repo-studio-extensions/README.md` and `docs/repo-studio-extensions.md` with dev-kit contract, install location, and edit-in-place flow. |
 | FRG-1519 | 15 | 15-08 | Complete | Extension recognition hardening landed: extension APIs are no-store, root refresh preserves installed extensions on transient failures, and focus/visibility refresh picks up in-place extension edits reliably. |
 | FRG-1520 | 15 | 15-09 | Complete | First Electron packaging cut completed for Repo Studio: produced Windows installer + portable artifacts under `packages/repo-studio/dist/desktop`. |
-| FRG-1521 | 15 | 15-09 | In progress | Desktop standalone reliability hardening: remove fallback-only packaging path by resolving Next standalone symlink limitations and ensuring packaged app bundles runtime web assets (`.desktop-build/next`). |
+| FRG-1521 | 15 | 15-09 | Complete | Desktop standalone reliability hardening complete: strict standalone gate enforced and packaging verified with bundled runtime web assets (`.desktop-build/next`). |
 | FRG-1522 | 15 | 15-10 | In progress | Add tag-driven GitHub release workflow for Repo Studio desktop artifacts (`v*` tags) with verify -> windows package -> release publish jobs. |
 | FRG-1523 | 15 | 15-10 | Complete | Release gate remediation: fixed `@forge/platform`/`@forge/docs` dependency matrix so both builds pass in release verification flow. |
 | FRG-1524 | 15 | 15-10 | Complete | Published `vendor/repo-studio-extensions` updates to upstream `main` and prepared forge-agent submodule pointer update to pushed SHA. |
 | FRG-1525 | 15 | 15-10 | Complete | Enforced hard desktop standalone gate for packaging (`--require-standalone` + `verify-standalone` checks + CI assertion before artifact upload). |
 | FRG-1526 | 15 | 15-10 | In progress | Forge Agent release push cut: single commit to `main`, annotated tag `v0.1.1`, and GitHub Release publication verification. |
-| FRG-1527 | 15 | 15-10 | Pending | Closeout artifacts sync: update STATE/DECISIONS/ERRORS/STATUS for release cut outcomes and remaining risks. |
+| FRG-1527 | 15 | 15-10 | Complete | Closeout artifacts sync complete: STATE/DECISIONS/ERRORS/STATUS updated with release outcomes, crash hotfix, and remaining CI rerun risk. |
+| FRG-1528 | 15 | 15-10 | Complete | Desktop runtime hotfix: fixed packaged startup crash by bundling security modules and upgraded terminal PTY fallback to a real stream shell when `node-pty` is unavailable. |
+| FRG-1601 | 16 | 16-01 | Pending | Add submodule vendor/repo-studio → MagicbornStudios/RepoStudio; update .gitmodules. |
+| FRG-1602 | 16 | 16-01 | Pending | Release workflow: init vendor/repo-studio in verify and package_windows jobs. |
+| FRG-1603 | 16 | 16-01 | Pending | Verify: Repo on GitHub and pullable; document. |
+| FRG-1604 | 16 | 16-01 | Pending | Verify: git submodule update --init vendor/repo-studio works from fresh clone. |
+| FRG-1605 | 16 | 16-01 | Pending | Verify: With submodule present, pnpm install and Repo Studio app build succeed. |
+| FRG-1606 | 16 | 16-01 | Pending | Document: Repo Studio canonical source = MagicbornStudios/RepoStudio; submodule at vendor/repo-studio. |
+| FRG-1610 | 16 | 16-02 | Pending | Integrate vendor/repo-studio into pnpm workspace (or document required submodule layout). |
+| FRG-1611 | 16 | 16-02 | Pending | Update next-server.mjs and build.mjs to resolve app root from submodule. |
+| FRG-1612 | 16 | 16-02 | Pending | Release workflow: run desktop build from submodule. |
+| FRG-1613 | 16 | 16-02 | Pending | Remove or archive apps/repo-studio and packages/repo-studio; update scripts/guards/docs. |
+| FRG-1614 | 16 | 16-02 | Pending | Verification: full release path produces .exe from submodule; update STATE/DECISIONS. |
+| FRG-1701 | 17 | 17-01 | Pending | Add submodule vendor/platform → RepoStudio-Platform; update .gitmodules. |
+| FRG-1702 | 17 | 17-01 | Pending | Release workflow: init vendor/platform in verify job (and optionally build platform from submodule or document that platform build is in its repo). |
+| FRG-1703 | 17 | 17-01 | Pending | Verify platform submodule clone and build (from submodule or from RepoStudio-Platform repo). |
+| FRG-1704 | 17 | 17-02 | Pending | Docs site: Vercel-ready (build/root/framework); document Vercel project setup for docs from forge-agent. |
+| FRG-1705 | 17 | 17-02 | Pending | Deploy docs app to Vercel (from forge-agent); record docs URL for env matrix. |
+| FRG-1706 | 17 | 17-03 | Pending | Document platform Vercel deploy from RepoStudio-Platform repo; env NEXT_PUBLIC_DOCS_APP_URL (and related) set to docs site URL. |
+| FRG-1707 | 17 | 17-03 | Pending | Remove or archive apps/platform from forge-agent once platform submodule is canonical; update release workflow and guards. |
+| FRG-1708 | 17 | 17-04 | Pending | Deployment matrix doc: docs (Vercel), platform (Vercel), npm, Electron (Releases); repos and env/URL matrix; update STATE/DECISIONS. |
+| FRG-1801 | 18 | 18-01 | Pending | Platform: add Open Router proxy endpoint(s); forward to Open Router with OPENROUTER_API_KEY. |
+| FRG-1802 | 18 | 18-01 | Pending | Platform: gate proxy on valid desktop/platform auth. |
+| FRG-1803 | 18 | 18-01 | Pending | Repo Studio: when capabilities.openRouterProxy, call platform proxy for assistant chat. |
+| FRG-1804 | 18 | 18-02 | Pending | Platform: add extension-fetch endpoint; use platform-held GitHub token for RepoStudio-Extensions. |
+| FRG-1805 | 18 | 18-02 | Pending | Platform: gate extension-fetch on valid desktop/platform auth. |
+| FRG-1806 | 18 | 18-02 | Pending | Repo Studio: when capabilities.extensionInstallProxy and no user GitHub token, call platform extension endpoint. |
+| FRG-1807 | 18 | 18-03 | Pending | Platform: add openRouterProxy and extensionInstallProxy to auth/status response capabilities. |
+| FRG-1808 | 18 | 18-03 | Pending | Repo Studio: extend RepoAuthStatusResponse.capabilities type; wire to 18-01/18-02 client behavior; docs. |
+| FRG-1901 | 19 | 19-01 | Pending | Server: fallback to url.searchParams for loopId, workspaceId (and optionally selectedDocId) when missing from body. |
+| FRG-1902 | 19 | 19-01 | Pending | Optional: Client send loopId, workspaceId, selectedDocId in POST body; document in DECISIONS. |
+| FRG-1903 | 19 | 19-02 | Pending | Implement add_task Forge tool; resolve planning root from loopId, write back. |
+| FRG-1904 | 19 | 19-02 | Pending | Implement update_task_status Forge tool; parse task table, update status, write back. |
+| FRG-1905 | 19 | 19-02 | Pending | Implement open_planning_doc Forge tool; client handles open/focus. Wire plan tools to contract; DECISIONS. |
+| FRG-1906 | 19 | 19-03 | Pending | Add feature flag and LangGraph planning path in Repo Studio assistant-chat Forge handler. |
+| FRG-1907 | 19 | 19-03 | Pending | LangGraph nodes: planning_context, route, tools, generate/stream; optional checkpoints. |

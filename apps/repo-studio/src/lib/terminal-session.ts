@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { EventEmitter } from 'node:events';
+import { spawn } from 'node:child_process';
 import { resolveRepoRoot } from '@/lib/repo-files';
 
 type PtyLike = {
@@ -84,7 +85,7 @@ function toErrorMessage(error: unknown) {
   return String(error || 'unknown error');
 }
 
-function createFallbackPty() {
+function createEchoFallbackPty() {
   const emitter = new EventEmitter();
   let running = true;
   return {
@@ -102,6 +103,73 @@ function createFallbackPty() {
       if (!running) return;
       running = false;
       emitter.emit('exit', { exitCode: 0, signal: 0 });
+    },
+    onData(listener: (data: string) => void) {
+      emitter.on('data', listener);
+    },
+    onExit(listener: (event: { exitCode: number; signal?: number }) => void) {
+      emitter.on('exit', listener);
+    },
+  } satisfies PtyLike;
+}
+
+function createStreamFallbackPty(input: {
+  shell: string;
+  args: string[];
+  cwd: string;
+  env: NodeJS.ProcessEnv;
+}) {
+  const emitter = new EventEmitter();
+  const child = spawn(input.shell, input.args, {
+    cwd: input.cwd,
+    env: input.env,
+    stdio: ['pipe', 'pipe', 'pipe'],
+    windowsHide: true,
+  });
+  let running = true;
+
+  child.stdout?.setEncoding('utf8');
+  child.stderr?.setEncoding('utf8');
+  child.stdout?.on('data', (chunk: string | Buffer) => {
+    const text = String(chunk || '');
+    if (!text) return;
+    emitter.emit('data', text);
+  });
+  child.stderr?.on('data', (chunk: string | Buffer) => {
+    const text = String(chunk || '');
+    if (!text) return;
+    emitter.emit('data', text);
+  });
+  child.on('exit', (exitCode, signal) => {
+    running = false;
+    emitter.emit('exit', {
+      exitCode: Number.isInteger(exitCode) ? Number(exitCode) : 0,
+      signal: typeof signal === 'number' ? signal : undefined,
+    });
+  });
+  child.on('error', (error) => {
+    running = false;
+    emitter.emit('data', `[terminal fallback] ${toErrorMessage(error)}\r\n`);
+    emitter.emit('exit', { exitCode: 1, signal: undefined });
+  });
+
+  return {
+    pid: child.pid ?? -1,
+    write(data: string) {
+      if (!running || !child.stdin || child.stdin.destroyed) return;
+      child.stdin.write(String(data || ''));
+    },
+    resize() {
+      // no-op in non-PTY fallback mode
+    },
+    kill() {
+      if (!running) return;
+      running = false;
+      try {
+        child.kill();
+      } catch {
+        // no-op
+      }
     },
     onData(listener: (data: string) => void) {
       emitter.on('data', listener);
@@ -215,8 +283,22 @@ export function startTerminalSession(input: {
     });
   } catch (error) {
     degraded = true;
-    fallbackReason = toErrorMessage(error);
-    pty = createFallbackPty();
+    const ptyError = toErrorMessage(error);
+    try {
+      pty = createStreamFallbackPty({
+        shell: shell.shell,
+        args: shell.args,
+        cwd,
+        env: {
+          ...process.env,
+          TERM: process.env.TERM || 'xterm-256color',
+        },
+      });
+      fallbackReason = `PTY unavailable (${ptyError}); using stream fallback shell (no resize support).`;
+    } catch (streamError) {
+      fallbackReason = `PTY unavailable (${ptyError}); stream fallback failed (${toErrorMessage(streamError)}).`;
+      pty = createEchoFallbackPty();
+    }
   }
 
   const degradedBanner = degraded

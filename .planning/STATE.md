@@ -5,19 +5,24 @@
 Phase: 15
 Plan: 15-01
 Status: Execution in progress
-Last activity: 2026-02-27 - Release cut in progress: platform/docs gates fixed, strict desktop standalone packaging gate added, release workflow added
+Last activity: 2026-02-27 - Desktop hotfix validated: packaged app startup crash fixed (`credential-manager.mjs` bundle path) and terminal degraded mode now runs a real stream shell fallback
 
 ## Execution
 
 - Active phase: Strategic shift - Repo Studio + Platform focus
 - Active plan: 15-01 (Master plan - execute shift in tracked slices)
-- Active task: FRG-1526 Forge Agent release push cut (single commit to main + v0.1.1 tag + release verification)
+- Active task: FRG-1526 Forge Agent release push cut (main push + tag/release verification)
 
 ## Strategic shift (Phase 15)
 
 - **Goal:** Archive Studio app; move Character and Dialogue to studio examples in RepoStudio-Extensions; move consumer-studio to `assistant-only` studio example; deprecate forge graphs and Yarn Spinner dialogue on platform; platform supports Repo Studio first.
 - **Process:** Loop (discuss -> plan -> execute -> verify); PRD, phases, tasks, decisions in .planning. See `.planning/phases/15-strategic-shift-repo-studio-platform-focus/` (CONTEXT, PRD, 15-01-PLAN).
-- **Next:** Complete FRG-1526/1527 by pushing forge-agent `main`, tagging `v0.1.1`, and verifying GitHub release assets; then resume archive/rescope tasks (FRG-1501/1502/1504/1506).
+- **Next:** Complete FRG-1526/1522 by pushing forge-agent `main`, rerunning tag-driven release publish, and verifying GitHub release assets include the fixed desktop runtime packaging. Then resume archive/rescope tasks (FRG-1501/1502/1504/1506). **Phase 16** (Repo Studio canonical submodule) is planned: 16-01 add submodule and verify, 16-02 switch to build from submodule; see `.planning/phases/16-repo-studio-canonical-submodule/` and ROADMAP. **Phase 17** (Platform submodule and docs deploy) is planned: platform in RepoStudio-Platform repo and as submodule (vendor/platform), docs and platform on Vercel, deployment matrix; see `.planning/phases/17-platform-submodule-docs-deploy/` and ROADMAP. **Phase 18** (Platform integration gateway) is planned: Open Router proxy, extension install proxy, capability flags; see `.planning/phases/18-platform-integration-gateway/` and [.planning/PLATFORM-PRD.md](.planning/PLATFORM-PRD.md). Human-only setup (repos, env, Vercel, npm, OAuth) is tracked in [.planning/HUMAN-TASKS.md](.planning/HUMAN-TASKS.md); agents check there before blocking.
+
+## Planning artifact update and release execution
+
+- **Planning artifact update (2026-02):** Phases 16–18, [.planning/PLATFORM-PRD.md](.planning/PLATFORM-PRD.md), [.planning/HUMAN-TASKS.md](.planning/HUMAN-TASKS.md), ROADMAP, TASK-REGISTRY, DECISIONS, 15-PRD, and [docs/18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx) were updated as part of the **Platform phases and human-todos** initiative. These changes are intentional and in scope.
+- **Release execution when planning docs are modified:** If an agent (e.g. Codex) runs release execution and finds uncommitted changes in `.planning/**` or related docs, it may: **(A)** Commit planning docs in a **separate commit first** (e.g. `chore(planning): Phase 18, PLATFORM-PRD, HUMAN-TASKS; Phase 19 planning-assistant`), then proceed with the release commit (tag, workflow, STATE/ERRORS/DECISIONS). **(B)** Or include all current planning and release-related changes in the same commit if a single combined commit is preferred. Do not block release indefinitely on "unexpected" planning changes; treat them as reconcilable.
 
 ## Repo Studio dev DB
 

@@ -7,9 +7,8 @@
   "files": [
     "src/desktop/**",
     "src/core/runtime/**",
-    "src/lib/config.mjs",
-    "src/lib/io.mjs",
-    "src/lib/runtime-manager.mjs",
+    "src/security/**",
+    "src/lib/**",
     "package.json"
   ],
   "extraResources": [

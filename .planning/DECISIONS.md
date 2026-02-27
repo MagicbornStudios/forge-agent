@@ -188,3 +188,30 @@
 - [x] Standalone release bundle contract is enforced before upload: `.desktop-build/next/BUILD_ID`, `.desktop-build/next/static`, and standalone server entry (`server.js` candidate) must be present.
 - [x] Release verification now includes `@forge/platform` and `@forge/docs` builds in addition to Repo Studio app/guards.
 - [x] Extension registry source-of-truth for release is pinned submodule SHA: `vendor/repo-studio-extensions` must reference a pushed upstream commit containing installables (`story`, `env-workspace`) and required examples.
+- [x] Release-verify gate split policy: core correctness gates remain blocking (`codegen`, `check:codegen`, extension registry health, platform build, workspace guard), while Linux-only docs/hydration checks run as non-blocking smoke checks to keep Windows artifact publication flow moving.
+- [x] Release package job runs as explicit step chain (`build.mjs --require-standalone` -> standalone verifier -> `electron-builder`) to isolate hard-gate failures and avoid opaque nested script failures.
+- [x] Desktop package file allowlist must include runtime-imported security modules (`src/security/**`) and supporting library modules (`src/lib/**`); excluding them can crash packaged startup with `ERR_MODULE_NOT_FOUND`.
+- [x] Terminal degraded mode contract is a real shell fallback: when `node-pty` is unavailable, spawn a stream shell process (PowerShell/login shell) and reserve echo-only behavior as final emergency fallback only.
+
+## 2026-02-27 (Phase 16: Repo Studio canonical submodule)
+
+- [x] Repo Studio app canonical source is [MagicbornStudios/RepoStudio](https://github.com/MagicbornStudios/RepoStudio); forge-agent includes it as a submodule at `vendor/repo-studio` for build and reference.
+- [x] We switch to building from the submodule (canonical) only after Phase 16-01 verification: repo is on GitHub, can be pulled down, and the monorepo builds with the submodule present.
+- [x] Phase 16-01: add submodule, update release workflow to init it, verify pull and build; Phase 16-02: integrate submodule into workspace and build/next-server paths, then remove or archive in-repo `apps/repo-studio` and `packages/repo-studio`.
+- [x] Monorepo identity after switch: shared packages for everyone + platform (exposed) + Repo Studio app via submodule; public Electron install remains from forge-agent GitHub Release (tag `v*`).
+
+## 2026-02-27 (Phase 17: Platform submodule and docs deploy)
+
+- [x] Platform app canonical source is [MagicbornStudios/RepoStudio-Platform](https://github.com/MagicbornStudios/RepoStudio-Platform); forge-agent includes it as a submodule at `vendor/platform` for reference and optional verify build.
+- [x] Platform deploys to Vercel from its own repo (RepoStudio-Platform); docs site lives in forge-agent (apps/docs) and deploys to Vercel from forge-agent.
+- [x] Platform Vercel env: `NEXT_PUBLIC_DOCS_APP_URL` points to the deployed docs site URL (from forge-agent); `NEXT_PUBLIC_STUDIO_APP_URL` if used.
+- [x] Deployment matrix: forge-agent = docs (Vercel), shared packages (npm), Electron (GitHub Releases), submodules (repo-studio, repo-studio-extensions, platform); RepoStudio-Platform = platform (Vercel). See Phase 17 plans and deployment matrix doc.
+
+## 2026-02-26 (Phase 18: Platform integration gateway)
+
+- [x] Platform as integration gateway (BFF): credentials and proxy APIs live on platform; Repo Studio uses capability flags in auth response to choose platform proxy vs local (Open Router proxy, extension install proxy). Human setup (secrets, repos, Vercel, npm, OAuth) is tracked in [.planning/HUMAN-TASKS.md](.planning/HUMAN-TASKS.md); agents check there before blocking.
+
+## 2026-02-26 (Planning artifact reconciliation and release execution)
+
+- [x] Planning artifact updates (Phases 16–18, PLATFORM-PRD, HUMAN-TASKS, ROADMAP, TASK-REGISTRY, 15-PRD, agent index) are intentional. When release execution sees uncommitted planning changes, commit them in a separate commit first or include them in the release commit; do not hard-stop—follow STATE "Release execution when planning docs are modified."
+- [x] Phase 19 (Planning assistant context and tools) adds assistant context fix (loopId/workspaceId/selectedDocId), plan-specific Forge tools (add task, update status, open planning doc), and optional LangGraph planning orchestration; see STATE and [.planning/phases/19-planning-assistant-context-and-tools/](.planning/phases/19-planning-assistant-context-and-tools/).
