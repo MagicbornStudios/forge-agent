@@ -34,16 +34,29 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Verify Repo Studio and Platform Gates
-        run: |
-          pnpm --filter @forge/repo-studio-app run codegen
-          pnpm --filter @forge/repo-studio-app run check:codegen
-          pnpm --filter @forge/repo-studio-app build
-          pnpm --filter @forge/repo-studio-app run extensions:registry:health
-          pnpm --filter @forge/platform build
-          pnpm --filter @forge/docs build
-          pnpm guard:workspace-semantics
-          pnpm hydration:doctor
+      - name: Verify Codegen
+        run: pnpm --filter @forge/repo-studio-app run codegen
+
+      - name: Verify Generated App Spec
+        run: pnpm --filter @forge/repo-studio-app run check:codegen
+
+      - name: Build Repo Studio App
+        run: pnpm --filter @forge/repo-studio-app build
+
+      - name: Verify Extension Registry Health
+        run: pnpm --filter @forge/repo-studio-app run extensions:registry:health
+
+      - name: Build Platform App
+        run: pnpm --filter @forge/platform build
+
+      - name: Build Docs App
+        run: pnpm --filter @forge/docs build
+
+      - name: Guard Workspace Semantics
+        run: pnpm guard:workspace-semantics
+
+      - name: Run Hydration Doctor
+        run: pnpm hydration:doctor
 
   package_windows:
     runs-on: windows-latest
