@@ -29,12 +29,10 @@ function run(command, args, options = {}) {
     shell: options.shell === true,
     maxBuffer: 100 * 1024 * 1024,
   });
-  if (result.stdout) {
-    process.stdout.write(String(result.stdout));
-  }
-  if (result.stderr) {
-    process.stderr.write(String(result.stderr));
-  }
+  const stdoutText = result.stdout ? String(result.stdout) : '';
+  const stderrText = result.stderr ? String(result.stderr) : '';
+  if (stdoutText) process.stdout.write(stdoutText);
+  if (stderrText) process.stderr.write(stderrText);
   if (result.error) {
     throw new Error(`Command failed (${command} ${args.join(' ')}): ${result.error.message}`);
   }
@@ -44,6 +42,10 @@ function run(command, args, options = {}) {
     code: result.status ?? 1,
     signal: result.signal ?? null,
     errorMessage: result.error ? String(result.error.message || result.error) : null,
+    command,
+    args,
+    stdoutTail: stdoutText.slice(-8000),
+    stderrTail: stderrText.slice(-8000),
   };
   if (!ok && options.allowFailure !== true) {
     throw new Error(`Command failed: ${command} ${args.join(' ')}`);
