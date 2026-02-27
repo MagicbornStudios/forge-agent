@@ -63,8 +63,10 @@ jobs:
         run: |
           set -o pipefail
           LOG_FILE="$(mktemp)"
+          set +e
           pnpm --filter @forge/docs build 2>&1 | tee "$LOG_FILE"
           BUILD_EXIT="${PIPESTATUS[0]}"
+          set -e
           if [ "$BUILD_EXIT" -ne 0 ]; then
             echo "::error title=docs-build::Build failed with exit code ${BUILD_EXIT}"
             while IFS= read -r line; do
