@@ -77,7 +77,21 @@ jobs:
           fi
 
       - name: Guard Workspace Semantics
-        run: pnpm guard:workspace-semantics
+        shell: bash
+        run: |
+          set -o pipefail
+          LOG_FILE="$(mktemp)"
+          set +e
+          pnpm guard:workspace-semantics 2>&1 | tee "$LOG_FILE"
+          GUARD_EXIT="${PIPESTATUS[0]}"
+          set -e
+          if [ "$GUARD_EXIT" -ne 0 ]; then
+            echo "::error title=workspace-guard::Guard failed with exit code ${GUARD_EXIT}"
+            while IFS= read -r line; do
+              printf '::error title=workspace-guard-tail::%s\n' "$line"
+            done < <(tail -n 80 "$LOG_FILE")
+            exit "$GUARD_EXIT"
+          fi
 
       - name: Run Hydration Doctor
         run: pnpm hydration:doctor
