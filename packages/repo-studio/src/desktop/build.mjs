@@ -90,7 +90,10 @@ export async function runDesktopBuild(options = {}) {
   const standalone = resolveRepoStudioStandaloneServer(workspaceRoot);
   const appRoot = standalone.appRoot;
   const standaloneSymlinkFallbackPatch = path.join(appRoot, 'scripts', 'standalone-symlink-fallback.cjs');
-  const standaloneBuildEnv = { REPO_STUDIO_STANDALONE: '1' };
+  const standaloneBuildEnv = {
+    REPO_STUDIO_STANDALONE: '1',
+    REPO_STUDIO_OUTPUT_FILE_TRACING_ROOT: workspaceRoot,
+  };
   const standaloneNextBuildEnv = { ...standaloneBuildEnv };
   if (fsSync.existsSync(standaloneSymlinkFallbackPatch)) {
     standaloneNextBuildEnv.NODE_OPTIONS = appendNodeRequireOption(
