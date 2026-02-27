@@ -103,14 +103,13 @@ jobs:
         run: pnpm hydration:doctor
 
   package_windows:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: verify
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Init required submodule
-        shell: pwsh
         run: |
           git submodule sync -- vendor/repo-studio-extensions
           git submodule update --init --depth 1 vendor/repo-studio-extensions
@@ -126,12 +125,16 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      - name: Install Windows Packaging Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wine64 nsis
+
       - name: Install
         run: pnpm install --frozen-lockfile
 
       - name: Seed Repo Studio CI Env
-        shell: pwsh
-        run: Copy-Item -Path apps/repo-studio/.env.example -Destination apps/repo-studio/.env -Force
+        run: cp apps/repo-studio/.env.example apps/repo-studio/.env
 
       - name: Package RepoStudio Windows Desktop
         run: pnpm --filter @forge/repo-studio run desktop:package:win
@@ -140,13 +143,16 @@ jobs:
         run: pnpm --filter @forge/repo-studio run desktop:verify:standalone
 
       - name: Generate SHA256 Checksums
-        shell: pwsh
+        shell: bash
         run: |
-          $artifactDir = "packages/repo-studio/dist/desktop"
-          $outFile = "$artifactDir/RepoStudio-$env:GITHUB_REF_NAME-sha256.txt"
-          Get-FileHash "$artifactDir/RepoStudio Setup 0.1.1.exe" -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  RepoStudio Setup 0.1.1.exe" } | Out-File -FilePath $outFile -Encoding ascii
-          Get-FileHash "$artifactDir/RepoStudio 0.1.1.exe" -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  RepoStudio 0.1.1.exe" } | Add-Content -Path $outFile -Encoding ascii
-          Get-Content $outFile
+          artifact_dir="packages/repo-studio/dist/desktop"
+          out_file="$artifact_dir/RepoStudio-${GITHUB_REF_NAME}-sha256.txt"
+          (
+            cd "$artifact_dir"
+            sha256sum "RepoStudio Setup 0.1.1.exe"
+            sha256sum "RepoStudio 0.1.1.exe"
+          ) > "$out_file"
+          cat "$out_file"
 
       - name: Upload Desktop Artifacts
         uses: actions/upload-artifact@v4
