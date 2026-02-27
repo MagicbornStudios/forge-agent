@@ -48,6 +48,8 @@ legacy/studio-apps/studio/data/
 
 # Repo Studio local DB
 apps/repo-studio/data/
+# Repo Studio desktop packaging build output
+packages/repo-studio/.desktop-build/
 # Exception: shared package media components (used by docs, tool-ui)
 !packages/shared/src/shared/components/media/
 !packages/shared/src/shared/components/media/**
