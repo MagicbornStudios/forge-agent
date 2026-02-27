@@ -46,7 +46,17 @@ jobs:
         run: pnpm --filter @forge/repo-studio-app run check:codegen
 
       - name: Build Repo Studio App
-        run: pnpm --filter @forge/repo-studio-app build
+        shell: bash
+        run: |
+          set -o pipefail
+          LOG_FILE="$(mktemp)"
+          if ! pnpm --filter @forge/repo-studio-app build 2>&1 | tee "$LOG_FILE"; then
+            echo "::error title=repo-studio-build::Build failed"
+            while IFS= read -r line; do
+              printf '::error title=repo-studio-build-tail::%s\n' "$line"
+            done < <(tail -n 80 "$LOG_FILE")
+            exit 1
+          fi
 
       - name: Verify Extension Registry Health
         run: pnpm --filter @forge/repo-studio-app run extensions:registry:health
