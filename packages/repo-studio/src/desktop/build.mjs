@@ -73,17 +73,34 @@ function parseDesktopBuildArgs(argv = process.argv.slice(2)) {
   };
 }
 
+function appendNodeRequireOption(existingNodeOptions, modulePath) {
+  const normalizedPath = modulePath.replace(/\\/g, '/');
+  const requireOption = `--require=${normalizedPath}`;
+  const existing = String(existingNodeOptions || '').trim();
+  if (!existing) return requireOption;
+  if (existing.includes(requireOption) || existing.includes(normalizedPath)) return existing;
+  return `${existing} ${requireOption}`;
+}
+
 export async function runDesktopBuild(options = {}) {
   const requireStandalone = options.requireStandalone === true;
   const workspaceRoot = findWorkspaceRoot(process.cwd());
   const standalone = resolveRepoStudioStandaloneServer(workspaceRoot);
   const appRoot = standalone.appRoot;
+  const standaloneSymlinkFallbackPatch = path.join(appRoot, 'scripts', 'standalone-symlink-fallback.cjs');
+  const standaloneBuildEnv = {
+    REPO_STUDIO_STANDALONE: '1',
+  };
+  if (fsSync.existsSync(standaloneSymlinkFallbackPatch)) {
+    standaloneBuildEnv.NODE_OPTIONS = appendNodeRequireOption(
+      process.env.NODE_OPTIONS,
+      standaloneSymlinkFallbackPatch,
+    );
+  }
 
   const standaloneBuild = run('pnpm', ['--filter', '@forge/repo-studio-app', 'build'], {
     cwd: workspaceRoot,
-    env: {
-      REPO_STUDIO_STANDALONE: '1',
-    },
+    env: standaloneBuildEnv,
     shell: process.platform === 'win32',
     allowFailure: true,
   });
