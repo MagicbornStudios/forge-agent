@@ -46,7 +46,12 @@ function run(command, args, options = {}) {
 
 async function copyDir(source, target) {
   await fs.mkdir(path.dirname(target), { recursive: true });
-  await fs.cp(source, target, { recursive: true, dereference: true });
+  await fs.cp(source, target, {
+    recursive: true,
+    // Windows packaging environments can struggle with symlink copying.
+    // Linux/macOS standalone traces are safer to preserve as-is.
+    dereference: process.platform === 'win32',
+  });
 }
 
 function resolveDesktopBuildRoot() {
