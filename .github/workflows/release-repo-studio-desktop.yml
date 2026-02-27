@@ -137,7 +137,21 @@ jobs:
         run: cp apps/repo-studio/.env.example apps/repo-studio/.env
 
       - name: Build Strict Standalone Desktop Payload
-        run: node packages/repo-studio/src/desktop/build.mjs --require-standalone
+        shell: bash
+        run: |
+          set -o pipefail
+          LOG_FILE="$(mktemp)"
+          set +e
+          node packages/repo-studio/src/desktop/build.mjs --require-standalone 2>&1 | tee "$LOG_FILE"
+          STANDALONE_EXIT="${PIPESTATUS[0]}"
+          set -e
+          if [ "$STANDALONE_EXIT" -ne 0 ]; then
+            echo "::error title=desktop-standalone-build::Standalone build failed with exit code ${STANDALONE_EXIT}"
+            while IFS= read -r line; do
+              printf '::error title=desktop-standalone-build-tail::%s\n' "$line"
+            done < <(tr '\r' '\n' < "$LOG_FILE" | tail -n 160)
+            exit "$STANDALONE_EXIT"
+          fi
 
       - name: Assert Standalone Desktop Bundle
         run: pnpm --filter @forge/repo-studio run desktop:verify:standalone
