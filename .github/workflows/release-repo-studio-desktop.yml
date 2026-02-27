@@ -103,7 +103,7 @@ jobs:
         run: pnpm hydration:doctor
 
   package_windows:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: verify
     steps:
       - name: Checkout
@@ -125,41 +125,44 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - name: Install Windows Packaging Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y wine64 nsis ripgrep
-
       - name: Install
         run: pnpm install --frozen-lockfile
 
       - name: Seed Repo Studio CI Env
-        run: cp apps/repo-studio/.env.example apps/repo-studio/.env
+        run: Copy-Item apps/repo-studio/.env.example apps/repo-studio/.env
 
       - name: Build Strict Standalone Desktop Payload
-        shell: bash
+        shell: pwsh
         run: |
-          set -o pipefail
-          LOG_FILE="$(mktemp)"
-          set +e
-          node packages/repo-studio/src/desktop/build.mjs --require-standalone 2>&1 | tee "$LOG_FILE"
-          STANDALONE_EXIT="${PIPESTATUS[0]}"
-          set -e
-          if [ "$STANDALONE_EXIT" -ne 0 ]; then
-            DIAG_FILE="packages/repo-studio/.desktop-build/failure-diagnostics.json"
-            echo "::error title=desktop-standalone-build::Standalone build failed with exit code ${STANDALONE_EXIT}"
-            if [ -f "$DIAG_FILE" ]; then
-              echo "::group::Standalone diagnostics JSON"
-              cat "$DIAG_FILE"
-              echo "::endgroup::"
-              DIAG_ONE_LINE="$(tr '\n' ' ' < "$DIAG_FILE" | sed -E 's/[[:space:]]+/ /g')"
-              printf '::error title=desktop-standalone-diagnostics::%s\n' "$DIAG_ONE_LINE"
-            fi
-            while IFS= read -r line; do
-              printf '::error title=desktop-standalone-build-tail::%s\n' "$line"
-            done < <(tr '\r' '\n' < "$LOG_FILE" | tail -n 160)
-            exit "$STANDALONE_EXIT"
-          fi
+          $logFile = Join-Path $env:RUNNER_TEMP 'desktop-standalone-build.log'
+          $diagFile = 'packages/repo-studio/.desktop-build/failure-diagnostics.json'
+
+          $command = "node packages/repo-studio/src/desktop/build.mjs --require-standalone"
+          & cmd /d /s /c "$command 1>$logFile 2>&1"
+          $standaloneExit = $LASTEXITCODE
+
+          if ($standaloneExit -ne 0) {
+            Write-Host "::error title=desktop-standalone-build::Standalone build failed with exit code $standaloneExit"
+            if (Test-Path $diagFile) {
+              Write-Host "::group::Standalone diagnostics JSON"
+              Get-Content $diagFile
+              Write-Host "::endgroup::"
+              $diagOneLine = ((Get-Content $diagFile -Raw) -replace '\s+', ' ').Trim()
+              Write-Host "::error title=desktop-standalone-diagnostics::$diagOneLine"
+            }
+
+            if (Test-Path $logFile) {
+              $lines = Get-Content $logFile
+              $tail = $lines | Select-Object -Last 200
+              foreach ($line in $tail) {
+                Write-Host "::error title=desktop-standalone-build-tail::$line"
+              }
+            }
+
+            exit $standaloneExit
+          }
+
+          Get-Content $logFile
 
       - name: Assert Standalone Desktop Bundle
         run: pnpm --filter @forge/repo-studio run desktop:verify:standalone
@@ -168,16 +171,21 @@ jobs:
         run: pnpm --filter @forge/repo-studio exec electron-builder --config electron-builder.json --win nsis portable
 
       - name: Generate SHA256 Checksums
-        shell: bash
+        shell: pwsh
         run: |
-          artifact_dir="packages/repo-studio/dist/desktop"
-          out_file="$artifact_dir/RepoStudio-${GITHUB_REF_NAME}-sha256.txt"
-          (
-            cd "$artifact_dir"
-            sha256sum "RepoStudio Setup 0.1.1.exe"
-            sha256sum "RepoStudio 0.1.1.exe"
-          ) > "$out_file"
-          cat "$out_file"
+          $artifactDir = "packages/repo-studio/dist/desktop"
+          $setupPath = Join-Path $artifactDir "RepoStudio Setup 0.1.1.exe"
+          $portablePath = Join-Path $artifactDir "RepoStudio 0.1.1.exe"
+          $outFile = Join-Path $artifactDir "RepoStudio-$env:GITHUB_REF_NAME-sha256.txt"
+
+          $setupHash = (Get-FileHash -Path $setupPath -Algorithm SHA256).Hash.ToLowerInvariant()
+          $portableHash = (Get-FileHash -Path $portablePath -Algorithm SHA256).Hash.ToLowerInvariant()
+
+          @(
+            "$setupHash  RepoStudio Setup 0.1.1.exe"
+            "$portableHash  RepoStudio 0.1.1.exe"
+          ) | Set-Content -Path $outFile
+          Get-Content $outFile
 
       - name: Upload Desktop Artifacts
         uses: actions/upload-artifact@v4
