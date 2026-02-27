@@ -194,6 +194,7 @@
 - [x] Terminal degraded mode contract is a real shell fallback: when `node-pty` is unavailable, spawn a stream shell process (PowerShell/login shell) and reserve echo-only behavior as final emergency fallback only.
 - [x] Semantic guard scripts must not depend on external `rg` binaries; guard checks are now Node/git-file based so local Windows shells and CI runners pass without extra ripgrep installation.
 - [x] Desktop distribution remains strictly tag-driven; hotfixes on `main` are not downloadable until a new release tag is pushed.
+- [x] Release artifact upload/publish paths must be tag/version-agnostic (wildcards + dynamic checksum filename) so future tags (for example `v0.1.2+`) do not fail on fixed `v0.1.1` paths.
 
 ## 2026-02-27 (Phase 16: Repo Studio canonical submodule)
 

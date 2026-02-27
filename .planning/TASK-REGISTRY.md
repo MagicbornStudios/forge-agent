@@ -91,11 +91,11 @@
 | FRG-1519 | 15 | 15-08 | Complete | Extension recognition hardening landed: extension APIs are no-store, root refresh preserves installed extensions on transient failures, and focus/visibility refresh picks up in-place extension edits reliably. |
 | FRG-1520 | 15 | 15-09 | Complete | First Electron packaging cut completed for Repo Studio: produced Windows installer + portable artifacts under `packages/repo-studio/dist/desktop`. |
 | FRG-1521 | 15 | 15-09 | Complete | Desktop standalone reliability hardening complete: strict standalone gate enforced and packaging verified with bundled runtime web assets (`.desktop-build/next`). |
-| FRG-1522 | 15 | 15-10 | In progress | Add tag-driven GitHub release workflow for Repo Studio desktop artifacts (`v*` tags) with verify -> windows package -> release publish jobs. |
+| FRG-1522 | 15 | 15-10 | Complete | Tag-driven GitHub desktop release workflow operational (`v*` tags) with verify -> windows package -> release publish jobs; artifact paths generalized for non-`v0.1.1` tags. |
 | FRG-1523 | 15 | 15-10 | Complete | Release gate remediation: fixed `@forge/platform`/`@forge/docs` dependency matrix so both builds pass in release verification flow. |
 | FRG-1524 | 15 | 15-10 | Complete | Published `vendor/repo-studio-extensions` updates to upstream `main` and prepared forge-agent submodule pointer update to pushed SHA. |
 | FRG-1525 | 15 | 15-10 | Complete | Enforced hard desktop standalone gate for packaging (`--require-standalone` + `verify-standalone` checks + CI assertion before artifact upload). |
-| FRG-1526 | 15 | 15-10 | In progress | Forge Agent release push cut: single commit to `main`, annotated tag `v0.1.1`, and GitHub Release publication verification. |
+| FRG-1526 | 15 | 15-10 | Complete | Forge Agent release push cut complete: `main` includes desktop/guard hotfixes and `v0.1.2` release published successfully with Windows installer/portable artifacts. |
 | FRG-1527 | 15 | 15-10 | Complete | Closeout artifacts sync complete: STATE/DECISIONS/ERRORS/STATUS updated with release outcomes, crash hotfix, and remaining CI rerun risk. |
 | FRG-1528 | 15 | 15-10 | Complete | Desktop runtime hotfix: fixed packaged startup crash by bundling security modules and upgraded terminal PTY fallback to a real stream shell when `node-pty` is unavailable. |
 | FRG-1529 | 15 | 15-10 | Complete | Semantic guard portability hardening: removed ripgrep runtime dependency by switching guard scripts to Node/git-file search fallback, fixing Windows + CI guard failures. |

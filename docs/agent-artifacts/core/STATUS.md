@@ -47,6 +47,11 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
   - enforced strict standalone desktop gate in `@forge/repo-studio` (`--require-standalone` + `src/desktop/verify-standalone.mjs`) so fallback packaging cannot publish,
   - fixed release build blockers for `@forge/platform` and `@forge/docs` (dependency matrix + docs source/page-tree serialization contract),
   - published `vendor/repo-studio-extensions` README update to upstream `main` and prepared forge-agent submodule pointer update.
+- Done (2026-02-27): Desktop release follow-up `v0.1.2` published successfully:
+  - semantic guards are now cross-platform (no `rg` runtime dependency) via Node/git-file scanning helper,
+  - CI now initializes `vendor/repo-studio-extensions` submodule before semantic guards,
+  - release workflow artifact paths generalized (no fixed `v0.1.1` checksum filename),
+  - release run `22497927982` completed `success` (verify + package_windows + release) with downloadable artifacts under `releases/tag/v0.1.2`.
 - In progress (2026-02-27): Desktop runtime hotfix validation:
   - fixed packaged startup crash by including `src/security/**` and `src/lib/**` in `packages/repo-studio/electron-builder.json` file allowlist,
   - upgraded terminal degraded mode to spawn a real stream shell fallback when `node-pty` is unavailable,

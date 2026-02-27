@@ -5,19 +5,19 @@
 Phase: 15
 Plan: 15-01
 Status: Execution in progress
-Last activity: 2026-02-27 - Guard portability hotfix validated: semantic guards no longer require ripgrep; release follow-up is tagging a new desktop cut that includes startup/terminal fixes
+Last activity: 2026-02-27 - `v0.1.2` desktop release published successfully; semantic guards are cross-platform (no ripgrep dependency) and desktop startup/terminal hotfixes are now downloadable
 
 ## Execution
 
 - Active phase: Strategic shift - Repo Studio + Platform focus
 - Active plan: 15-01 (Master plan - execute shift in tracked slices)
-- Active task: FRG-1526 Forge Agent release push cut (main push + tag/release verification)
+- Active task: FRG-1501 Archive Studio app scope cleanup (resume Phase 15 strategic-shift backlog)
 
 ## Strategic shift (Phase 15)
 
 - **Goal:** Archive Studio app; move Character and Dialogue to studio examples in RepoStudio-Extensions; move consumer-studio to `assistant-only` studio example; deprecate forge graphs and Yarn Spinner dialogue on platform; platform supports Repo Studio first.
 - **Process:** Loop (discuss -> plan -> execute -> verify); PRD, phases, tasks, decisions in .planning. See `.planning/phases/15-strategic-shift-repo-studio-platform-focus/` (CONTEXT, PRD, 15-01-PLAN).
-- **Next:** Complete FRG-1526/1522 by pushing forge-agent `main`, rerunning tag-driven release publish, and verifying GitHub release assets include the fixed desktop runtime packaging. Then resume archive/rescope tasks (FRG-1501/1502/1504/1506). **Phase 16** (Repo Studio canonical submodule) is planned: 16-01 add submodule and verify, 16-02 switch to build from submodule; see `.planning/phases/16-repo-studio-canonical-submodule/` and ROADMAP. **Phase 17** (Platform submodule and docs deploy) is planned: platform in RepoStudio-Platform repo and as submodule (vendor/platform), docs and platform on Vercel, deployment matrix; see `.planning/phases/17-platform-submodule-docs-deploy/` and ROADMAP. **Phase 18** (Platform integration gateway) is planned: Open Router proxy, extension install proxy, capability flags; see `.planning/phases/18-platform-integration-gateway/` and [.planning/PLATFORM-PRD.md](.planning/PLATFORM-PRD.md). Human-only setup (repos, env, Vercel, npm, OAuth) is tracked in [.planning/HUMAN-TASKS.md](.planning/HUMAN-TASKS.md); agents check there before blocking.
+- **Next:** Resume archive/rescope tasks (FRG-1501/1502/1504/1506) and continue Phase 15 strategic-shift cleanup. **Phase 16** (Repo Studio canonical submodule) is planned: 16-01 add submodule and verify, 16-02 switch to build from submodule; see `.planning/phases/16-repo-studio-canonical-submodule/` and ROADMAP. **Phase 17** (Platform submodule and docs deploy) is planned: platform in RepoStudio-Platform repo and as submodule (vendor/platform), docs and platform on Vercel, deployment matrix; see `.planning/phases/17-platform-submodule-docs-deploy/` and ROADMAP. **Phase 18** (Platform integration gateway) is planned: Open Router proxy, extension install proxy, capability flags; see `.planning/phases/18-platform-integration-gateway/` and [.planning/PLATFORM-PRD.md](.planning/PLATFORM-PRD.md). Human-only setup (repos, env, Vercel, npm, OAuth) is tracked in [.planning/HUMAN-TASKS.md](.planning/HUMAN-TASKS.md); agents check there before blocking.
 
 ## Planning artifact update and release execution
 
