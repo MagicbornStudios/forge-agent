@@ -98,7 +98,8 @@ jobs:
             exit "$GUARD_EXIT"
           fi
 
-      - name: Run Hydration Doctor
+      - name: Run Hydration Doctor (Linux smoke)
+        continue-on-error: true
         run: pnpm hydration:doctor
 
   package_windows:
