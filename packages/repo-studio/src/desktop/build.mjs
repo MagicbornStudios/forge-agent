@@ -40,7 +40,7 @@ function run(command, args, options = {}) {
 
 async function copyDir(source, target) {
   await fs.mkdir(path.dirname(target), { recursive: true });
-  await fs.cp(source, target, { recursive: true });
+  await fs.cp(source, target, { recursive: true, dereference: true });
 }
 
 function resolveDesktopBuildRoot() {

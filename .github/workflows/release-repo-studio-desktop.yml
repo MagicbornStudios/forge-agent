@@ -14,8 +14,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
+
+      - name: Init required submodule
+        run: |
+          git submodule sync -- vendor/repo-studio-extensions
+          git submodule update --init --depth 1 vendor/repo-studio-extensions
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -48,8 +51,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
+
+      - name: Init required submodule
+        shell: pwsh
+        run: |
+          git submodule sync -- vendor/repo-studio-extensions
+          git submodule update --init --depth 1 vendor/repo-studio-extensions
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
