@@ -27,12 +27,16 @@ function run(command, args, options = {}) {
     },
     stdio: ['ignore', 'pipe', 'pipe'],
     shell: options.shell === true,
+    maxBuffer: 100 * 1024 * 1024,
   });
   if (result.stdout) {
     process.stdout.write(String(result.stdout));
   }
   if (result.stderr) {
     process.stderr.write(String(result.stderr));
+  }
+  if (result.error) {
+    throw new Error(`Command failed (${command} ${args.join(' ')}): ${result.error.message}`);
   }
   const ok = (result.status ?? 1) === 0;
   if (!ok && options.allowFailure !== true) {
