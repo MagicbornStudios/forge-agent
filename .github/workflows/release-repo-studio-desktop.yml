@@ -136,25 +136,14 @@ jobs:
       - name: Seed Repo Studio CI Env
         run: cp apps/repo-studio/.env.example apps/repo-studio/.env
 
-      - name: Package RepoStudio Windows Desktop
-        shell: bash
-        run: |
-          set -o pipefail
-          LOG_FILE="$(mktemp)"
-          set +e
-          pnpm --filter @forge/repo-studio run desktop:package:win 2>&1 | tee "$LOG_FILE"
-          PACKAGE_EXIT="${PIPESTATUS[0]}"
-          set -e
-          if [ "$PACKAGE_EXIT" -ne 0 ]; then
-            echo "::error title=desktop-package::Packaging failed with exit code ${PACKAGE_EXIT}"
-            while IFS= read -r line; do
-              printf '::error title=desktop-package-tail::%s\n' "$line"
-            done < <(tr '\r' '\n' < "$LOG_FILE" | tail -n 120)
-            exit "$PACKAGE_EXIT"
-          fi
+      - name: Build Strict Standalone Desktop Payload
+        run: node packages/repo-studio/src/desktop/build.mjs --require-standalone
 
       - name: Assert Standalone Desktop Bundle
         run: pnpm --filter @forge/repo-studio run desktop:verify:standalone
+
+      - name: Package RepoStudio Windows Desktop
+        run: pnpm --filter @forge/repo-studio exec electron-builder --config electron-builder.json --win nsis portable
 
       - name: Generate SHA256 Checksums
         shell: bash
