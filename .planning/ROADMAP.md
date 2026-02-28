@@ -37,6 +37,8 @@ Phase 15 archive execution note: `apps/studio` and `apps/consumer-studio` are no
 - [ ] **Phase 21: Artifact layout and loop efficiency — planning** - Planning/design only: how artifacts are laid out for users in Repo Studio; how loops stay efficient (context, tools, cadence, handoffs); decisions and optional spec/checklist
 - [ ] **Phase 22: Workspace and panel design refactor — composition, chat-in-chat, fewer rails** - Remove Copy @ from panels; reduce Planning left rail; tree + context menu for structure actions
 - [ ] **Phase 23: Repo review and cleanup — GSD/Cursor setup, analysis consolidation, layout and legacy** - GSD install and Cursor rule; consolidate or clarify analysis; document repo layout and .cursor/plans hygiene
+- [ ] **Phase 24: Loop model and multi-loop** - Loop hierarchy (new scope = new loop; child loops under meta loop); fixed naming conventions; max doc size + contextual summarize/archive; discoverability for Repo Studio and coding agents
+- [ ] **Phase 25: Game simulation workspace** - Extension workspace "game simulation" with own parser and doc writes; GRD + `.concept`; simulation entry point scoping Codex to workspace docs only; two-loop handoff (concept vs PRD)
 
 ## Phase Details
 
@@ -289,6 +291,24 @@ Plans:
 - [ ] 23-02: Analysis consolidation (audit, decide model, update ANALYSIS-LOOPS and ANALYSIS-REFERENCES)
 - [ ] 23-03: Repo layout and legacy cleanup (expected layout doc, app wording, legacy/snapshots, .cursor/plans)
 
+### Phase 24: Loop model and multi-loop
+**Goal:** Document and implement loop hierarchy (new scope = new loop; when scope grows, loop can become child of a meta loop), fixed naming conventions for loop/planning docs, max doc size with contextual summarize/archive, and how Repo Studio and coding agents discover loop docs. May extend or align with Phase 21.
+**Depends on:** Phase 21 recommended; can run in parallel with 22–23
+**Plans:** 2 plans
+
+Plans:
+- [ ] 24-01: Loop hierarchy and naming: document when to create child loops; fixed naming conventions for GRD/PRD and loop folders; LOOPS.json and .planning/loops/<loopId> discoverability
+- [ ] 24-02: Max doc size and summarize/archive: define max size for key planning docs; contextual summarize and archive behavior; wire or document existing mechanisms
+
+### Phase 25: Game simulation workspace
+**Goal:** Extension workspace "game simulation" with its own parser and doc writes; GRD + `.concept`; simulation entry point (e.g. agent.md) that scopes Codex to this workspace only; two-loop model (concept/simulation loop vs software/PRD loop) with handoff; one game loop + one PRD per workspace. Reference: `.tmp/dungeonbreak-docs-reference/` (from `pnpm reference:copy-dungeonbreak`).
+**Depends on:** Phase 24 recommended (loop model); extension workspace pattern (e.g. Story)
+**Plans:** 2 plans
+
+Plans:
+- [ ] 25-01: Game simulation workspace extension: register workspace; own parser and write path for docs; tree + viewport similar to Planning; fixed naming; `.concept` as project folder; simulation entry point for Codex
+- [ ] 25-02: Two-loop handoff and scoping: concept/simulation loop (GRD, .concept) vs software/PRD loop; assistant scoped to game simulation workspace docs only during simulation; handoff from simulation to PRD
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -316,3 +336,5 @@ Plans:
 | 21. Artifact layout and loop efficiency (planning) | 0/2 | Pending | - |
 | 22. Workspace and panel design refactor | 0/3 | Pending | - |
 | 23. Repo review and cleanup | 0/3 | Pending | - |
+| 24. Loop model and multi-loop | 0/2 | Pending | - |
+| 25. Game simulation workspace | 0/2 | Pending | - |

@@ -106,7 +106,8 @@
     "extensions:registry:status": "git submodule status vendor/repo-studio-extensions",
     "gsd:install": "node scripts/gsd-install.mjs",
     "vendor:gsd:build": "node -e \"require('fs').accessSync('vendor/get-shit-done/bin/install.js')\"",
-    "vendor:gsd:publish:local": "node scripts/vendor-gsd-publish.mjs"
+    "vendor:gsd:publish:local": "node scripts/vendor-gsd-publish.mjs",
+    "reference:copy-dungeonbreak": "node scripts/copy-external-reference.mjs"
   },
   "devDependencies": {
     "knip": "^5.83.1",
