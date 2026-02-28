@@ -1,0 +1,45 @@
+{
+  "updatedAt": "2026-02-27T16:19:17.361Z",
+  "models": [
+    {
+      "id": "gpt-5.3-codex",
+      "label": "gpt-5.3-codex",
+      "tier": "paid",
+      "supportsTools": false,
+      "supportsImages": false,
+      "supportsResponsesV2": true
+    },
+    {
+      "id": "gpt-5.2-codex",
+      "label": "gpt-5.2-codex",
+      "tier": "paid",
+      "supportsTools": false,
+      "supportsImages": false,
+      "supportsResponsesV2": true
+    },
+    {
+      "id": "gpt-5.1-codex-max",
+      "label": "gpt-5.1-codex-max",
+      "tier": "paid",
+      "supportsTools": false,
+      "supportsImages": false,
+      "supportsResponsesV2": true
+    },
+    {
+      "id": "gpt-5.2",
+      "label": "gpt-5.2",
+      "tier": "paid",
+      "supportsTools": false,
+      "supportsImages": false,
+      "supportsResponsesV2": true
+    },
+    {
+      "id": "gpt-5.1-codex-mini",
+      "label": "gpt-5.1-codex-mini",
+      "tier": "paid",
+      "supportsTools": false,
+      "supportsImages": false,
+      "supportsResponsesV2": true
+    }
+  ]
+}

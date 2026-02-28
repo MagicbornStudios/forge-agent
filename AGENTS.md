@@ -13,6 +13,8 @@ updated: 2026-02-07
 
 **Forge Loop lifecycle:** `.planning/` is the source of truth. **Primary:** GSD (Codex) via `$gsd-*` skills—install with `pnpm gsd:install` (Codex-only). Use `forge-loop` for `doctor`, `progress`, `sync-legacy`. Phase execution is Codex + GSD skills only (no forge-loop phase CLI). `FORGE_LOOP_ID` unset → default loop (`.planning/`); set → `.planning/loops/<id>/`. Legacy files under `docs/agent-artifacts/core/*` are snapshot outputs. For GUI operations, prefer `forge-repo-studio` (`open`, `doctor`, `run`).
 
+**Repo layout:** Monorepo root has `apps/`, `packages/`, `vendor/`, `docs/`, `.planning/`, `scripts/`; no top-level `app`. Applications live under `apps/*`; Repo Studio is the primary app. See [18-agent-artifacts-index](docs/18-agent-artifacts-index.mdx) § Expected repo layout.
+
 ## Scoped edits / .tmp
 
 The `.tmp/` directory (and any path listed in .gitignore as agent-download/reference) is used by agents to download entire repos or component trees for reference. Do **not** edit, refactor, or lint files under `.tmp/`. It is not part of our codebase; search and code changes apply to `apps/`, `packages/`, `docs/`, and root config only.

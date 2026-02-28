@@ -56,6 +56,17 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
   - fixed packaged startup crash by including `src/security/**` and `src/lib/**` in `packages/repo-studio/electron-builder.json` file allowlist,
   - upgraded terminal degraded mode to spawn a real stream shell fallback when `node-pty` is unavailable,
   - revalidated `@forge/repo-studio-app` build, terminal API test, `desktop:package:win`, and executable launch sanity.
+- Done (2026-02-27): Phase 15 Windows desktop UX closeout:
+  - NSIS now uses guided install (`oneClick=false`) with install-path chooser, shortcuts, and run-after-finish enabled,
+  - Electron main-process fatal boot/runtime failures now write `desktop-startup.log` and show a blocking error dialog with the log path,
+  - Windows release workflow now smoke-launches the packaged portable EXE before artifact upload,
+  - local validation succeeded with fresh `RepoStudio Setup 0.1.3.exe` and `RepoStudio 0.1.3.exe` artifacts plus a successful portable smoke launch.
+- Done (2026-02-27): Phase 15 desktop onboarding and debug ergonomics:
+  - added temporary branding/logo and a splash loading window for the desktop shell,
+  - added a first-run in-app setup flow with dependency readiness, project-opening guidance, and desktop startup flag visibility,
+  - added `--safe-mode` and `--verbose-startup` launch controls for desktop debugging and watcher-safe recovery,
+  - validated the slice with a fresh `desktop:package:win` run and a successful portable `RepoStudio 0.1.3.exe` smoke launch,
+  - kept code signing explicitly deferred until a real Windows signing certificate/workflow is available.
 - Done (2026-02-27): Dev-kit extension authoring surface alignment:
   - moved `WorkspaceViewport` from app-local Repo Studio component path into shared workspace primitives (`packages/shared/src/shared/components/workspace/WorkspaceViewport.tsx`),
   - exported viewport component + helper contracts from `@forge/shared` workspace index and updated Repo Studio workspaces/adapter package/shell tests to consume shared export,

@@ -44,6 +44,17 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 25. **Tooltips on buttons** - Studio uses no Radix tooltips; native `title` only via `WorkspaceButton` / `TooltipIconButton`. Do not wrap `Button` in Radix `Tooltip` until Radix ships the React 19 fix. See [standard-practices](standard-practices.md) § Tooltips and [errors-and-attempts](errors-and-attempts.md).
 26. **No universal padding/margin reset** - Never add `padding: 0` or `margin: 0` to the universal selector `*` (or `::before`, `::after`). It strips default padding from buttons, labels, inputs, badges and caused days of debugging. Tailwind preflight already normalizes; do not add our own. See [errors-and-attempts](errors-and-attempts.md) § Universal padding/margin reset and the comment in `apps/studio/app/globals.css` above `@layer base`.
 
+## Workspace and panel composition
+
+(Repo Studio layout constraints. Apply when adding or refactoring workspaces and panels.)
+
+- **Viewport-centric** — The viewport is the main content area; it holds files/docs (tabs) or a future graph/canvas. One viewport per workspace.
+- **Tree when file-like** — For file/doc-like workspaces, primary navigation is a **tree** (one tree panel); click opens in viewport. No duplicate "list" panel for the same role.
+- **Tree actions** — Structure-changing actions (New file, New folder, Rename, etc.) live on the **tree** via context menu (and optional tree toolbar), not scattered across panels.
+- **Feature placement (chat-in-chat)** — Attach/reference actions (e.g. @-mentions) belong in the **assistant chat input** (composer), not as per-panel or per-doc buttons. One place of truth per action.
+- **Panel discipline** — Prefer fewer, purpose-driven rails. Avoid "one panel per artifact"; group or tab related content (e.g. Overview vs Work). Define a max or grouping contract for left-rail panels (e.g. 3–4 or grouped).
+- **No redundant chrome** — If an action is available in chat (e.g. @), do not repeat it as a button in every panel or doc header.
+
 ## Process when making UI/styling changes
 
 1. **Pre-check (required)** - Run `pnpm css:doctor` and `pnpm hydration:doctor` before styling/UI changes. For docs shell changes, run `pnpm docs:doctor`.

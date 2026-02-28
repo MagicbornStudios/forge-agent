@@ -361,6 +361,8 @@ async function runDesktopRuntimeForeground(options) {
     view: options.view,
     detach: false,
     dev: options.desktopDev === true,
+    safeMode: options.safeMode === true,
+    verboseStartup: options.verboseStartup === true,
   });
 }
 
@@ -383,6 +385,8 @@ async function runDesktopRuntimeDetached(options) {
   ];
 
   if (options.desktopDev === true) args.push('--desktop-dev');
+  if (options.safeMode === true) args.push('--safe-mode');
+  if (options.verboseStartup === true) args.push('--verbose-startup');
   const child = spawnDetached(process.execPath, [cliPath(), ...args], {
     cwd: process.cwd(),
   });
@@ -416,6 +420,8 @@ export async function runOpen(options = {}) {
 
   const reuseByDefault = config?.runtime?.reuseByDefault !== false;
   const reuse = options.reuse === true || (options.reuse !== false && reuseByDefault);
+  const safeMode = options.safeMode === true;
+  const verboseStartup = options.verboseStartup === true;
   const detach = options.foreground === true ? false : options.detach !== false;
   const profile = String(options.profile || 'forge-loop');
   const envMode = String(options.mode || 'local');
@@ -423,7 +429,7 @@ export async function runOpen(options = {}) {
   const port = resolvePort(options, config, selectedMode);
   const openBrowser = options.openBrowser !== false;
 
-  if (reuse) {
+  if (reuse && !safeMode && !verboseStartup) {
     const reused = await reuseIfPossible({
       mode: selectedMode,
       openBrowser,
@@ -446,6 +452,8 @@ export async function runOpen(options = {}) {
         view,
         port,
         desktopDev: options.desktopDev === true,
+        safeMode,
+        verboseStartup,
       });
     }
     return runDesktopRuntimeForeground({
@@ -454,6 +462,8 @@ export async function runOpen(options = {}) {
       view,
       port,
       desktopDev: options.desktopDev === true,
+      safeMode,
+      verboseStartup,
     });
   }
 

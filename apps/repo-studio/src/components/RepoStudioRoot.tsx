@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Image from 'next/image';
 import { FolderOpen, FolderTree, Github, LayoutPanelTop, Loader2, X } from 'lucide-react';
 import { StudioApp } from '@forge/shared/components/app';
 import { WorkspaceMenubar } from '@forge/shared/components/workspace';
@@ -144,6 +145,12 @@ export function RepoStudioRoot({
   const [githubAuthBusy, setGithubAuthBusy] = React.useState(false);
   const [showAdvancedPathInput, setShowAdvancedPathInput] = React.useState(false);
   const [projectActionBusy, setProjectActionBusy] = React.useState(false);
+  const [desktopRuntimeActive, setDesktopRuntimeActive] = React.useState(false);
+  const [firstRunSetupOpen, setFirstRunSetupOpen] = React.useState(false);
+  const [startupFlags, setStartupFlags] = React.useState({
+    safeMode: false,
+    verboseStartup: false,
+  });
   const [workspaceExtensions, setWorkspaceExtensions] = React.useState<RepoWorkspaceExtension[]>([]);
   const [workspaceExtensionWarnings, setWorkspaceExtensionWarnings] = React.useState<string[]>([]);
   const [extensionRegistryWarnings, setExtensionRegistryWarnings] = React.useState<string[]>([]);
@@ -666,6 +673,13 @@ export function RepoStudioRoot({
     loadBrowseDirectory(openProjectPath || '').catch(() => {});
   }, [loadBrowseDirectory, openProjectPath]);
 
+  const completeFirstRunSetup = React.useCallback(() => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('repo-studio.desktop.first-run.v1', 'done');
+    }
+    setFirstRunSetupOpen(false);
+  }, []);
+
   const handleSwitchProject = React.useCallback(async (projectId: string) => {
     const normalizedProjectId = String(projectId || '').trim();
     if (!normalizedProjectId) return;
@@ -701,6 +715,31 @@ export function RepoStudioRoot({
       setProjectActionBusy(false);
     }
   }, [refreshProjectAndAuth, setCommandOutput]);
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const desktop = getDesktopRuntimeBridge();
+    const isDesktop = Boolean(desktop);
+    const params = new URLSearchParams(window.location.search);
+    const safeModeActive = params.get('safeMode') === '1';
+    const verboseStartupActive = params.get('verboseStartup') === '1';
+
+    setDesktopRuntimeActive(isDesktop);
+    setStartupFlags({
+      safeMode: safeModeActive,
+      verboseStartup: verboseStartupActive,
+    });
+
+    if (safeModeActive) {
+      setCommandOutput('RepoStudio started in safe mode. Desktop watchers are disabled for debugging.');
+    } else if (verboseStartupActive) {
+      setCommandOutput('RepoStudio verbose startup logging is enabled. Check desktop-startup.log for step-by-step boot details.');
+    }
+
+    if (!isDesktop) return;
+    if (window.localStorage.getItem('repo-studio.desktop.first-run.v1') === 'done') return;
+    setFirstRunSetupOpen(true);
+  }, [setCommandOutput]);
 
   React.useEffect(() => {
     setActiveLoopId(loops.activeLoopId);
@@ -1117,6 +1156,13 @@ export function RepoStudioRoot({
   ]);
 
   const ActiveLayout = effectiveWorkspaceEntry.component;
+  const firstRunMessages = React.useMemo(
+    () => dedupeMessages([
+      ...(dependencyHealth?.messages || []),
+      ...(runtimeDeps?.desktop?.messages || []),
+    ]),
+    [dependencyHealth, runtimeDeps],
+  );
 
   return (
     <RepoStudioProvider
@@ -1161,6 +1207,13 @@ export function RepoStudioRoot({
 
             <StudioApp.Content className="min-h-0 overflow-hidden">
               <div className="flex h-full min-h-0 flex-col">
+                {desktopRuntimeActive && (startupFlags.safeMode || startupFlags.verboseStartup) ? (
+                  <div className="border-b border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                    {startupFlags.safeMode ? 'Safe mode active: desktop watchers are disabled.' : null}
+                    {startupFlags.safeMode && startupFlags.verboseStartup ? ' ' : null}
+                    {startupFlags.verboseStartup ? 'Verbose startup logging is enabled in desktop-startup.log.' : null}
+                  </div>
+                ) : null}
                 <div className="min-h-0 flex-1 overflow-hidden">
                   <ActiveLayout
                     key={`${effectiveWorkspaceId}:${layoutResetCounter}`}
@@ -1240,6 +1293,107 @@ export function RepoStudioRoot({
           </SidebarContent>
         </Sidebar>
       </SidebarProvider>
+
+      <Dialog open={firstRunSetupOpen} onOpenChange={setFirstRunSetupOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <div className="mb-3 flex justify-center">
+              <Image
+                src="/brand/repo-studio-logo.png"
+                alt="RepoStudio logo"
+                width={96}
+                height={96}
+                unoptimized
+                className="h-24 w-24 rounded-xl border border-border bg-card object-contain p-2 shadow-sm"
+              />
+            </div>
+            <DialogTitle>Welcome to RepoStudio</DialogTitle>
+            <DialogDescription>
+              RepoStudio is a new IDE centered around multiple coding agents. It is company agnostic, but primarily integrated with Codex.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="rounded-md border border-border p-3">
+              <div className="text-sm font-medium">First run checklist</div>
+              <div className="mt-2 grid gap-2 text-sm sm:grid-cols-2">
+                <div className="rounded border border-border px-3 py-2">
+                  <div className="text-xs text-muted-foreground">Runtime packages</div>
+                  <div className={dependencyHealth?.runtimePackagesResolved ? 'text-emerald-600' : 'text-amber-600'}>
+                    {dependencyHealth == null ? 'Checking…' : (dependencyHealth.runtimePackagesResolved ? 'Ready' : 'Needs attention')}
+                  </div>
+                </div>
+                <div className="rounded border border-border px-3 py-2">
+                  <div className="text-xs text-muted-foreground">Style pipeline</div>
+                  <div className={dependencyHealth?.tailwindPipelineResolved ? 'text-emerald-600' : 'text-amber-600'}>
+                    {dependencyHealth == null ? 'Checking…' : (dependencyHealth.tailwindPipelineResolved ? 'Ready' : 'Needs attention')}
+                  </div>
+                </div>
+                <div className="rounded border border-border px-3 py-2">
+                  <div className="text-xs text-muted-foreground">Desktop runtime</div>
+                  <div className={runtimeDeps?.desktopRuntimeReady ? 'text-emerald-600' : 'text-amber-600'}>
+                    {runtimeDeps == null ? 'Checking…' : (runtimeDeps.desktopRuntimeReady ? 'Ready' : 'Needs attention')}
+                  </div>
+                </div>
+                <div className="rounded border border-border px-3 py-2">
+                  <div className="text-xs text-muted-foreground">Git executable</div>
+                  <div className={dependencyHealth?.gitExecutablePath ? 'text-emerald-600' : 'text-amber-600'}>
+                    {dependencyHealth == null ? 'Checking…' : (dependencyHealth.gitExecutablePath ? 'Ready' : 'Not detected')}
+                  </div>
+                </div>
+              </div>
+              {firstRunMessages.length > 0 ? (
+                <div className="mt-3 rounded-md bg-muted/50 p-3 text-xs text-muted-foreground">
+                  {firstRunMessages.slice(0, 4).map((message) => (
+                    <div key={message}>{message}</div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="rounded-md border border-border p-3 text-sm text-muted-foreground">
+              Next step: open a local project folder so RepoStudio can load planning docs, extensions, git state, and runtime tools against the correct root.
+            </div>
+
+            {startupFlags.safeMode || startupFlags.verboseStartup ? (
+              <div className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+                {startupFlags.safeMode ? 'Safe mode is active for this launch. Watchers stay off so you can debug startup behavior.' : null}
+                {startupFlags.safeMode && startupFlags.verboseStartup ? ' ' : null}
+                {startupFlags.verboseStartup ? 'Verbose startup logging is enabled for this launch.' : null}
+              </div>
+            ) : null}
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                refreshDependencyHealth().catch(() => {});
+                refreshProjectAndAuth().catch(() => {});
+              }}
+            >
+              Refresh Checks
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                completeFirstRunSetup();
+                handleOpenProjectFolder().catch(() => {});
+              }}
+            >
+              Open Project Folder
+            </Button>
+            <Button
+              type="button"
+              onClick={completeFirstRunSetup}
+            >
+              Continue
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={openProjectDialogOpen} onOpenChange={setOpenProjectDialogOpen}>
         <DialogContent className="sm:max-w-3xl">

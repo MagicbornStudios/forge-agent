@@ -31,11 +31,6 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - name: Install ripgrep
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ripgrep
-
       - name: Install
         run: pnpm install --frozen-lockfile
 
@@ -173,6 +168,30 @@ jobs:
 
       - name: Package RepoStudio Windows Desktop
         run: pnpm --filter @forge/repo-studio exec electron-builder --config electron-builder.json --win nsis portable
+
+      - name: Smoke Launch Portable RepoStudio
+        shell: pwsh
+        run: |
+          $artifactDir = "packages/repo-studio/dist/desktop"
+          $portableFile = Get-ChildItem -Path (Join-Path $artifactDir "RepoStudio *.exe") |
+            Where-Object { $_.Name -notlike "RepoStudio Setup *.exe" } |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+          if (-not $portableFile) {
+            Write-Host "::error title=desktop-smoke::Could not locate portable executable in $artifactDir"
+            exit 1
+          }
+
+          $process = Start-Process -FilePath $portableFile.FullName -PassThru
+          Start-Sleep -Seconds 15
+          $process.Refresh()
+
+          if ($process.HasExited) {
+            Write-Host "::error title=desktop-smoke::Portable executable exited before smoke window completed."
+            exit 1
+          }
+
+          & taskkill /PID $process.Id /T /F | Out-Null
 
       - name: Generate SHA256 Checksums
         shell: pwsh

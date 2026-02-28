@@ -28,7 +28,7 @@ Usage:
   forge-repo-studio <command> [options]
 
 Commands:
-  open [--profile forge-agent|forge-loop|custom] [--mode local|preview|production|headless] [--view planning|env|commands|assistant|diff|story|git|code|review-queue] [--port <n>] [--app-runtime|--package-runtime|--desktop-runtime] [--reuse|--no-reuse] [--detach|--foreground] [--desktop-dev]
+  open [--profile forge-agent|forge-loop|custom] [--mode local|preview|production|headless] [--view planning|env|commands|assistant|diff|story|git|code|review-queue] [--port <n>] [--app-runtime|--package-runtime|--desktop-runtime] [--reuse|--no-reuse] [--detach|--foreground] [--desktop-dev] [--safe-mode] [--verbose-startup]
   doctor [--require-codex-login] [--no-links] [--plain] [--json]
   commands-list
   commands-toggle <command-id> [--enable|--disable]
@@ -104,6 +104,8 @@ export async function runRepoStudioCli(argv = process.argv.slice(2)) {
       detach,
       foreground: flags.has('foreground'),
       desktopDev: flags.has('desktop-dev'),
+      safeMode: flags.has('safe-mode'),
+      verboseStartup: flags.has('verbose-startup'),
       openBrowser: !flags.has('no-browser'),
       runtimeChild: flags.has('runtime-child'),
     });

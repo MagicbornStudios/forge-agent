@@ -1,5 +1,6 @@
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { appendFileSync, mkdirSync } from 'node:fs';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 import { app, BrowserWindow, dialog, ipcMain, safeStorage } from 'electron';
@@ -50,6 +51,8 @@ function runtimeUrl(port, view, profile) {
   const params = new URLSearchParams();
   if (view) params.set('view', view);
   if (profile) params.set('profile', profile);
+  if (safeMode) params.set('safeMode', '1');
+  if (verboseStartup) params.set('verboseStartup', '1');
   const query = params.toString();
   return `http://127.0.0.1:${port}${query ? `/?${query}` : ''}`;
 }
@@ -60,6 +63,8 @@ const workspaceRoot = path.resolve(String(argv.get('workspace-root') || process.
 const view = String(argv.get('view') || 'planning');
 const profile = String(argv.get('profile') || 'forge-loop');
 const desktopDev = argv.get('desktop-dev') === true;
+const safeMode = argv.get('safe-mode') === true;
+const verboseStartup = argv.get('verbose-startup') === true;
 
 let ownsServer = argv.get('owns-server') === true;
 let runtimeServerPid = Number(argv.get('server-pid') || 0);
@@ -74,18 +79,129 @@ const watcherSettings = (() => {
 })();
 
 let mainWindow = null;
+let splashWindow = null;
 let watcher = null;
 let stopping = false;
 let credentialManager = null;
+let fatalDesktopErrorHandled = false;
+
+function resolveDesktopAssetPath(...segments) {
+  const currentFile = fileURLToPath(import.meta.url);
+  return path.resolve(path.dirname(currentFile), ...segments);
+}
+
+function resolveDesktopLogoPath() {
+  return resolveDesktopAssetPath('assets', 'logo.png');
+}
+
+function resolveDesktopIconPath() {
+  return resolveDesktopLogoPath();
+}
+
+function resolveDesktopStartupLogPath() {
+  const basePath = app.isReady()
+    ? app.getPath('userData')
+    : path.join(workspaceRoot, '.repo-studio');
+  return path.join(basePath, 'desktop-startup.log');
+}
+
+function appendDesktopLogEntry(title, body = '') {
+  const logPath = resolveDesktopStartupLogPath();
+  const entry = [
+    `[${new Date().toISOString()}] ${title}`,
+    String(body || '').trim(),
+    '',
+  ].join('\n');
+
+  try {
+    mkdirSync(path.dirname(logPath), { recursive: true });
+    appendFileSync(logPath, `${entry}\n`, 'utf8');
+  } catch {
+    // ignore log write failures
+  }
+
+  return logPath;
+}
+
+function formatDesktopError(error) {
+  if (error instanceof Error) {
+    const stack = String(error.stack || '').trim();
+    if (stack) return stack;
+    return error.message || 'Unknown Error';
+  }
+  if (typeof error === 'object' && error !== null) {
+    try {
+      return JSON.stringify(error, null, 2);
+    } catch {
+      return String(error);
+    }
+  }
+  return String(error || 'Unknown error');
+}
+
+function logDesktopFailure(context, error) {
+  return appendDesktopLogEntry(context, formatDesktopError(error));
+}
+
+function logDesktopVerbose(message, details = '') {
+  if (!verboseStartup) return;
+  appendDesktopLogEntry(`startup: ${message}`, details);
+}
+
+function showDesktopFailureDialog(context, safeMessage, logPath) {
+  const details = `${context}\n\n${safeMessage}\n\nLog: ${logPath}`;
+  if (app.isReady()) {
+    dialog.showErrorBox('RepoStudio Startup Error', details);
+    return;
+  }
+  // eslint-disable-next-line no-console
+  console.error(details);
+}
+
+async function handleFatalDesktopError(context, error) {
+  if (fatalDesktopErrorHandled) return;
+  fatalDesktopErrorHandled = true;
+
+  const logPath = logDesktopFailure(context, error);
+  const safeMessage = toSafeMessage(error, 'Unknown desktop startup error.');
+
+  emitRuntimeEvent({
+    type: DESKTOP_RUNTIME_EVENT_TYPES.watcherHealth,
+    status: 'error',
+    reason: safeMessage,
+    timestamp: new Date().toISOString(),
+  });
+
+  closeSplashWindow();
+  showDesktopFailureDialog(context, safeMessage, logPath);
+
+  try {
+    await stopResources();
+  } catch {
+    // ignore cleanup errors; they are secondary to the fatal startup error
+  }
+
+  app.exit(1);
+}
 
 function emitRuntimeEvent(payload) {
   if (!mainWindow || mainWindow.isDestroyed()) return;
   mainWindow.webContents.send(DESKTOP_IPC.runtimeEvent, payload);
 }
 
+function closeSplashWindow() {
+  if (!splashWindow || splashWindow.isDestroyed()) {
+    splashWindow = null;
+    return;
+  }
+  splashWindow.close();
+  splashWindow = null;
+}
+
 async function stopResources() {
   if (stopping) return;
   stopping = true;
+  closeSplashWindow();
   if (watcher) {
     try {
       await watcher.close();
@@ -111,6 +227,8 @@ async function ensureServerReady() {
     workspaceRoot,
     port: appPort,
     dev: desktopDev,
+    safeMode,
+    verboseStartup,
     standaloneRoot: app.isPackaged
       ? path.join(process.resourcesPath, 'next', 'standalone')
       : undefined,
@@ -119,6 +237,106 @@ async function ensureServerReady() {
   });
   runtimeServerPid = started.pid;
   ownsServer = true;
+}
+
+async function createSplashWindow() {
+  const logoPath = resolveDesktopLogoPath();
+  const logoUrl = pathToFileURL(logoPath).href;
+  const html = `
+    <!doctype html>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <title>RepoStudio Loading</title>
+        <style>
+          body {
+            margin: 0;
+            background: #071227;
+            color: #f8fafc;
+            font-family: "Segoe UI", sans-serif;
+            display: flex;
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+          }
+          .shell {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            background:
+              radial-gradient(circle at top, rgba(56, 189, 248, 0.18), transparent 45%),
+              linear-gradient(180deg, #071227 0%, #09182f 100%);
+          }
+          img {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.45));
+          }
+          h1 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+          }
+          p {
+            margin: 0;
+            max-width: 320px;
+            text-align: center;
+            font-size: 13px;
+            color: rgba(226, 232, 240, 0.82);
+          }
+          .meta {
+            font-size: 11px;
+            color: rgba(148, 163, 184, 0.9);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="shell">
+          <img src="${logoUrl}" alt="RepoStudio logo" />
+          <div class="meta">RepoStudio</div>
+          <h1>Starting your coding agent workspace</h1>
+          <p>Booting the embedded runtime, checking desktop services, and preparing your project tools.</p>
+        </div>
+      </body>
+    </html>
+  `;
+
+  splashWindow = new BrowserWindow({
+    width: 520,
+    height: 420,
+    frame: false,
+    resizable: false,
+    maximizable: false,
+    minimizable: false,
+    fullscreenable: false,
+    show: false,
+    backgroundColor: '#071227',
+    alwaysOnTop: true,
+    autoHideMenuBar: true,
+    icon: resolveDesktopIconPath(),
+    webPreferences: {
+      sandbox: false,
+      contextIsolation: false,
+      nodeIntegration: false,
+    },
+  });
+
+  splashWindow.on('closed', () => {
+    splashWindow = null;
+  });
+  splashWindow.once('ready-to-show', () => {
+    splashWindow?.show();
+  });
+  await splashWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+  return splashWindow;
 }
 
 async function createMainWindow() {
@@ -131,7 +349,9 @@ async function createMainWindow() {
     height: 980,
     minWidth: 1200,
     minHeight: 760,
+    show: false,
     backgroundColor: '#071227',
+    icon: resolveDesktopIconPath(),
     webPreferences: {
       contextIsolation: true,
       preload: preloadPath,
@@ -142,6 +362,18 @@ async function createMainWindow() {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
+  });
+  mainWindow.once('ready-to-show', () => {
+    logDesktopVerbose('Main window ready to show.');
+    mainWindow?.show();
+    closeSplashWindow();
+  });
+
+  mainWindow.webContents.on('render-process-gone', (_event, details) => {
+    const error = new Error(
+      `Renderer process exited (${details.reason || 'unknown'}; exitCode=${details.exitCode ?? 'n/a'}).`,
+    );
+    handleFatalDesktopError('RepoStudio renderer process crashed.', error).catch(() => {});
   });
 
   await mainWindow.loadURL(url);
@@ -257,6 +489,8 @@ function registerIpcHandlers() {
     workspaceRoot,
     serverPid: runtimeServerPid,
     ownsServer,
+    safeMode,
+    verboseStartup,
     watcher: watcher
       ? {
         mode: watcher.mode,
@@ -395,16 +629,41 @@ app.on('quit', () => {
   stopResources().catch(() => {});
 });
 
+process.on('uncaughtException', (error) => {
+  handleFatalDesktopError('Uncaught exception in RepoStudio main process.', error).catch(() => {});
+});
+
+process.on('unhandledRejection', (reason) => {
+  handleFatalDesktopError('Unhandled rejection in RepoStudio main process.', reason).catch(() => {});
+});
+
 app.whenReady()
   .then(async () => {
+    logDesktopVerbose('Desktop bootstrap starting.', `safeMode=${safeMode} verboseStartup=${verboseStartup} desktopDev=${desktopDev}`);
+    await createSplashWindow();
+    logDesktopVerbose('Splash window created.');
     credentialManager = await createCredentialManager({
       workspaceRoot,
       userDataPath: app.getPath('userData'),
       safeStorage,
     });
+    logDesktopVerbose('Credential manager initialized.');
     await ensureServerReady();
+    logDesktopVerbose('Embedded Next server is ready.', `pid=${runtimeServerPid}`);
     registerIpcHandlers();
+    logDesktopVerbose('IPC handlers registered.');
     await createMainWindow();
+    logDesktopVerbose('Main window created.');
+    if (safeMode) {
+      emitRuntimeEvent({
+        type: DESKTOP_RUNTIME_EVENT_TYPES.watcherHealth,
+        status: 'disabled',
+        reason: 'Desktop safe mode enabled.',
+        timestamp: new Date().toISOString(),
+      });
+      logDesktopVerbose('Watcher skipped because safe mode is enabled.');
+      return;
+    }
     watcher = await createDesktopWatcher({
       workspaceRoot,
       settings: watcherSettings,
@@ -417,13 +676,11 @@ app.whenReady()
       polling: watcher?.mode === 'polling',
       timestamp: new Date().toISOString(),
     });
+    logDesktopVerbose('Desktop watcher started.', JSON.stringify({
+      mode: watcher?.mode || '',
+      watchedRoots: watcher?.watchedRoots || [],
+    }));
   })
   .catch((error) => {
-    emitRuntimeEvent({
-      type: DESKTOP_RUNTIME_EVENT_TYPES.watcherHealth,
-      status: 'error',
-      reason: String(error?.message || error),
-      timestamp: new Date().toISOString(),
-    });
-    app.quit();
+    handleFatalDesktopError('RepoStudio failed to start.', error).catch(() => {});
   });

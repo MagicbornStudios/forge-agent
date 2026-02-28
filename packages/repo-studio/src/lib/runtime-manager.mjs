@@ -93,6 +93,8 @@ function normalizeDesktopMetadata(value = {}) {
     serverPid: Number(value.serverPid || 0),
     electronPid: Number(value.electronPid || 0),
     serverMode: String(value.serverMode || ''),
+    safeMode: value.safeMode === true,
+    verboseStartup: value.verboseStartup === true,
     watcher: value.watcher && typeof value.watcher === 'object' ? value.watcher : null,
     sqlite: value.sqlite && typeof value.sqlite === 'object' ? value.sqlite : null,
   };

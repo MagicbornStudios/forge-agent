@@ -1,0 +1,19 @@
+---
+description: .planning is source of truth; use forge-loop for doctor/progress/sync-legacy; for phase work read CONTEXT and PLANs, update STATE/DECISIONS/TASK-REGISTRY
+alwaysApply: true
+---
+
+# Planning and loop (GSD-aligned)
+
+When doing phase work, review, or cleanup in this repo:
+
+1. **Source of truth:** `.planning/` — ROADMAP.md, STATE.md, TASK-REGISTRY.md, DECISIONS.md, and phase folders under `.planning/phases/`. Do not duplicate phase state elsewhere; update these artifacts when completing tasks or changing scope.
+
+2. **Forge-loop commands:** Use when relevant:
+   - `pnpm forge-loop doctor` — before major phase runs; validates planning and env.
+   - `pnpm forge-loop progress` — current phase/plan status.
+   - `pnpm forge-loop sync-legacy` — update snapshot sections in `docs/agent-artifacts/core/*` from .planning.
+
+3. **Phase work:** Read the phase `CONTEXT.md` and the relevant `XX-NN-PLAN.md`; implement tasks; update STATE.md, DECISIONS.md, and TASK-REGISTRY.md (and ROADMAP Progress if a plan is completed) per the GSD artifact contract. No separate Cursor-only workflow — follow the same contract Codex/GSD use.
+
+4. **Codex + GSD:** Run `pnpm gsd:install` from repo root so Codex (when used) has get-shit-done skills in this project. Cursor does not get slash commands; Cursor agents use this rule and .planning directly.

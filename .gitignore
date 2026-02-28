@@ -50,6 +50,7 @@ legacy/studio-apps/studio/data/
 apps/repo-studio/data/
 # Repo Studio desktop packaging build output
 packages/repo-studio/.desktop-build/
+packages/repo-studio/dist/desktop/
 # Exception: shared package media components (used by docs, tool-ui)
 !packages/shared/src/shared/components/media/
 !packages/shared/src/shared/components/media/**
@@ -94,6 +95,9 @@ nul
 # Agent / tooling – downloaded reference material (do not track or edit)
 # Agents use .tmp to pull entire repos or component trees for reference.
 .tmp/
+
+# GSD (get-shit-done) local install for Codex – project-local skills/workflows
+.codex/
 
 # RepoStudio local state
 .repo-studio/local.overrides.json

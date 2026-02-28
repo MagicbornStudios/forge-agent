@@ -1,8 +1,0 @@
-{
-  "builtAt": "2026-02-27T01:58:56.952Z",
-  "workspaceRoot": "C:\\Users\\benja\\Documents\\forge-agent",
-  "appRoot": "C:\\Users\\benja\\Documents\\forge-agent\\apps\\repo-studio",
-  "standaloneServer": null,
-  "fallbackMode": "dev-only",
-  "message": "Standalone output unavailable. Use desktop-dev mode for local desktop runtime."
-}

@@ -31,3 +31,7 @@ Source map for planning decisions ingested on 2026-02-15. These analysis artifac
 - Use this file as reference index; do not duplicate full analysis content into `.planning`.
 - When a requirement or plan references analysis input, link to source path and summarize only implementation implications.
 - Keep source documents unchanged unless analysis loops are explicitly reopened.
+
+## Audit (Phase 23)
+
+**Folders present at repo root:** `repo_studio_analysis/`, `forge_env_analysis/`, `ide_navigation_analysis/`, `agent_centric_ide_analysis/`. **Not present:** `docs_codegen_analysis/`, `agent_observability_analysis/` (listed in ANALYSIS-LOOPS but no folder at root). **Model chosen:** Keep but trim — analysis folders remain as reference; one focus per loop; they feed requirements and phase context into `.planning` (single Forge Loop). Execution and phase state live only in `.planning` + GSD/Codex + Repo Studio. See DECISIONS "Analysis and loops (Phase 23)".

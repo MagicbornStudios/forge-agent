@@ -55,6 +55,8 @@ export async function runDesktopBoot(options = {}) {
   const profile = String(options.profile || 'forge-loop');
   const view = String(options.view || 'planning');
   const detach = options.detach === true;
+  const safeMode = options.safeMode === true;
+  const verboseStartup = options.verboseStartup === true;
 
   const electronBinary = resolveElectronBinary();
   if (!electronBinary) {
@@ -71,6 +73,8 @@ export async function runDesktopBoot(options = {}) {
     workspaceRoot,
     port: appPort,
     dev: options.dev === true,
+    safeMode,
+    verboseStartup,
     databaseUri: sqlite.databaseUri,
     stdio: detach ? 'ignore' : 'inherit',
   });
@@ -93,6 +97,9 @@ export async function runDesktopBoot(options = {}) {
     JSON.stringify(watcherSettings),
   ];
 
+  if (safeMode) mainArgs.push('--safe-mode');
+  if (verboseStartup) mainArgs.push('--verbose-startup');
+
   const electronChild = spawn(electronBinary, mainArgs, {
     cwd: workspaceRoot,
     detached: detach,
@@ -100,6 +107,8 @@ export async function runDesktopBoot(options = {}) {
     env: {
       ...process.env,
       REPO_STUDIO_DESKTOP: '1',
+      ...(safeMode ? { REPO_STUDIO_SAFE_MODE: '1' } : {}),
+      ...(verboseStartup ? { REPO_STUDIO_VERBOSE_STARTUP: '1' } : {}),
       REPO_STUDIO_DATABASE_URI: sqlite.databaseUri,
     },
   });
@@ -127,6 +136,8 @@ export async function runDesktopBoot(options = {}) {
       electronPid: electronChild.pid,
       serverMode: server.mode,
       watcher: watcherSettings,
+      safeMode,
+      verboseStartup,
       sqlite,
     },
   });
@@ -167,4 +178,3 @@ export async function runDesktopBoot(options = {}) {
       : `RepoStudio desktop runtime exited with code ${exitCode}.`,
   };
 }
-

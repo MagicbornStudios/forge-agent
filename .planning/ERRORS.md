@@ -280,3 +280,13 @@
   - Current state: local packaging now succeeds after runtime hotfixes; rerun CI/tag publish is still required to confirm pipeline green end-to-end.
 
 - [x] **Release pass: uncommitted planning docs.** Codex may stop with "unexpected tracked changes" (ROADMAP, TASK-REGISTRY, phases 16/17/18, PLATFORM-PRD, HUMAN-TASKS, 15-PRD, 18-agent-artifacts-index). Resolution: those changes are from the Platform phases and human-todos work. To unblock: (1) Commit all `.planning` and related doc updates as one commit (suggested message: `chore(planning): Phase 18, PLATFORM-PRD, HUMAN-TASKS; Phase 19 planning-assistant`). (2) Resume release; Codex then commits only release-related files (e.g. workflow, STATE, ERRORS, DECISIONS) or combine as desired per STATE.
+
+- [x] Installed Repo Studio remained hard to reason about after `v0.1.2`: one-click install gave no visible setup choices, no finish-page launch affordance, and failed packaged boots could exit silently.
+  - Root cause: default NSIS one-click behavior was still in use, desktop main-process startup catch only quit the app, and the release pipeline did not smoke-launch the packaged portable EXE before publishing.
+  - Resolution: Phase 15 closeout now hardens installer UX (guided install + run-after-finish), logs/shows main-process boot failures, and adds a Windows packaged EXE smoke-launch gate before release artifacts are published.
+- [x] Code signing is still absent from desktop artifacts even after packaging UX improvements.
+  - Root cause: Windows code signing requires a certificate/private-key workflow that is not present in this repository or automation context.
+  - Resolution: document code signing as a human-owned release prerequisite; continue improving unsigned build diagnostics and onboarding while keeping signing deferred until certificate ownership is established.
+- [x] Quick PNG -> ICO conversion attempt was not sufficient for NSIS installer branding.
+  - Root cause: the fast PowerShell/System.Drawing icon conversion produced an `.ico` file that Windows/BrowserWindow could tolerate, but NSIS rejected as an unreadable installer icon resource.
+  - Resolution: keep the provided PNG as runtime branding (splash + first-run setup) and defer a proper multi-size Windows `.ico` asset as a separate branding task.

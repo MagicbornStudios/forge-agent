@@ -5,24 +5,25 @@
 Phase: 15
 Plan: 15-01
 Status: Execution in progress
-Last activity: 2026-02-27 - `v0.1.2` desktop release published successfully; semantic guards are cross-platform (no ripgrep dependency) and desktop startup/terminal hotfixes are now downloadable
+Last activity: 2026-02-27 - completed Phase 15 desktop onboarding/debug UX: branding, splash loading window, first-run setup, dependency checks, and safe-mode/verbose startup; validated with fresh Windows packaging and portable smoke launch
 
 ## Execution
 
 - Active phase: Strategic shift - Repo Studio + Platform focus
 - Active plan: 15-01 (Master plan - execute shift in tracked slices)
-- Active task: FRG-1501 Archive Studio app scope cleanup (resume Phase 15 strategic-shift backlog)
+- Active task: None selected - FRG-1531 is complete; next execution can resume broader Phase 15 release/publish follow-through when needed
 
 ## Strategic shift (Phase 15)
 
 - **Goal:** Archive Studio app; move Character and Dialogue to studio examples in RepoStudio-Extensions; move consumer-studio to `assistant-only` studio example; deprecate forge graphs and Yarn Spinner dialogue on platform; platform supports Repo Studio first.
 - **Process:** Loop (discuss -> plan -> execute -> verify); PRD, phases, tasks, decisions in .planning. See `.planning/phases/15-strategic-shift-repo-studio-platform-focus/` (CONTEXT, PRD, 15-01-PLAN).
-- **Next:** Resume archive/rescope tasks (FRG-1501/1502/1504/1506) and continue Phase 15 strategic-shift cleanup. **Phase 16** (Repo Studio canonical submodule) is planned: 16-01 add submodule and verify, 16-02 switch to build from submodule; see `.planning/phases/16-repo-studio-canonical-submodule/` and ROADMAP. **Phase 17** (Platform submodule and docs deploy) is planned: platform in RepoStudio-Platform repo and as submodule (vendor/platform), docs and platform on Vercel, deployment matrix; see `.planning/phases/17-platform-submodule-docs-deploy/` and ROADMAP. **Phase 18** (Platform integration gateway) is planned: Open Router proxy, extension install proxy, capability flags; see `.planning/phases/18-platform-integration-gateway/` and [.planning/PLATFORM-PRD.md](.planning/PLATFORM-PRD.md). Human-only setup (repos, env, Vercel, npm, OAuth) is tracked in [.planning/HUMAN-TASKS.md](.planning/HUMAN-TASKS.md); agents check there before blocking.
+- **Next:** Resume archive/rescope tasks (FRG-1501/1502/1504/1506) and continue Phase 15 strategic-shift cleanup. **Phase 16** (Repo Studio canonical submodule) is planned: 16-01 add submodule and verify, 16-02 switch to build from submodule; see `.planning/phases/16-repo-studio-canonical-submodule/` and ROADMAP. **Phase 17** (Platform submodule and docs deploy) is planned: platform in RepoStudio-Platform repo and as submodule (vendor/platform), docs and platform on Vercel, deployment matrix; see `.planning/phases/17-platform-submodule-docs-deploy/` and ROADMAP. **Phase 18** (Platform integration gateway) is planned: Open Router proxy, extension install proxy, capability flags; see `.planning/phases/18-platform-integration-gateway/` and [.planning/PLATFORM-PRD.md](.planning/PLATFORM-PRD.md). **Phase 19** (Planning assistant context and tools): loopId/workspaceId/selectedDocId, plan Forge tools, optional LangGraph; see `.planning/phases/19-planning-assistant-context-and-tools/`. **Phase 20** (Planning artifacts first-class — DoD, HUMAN-TASKS, panels, unified todos) is planned: DoD and HUMAN-TASKS in snapshot and panels, unified my-todos vs agent-tasks view, optional on-load Codex prompt; see `.planning/phases/20-planning-artifacts-and-todos-in-repo-studio/`. **Phase 21** (Artifact layout and loop efficiency — planning) is planned: layout and loop efficiency decisions only; see `.planning/phases/21-artifact-layout-and-loop-efficiency/`. **Phase 22** (Workspace and panel design refactor) is planned: chat-in-chat, fewer rails, tree + context menu; see `.planning/phases/22-workspace-and-panel-design-refactor/`. **Phase 23** (Repo review and cleanup) is planned: GSD/Cursor setup, analysis consolidation, layout and legacy; see `.planning/phases/23-repo-review-and-cleanup/`. Human-only setup (repos, env, Vercel, npm, OAuth) is tracked in [.planning/HUMAN-TASKS.md](.planning/HUMAN-TASKS.md); agents check there before blocking.
 
 ## Planning artifact update and release execution
 
 - **Planning artifact update (2026-02):** Phases 16–18, [.planning/PLATFORM-PRD.md](.planning/PLATFORM-PRD.md), [.planning/HUMAN-TASKS.md](.planning/HUMAN-TASKS.md), ROADMAP, TASK-REGISTRY, DECISIONS, 15-PRD, and [docs/18-agent-artifacts-index.mdx](docs/18-agent-artifacts-index.mdx) were updated as part of the **Platform phases and human-todos** initiative. These changes are intentional and in scope.
 - **Release execution when planning docs are modified:** If an agent (e.g. Codex) runs release execution and finds uncommitted changes in `.planning/**` or related docs, it may: **(A)** Commit planning docs in a **separate commit first** (e.g. `chore(planning): Phase 18, PLATFORM-PRD, HUMAN-TASKS; Phase 19 planning-assistant`), then proceed with the release commit (tag, workflow, STATE/ERRORS/DECISIONS). **(B)** Or include all current planning and release-related changes in the same commit if a single combined commit is preferred. Do not block release indefinitely on "unexpected" planning changes; treat them as reconcilable.
+- **PRD per loop:** Each loop's planning root may have PRD.md (see [.planning/DEFINITION-OF-DONE.md](.planning/DEFINITION-OF-DONE.md)). Stage DoD (Planning, Execution, Review, PRD scope) is defined there.
 
 ## Repo Studio dev DB
 

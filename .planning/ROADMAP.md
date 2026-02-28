@@ -29,6 +29,14 @@ Phase 15 archive execution note: `apps/studio` and `apps/consumer-studio` are no
 - [x] **Phase 13: AI runtimes correction and Database workspace** - Register AI runtimes/companion work in the loop, fix Database workspace to use embedded Drizzle Studio, and sync legacy artifacts
 - [x] **Phase 14: AI/chat-first hard-cut and consumer studio reference** - Canonical shared assistant surface, inline workspace panel composition, `assistantTarget` contracts, companion runtime reuse, and chat-only consumer app
 - [ ] **Phase 15: Strategic shift — Repo Studio + Platform focus** - Archive Studio app; move Character and Dialogue workspaces to extensions (other repo); turn consumer-studio into extension; deprecate forge graphs and Yarn Spinner dialogue on platform; platform supports Repo Studio first
+- [ ] **Phase 16: Repo Studio canonical submodule** - Add MagicbornStudios/RepoStudio as submodule (vendor/repo-studio); verify in GitHub, pull, and build in monorepo; then switch to canonical build from submodule so monorepo is shared packages + platform + Repo Studio (submodule)
+- [ ] **Phase 17: Platform submodule and docs deploy** - Platform in RepoStudio-Platform repo and as submodule (vendor/platform); docs site (apps/docs) and platform on Vercel; deployment matrix (docs Vercel, platform Vercel, npm, Electron Releases)
+- [ ] **Phase 18: Platform integration gateway** - Platform as BFF: Open Router proxy, extension install proxy, capability flags in auth response; Repo Studio uses proxy when connected
+- [ ] **Phase 19: Planning assistant context and tools** - Ensure assistant receives loopId/workspaceId/selectedDocId; add plan-specific Forge tools (add task, update status, open planning doc); optional LangGraph for planning orchestration and multi-loop awareness
+- [ ] **Phase 20: Planning artifacts first-class in Repo Studio — DoD, HUMAN-TASKS, panels, unified todos** - Bake DoD and HUMAN-TASKS into snapshot and panels; unified "my todos | agent tasks" view with correlation; optional on-load Codex "what to do" and human-blocker notifications
+- [ ] **Phase 21: Artifact layout and loop efficiency — planning** - Planning/design only: how artifacts are laid out for users in Repo Studio; how loops stay efficient (context, tools, cadence, handoffs); decisions and optional spec/checklist
+- [ ] **Phase 22: Workspace and panel design refactor — composition, chat-in-chat, fewer rails** - Remove Copy @ from panels; reduce Planning left rail; tree + context menu for structure actions
+- [ ] **Phase 23: Repo review and cleanup — GSD/Cursor setup, analysis consolidation, layout and legacy** - GSD install and Cursor rule; consolidate or clarify analysis; document repo layout and .cursor/plans hygiene
 
 ## Phase Details
 
@@ -202,6 +210,85 @@ Plans:
 - [x] 14-03: Shared companion runtime switch/store/url hook + Studio adoption
 - [x] 14-04: Remove `examples/consumer`, add `apps/consumer-studio`, add AI/chat-first semantic guard scripts
 
+### Phase 16: Repo Studio canonical submodule
+**Goal:** Repo Studio app is canonical in MagicbornStudios/RepoStudio; include as submodule and build from it so the monorepo is shared packages + platform + Repo Studio (submodule).
+**Depends on:** Phase 15 (release cut); RepoStudio repo on GitHub with initial structure
+**Plans:** 2 plans
+
+Plans:
+- [ ] 16-01: Add submodule at vendor/repo-studio; verify repo on GitHub, pullable, and monorepo builds with submodule
+- [ ] 16-02: Switch to canonical build from submodule (workspace integration, next-server/build.mjs resolution, release workflow; remove/archive in-repo app/package)
+
+### Phase 17: Platform submodule and docs deploy
+**Goal:** Platform in own repo (RepoStudio-Platform) and as submodule in forge-agent; docs site and platform both on Vercel; forge-agent = docs + shared packages + Electron releases + submodules; deployment matrix documented.
+**Depends on:** Phase 16 optional; RepoStudio-Platform repo on GitHub
+**Plans:** 4 plans
+
+Plans:
+- [ ] 17-01: Add Platform submodule (vendor/platform); update .gitmodules and release workflow; verify clone/build
+- [ ] 17-02: Docs site Vercel-ready and deploy from forge-agent; record docs URL
+- [ ] 17-03: Platform deploy from RepoStudio-Platform repo; env NEXT_PUBLIC_DOCS_APP_URL; remove/archive apps/platform when submodule canonical
+- [ ] 17-04: Deployment matrix and CI; release workflow update; STATE/DECISIONS
+
+### Phase 18: Platform integration gateway
+**Goal:** Platform acts as integration gateway (BFF): holds credentials, exposes proxy APIs (Open Router, extension fetch), returns capability flags so Repo Studio can use proxy when connected.
+**Depends on:** Phase 17 (platform submodule and docs deploy)
+**Plans:** 3 plans
+
+Plans:
+- [ ] 18-01: Open Router proxy on platform; Repo Studio calls platform when capabilities.openRouterProxy
+- [ ] 18-02: Extension install via platform (fetch from RepoStudio-Extensions); Repo Studio uses when capabilities.extensionInstallProxy and no user GitHub token
+- [ ] 18-03: Extend auth response capabilities (openRouterProxy, extensionInstallProxy); Repo Studio types and client wiring
+
+### Phase 19: Planning assistant context and tools
+**Goal:** Assistant context correctness (loop/workspace/doc in every request) and plan actions (Forge tools); optional LangGraph for planning orchestration and multi-loop awareness.
+**Depends on:** Phase 15 (release cut); can overlap with 16–18
+**Plans:** 3 plans
+
+Plans:
+- [ ] 19-01: Client→server context: loopId, workspaceId, selectedDocId in body or server fallback to query params
+- [ ] 19-02: Plan-specific Forge tools: add_task, update_task_status, open_planning_doc (scoped to active loop)
+- [ ] 19-03: LangGraph for planning assistant (feature-flagged): orchestration for planning workspace, multi-loop awareness, optional checkpoints
+
+### Phase 20: Planning artifacts and todos in Repo Studio
+**Goal:** DoD and HUMAN-TASKS first-class in Planning workspace; unified human/agent todo view with correlation; optional on-load planning prompt and human-blocker notifications.
+**Depends on:** Phase 19 recommended first; can overlap with 16–18
+**Plans:** 3 plans
+
+Plans:
+- [ ] 20-01: Add DoD and HUMAN-TASKS to planning snapshot (coreFiles); DoD panel and Human TODOs panel
+- [ ] 20-02: Unified "My todos | Agent tasks" view with correlation (e.g. blocked by HT-xx)
+- [ ] 20-03: Optional on-load Codex "what to do" prompt; optional human-blocker badge/notifications; document in DECISIONS
+
+### Phase 21: Artifact layout and loop efficiency — planning
+**Goal:** Decide and document artifact layout for users (which panels/groups, viewport vs tree) and loop efficiency (context, tools, cadence, handoffs). No code deliverables; output informs Phase 20 panel design and Phase 22 refactor.
+**Depends on:** Phase 19 and 20 inform this; can run after or in parallel with 20
+**Plans:** 2 plans
+
+Plans:
+- [ ] 21-01: Artifact layout for users: which artifacts in which panels/groups; viewport vs tree; align with panel discipline
+- [ ] 21-02: Loop efficiency: context, tools, cadence and human/agent handoffs; optional checklist
+
+### Phase 22: Workspace and panel design refactor — composition, chat-in-chat, fewer rails
+**Goal:** Execute UX constraints: chat-in-chat (remove Copy @ from panels), panel discipline (reduce Planning left rail), tree as primary with context menu for structure actions.
+**Depends on:** Phase 21 recommended first; Phase 20 can overlap
+**Plans:** 3 plans
+
+Plans:
+- [ ] 22-01: Chat-in-chat: remove Copy @ (and similar) from panels; rely on @ in assistant composer; document in DECISIONS
+- [ ] 22-02: Panel discipline: reduce Planning left rail (group/tab/collapse); align with Phase 21 artifact layout if done
+- [ ] 22-03: Tree as primary: context menu (and optional toolbar) for structure actions; Story or Planning tree improvements as needed
+
+### Phase 23: Repo review and cleanup — GSD/Cursor setup, analysis consolidation, layout and legacy
+**Goal:** Align tooling (GSD + Cursor), consolidate or clarify analysis, document repo layout and legacy/.cursor hygiene.
+**Depends on:** None; can run in parallel with 19–22
+**Plans:** 3 plans
+
+Plans:
+- [ ] 23-01: GSD install and Cursor alignment (.gitignore .codex, Cursor rule, "Cursor with this repo" doc)
+- [ ] 23-02: Analysis consolidation (audit, decide model, update ANALYSIS-LOOPS and ANALYSIS-REFERENCES)
+- [ ] 23-03: Repo layout and legacy cleanup (expected layout doc, app wording, legacy/snapshots, .cursor/plans)
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -221,3 +308,11 @@ Plans:
 | 13. AI runtimes correction and Database workspace | 2/2 | Complete | 2026-02-23 |
 | 14. AI/chat-first hard-cut and consumer studio reference | 7/7 | Complete | 2026-02-26 |
 | 15. Strategic shift — Repo Studio + Platform focus | 1/1+ | In progress | - |
+| 16. Repo Studio canonical submodule | 0/2 | Pending | - |
+| 17. Platform submodule and docs deploy | 0/4 | Pending | - |
+| 18. Platform integration gateway | 0/3 | Pending | - |
+| 19. Planning assistant context and tools | 0/3 | Pending | - |
+| 20. Planning artifacts first-class (DoD, HUMAN-TASKS, panels, unified todos) | 0/3 | Pending | - |
+| 21. Artifact layout and loop efficiency (planning) | 0/2 | Pending | - |
+| 22. Workspace and panel design refactor | 0/3 | Pending | - |
+| 23. Repo review and cleanup | 0/3 | Pending | - |

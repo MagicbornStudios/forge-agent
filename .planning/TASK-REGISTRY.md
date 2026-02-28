@@ -99,6 +99,8 @@
 | FRG-1527 | 15 | 15-10 | Complete | Closeout artifacts sync complete: STATE/DECISIONS/ERRORS/STATUS updated with release outcomes, crash hotfix, and remaining CI rerun risk. |
 | FRG-1528 | 15 | 15-10 | Complete | Desktop runtime hotfix: fixed packaged startup crash by bundling security modules and upgraded terminal PTY fallback to a real stream shell when `node-pty` is unavailable. |
 | FRG-1529 | 15 | 15-10 | Complete | Semantic guard portability hardening: removed ripgrep runtime dependency by switching guard scripts to Node/git-file search fallback, fixing Windows + CI guard failures. |
+| FRG-1530 | 15 | 15-10 | Complete | Phase 15 Windows desktop UX hardening complete: guided installer, visible startup crash diagnostics, packaged EXE smoke-launch gate, and next artifact version aligned to `0.1.3`. |
+| FRG-1531 | 15 | 15-10 | Complete | Phase 15 desktop onboarding/debug UX completed: temporary branding/logo, splash loading window, first-run setup flow with dependency checks, `--safe-mode`, and `--verbose-startup`; validated with fresh `desktop:package:win` and portable EXE smoke launch. Code signing remains deferred pending certificate ownership. |
 | FRG-1601 | 16 | 16-01 | Pending | Add submodule vendor/repo-studio → MagicbornStudios/RepoStudio; update .gitmodules. |
 | FRG-1602 | 16 | 16-01 | Pending | Release workflow: init vendor/repo-studio in verify and package_windows jobs. |
 | FRG-1603 | 16 | 16-01 | Pending | Verify: Repo on GitHub and pullable; document. |
@@ -133,3 +135,27 @@
 | FRG-1905 | 19 | 19-02 | Pending | Implement open_planning_doc Forge tool; client handles open/focus. Wire plan tools to contract; DECISIONS. |
 | FRG-1906 | 19 | 19-03 | Pending | Add feature flag and LangGraph planning path in Repo Studio assistant-chat Forge handler. |
 | FRG-1907 | 19 | 19-03 | Pending | LangGraph nodes: planning_context, route, tools, generate/stream; optional checkpoints. |
+| FRG-2001 | 20 | 20-01 | Pending | Add DEFINITION-OF-DONE.md and HUMAN-TASKS.md to coreFiles in repo-data collectPlanningDocs; ensure snapshot includes them. |
+| FRG-2002 | 20 | 20-01 | Pending | Add DoD panel (or DoD section) in Planning workspace; display DoD content / link to doc. |
+| FRG-2003 | 20 | 20-01 | Pending | Add Human TODOs panel; display HUMAN-TASKS content; optional rail badge for open human task count. |
+| FRG-2004 | 20 | 20-02 | Pending | Unified view: "My todos" (HUMAN-TASKS) and "Agent tasks" (TASK-REGISTRY) in one panel or tabbed section. |
+| FRG-2005 | 20 | 20-02 | Pending | Correlation: show "blocked by HT-xx" on agent tasks when referenced in notes/spec. |
+| FRG-2006 | 20 | 20-03 | Pending | Optional: On Planning workspace load, open assistant and send planning "what to do" prompt to Codex; configurable; document in DECISIONS. |
+| FRG-2007 | 20 | 20-03 | Pending | Optional: Badge or notification when HUMAN-TASKS has open items; document in DECISIONS if deferred. |
+| FRG-2101 | 21 | 21-01 | Pending | Document artifact layout decisions: which artifacts in which panels/groups; viewport vs tree; align with panel discipline. |
+| FRG-2102 | 21 | 21-01 | Pending | Optional: Add short artifact layout spec or DECISIONS entry for Planning workspace panel-to-artifact mapping. |
+| FRG-2103 | 21 | 21-02 | Pending | Document loop efficiency decisions: context, tools, cadence and human/agent handoffs; reference Phase 19, HUMAN-TASKS, DoD. |
+| FRG-2104 | 21 | 21-02 | Pending | Optional: Add loop efficiency checklist or DECISIONS entry for agents and Codex. |
+| FRG-2201 | 22 | 22-01 | Pending | Remove Copy @ token and Open in Assistant (or equivalent) buttons from PlanningPanel and PlanningDocumentsPanel. |
+| FRG-2202 | 22 | 22-01 | Pending | Remove or deprecate onCopyMentionToken from panelContext/workspace types if unused; add DECISIONS entry for chat-in-chat. |
+| FRG-2203 | 22 | 22-02 | Pending | Decide grouping approach for Planning left rail per Phase 21; document in DECISIONS. |
+| FRG-2204 | 22 | 22-02 | Pending | Refactor Planning left rail: implement grouping/tabs/collapse; update layout definitions and PlanningWorkspace. |
+| FRG-2205 | 22 | 22-03 | Pending | Add context menu to tree panel(s): structure actions (e.g. New file, Open) where applicable; Story and/or Planning Documents. |
+| FRG-2206 | 22 | 22-03 | Pending | Optional: Story workspace — tree-based navigation instead of or in addition to table; document in DECISIONS. |
+| FRG-2301 | 23 | 23-01 | Pending | Add .codex/ to .gitignore; verify pnpm gsd:install runs and populates .codex/. |
+| FRG-2302 | 23 | 23-01 | Pending | Add Cursor rule: .planning source of truth, forge-loop doctor/progress/sync-legacy, phase workflow. |
+| FRG-2303 | 23 | 23-01 | Pending | Document "Using Cursor with this repo" in 18-agent-artifacts-index or how-to. |
+| FRG-2304 | 23 | 23-02 | Pending | Audit: list analysis folders and files; compare to ANALYSIS-LOOPS and ANALYSIS-REFERENCES; note referenced vs obsolete. |
+| FRG-2305 | 23 | 23-02 | Pending | Decide model (consolidate/archive/trim); update ANALYSIS-LOOPS and ANALYSIS-REFERENCES; document in DECISIONS. |
+| FRG-2306 | 23 | 23-03 | Pending | Document expected repo layout in AGENTS or 18-agent-artifacts-index; fix "app" wording in docs. |
+| FRG-2307 | 23 | 23-03 | Pending | Document legacy/snapshots; .cursor/plans hygiene (note + optional archive). |

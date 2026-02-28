@@ -196,6 +196,19 @@
 - [x] Desktop distribution remains strictly tag-driven; hotfixes on `main` are not downloadable until a new release tag is pushed.
 - [x] Release artifact upload/publish paths must be tag/version-agnostic (wildcards + dynamic checksum filename) so future tags (for example `v0.1.2+`) do not fail on fixed `v0.1.1` paths.
 
+## 2026-02-27 (Phase 15 desktop UX closeout)
+
+- [x] Windows-first desktop distribution must be explicit for operators: use guided NSIS install (not silent one-click), allow install-directory changes, create shortcuts, and offer run-after-finish.
+- [x] Packaged Repo Studio startup failures must never fail silently: write a deterministic startup log and show a dialog that points to that log when Electron main-process boot fails.
+- [x] The desktop release gate now includes a packaged portable-EXE smoke launch on Windows CI before artifact upload, so "installs/builds but does not visibly start" regressions are caught pre-release.
+
+## 2026-02-27 (Phase 15 desktop onboarding and debug ergonomics)
+
+- [x] First-run onboarding is part of the desktop product surface: Repo Studio should greet first-time desktop users in-app with a setup flow that explains the product, shows dependency readiness, and directs them into opening a project folder.
+- [x] Desktop startup should feel intentional: show a branded splash/loading window while the embedded runtime boots, then hand off to the main app window.
+- [x] Debug-first launch modes are first-class CLI contracts: `--safe-mode` disables nonessential desktop background services (starting with watchers) and `--verbose-startup` writes step-by-step startup progress to the desktop startup log.
+- [x] Code signing is not auto-implemented by agents in this slice; it remains a human-owned release concern until a Windows signing certificate and signing workflow are available.
+
 ## 2026-02-27 (Phase 16: Repo Studio canonical submodule)
 
 - [x] Repo Studio app canonical source is [MagicbornStudios/RepoStudio](https://github.com/MagicbornStudios/RepoStudio); forge-agent includes it as a submodule at `vendor/repo-studio` for build and reference.
@@ -218,3 +231,22 @@
 
 - [x] Planning artifact updates (Phases 16–18, PLATFORM-PRD, HUMAN-TASKS, ROADMAP, TASK-REGISTRY, 15-PRD, agent index) are intentional. When release execution sees uncommitted planning changes, commit them in a separate commit first or include them in the release commit; do not hard-stop—follow STATE "Release execution when planning docs are modified."
 - [x] Phase 19 (Planning assistant context and tools) adds assistant context fix (loopId/workspaceId/selectedDocId), plan-specific Forge tools (add task, update status, open planning doc), and optional LangGraph planning orchestration; see STATE and [.planning/phases/19-planning-assistant-context-and-tools/](.planning/phases/19-planning-assistant-context-and-tools/).
+
+## 2026-02-26 (PRD per loop and stage Definition of Done)
+
+- [x] PRD per loop is the convention; each planning root may contain PRD.md. Definition of done for stages (Planning, Execution, Review, PRD scope) is in [.planning/DEFINITION-OF-DONE.md](.planning/DEFINITION-OF-DONE.md); use it to close phases and mark stages complete.
+
+## 2026-02-26 (Phase 20: Planning artifacts first-class in Repo Studio)
+
+- [x] Phase 20 (Planning artifacts first-class — DoD, HUMAN-TASKS, panels, unified todos) adds DoD and HUMAN-TASKS to the Planning workspace: (1) both artifacts in planning snapshot (coreFiles) and DoD + Human TODOs panels; (2) unified "My todos | Agent tasks" view with correlation (e.g. blocked by HT-xx); (3) optional on-load Codex "what to do" prompt and human-blocker badge/notifications. See [.planning/phases/20-planning-artifacts-and-todos-in-repo-studio/](.planning/phases/20-planning-artifacts-and-todos-in-repo-studio/). Depends on Phase 19 recommended first; can overlap with 16–18.
+
+## 2026-02-26 (Phase 21 and 22: Artifact layout, loop efficiency, workspace design refactor)
+
+- [x] Phase 21 (Artifact layout and loop efficiency — planning) is planning/design-only: document how artifacts are laid out for users in Repo Studio and how loops stay efficient (context, tools, cadence, handoffs). Output informs Phase 20 panel design and Phase 22 refactor. See [.planning/phases/21-artifact-layout-and-loop-efficiency/](.planning/phases/21-artifact-layout-and-loop-efficiency/).
+- [x] Phase 22 (Workspace and panel design refactor — composition, chat-in-chat, fewer rails) executes UX constraints from [docs/agent-artifacts/core/styling-and-ui-consistency.md](docs/agent-artifacts/core/styling-and-ui-consistency.md) § Workspace and panel composition: remove Copy @ from panels, reduce Planning left rail, tree + context menu for structure actions. See [.planning/phases/22-workspace-and-panel-design-refactor/](.planning/phases/22-workspace-and-panel-design-refactor/). Phase 21 recommended first.
+
+## 2026-02-26 (Phase 23: Repo review and cleanup)
+
+- [x] Phase 23 (Repo review and cleanup — GSD/Cursor setup, analysis consolidation, layout and legacy) aligns tooling (GSD install for Codex, Cursor rule for .planning + forge-loop), consolidates or clarifies analysis (ANALYSIS-LOOPS, ANALYSIS-REFERENCES), and documents repo layout and .cursor/plans hygiene. See [.planning/phases/23-repo-review-and-cleanup/](.planning/phases/23-repo-review-and-cleanup/). Can run in parallel with 19–22.
+
+**Analysis and loops (Phase 23):** Analysis folders (repo_studio_analysis, forge_env_analysis, ide_navigation_analysis, agent_centric_ide_analysis) are **reference only**; one focus per loop. docs_codegen_analysis and agent_observability_analysis are listed in ANALYSIS-LOOPS but folders are not present at repo root (planned). Single Forge Loop: `.planning` + GSD/Codex + Repo Studio; analysis feeds requirements and phase context into .planning, no separate execution track.

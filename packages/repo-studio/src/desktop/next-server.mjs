@@ -145,6 +145,8 @@ export async function startRepoStudioNextServer(options = {}) {
       PORT: String(port),
       HOSTNAME: '127.0.0.1',
       REPO_STUDIO_DESKTOP: '1',
+      ...(options.safeMode === true ? { REPO_STUDIO_SAFE_MODE: '1' } : {}),
+      ...(options.verboseStartup === true ? { REPO_STUDIO_VERBOSE_STARTUP: '1' } : {}),
       ...(sqliteUri ? { REPO_STUDIO_DATABASE_URI: sqliteUri } : {}),
     },
   });
