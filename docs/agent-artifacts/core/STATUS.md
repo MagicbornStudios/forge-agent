@@ -69,6 +69,10 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
   - NSIS attended installer now rewrites the legacy default path from `%LocalAppData%\\Programs\\@forgerepo-studio` to `%LocalAppData%\\Programs\\RepoStudio`,
   - custom install locations remain untouched,
   - shortcut and uninstall display names are explicitly pinned to `RepoStudio`.
+- Done (2026-02-28): RepoStudio `v0.1.4` installer-path follow-up release published:
+  - pushed `main` at `f1debda` and created/pushed tag `v0.1.4`,
+  - GitHub Actions release workflow run `#39` completed successfully,
+  - public GitHub Release `RepoStudio v0.1.4` is live with Windows installer, portable executable, checksum, and blockmap assets carrying the installer-path fix.
 - Done (2026-02-27): Phase 15 desktop onboarding and debug ergonomics:
   - added temporary branding/logo and a splash loading window for the desktop shell,
   - added a first-run in-app setup flow with dependency readiness, project-opening guidance, and desktop startup flag visibility,
