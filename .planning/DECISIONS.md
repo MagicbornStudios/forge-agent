@@ -10,6 +10,7 @@
 - [x] Process reclaim safety now uses process lineage: child processes are reclaimed only when they descend from verified RepoStudio/Codex root processes (tracked PID + safe-port/ownership checks), preventing broad kill-by-name behavior against unrelated user terminals/services.
 - [x] FRG-1534 continuation will prioritize bad-install recovery: add explicit repair/reinstall path and CI upgrade-from-broken-install smoke checks so previously corrupted local installs can be recovered deterministically before release sign-off.
 - [x] Installer smoke progress detection now monitors requested install dir + registry/legacy install directories and only applies idle-stall aborts before any observed install progress, reducing false-negative kills on upgrades where NSIS writes to prior install locations.
+- [x] Desktop release workflow now uses explicit job/step timeouts and always uploads smoke/probe JSON artifacts (`repostudio-desktop-smoke-reports`) so long-running hangs are bounded and post-run diagnostics remain available even on passing runs.
 
 ## 2026-02-13
 
@@ -124,7 +125,7 @@
 - [x] Repo Studio assistant routing contract is `assistantTarget` end-to-end (query/body/session/proposal/schema); `editorTarget` is retired from active contracts.
 - [x] Repo Studio workspace panel composition is inline JSX per workspace root (`*Workspace.tsx`), with no `render*DockPanel` helper indirection.
 - [x] Consumer reference surface is now app-level `apps/consumer-studio` (chat-only, companion runtime driven); `examples/consumer` is removed from workspace packages.
-- [x] AI/chat semantic guardrails are enforced in automation (`guard-assistant-canonical`, `guard-workspace-semantics`) and wired into root lint + CI.
+- [x] AI/chat semantic guardrails remain in repo automation scripts and root lint; release-critical CI gating now enforces `guard-assistant-canonical` while `guard-workspace-semantics` is manual/local or optional policy-lane only.
 
 ## 2026-02-25
 

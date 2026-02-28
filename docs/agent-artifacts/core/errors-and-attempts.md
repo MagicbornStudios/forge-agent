@@ -1967,6 +1967,27 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 
 ---
 
+## Desktop release telemetry retention + timeout bounding (2026-02-28)
+
+**Cause**:
+- Some long-running release steps had no explicit timeout bound, increasing hang risk.
+- Smoke/probe JSON artifacts were mostly failure-only, making successful-run baselines hard to compare during later regressions.
+
+**Fix**:
+- Added explicit `timeout-minutes` at release job and critical-step level in `.github/workflows/release-repo-studio-desktop.yml`.
+- Enabled CI smoke/probe artifact writing for both pass/fail paths with `REPOSTUDIO_WRITE_SMOKE_ARTIFACTS=1`.
+- Added always-on artifact upload (`repostudio-desktop-smoke-reports`) for:
+  - `repostudio-smoke-result*.json`
+  - `repostudio-runtime-probe*.json`
+  - `repostudio-upgrade-repair*.json`
+  - `repostudio-repair*.json`
+- Added post-smoke owned-process cleanup step (`desktop:cleanup:owned`) to reduce stale process interference between smoke phases.
+
+**Guardrail**:
+- Keep release workflow deadlines explicit and keep smoke/probe telemetry downloadable on successful runs, not only failures.
+
+---
+
 *(Add new entries when new errors are found and fixed.)*
 
 <!-- forge-loop:generated:start -->

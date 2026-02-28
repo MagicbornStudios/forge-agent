@@ -5,7 +5,7 @@
 Phase: 15
 Plan: 15-01
 Status: Execution in progress
-Last activity: 2026-02-28 - FRG-1534 reliability cut in progress: installer smoke now monitors known install locations (requested + registry + legacy defaults), only applies idle-stall aborts before any install progress is observed, validates registry fallback executable existence before launch probes, and keeps repair-first + upgrade-repair tooling wired for bad-install recovery diagnostics
+Last activity: 2026-02-28 - FRG-1534 reliability cut in progress: release workflow now has explicit timeout bounds, always-on smoke/probe artifact upload, and owned-process cleanup after smoke phases; desktop smoke/probe scripts can persist CI artifacts on both pass/fail for easier post-run debugging
 
 ## Execution
 

@@ -11,6 +11,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -87,6 +88,9 @@ jobs:
   package_windows:
     runs-on: windows-latest
     needs: verify
+    timeout-minutes: 120
+    env:
+      REPOSTUDIO_WRITE_SMOKE_ARTIFACTS: '1'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -123,6 +127,7 @@ jobs:
 
       - name: Build Strict Standalone Desktop Payload
         shell: pwsh
+        timeout-minutes: 35
         run: |
           $logFile = Join-Path $env:RUNNER_TEMP 'desktop-standalone-build.log'
           $diagFile = 'packages/repo-studio/.desktop-build/failure-diagnostics.json'
@@ -159,6 +164,7 @@ jobs:
 
       - name: Package RepoStudio Windows Desktop Directory
         shell: pwsh
+        timeout-minutes: 20
         run: |
           pnpm --filter @forge/repo-studio run desktop:verify:standalone
           Push-Location packages/repo-studio
@@ -170,6 +176,7 @@ jobs:
 
       - name: Smoke Launch Win-Unpacked RepoStudio
         shell: pwsh
+        timeout-minutes: 12
         run: |
           $winUnpackedExe = "packages/repo-studio/dist/desktop/win-unpacked/RepoStudio.exe"
           if (-not (Test-Path $winUnpackedExe)) {
@@ -228,6 +235,7 @@ jobs:
 
       - name: Package RepoStudio Attended Installer and Portable
         shell: pwsh
+        timeout-minutes: 20
         run: |
           Push-Location packages/repo-studio
           try {
@@ -238,6 +246,7 @@ jobs:
 
       - name: Package RepoStudio Silent Installer
         shell: pwsh
+        timeout-minutes: 20
         run: |
           Push-Location packages/repo-studio
           try {
@@ -247,14 +256,34 @@ jobs:
           }
 
       - name: Silent Install and Smoke Launch RepoStudio
+        timeout-minutes: 20
         run: pnpm --filter @forge/repo-studio run desktop:smoke:silent -- --timeout-ms 720000 --idle-timeout-ms 300000 --health-timeout-ms 360000
 
       - name: Probe Installed Runtime Readiness
+        timeout-minutes: 12
         run: pnpm --filter @forge/repo-studio run desktop:smoke:runtime -- --timeout-ms 360000
 
       - name: Upgrade and Repair Smoke (opt-in)
         if: ${{ vars.REPOSTUDIO_UPGRADE_REPAIR_SMOKE == '1' }}
+        timeout-minutes: 30
         run: pnpm --filter @forge/repo-studio run desktop:smoke:upgrade-repair
+
+      - name: Cleanup Owned RepoStudio Processes
+        if: always()
+        continue-on-error: true
+        run: pnpm --filter @forge/repo-studio run desktop:cleanup:owned
+
+      - name: Upload Desktop Smoke Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: repostudio-desktop-smoke-reports
+          path: |
+            ${{ runner.temp }}/repostudio-smoke-result*.json
+            ${{ runner.temp }}/repostudio-runtime-probe*.json
+            ${{ runner.temp }}/repostudio-upgrade-repair*.json
+            ${{ runner.temp }}/repostudio-repair*.json
+          if-no-files-found: ignore
 
       - name: Collect Desktop Failure Diagnostics
         if: failure()
@@ -330,6 +359,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     needs: package_windows
+    timeout-minutes: 20
     steps:
       - name: Download Desktop Artifacts
         uses: actions/download-artifact@v4

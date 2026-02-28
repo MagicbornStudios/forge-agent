@@ -34,14 +34,19 @@ function parseArgs(argv = process.argv.slice(2)) {
 }
 
 function maybeWriteFailureArtifact(result, prefix = 'repostudio-upgrade-repair') {
-  if (result.ok === true || process.env.CI !== 'true') {
+  const writeArtifacts = process.env.REPOSTUDIO_WRITE_SMOKE_ARTIFACTS === '1';
+  if (process.env.CI !== 'true') {
+    return { ...result, failureArtifactPath: null };
+  }
+  if (result.ok === true && !writeArtifacts) {
     return { ...result, failureArtifactPath: null };
   }
   const runnerTemp = String(process.env.RUNNER_TEMP || '').trim();
   if (!runnerTemp) {
     return { ...result, failureArtifactPath: null };
   }
-  const artifactPath = path.join(runnerTemp, `${prefix}-${Date.now()}.json`);
+  const state = result.ok === true ? 'ok' : 'fail';
+  const artifactPath = path.join(runnerTemp, `${prefix}-${state}-${Date.now()}.json`);
   return fs.writeFile(artifactPath, `${JSON.stringify(result, null, 2)}\n`, 'utf8')
     .then(() => ({ ...result, failureArtifactPath: artifactPath }))
     .catch(() => ({ ...result, failureArtifactPath: null }));
@@ -146,4 +151,3 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
       process.exitCode = 1;
     });
 }
-

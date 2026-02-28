@@ -123,14 +123,19 @@ function stopProcess(child) {
 }
 
 function maybeWriteFailureArtifact(result, prefix = 'repostudio-runtime-probe') {
-  if (result.ok === true || process.env.CI !== 'true') {
+  const writeArtifacts = process.env.REPOSTUDIO_WRITE_SMOKE_ARTIFACTS === '1';
+  if (process.env.CI !== 'true') {
+    return { ...result, failureArtifactPath: null };
+  }
+  if (result.ok === true && !writeArtifacts) {
     return { ...result, failureArtifactPath: null };
   }
   const runnerTemp = String(process.env.RUNNER_TEMP || '').trim();
   if (!runnerTemp) {
     return { ...result, failureArtifactPath: null };
   }
-  const artifactPath = path.join(runnerTemp, `${prefix}-${Date.now()}.json`);
+  const state = result.ok === true ? 'ok' : 'fail';
+  const artifactPath = path.join(runnerTemp, `${prefix}-${state}-${Date.now()}.json`);
   try {
     fs.writeFileSync(artifactPath, `${JSON.stringify(result, null, 2)}\n`, 'utf8');
     return { ...result, failureArtifactPath: artifactPath };

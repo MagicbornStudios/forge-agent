@@ -14,6 +14,9 @@
 - [x] Silent installer smoke could false-stall and force-kill valid installs when NSIS ignored `/D=` and wrote to a prior registered install path.
   - Root cause: idle-progress detection watched only the requested probe directory, so upgrades/install-repair flows writing elsewhere appeared idle.
   - Resolution: `smoke-install.mjs` now monitors known install candidates (requested dir + registry/legacy defaults), stalls only before any observed install progress, and validates registry fallback executable existence before launch checks.
+- [x] Release runs remained hard to triage after timeouts because smoke/probe artifacts were only uploaded on failure and some long-running steps had no explicit timeout bounds.
+  - Root cause: CI defaults allow long waits without per-step deadlines, and pass-runs dropped probe telemetry useful for later comparisons.
+  - Resolution: added explicit `timeout-minutes` to release jobs/critical steps, enabled always-on smoke/probe artifact persistence via `REPOSTUDIO_WRITE_SMOKE_ARTIFACTS=1`, added `repostudio-desktop-smoke-reports` artifact upload on `always()`, and added `desktop:cleanup:owned` post-smoke cleanup to reduce stale process interference between steps.
 
 ## 2026-02-26
 

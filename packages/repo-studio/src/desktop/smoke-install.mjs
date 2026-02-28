@@ -323,7 +323,11 @@ async function maybeWriteFailureArtifact(result, prefix = 'repostudio-smoke-resu
   const normalized = result && typeof result === 'object'
     ? { ...result }
     : { ok: false, message: 'Unknown smoke result payload.' };
-  if (normalized.ok === true || process.env.CI !== 'true') {
+  const writeArtifacts = process.env.REPOSTUDIO_WRITE_SMOKE_ARTIFACTS === '1';
+  if (process.env.CI !== 'true') {
+    return { ...normalized, failureArtifactPath: null };
+  }
+  if (normalized.ok === true && !writeArtifacts) {
     return { ...normalized, failureArtifactPath: null };
   }
 
@@ -332,7 +336,8 @@ async function maybeWriteFailureArtifact(result, prefix = 'repostudio-smoke-resu
     return { ...normalized, failureArtifactPath: null };
   }
 
-  const artifactPath = path.join(runnerTemp, `${prefix}-${Date.now()}.json`);
+  const state = normalized.ok === true ? 'ok' : 'fail';
+  const artifactPath = path.join(runnerTemp, `${prefix}-${state}-${Date.now()}.json`);
   try {
     await fsp.writeFile(artifactPath, `${JSON.stringify(normalized, null, 2)}\n`, 'utf8');
     return { ...normalized, failureArtifactPath: artifactPath };
