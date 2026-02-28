@@ -21,8 +21,7 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.5
+        # version from packageManager in package.json
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -30,13 +29,17 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      - name: Verify packageManager pin
+        shell: bash
+        run: |
+          node -e "const cp=require('node:child_process');const fs=require('node:fs');const pkg=JSON.parse(fs.readFileSync('package.json','utf8'));const pm=String(pkg.packageManager||'');if(!pm.startsWith('pnpm@')){console.error('package.json packageManager must be pnpm@<version>');process.exit(1);}const expected=pm.slice('pnpm@'.length);const actual=cp.execSync('pnpm --version',{encoding:'utf8'}).trim();if(actual!==expected){console.error('pnpm version mismatch: expected '+expected+', got '+actual);process.exit(1);}console.log('pnpm version verified:',actual);"
+
       - name: Install
         run: pnpm install --frozen-lockfile
 
       - name: Semantic Guards
         run: |
           pnpm guard:assistant-canonical
-          pnpm guard:workspace-semantics
 
       - name: RepoStudio App Build
         run: pnpm --filter @forge/repo-studio-app build

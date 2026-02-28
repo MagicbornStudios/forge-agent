@@ -103,7 +103,7 @@
 | FRG-1531 | 15 | 15-10 | Complete | Phase 15 desktop onboarding/debug UX completed: temporary branding/logo, splash loading window, first-run setup flow with dependency checks, `--safe-mode`, and `--verbose-startup`; validated with fresh `desktop:package:win` and portable EXE smoke launch. Code signing remains deferred pending certificate ownership. |
 | FRG-1532 | 15 | 15-10 | Complete | Installer branding/path polish: NSIS attended install now normalizes legacy default install folder from `@forgerepo-studio` to `RepoStudio`, preserves custom paths, and aligns shortcut/uninstall display names. |
 | FRG-1533 | 15 | 15-10 | Complete | Published RepoStudio `v0.1.4` follow-up release: desktop package bumped to `0.1.4`, Windows artifacts rebuilt, and a new GitHub release is live so the default install path fix reaches downloadable installers. |
-| FRG-1534 | 15 | 15-10 | In progress | Fix post-publish desktop readiness defects: silent installer verification, installed app file integrity, packaged runtime health endpoint reachability, startup log diagnostics, and local desktop artifact cleanup/retention must all work before the next desktop release. |
+| FRG-1534 | 15 | 15-10 | In progress | Fix post-publish desktop readiness defects: registry-based install validation + CI timeout hardening completed; this slice adds CI/release guard relaxation (workspace-semantics removed), packageManager pin verification before install, failure artifact uploads, and installed-runtime readiness probe (health + runtime deps + codex CLI). |
 | FRG-1601 | 16 | 16-01 | Pending | Add submodule vendor/repo-studio → MagicbornStudios/RepoStudio; update .gitmodules. |
 | FRG-1602 | 16 | 16-01 | Pending | Release workflow: init vendor/repo-studio in verify and package_windows jobs. |
 | FRG-1603 | 16 | 16-01 | Pending | Verify: Repo on GitHub and pullable; document. |
@@ -138,6 +138,12 @@
 | FRG-1905 | 19 | 19-02 | Pending | Implement open_planning_doc Forge tool; client handles open/focus. Wire plan tools to contract; DECISIONS. |
 | FRG-1906 | 19 | 19-03 | Pending | Add feature flag and LangGraph planning path in Repo Studio assistant-chat Forge handler. |
 | FRG-1907 | 19 | 19-03 | Pending | LangGraph nodes: planning_context, route, tools, generate/stream; optional checkpoints. |
+| FRG-1908 | 19 | 19-04 | Pending | Pass contract and toolsEnabled for Codex runtime (same as Forge) in AssistantPanel. |
+| FRG-1909 | 19 | 19-04 | Pending | Add getToolSchemas() or toolsToRequestSchema(contract) helper; use in Forge path and startCodexTurn. |
+| FRG-1910 | 19 | 19-04 | Pending | Handle event.type === 'event' in streamFromCodexTurn; forward tool/invoke as data-domain-tool-invoke. |
+| FRG-1911 | 19 | 19-04 | Pending | Add useToolInvocationListener or equivalent for Codex tool execution on client. |
+| FRG-1912 | 19 | 19-04 | Pending | Extend startCodexTurn to accept and pass tools param (when app-server + tools enabled). |
+| FRG-1913 | 19 | 19-04 | Complete | Document ASSISTANT-RUNTIME-STRATEGY.md with full design, divergence points, and data stream evaluation. |
 | FRG-2001 | 20 | 20-01 | Pending | Add DEFINITION-OF-DONE.md and HUMAN-TASKS.md to coreFiles in repo-data collectPlanningDocs; ensure snapshot includes them. |
 | FRG-2002 | 20 | 20-01 | Pending | Add DoD panel (or DoD section) in Planning workspace; display DoD content / link to doc. |
 | FRG-2003 | 20 | 20-01 | Pending | Add Human TODOs panel; display HUMAN-TASKS content; optional rail badge for open human task count. |

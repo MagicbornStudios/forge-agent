@@ -5,13 +5,13 @@
 Phase: 15
 Plan: 15-01
 Status: Execution in progress
-Last activity: 2026-02-28 - fixing release pipeline follow-up after `v0.1.5` tag failure: synchronized root lockfile with current package metadata (`packageManager` + pnpm overrides) so `pnpm install --frozen-lockfile` can proceed in CI
+Last activity: 2026-02-28 - FRG-1534 reliability cut in progress: removed workspace-semantics from CI/release gates, added packageManager pin verification steps, enabled desktop smoke failure artifacts, and added installed-runtime readiness probe after silent install smoke
 
 ## Execution
 
 - Active phase: Strategic shift - Repo Studio + Platform focus
 - Active plan: 15-01 (Master plan - execute shift in tracked slices)
-- Active task: FRG-1534 Fix post-publish desktop readiness defects (including local artifact cleanup/retention)
+- Active task: FRG-1534 Fix post-publish desktop readiness defects (CI guard relax + installer/runtime hardening closeout)
 
 ## Strategic shift (Phase 15)
 

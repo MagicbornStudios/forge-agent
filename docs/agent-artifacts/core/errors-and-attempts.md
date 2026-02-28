@@ -1,4 +1,4 @@
-﻿---
+---
 title: Errors and attempts
 created: 2026-02-04
 updated: 2026-02-26
@@ -1868,6 +1868,63 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 **Operational note**:
 - Local strict packaging may still fail without symlink privilege (expected).
 - Release packaging is delegated to CI Windows runners where symlink creation is expected to be available.
+
+---
+
+## ERR_PNPM_LOCKFILE_CONFIG_MISMATCH prevention (2026-02-28)
+
+**Cause**:
+- Overrides changed without lockfile refresh, or pnpm version mismatch between local and CI.
+- v0.1.5 release failed because CI `pnpm install --frozen-lockfile` hit `ERR_PNPM_LOCKFILE_CONFIG_MISMATCH`.
+
+**Fix**:
+- Added `packageManager: "pnpm@9.15.5"` to root `package.json` so the repo declares exact pnpm version.
+- Added `pnpm.overrides` (lucide-react, @types/react, @types/react-dom) at root when missing.
+- CI workflows use pnpm/action-setup reading version from `packageManager`; local dev uses Corepack (`corepack enable`).
+
+**Guardrail**:
+- When changing `pnpm.overrides` or root `package.json` dependencies, run `pnpm install` and include `pnpm-lock.yaml` in the commit.
+- On Windows, `pnpm install` can fail with `EPERM: operation not permitted, unlink` on `esbuild.exe` if another process (IDE, antivirus, build) has it locked. Close other apps and retry.
+
+---
+
+## Desktop release smoke: install location and timeouts (2026-02-28)
+
+**Cause**:
+- NSIS can install to registry-stored prior path; assuming `/D=` is respected causes false failures when install actually went elsewhere.
+- Short health poll (2 min) fails on low-RAM or cold-start runners.
+
+**Fix**:
+- Added registry-based `InstallLocation` detection in `smoke-install.mjs` (Windows): query `HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*` for `DisplayName = "RepoStudio"`.
+- CI uses Node `smoke-install.mjs` instead of duplicated PowerShell; `--health-timeout-ms 360000` (6 min) for low-RAM tolerance.
+- Win-unpacked smoke extended to 72 × 5s with diagnostics on failure (AppData, port 3020, processes, desktop-startup.log).
+
+**Guardrail**:
+- Do not assume `/D=` is the actual install path; query uninstall registry on Windows.
+
+---
+
+## Desktop release reliability closeout: CI guard scope + runtime probe + downloadable diagnostics (2026-02-28)
+
+**Cause**:
+- CI/release jobs were still coupled to `guard:workspace-semantics`, which can fail independently of desktop installer/runtime health and block release confidence work.
+- Post-install smoke relied on logs only, with no downloadable failure payload.
+- Silent install smoke validated launch health, but did not explicitly assert runtime dependency contract + codex CLI readiness as a separate post-install probe.
+
+**Fix**:
+- Removed `guard:workspace-semantics` from CI/release workflow gates (script remains for manual/local checks).
+- Added explicit package-manager verification in CI/release (`package.json packageManager` vs `pnpm --version`) before `pnpm install --frozen-lockfile`.
+- Added installed-runtime probe script (`packages/repo-studio/src/desktop/smoke-runtime-readiness.mjs`) that launches installed RepoStudio and hard-fails on:
+  - `/api/repo/health` not ready,
+  - `/api/repo/runtime/deps` not reporting `desktopRuntimeReady=true`,
+  - `/api/repo/codex/session/status` not reporting `codex.readiness.cli.installed=true`.
+- Added failure artifact upload in release workflow for:
+  - `repostudio-smoke-result*.json`,
+  - `repostudio-runtime-probe*.json`,
+  - desktop startup log copied from `%APPDATA%`.
+
+**Guardrail**:
+- Desktop release reliability checks should prioritize install/launch/runtime readiness; keep non-critical semantic policy checks out of release gating path.
 
 ---
 

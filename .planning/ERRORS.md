@@ -1,5 +1,14 @@
 # Errors and Attempts
 
+## 2026-02-28
+
+- [x] v0.1.5 release failed: CI `pnpm install --frozen-lockfile` hit `ERR_PNPM_LOCKFILE_CONFIG_MISMATCH` (overrides vs lockfile drift).
+  - Root cause: pnpm version and overrides not pinned; local vs CI could use different pnpm or config.
+  - Resolution: added `packageManager` and `pnpm.overrides` to root package.json; CI reads version from packageManager; local dev uses Corepack. See docs/agent-artifacts/core/errors-and-attempts.md § ERR_PNPM_LOCKFILE_CONFIG_MISMATCH prevention.
+- [x] FRG-1534 reliability follow-up: CI/release gating included non-release semantic guard noise and weak post-install diagnostics.
+  - Root cause: release jobs mixed policy guardrails with installer reliability checks, and failure triage relied mainly on log scrolling.
+  - Resolution: removed `guard:workspace-semantics` from CI/release gates, added explicit packageManager/pnpm version verification pre-install, added post-install runtime readiness probe, and added failure artifact collection/upload for smoke JSON + desktop startup logs.
+
 ## 2026-02-26
 
 - [x] `git push origin main` during the `v0.1.3` release cut timed out locally but still advanced the remote branch.

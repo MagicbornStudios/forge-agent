@@ -82,6 +82,11 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
   - local packaging cleanup is now part of the desktop contract (`src/desktop/clean.mjs` + `desktop:clean`),
   - `desktop:package:win` now resets stale `dist/desktop` output up front and prunes `win-unpacked` plus builder scratch/temp artifacts after packaging,
   - this is specifically to stop repeated Windows packaging runs from accumulating large local disk usage while FRG-1534 continues on silent-install/runtime readiness.
+- In progress (2026-02-28): FRG-1534 CI/release reliability hardening slice:
+  - removed `guard:workspace-semantics` from CI/release gating while keeping assistant canonical guard,
+  - added explicit packageManager/pnpm version verification steps before frozen install in CI and desktop release workflows,
+  - added installed-runtime readiness probe after silent install smoke (`health` + `runtime/deps.desktopRuntimeReady` + `codex CLI installed`),
+  - added failure artifact collection/upload for smoke/probe JSON and desktop startup log to improve release-run debugging.
 - Done (2026-02-27): Phase 15 desktop onboarding and debug ergonomics:
   - added temporary branding/logo and a splash loading window for the desktop shell,
   - added a first-run in-app setup flow with dependency readiness, project-opening guidance, and desktop startup flag visibility,

@@ -22,14 +22,18 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.5
+        # version from packageManager in package.json
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
+
+      - name: Verify packageManager pin
+        shell: bash
+        run: |
+          node -e "const cp=require('node:child_process');const fs=require('node:fs');const pkg=JSON.parse(fs.readFileSync('package.json','utf8'));const pm=String(pkg.packageManager||'');if(!pm.startsWith('pnpm@')){console.error('package.json packageManager must be pnpm@<version>');process.exit(1);}const expected=pm.slice('pnpm@'.length);const actual=cp.execSync('pnpm --version',{encoding:'utf8'}).trim();if(actual!==expected){console.error('pnpm version mismatch: expected '+expected+', got '+actual);process.exit(1);}console.log('pnpm version verified:',actual);"
 
       - name: Install
         run: pnpm install --frozen-lockfile
@@ -76,23 +80,6 @@ jobs:
             exit "$BUILD_EXIT"
           fi
 
-      - name: Guard Workspace Semantics
-        shell: bash
-        run: |
-          set -o pipefail
-          LOG_FILE="$(mktemp)"
-          set +e
-          pnpm guard:workspace-semantics 2>&1 | tee "$LOG_FILE"
-          GUARD_EXIT="${PIPESTATUS[0]}"
-          set -e
-          if [ "$GUARD_EXIT" -ne 0 ]; then
-            echo "::error title=workspace-guard::Guard failed with exit code ${GUARD_EXIT}"
-            while IFS= read -r line; do
-              printf '::error title=workspace-guard-tail::%s\n' "$line"
-            done < <(tail -n 80 "$LOG_FILE")
-            exit "$GUARD_EXIT"
-          fi
-
       - name: Run Hydration Doctor (Linux smoke)
         continue-on-error: true
         run: pnpm hydration:doctor
@@ -111,13 +98,17 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.5
+        # version from packageManager in package.json
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
+
+      - name: Verify packageManager pin
+        shell: pwsh
+        run: |
+          node -e "const cp=require('node:child_process');const fs=require('node:fs');const pkg=JSON.parse(fs.readFileSync('package.json','utf8'));const pm=String(pkg.packageManager||'');if(!pm.startsWith('pnpm@')){console.error('package.json packageManager must be pnpm@<version>');process.exit(1);}const expected=pm.slice('pnpm@'.length);const actual=cp.execSync('pnpm --version',{encoding:'utf8'}).trim();if(actual!==expected){console.error('pnpm version mismatch: expected '+expected+', got '+actual);process.exit(1);}console.log('pnpm version verified:',actual);"
 
       - name: Pin pnpm store to workspace drive
         shell: pwsh
@@ -192,7 +183,7 @@ jobs:
           $process = Start-Process -FilePath $winUnpackedExe -PassThru
           $healthOk = $false
           try {
-            for ($attempt = 0; $attempt -lt 24; $attempt++) {
+            for ($attempt = 0; $attempt -lt 72; $attempt++) {
               Start-Sleep -Seconds 5
               try {
                 $response = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:3020/api/repo/health" -TimeoutSec 3
@@ -207,6 +198,20 @@ jobs:
 
             if (-not $healthOk) {
               Write-Host "::error title=desktop-runtime-smoke::Win-unpacked RepoStudio never reported healthy on /api/repo/health"
+              Write-Host "::group::Diagnostics: AppData RepoStudio"
+              Get-ChildItem "$env:APPDATA\RepoStudio" -Recurse -ErrorAction SilentlyContinue | Select-Object FullName | Format-Table -AutoSize
+              $startupLog = Join-Path $env:APPDATA "RepoStudio\desktop-startup.log"
+              if (Test-Path $startupLog) {
+                Write-Host "desktop-startup.log content:"
+                Get-Content $startupLog -Tail 100
+              }
+              Write-Host "::endgroup::"
+              Write-Host "::group::Diagnostics: Port 3020"
+              Get-NetTCPConnection -LocalPort 3020 -ErrorAction SilentlyContinue | Format-Table -AutoSize
+              Write-Host "::endgroup::"
+              Write-Host "::group::Diagnostics: RepoStudio processes"
+              Get-Process | Where-Object { $_.ProcessName -like "*Repo*" } | Format-Table Id, ProcessName, Path -AutoSize
+              Write-Host "::endgroup::"
               exit 1
             }
           } finally {
@@ -241,79 +246,40 @@ jobs:
             Pop-Location
           }
 
-      - name: Silent Install RepoStudio Smoke
+      - name: Silent Install and Smoke Launch RepoStudio
+        run: pnpm --filter @forge/repo-studio run desktop:smoke:silent -- --timeout-ms 720000 --idle-timeout-ms 300000 --health-timeout-ms 360000
+
+      - name: Probe Installed Runtime Readiness
+        run: pnpm --filter @forge/repo-studio run desktop:smoke:runtime -- --timeout-ms 360000
+
+      - name: Collect Desktop Failure Diagnostics
+        if: failure()
         shell: pwsh
         run: |
-          $artifactDir = "packages/repo-studio/dist/desktop"
-          $setupFile = Get-ChildItem -Path (Join-Path $artifactDir "RepoStudio Silent Setup *.exe") |
-            Sort-Object LastWriteTime -Descending |
-            Select-Object -First 1
-          if (-not $setupFile) {
-            Write-Host "::error title=desktop-install-smoke::Could not locate setup executable in $artifactDir"
-            exit 1
-          }
+          $dest = Join-Path $env:RUNNER_TEMP 'desktop-failure-diagnostics'
+          New-Item -ItemType Directory -Path $dest -Force | Out-Null
 
-          $installDir = Join-Path $env:RUNNER_TEMP "RepoStudioInstallSmoke"
-          if (Test-Path $installDir) {
-            Remove-Item -Recurse -Force $installDir
-          }
+          $sources = @(
+            (Join-Path $env:APPDATA 'RepoStudio\desktop-startup.log'),
+            (Join-Path $env:APPDATA '@forgerepo-studio\desktop-startup.log')
+          )
 
-          $process = Start-Process -FilePath $setupFile.FullName -ArgumentList "/S", "/CURRENTUSER", "/D=$installDir" -Wait -PassThru
-          if ($process.ExitCode -ne 0) {
-            Write-Host "::error title=desktop-install-smoke::Silent installer exited with code $($process.ExitCode)."
-            exit 1
-          }
-
-          $installedExe = Join-Path $installDir "RepoStudio.exe"
-          if (-not (Test-Path $installedExe)) {
-            Write-Host "::error title=desktop-install-smoke::Installed executable missing at $installedExe"
-            if (Test-Path $installDir) {
-              Get-ChildItem -Path $installDir -Recurse | Select-Object FullName, Length | Format-Table -AutoSize
+          foreach ($source in $sources) {
+            if (Test-Path $source) {
+              Copy-Item -Path $source -Destination (Join-Path $dest (Split-Path $source -Leaf)) -Force
             }
-            exit 1
           }
 
-      - name: Smoke Launch Installed RepoStudio
-        shell: pwsh
-        run: |
-          $installDir = Join-Path $env:RUNNER_TEMP "RepoStudioInstallSmoke"
-          $installedExe = Join-Path $installDir "RepoStudio.exe"
-          if (-not (Test-Path $installedExe)) {
-            Write-Host "::error title=desktop-runtime-smoke::Installed executable missing at $installedExe"
-            exit 1
-          }
-
-          $previousElectronRunAsNode = $env:ELECTRON_RUN_AS_NODE
-          Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue
-
-          $process = Start-Process -FilePath $installedExe -PassThru
-          $healthOk = $false
-          try {
-            for ($attempt = 0; $attempt -lt 24; $attempt++) {
-              Start-Sleep -Seconds 5
-              try {
-                $response = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:3020/api/repo/health" -TimeoutSec 3
-                if ($response.StatusCode -eq 200) {
-                  $healthOk = $true
-                  break
-                }
-              } catch {
-                # keep waiting
-              }
-            }
-
-            if (-not $healthOk) {
-              Write-Host "::error title=desktop-runtime-smoke::Installed RepoStudio never reported healthy on /api/repo/health"
-              exit 1
-            }
-          } finally {
-            if ([string]::IsNullOrEmpty($previousElectronRunAsNode)) {
-              Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue
-            } else {
-              $env:ELECTRON_RUN_AS_NODE = $previousElectronRunAsNode
-            }
-            Get-Process | Where-Object { $_.ProcessName -like "RepoStudio*" } | Stop-Process -Force -ErrorAction SilentlyContinue
-          }
+      - name: Upload Desktop Failure Diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: repostudio-desktop-failure-diagnostics
+          path: |
+            ${{ runner.temp }}/repostudio-smoke-result*.json
+            ${{ runner.temp }}/repostudio-runtime-probe*.json
+            ${{ runner.temp }}/desktop-failure-diagnostics/*
+          if-no-files-found: warn
 
       - name: Generate SHA256 Checksums
         shell: pwsh

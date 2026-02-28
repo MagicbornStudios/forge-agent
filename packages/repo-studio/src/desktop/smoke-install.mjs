@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { spawn, spawnSync } from 'node:child_process';
+import { execSync, spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const REQUIRED_INSTALL_PATHS = [
@@ -54,6 +54,7 @@ function parseArgs(argv = process.argv.slice(2)) {
     launch: args.get('launch') === true,
     launchAnyway: args.get('launch-anyway') === true,
     port: Number(args.get('port') || 3020),
+    healthTimeoutMs: Number(args.get('health-timeout-ms') || 120000),
   };
 }
 
@@ -247,6 +248,49 @@ function firstExistingPath(paths) {
   return null;
 }
 
+function getActualInstallLocation() {
+  if (process.platform !== 'win32') return null;
+  try {
+    const script = [
+      "Get-ChildItem 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*' -ErrorAction SilentlyContinue |",
+      "ForEach-Object { $p = Get-ItemProperty $_.PSPath -ErrorAction SilentlyContinue;",
+      "if ($p.DisplayName -eq 'RepoStudio' -and $p.InstallLocation) { $p.InstallLocation.TrimEnd([char]0x5C) } } |",
+      "Select-Object -First 1",
+    ].join(' ');
+    const out = execSync(`powershell -NoProfile -Command "${script}"`, {
+      encoding: 'utf8',
+      timeout: 5000,
+    });
+    const loc = (out || '').trim();
+    if (loc && fs.existsSync(path.join(loc, 'RepoStudio.exe'))) return loc;
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+async function maybeWriteFailureArtifact(result, prefix = 'repostudio-smoke-result') {
+  const normalized = result && typeof result === 'object'
+    ? { ...result }
+    : { ok: false, message: 'Unknown smoke result payload.' };
+  if (normalized.ok === true || process.env.CI !== 'true') {
+    return { ...normalized, failureArtifactPath: null };
+  }
+
+  const runnerTemp = String(process.env.RUNNER_TEMP || '').trim();
+  if (!runnerTemp) {
+    return { ...normalized, failureArtifactPath: null };
+  }
+
+  const artifactPath = path.join(runnerTemp, `${prefix}-${Date.now()}.json`);
+  try {
+    await fsp.writeFile(artifactPath, `${JSON.stringify(normalized, null, 2)}\n`, 'utf8');
+    return { ...normalized, failureArtifactPath: artifactPath };
+  } catch {
+    return { ...normalized, failureArtifactPath: null };
+  }
+}
+
 async function waitForHealth(port, timeoutMs = 120000) {
   const startedAt = Date.now();
   const deadline = startedAt + timeoutMs;
@@ -320,23 +364,30 @@ export async function runInstallerSmoke(options = {}) {
   }
 
   const installEntries = await collectPathEntries(installDir);
-  const installedExeCandidates = resolveInstalledExeCandidates(installDir);
-  const installedExePath = firstExistingPath(installedExeCandidates);
+  let installedExePath = firstExistingPath(resolveInstalledExeCandidates(installDir));
+  if (!installedExePath && process.platform === 'win32') {
+    const regDir = getActualInstallLocation();
+    if (regDir) installedExePath = path.join(regDir, 'RepoStudio.exe');
+  }
+  const effectiveInstallDir = installedExePath ? path.dirname(installedExePath) : installDir;
+  const effectiveSnapshot = effectiveInstallDir !== installDir
+    ? await collectInstallSnapshot(effectiveInstallDir)
+    : snapshot;
 
   const result = {
-    ok: exit.exitCode === 0 && Boolean(installedExePath) && snapshot.ready,
+    ok: exit.exitCode === 0 && Boolean(installedExePath) && effectiveSnapshot.ready,
     artifactPath,
     kind: options.kind || 'silent',
     installerArgs,
     installDir,
     exit,
     installCompleted: exit.exitCode === 0,
-    installReady: snapshot.ready,
+    installReady: effectiveSnapshot.ready,
     installCopiedFiles: Boolean(installedExePath),
-    hangAfterInstall: (exit.timedOut || exit.stalled) && Boolean(installedExePath) && snapshot.ready,
-    installProgress: snapshot,
+    hangAfterInstall: (exit.timedOut || exit.stalled) && Boolean(installedExePath) && effectiveSnapshot.ready,
+    installProgress: effectiveSnapshot,
     installedExePath,
-    installedExeCandidates,
+    effectiveInstallDir,
     installEntries,
     launch: null,
   };
@@ -345,9 +396,9 @@ export async function runInstallerSmoke(options = {}) {
     !installedExePath
     || options.launch !== true
     || ((!exit.timedOut && !exit.stalled) ? false : options.launchAnyway !== true)
-    || !snapshot.ready
+    || !effectiveSnapshot.ready
   ) {
-    return result;
+    return maybeWriteFailureArtifact(result);
   }
 
   const launched = spawn(installedExePath, [], {
@@ -361,10 +412,11 @@ export async function runInstallerSmoke(options = {}) {
     })(),
   });
 
-  const health = await waitForHealth(Number(options.port || 3020), 120000);
+  const healthTimeoutMs = Number(options.healthTimeoutMs ?? 120000);
+  const health = await waitForHealth(Number(options.port || 3020), healthTimeoutMs);
   await stopProcess(launched);
 
-  return {
+  const finalResult = {
     ...result,
     launch: {
       pid: launched.pid || null,
@@ -372,6 +424,7 @@ export async function runInstallerSmoke(options = {}) {
     },
     ok: result.ok && health.ok,
   };
+  return maybeWriteFailureArtifact(finalResult);
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {

@@ -1,5 +1,13 @@
 # Decisions
 
+## 2026-02-28
+
+- [x] pnpm version is pinned via `packageManager` in root package.json; local dev uses Corepack; CI uses same version via pnpm/action-setup (reads from package.json).
+- [x] Desktop release smoke uses Node `smoke-install.mjs` in CI; registry-based install-location detection on Windows; health poll 6 min for low-RAM runners.
+- [x] `guard:workspace-semantics` is removed from CI/release gating (manual/local guard only) to prioritize desktop release reliability while keeping `guard:assistant-canonical` enforced.
+- [x] CI/release workflows now explicitly verify `pnpm --version` matches root `packageManager` before `pnpm install --frozen-lockfile`.
+- [x] Desktop release flow now captures downloadable failure diagnostics (`repostudio-smoke-result*.json`, runtime probe output, and desktop startup logs) and adds a post-install runtime-readiness probe (`/api/repo/health`, `/api/repo/runtime/deps`, `/api/repo/codex/session/status`).
+
 ## 2026-02-13
 
 - [x] RepoStudio remains package-first with CLI/runtime (`forge-repo-studio open|doctor|run`) and keeps `--legacy-ui` as fallback.
@@ -328,3 +336,12 @@
 - [x] **Windows .ico:** `repo_studio.ico` placed at `packages/repo-studio/build/repo-studio.ico`; electron-builder and BrowserWindow use it. HT-10 done.
 - [x] **Code-signing deferred:** Windows code-signing certificate (HT-09) deferred until 50k funding/revenue. Currently at 0.
 - [x] **Monetization iteration doc:** [.planning/MONETIZATION-STRATEGY.md](.planning/MONETIZATION-STRATEGY.md) — iterate on revenue model, platform entitlements, extension gating, license. Desktop subscription and extension gating are acceptable; license TBD (not MIT).
+
+## 2026-02-26 (Assistant runtime unification — Phase 19-04)
+
+- [x] **Forge vs Codex tool parity:** Both runtimes should expose tools the same way from the UI. Today Forge gets contract + toolsEnabled; Codex gets neither. Unify: pass contract for both; add Codex tool bridge.
+- [x] **Contract as source of truth:** Add getToolSchemas() (or equivalent) so contract produces schema for both Forge (body.tools) and Codex (turn/start when supported).
+- [x] **Codex tool events:** Route forwards `event.type === 'event'` when method is `tool/invoke` as `data-domain-tool-invoke`; client executes domain tools. Codex app-server must emit tool/invoke (or we wait on Codex support).
+- [x] **Domain-agnostic event:** Use `data-domain-tool-invoke` with `{ domain, name, args }`; not forge-specific.
+- [x] **Data Stream protocol:** assistant-ui Data Stream ([docs](https://www.assistant-ui.com/docs/runtimes/data-stream)) is a candidate for unified backend contract longer-term. Implement bridge in current architecture first (19-04); evaluate useDataStreamRuntime when we need multi-client or single-backend contract.
+- [x] **LangGraph:** Not for tool unification. Use for planning orchestration, multi-step workflows, checkpoints (19-03). Tool parity is transport/event mapping.
