@@ -5,7 +5,7 @@
 Phase: 15
 Plan: 15-01
 Status: Execution in progress
-Last activity: 2026-02-28 - FRG-1534 reliability cut in progress: release workflow now publishes a GitHub step-summary for smoke/probe results, includes always-on smoke artifact uploads, and adds local `desktop:smoke:diff` tooling so run-to-run regressions can be compared quickly without extra hosted infrastructure
+Last activity: 2026-02-28 - FRG-1534 reliability cut in progress: release workflow now appends desktop smoke status into the GitHub Release body (status badge block), persists smoke summary markdown as an artifact, and keeps local `desktop:smoke:diff` tooling for run-to-run regression comparison
 
 ## Execution
 

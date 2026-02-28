@@ -277,7 +277,12 @@ jobs:
         if: always()
         continue-on-error: true
         shell: pwsh
-        run: pnpm --filter @forge/repo-studio run desktop:smoke:summary -- --dir "$env:RUNNER_TEMP" --write-summary
+        run: |
+          $summaryFile = Join-Path $env:RUNNER_TEMP 'repostudio-smoke-summary.md'
+          pnpm --filter @forge/repo-studio run desktop:smoke:summary -- --dir "$env:RUNNER_TEMP" --summary-file "$summaryFile" --write-summary
+          if (Test-Path $summaryFile) {
+            Get-Content $summaryFile | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+          }
 
       - name: Upload Desktop Smoke Reports
         if: always()
@@ -289,6 +294,7 @@ jobs:
             ${{ runner.temp }}/repostudio-runtime-probe*.json
             ${{ runner.temp }}/repostudio-upgrade-repair*.json
             ${{ runner.temp }}/repostudio-repair*.json
+            ${{ runner.temp }}/repostudio-smoke-summary.md
           if-no-files-found: ignore
 
       - name: Collect Desktop Failure Diagnostics
@@ -373,11 +379,39 @@ jobs:
           name: repostudio-desktop-windows
           path: release-artifacts
 
+      - name: Download Desktop Smoke Reports
+        uses: actions/download-artifact@v4
+        with:
+          name: repostudio-desktop-smoke-reports
+          path: smoke-reports
+        continue-on-error: true
+
+      - name: Build Release Body
+        shell: bash
+        run: |
+          BODY_FILE="release-body.md"
+          {
+            echo "## Desktop Release Status"
+            echo
+            if [ -f "smoke-reports/repostudio-smoke-summary.md" ]; then
+              cat smoke-reports/repostudio-smoke-summary.md
+            else
+              echo "_Desktop smoke summary artifact was not found for this run._"
+              echo
+            fi
+            echo "---"
+            echo
+            echo "_Generated release notes follow below._"
+          } > "$BODY_FILE"
+          cat "$BODY_FILE"
+
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: RepoStudio ${{ github.ref_name }}
+          body_path: release-body.md
+          append_body: true
           generate_release_notes: true
           draft: false
           prerelease: false

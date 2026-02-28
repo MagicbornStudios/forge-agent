@@ -12,6 +12,7 @@
 - [x] Installer smoke progress detection now monitors requested install dir + registry/legacy install directories and only applies idle-stall aborts before any observed install progress, reducing false-negative kills on upgrades where NSIS writes to prior install locations.
 - [x] Desktop release workflow now uses explicit job/step timeouts and always uploads smoke/probe JSON artifacts (`repostudio-desktop-smoke-reports`) so long-running hangs are bounded and post-run diagnostics remain available even on passing runs.
 - [x] Desktop release telemetry should be visible without downloading artifacts first: publish a concise smoke/probe summary into `GITHUB_STEP_SUMMARY`, while keeping raw JSON artifacts for deep debugging and local run-to-run diffing via `desktop:smoke:diff`.
+- [x] Each GitHub release should include desktop health status in the release description: append smoke summary markdown from `repostudio-desktop-smoke-reports` into the release body while retaining generated changelog notes.
 
 ## 2026-02-13
 

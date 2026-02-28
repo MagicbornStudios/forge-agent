@@ -90,7 +90,8 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
   - hardened reclaim/process cleanup with parent-PID lineage targeting so child processes are reclaimed only when they descend from verified RepoStudio/Codex runtime roots,
   - updated installer smoke progress detection to monitor requested + registry/legacy install paths and only apply idle-stall aborts before any observed install progress (prevents false kills on upgrade/reinstall paths),
   - added explicit job/step `timeout-minutes` bounds in release workflow, always-on smoke report artifact upload, and owned-process cleanup step (`desktop:cleanup:owned`) after smoke phases,
-  - added release run summary output (`GITHUB_STEP_SUMMARY`) via `desktop:smoke:summary` and local report diff utility (`desktop:smoke:diff`) for quick run-to-run regression comparisons.
+  - added release run summary output (`GITHUB_STEP_SUMMARY`) via `desktop:smoke:summary` and local report diff utility (`desktop:smoke:diff`) for quick run-to-run regression comparisons,
+  - release publish now appends a desktop health status block into GitHub Release notes by ingesting `repostudio-smoke-summary.md` from smoke-report artifacts.
 - Done (2026-02-27): Phase 15 desktop onboarding and debug ergonomics:
   - added temporary branding/logo and a splash loading window for the desktop shell,
   - added a first-run in-app setup flow with dependency readiness, project-opening guidance, and desktop startup flag visibility,

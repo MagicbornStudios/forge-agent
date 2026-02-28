@@ -20,6 +20,9 @@
 - [x] Even with artifact retention, investigators had to download JSON files for basic pass/fail visibility and manual run comparison.
   - Root cause: release workflow had no compact in-run smoke summary and no repo-local diff utility for comparing two report JSONs.
   - Resolution: added `desktop:smoke:summary` and workflow `Publish Desktop Smoke Summary` step (writes to `GITHUB_STEP_SUMMARY`), plus `desktop:smoke:diff` utility for local run-to-run comparisons.
+- [x] Release pages still lacked quick desktop-health context even after run summaries/artifacts improved.
+  - Root cause: smoke status lived in Actions run logs/artifacts only; release notes were changelog-focused and did not include installer/runtime readiness context.
+  - Resolution: release workflow now downloads smoke report artifact and appends a "Desktop Release Status" section (from `repostudio-smoke-summary.md`) to release body before publishing.
 
 ## 2026-02-26
 

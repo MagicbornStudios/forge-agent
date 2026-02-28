@@ -2008,6 +2008,23 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 
 ---
 
+## Desktop release notes lacked runtime-health context (2026-02-28)
+
+**Cause**:
+- Even after smoke/report artifacts improved, release pages still showed changelog-only text unless someone manually inspected the Actions run.
+
+**Fix**:
+- `release-repo-studio-desktop.yml` now:
+  - uploads `repostudio-smoke-summary.md` in `repostudio-desktop-smoke-reports`,
+  - downloads smoke reports in the `release` job,
+  - builds `release-body.md` with a `Desktop Release Status` section,
+  - publishes release with `body_path: release-body.md` and generated notes enabled.
+
+**Guardrail**:
+- Keep release descriptions self-diagnosing: include a compact desktop health section plus generated release notes.
+
+---
+
 *(Add new entries when new errors are found and fixed.)*
 
 <!-- forge-loop:generated:start -->
