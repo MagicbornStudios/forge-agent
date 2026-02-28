@@ -17,6 +17,9 @@
 - [x] Release runs remained hard to triage after timeouts because smoke/probe artifacts were only uploaded on failure and some long-running steps had no explicit timeout bounds.
   - Root cause: CI defaults allow long waits without per-step deadlines, and pass-runs dropped probe telemetry useful for later comparisons.
   - Resolution: added explicit `timeout-minutes` to release jobs/critical steps, enabled always-on smoke/probe artifact persistence via `REPOSTUDIO_WRITE_SMOKE_ARTIFACTS=1`, added `repostudio-desktop-smoke-reports` artifact upload on `always()`, and added `desktop:cleanup:owned` post-smoke cleanup to reduce stale process interference between steps.
+- [x] Even with artifact retention, investigators had to download JSON files for basic pass/fail visibility and manual run comparison.
+  - Root cause: release workflow had no compact in-run smoke summary and no repo-local diff utility for comparing two report JSONs.
+  - Resolution: added `desktop:smoke:summary` and workflow `Publish Desktop Smoke Summary` step (writes to `GITHUB_STEP_SUMMARY`), plus `desktop:smoke:diff` utility for local run-to-run comparisons.
 
 ## 2026-02-26
 

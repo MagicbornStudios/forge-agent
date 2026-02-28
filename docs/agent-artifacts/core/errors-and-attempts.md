@@ -1988,6 +1988,26 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 
 ---
 
+## Desktop smoke triage UX: summary-first + local diff tooling (2026-02-28)
+
+**Cause**:
+- Investigations still required downloading raw JSON artifacts before seeing basic smoke/probe status.
+- There was no small built-in utility to compare two report files from different runs.
+
+**Fix**:
+- Added `packages/repo-studio/src/desktop/summarize-smoke-reports.mjs` and package script:
+  - `pnpm --filter @forge/repo-studio run desktop:smoke:summary -- --dir <runnerTemp> --write-summary`
+- Release workflow now runs `Publish Desktop Smoke Summary` (`if: always()`) to write a compact markdown summary to `GITHUB_STEP_SUMMARY`.
+- Added `packages/repo-studio/src/desktop/diff-smoke-artifacts.mjs` and package script:
+  - `pnpm --filter @forge/repo-studio run desktop:smoke:diff -- --a <reportA.json> --b <reportB.json>`
+- Diff tool filters volatile fields by default (PID/timestamps/artifact paths) so comparisons focus on behavioral differences.
+
+**Guardrail**:
+- Keep in-run summaries concise and keep deep diagnostics in artifacts.
+- Use `desktop:smoke:diff` before changing smoke logic when debugging regressions between two runs.
+
+---
+
 *(Add new entries when new errors are found and fixed.)*
 
 <!-- forge-loop:generated:start -->

@@ -27,6 +27,8 @@
     "desktop:smoke:repair": "node src/desktop/smoke-install.mjs --kind silent --timeout-ms 420000 --launch --repair-existing",
     "desktop:smoke:upgrade-repair": "node src/desktop/smoke-upgrade-repair.mjs --kind silent --timeout-ms 720000 --idle-timeout-ms 300000 --health-timeout-ms 360000",
     "desktop:smoke:runtime": "node src/desktop/smoke-runtime-readiness.mjs",
+    "desktop:smoke:summary": "node src/desktop/summarize-smoke-reports.mjs",
+    "desktop:smoke:diff": "node src/desktop/diff-smoke-artifacts.mjs",
     "desktop:repair": "node src/desktop/repair-install.mjs --include-legacy-dirs",
     "desktop:cleanup:owned": "node src/desktop/cleanup-owned-processes.mjs",
     "desktop:verify:standalone": "node src/desktop/verify-standalone.mjs",
