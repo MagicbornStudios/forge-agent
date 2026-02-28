@@ -102,6 +102,63 @@ function normalizePidSet(values = []) {
   );
 }
 
+function normalizeParentPid(value) {
+  const pid = Number(value);
+  return Number.isInteger(pid) && pid > 0 ? pid : 0;
+}
+
+function buildChildPidIndex(records = []) {
+  const byParent = new Map();
+  for (const record of records) {
+    const pid = Number(record?.pid || 0);
+    if (!Number.isInteger(pid) || pid <= 0) continue;
+    const parentPid = normalizeParentPid(record?.parentPid);
+    if (!parentPid) continue;
+    const existing = byParent.get(parentPid) || [];
+    if (!existing.includes(pid)) {
+      existing.push(pid);
+      byParent.set(parentPid, existing);
+    }
+  }
+  return byParent;
+}
+
+function collectDescendantPids(records = [], rootPids = new Set()) {
+  const roots = rootPids instanceof Set ? [...rootPids] : [];
+  if (roots.length === 0) return new Set();
+
+  const childIndex = buildChildPidIndex(records);
+  const descendants = new Set();
+  const queue = [...roots];
+  while (queue.length > 0) {
+    const parentPid = Number(queue.shift());
+    if (!Number.isInteger(parentPid) || parentPid <= 0) continue;
+    const children = childIndex.get(parentPid) || [];
+    for (const childPid of children) {
+      if (descendants.has(childPid)) continue;
+      descendants.add(childPid);
+      queue.push(childPid);
+    }
+  }
+  return descendants;
+}
+
+function collectRepoStudioRootPids(records = [], trackedPids = new Set(), safePortSet = new Set()) {
+  const roots = new Set();
+  for (const record of records) {
+    const pid = Number(record?.pid || 0);
+    if (!Number.isInteger(pid) || pid <= 0) continue;
+    const ports = normalizePortList(record?.knownPorts || []);
+    const hasSafeKnownPort = ports.some((port) => safePortSet.has(port));
+    const repoStudioOwned = record?.repoStudioOwned === true;
+    const tracked = trackedPids.has(pid);
+    if ((repoStudioOwned && hasSafeKnownPort) || (tracked && (repoStudioOwned || hasSafeKnownPort))) {
+      roots.add(pid);
+    }
+  }
+  return roots;
+}
+
 function addSkippedByPid(skipped, item) {
   const pid = Number(item?.pid || 0);
   if (!Number.isInteger(pid) || pid <= 0) return;
@@ -156,10 +213,13 @@ export async function buildReclaimPlan(options = {}) {
 
   const safePortSet = new Set(safePorts);
   const knownPortSet = new Set(knownPorts);
+  const inventoryProcesses = Array.isArray(inventory?.processes) ? inventory.processes : [];
+  const repoStudioRootPids = collectRepoStudioRootPids(inventoryProcesses, trackedPids, safePortSet);
+  const repoStudioDescendantPids = collectDescendantPids(inventoryProcesses, repoStudioRootPids);
   const targets = [];
   const skipped = [];
 
-  for (const record of inventory.processes || []) {
+  for (const record of inventoryProcesses) {
     const pid = Number(record.pid || 0);
     if (!Number.isInteger(pid) || pid <= 0) continue;
     const ports = normalizePortList(record.knownPorts || []);
@@ -173,6 +233,10 @@ export async function buildReclaimPlan(options = {}) {
       trackedPids,
     );
     if (repoStudioCandidate) matchedReasons.push('repo-studio');
+
+    if (repoStudioDescendantPids.has(pid)) {
+      matchedReasons.push('repo-studio-child');
+    }
 
     if (scope === RECLAIM_SCOPE_REPO) {
       if (record.repoOwned && isRuntimeToolProcess(record)) {
@@ -226,6 +290,7 @@ export async function buildReclaimPlan(options = {}) {
     safePorts,
     inventory,
     trackedPids: [...trackedPids].sort((a, b) => a - b),
+    repoStudioRootPids: [...repoStudioRootPids].sort((a, b) => a - b),
     protectedPids: [...protectedPids].sort((a, b) => a - b),
     targets,
     skipped,

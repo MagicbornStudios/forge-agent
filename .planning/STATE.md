@@ -5,7 +5,7 @@
 Phase: 15
 Plan: 15-01
 Status: Execution in progress
-Last activity: 2026-02-28 - FRG-1534 reliability cut in progress: removed workspace-semantics from CI/release gates, added packageManager pin verification steps, enabled desktop smoke failure artifacts, and added installed-runtime readiness probe after silent install smoke
+Last activity: 2026-02-28 - FRG-1534 reliability cut in progress: removed workspace-semantics from CI/release gates, added packageManager pin verification steps, enabled desktop smoke failure artifacts, added installed-runtime readiness probe after silent install smoke, and hardened reclaim logic to target child processes only when they descend from verified RepoStudio/Codex runtime roots
 
 ## Execution
 

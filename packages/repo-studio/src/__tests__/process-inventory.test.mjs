@@ -11,6 +11,7 @@ test('process inventory parsers handle windows and posix fixtures', () => {
   const windowsRaw = JSON.stringify([
     {
       ProcessId: 101,
+      ParentProcessId: 77,
       Name: 'node.exe',
       CommandLine: 'node C:\\repo\\apps\\repo-studio\\server.js',
     },
@@ -18,15 +19,17 @@ test('process inventory parsers handle windows and posix fixtures', () => {
   const parsedWindows = parseWindowsProcessSnapshot(windowsRaw);
   assert.equal(parsedWindows.length, 1);
   assert.equal(parsedWindows[0].pid, 101);
+  assert.equal(parsedWindows[0].parentPid, 77);
   assert.equal(parsedWindows[0].name, 'node.exe');
 
   const posixRaw = [
-    '202 node /usr/bin/node /repo/apps/repo-studio/server.js',
-    '303 bash /bin/bash',
+    '202 15 node /usr/bin/node /repo/apps/repo-studio/server.js',
+    '303 202 bash /bin/bash',
   ].join('\n');
   const parsedPosix = parsePosixProcessSnapshot(posixRaw);
   assert.equal(parsedPosix.length, 2);
   assert.equal(parsedPosix[0].pid, 202);
+  assert.equal(parsedPosix[0].parentPid, 15);
   assert.equal(parsedPosix[0].name, 'node');
 });
 
@@ -37,16 +40,19 @@ test('buildProcessInventory classifies ownership and known ports', () => {
     processes: [
       {
         ProcessId: 4100,
+        ParentProcessId: 4000,
         Name: 'node.exe',
         CommandLine: 'node C:\\Users\\test\\forge-agent\\apps\\repo-studio\\node_modules\\next\\dist\\bin\\next dev -p 3010',
       },
       {
         ProcessId: 4200,
+        ParentProcessId: 4100,
         Name: 'node.exe',
         CommandLine: 'node C:\\Users\\test\\forge-agent\\node_modules\\.pnpm\\@openai+codex@0.104.0\\node_modules\\@openai\\codex\\bin\\codex.js app-server',
       },
       {
         ProcessId: 4300,
+        ParentProcessId: 4200,
         Name: 'node.exe',
         CommandLine: 'node C:\\Users\\test\\other-repo\\apps\\studio\\server.js',
       },
@@ -62,6 +68,7 @@ test('buildProcessInventory classifies ownership and known ports', () => {
   const repoStudioProcess = inventory.processes.find((item) => item.pid === 4100);
   assert.equal(repoStudioProcess.repoOwned, true);
   assert.equal(repoStudioProcess.repoStudioOwned, true);
+  assert.equal(repoStudioProcess.parentPid, 4000);
   assert.deepEqual(repoStudioProcess.knownPorts, [3010]);
 
   const codexProcess = inventory.processes.find((item) => item.pid === 4200);

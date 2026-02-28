@@ -1,7 +1,7 @@
 ---
 title: Errors and attempts
 created: 2026-02-04
-updated: 2026-02-26
+updated: 2026-02-28
 ---
 
 Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx).
@@ -11,6 +11,25 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 > **For coding agents.** See [Agent artifacts index](../../18-agent-artifacts-index.mdx) for the full list.
 
 Log of known failures and fixes so agents and developers avoid repeating the same mistakes.
+
+---
+
+## Desktop reclaim child-process lineage safety (2026-02-28)
+
+**Problem**: Reclaim/cleanup needed to handle child processes (Next server, codex app-server, spawned terminals) without broad process-name matching that could kill unrelated user workloads.
+
+**Root cause**: Process inventory records did not carry parent PID metadata, so reclaim planning could not reason about process lineage and had to rely on command-line markers + known ports.
+
+**Fix**:
+- Added `parentPid` collection in process snapshots:
+  - Windows: `Win32_Process` now includes `ParentProcessId`.
+  - Posix: `ps` snapshot now includes `ppid`.
+- Reclaim planning now computes descendant PID sets from verified RepoStudio/Codex roots (tracked PID + safe-port/ownership checks).
+- Child processes are reclaimed only when lineage to a verified root exists (`repo-studio-child` reason), not by process-name alone.
+
+**Guardrail**:
+- Do not add kill-by-name-only reclaim rules for `node/electron/powershell/bash`.
+- Keep lineage + ownership checks as the primary reclaim contract.
 
 ---
 

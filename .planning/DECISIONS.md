@@ -7,6 +7,7 @@
 - [x] `guard:workspace-semantics` is removed from CI/release gating (manual/local guard only) to prioritize desktop release reliability while keeping `guard:assistant-canonical` enforced.
 - [x] CI/release workflows now explicitly verify `pnpm --version` matches root `packageManager` before `pnpm install --frozen-lockfile`.
 - [x] Desktop release flow now captures downloadable failure diagnostics (`repostudio-smoke-result*.json`, runtime probe output, and desktop startup logs) and adds a post-install runtime-readiness probe (`/api/repo/health`, `/api/repo/runtime/deps`, `/api/repo/codex/session/status`).
+- [x] Process reclaim safety now uses process lineage: child processes are reclaimed only when they descend from verified RepoStudio/Codex root processes (tracked PID + safe-port/ownership checks), preventing broad kill-by-name behavior against unrelated user terminals/services.
 
 ## 2026-02-13
 

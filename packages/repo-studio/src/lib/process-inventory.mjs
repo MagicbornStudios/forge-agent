@@ -27,10 +27,19 @@ function normalizeSnapshotRecord(value) {
     ?? 0,
   );
   if (!Number.isInteger(pid) || pid <= 0) return null;
+  const parentPid = Number(
+    record.parentPid
+    ?? record.ParentProcessId
+    ?? record.parentProcessId
+    ?? record.PPID
+    ?? record.ppid
+    ?? 0,
+  );
   const name = String(record.name || record.Name || record.comm || record.processName || '').trim();
   const commandLine = String(record.commandLine || record.CommandLine || record.args || record.command || '').trim();
   return {
     pid,
+    parentPid: Number.isInteger(parentPid) && parentPid > 0 ? parentPid : 0,
     name,
     commandLine,
   };
@@ -87,12 +96,27 @@ export function parsePosixProcessSnapshot(raw) {
     .filter(Boolean);
   const records = [];
   for (const line of lines) {
+    const ppidMatch = /^(\d+)\s+(\d+)\s+(\S+)\s*(.*)$/.exec(line);
+    if (ppidMatch) {
+      const pid = Number(ppidMatch[1]);
+      const parentPid = Number(ppidMatch[2]);
+      if (!Number.isInteger(pid) || pid <= 0) continue;
+      records.push({
+        pid,
+        parentPid: Number.isInteger(parentPid) && parentPid > 0 ? parentPid : 0,
+        name: String(ppidMatch[3] || '').trim(),
+        commandLine: String(ppidMatch[4] || '').trim(),
+      });
+      continue;
+    }
+
     const match = /^(\d+)\s+(\S+)\s*(.*)$/.exec(line);
     if (!match) continue;
     const pid = Number(match[1]);
     if (!Number.isInteger(pid) || pid <= 0) continue;
     records.push({
       pid,
+      parentPid: 0,
       name: String(match[2] || '').trim(),
       commandLine: String(match[3] || '').trim(),
     });
@@ -101,7 +125,7 @@ export function parsePosixProcessSnapshot(raw) {
 }
 
 function collectWindowsProcessSnapshot() {
-  const script = "$ErrorActionPreference = 'Stop'; Get-CimInstance Win32_Process | Select-Object ProcessId,Name,CommandLine | ConvertTo-Json -Depth 3 -Compress";
+  const script = "$ErrorActionPreference = 'Stop'; Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,Name,CommandLine | ConvertTo-Json -Depth 3 -Compress";
   const result = spawnSync('powershell', ['-NoProfile', '-Command', script], {
     encoding: 'utf8',
     maxBuffer: DEFAULT_MAX_BUFFER,
@@ -132,7 +156,7 @@ function collectWindowsProcessSnapshot() {
 }
 
 function collectPosixProcessSnapshot() {
-  const result = spawnSync('ps', ['-axo', 'pid=,comm=,args='], {
+  const result = spawnSync('ps', ['-axo', 'pid=,ppid=,comm=,args='], {
     encoding: 'utf8',
     maxBuffer: DEFAULT_MAX_BUFFER,
   });
@@ -218,12 +242,16 @@ function mergeDuplicateRecords(records = []) {
     if (!existing) {
       byPid.set(record.pid, {
         ...record,
+        parentPid: Number(record.parentPid || 0),
         knownPorts: dedupeKnownPorts(record.knownPorts, []),
       });
       continue;
     }
     byPid.set(record.pid, {
       ...existing,
+      parentPid: Number(existing.parentPid || 0) > 0
+        ? Number(existing.parentPid || 0)
+        : Number(record.parentPid || 0),
       name: existing.name || record.name,
       commandLine: existing.commandLine.length >= record.commandLine.length
         ? existing.commandLine
@@ -248,6 +276,7 @@ export function buildProcessInventory(options = {}) {
     const repoStudioOwned = repoOwned && isRepoStudioOwned(normalizedCommandLine, repoRootNormalized);
     return {
       pid: base.pid,
+      parentPid: Number(base.parentPid || 0),
       name: String(base.name || '').trim(),
       commandLine,
       repoOwned,

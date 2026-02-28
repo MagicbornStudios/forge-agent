@@ -14,6 +14,7 @@ test('reclaim planner safe scope targets repo-studio/codex only', async () => {
       processes: [
         {
           pid: 100,
+          parentPid: 50,
           name: 'node',
           commandLine: '/repo/apps/repo-studio/node_modules/next dev -p 3010',
           repoOwned: true,
@@ -22,6 +23,7 @@ test('reclaim planner safe scope targets repo-studio/codex only', async () => {
         },
         {
           pid: 101,
+          parentPid: 50,
           name: 'node',
           commandLine: '/repo/apps/studio/node_modules/next dev -p 3000',
           repoOwned: true,
@@ -30,6 +32,7 @@ test('reclaim planner safe scope targets repo-studio/codex only', async () => {
         },
         {
           pid: 103,
+          parentPid: 100,
           name: 'node',
           commandLine: '/repo/node_modules/.pnpm/next@15/node_modules/next/dist/server/lib/start-server.js',
           repoOwned: true,
@@ -38,6 +41,7 @@ test('reclaim planner safe scope targets repo-studio/codex only', async () => {
         },
         {
           pid: 102,
+          parentPid: 100,
           name: 'node',
           commandLine: '/repo/node_modules/.pnpm/@openai+codex@0.104.0/node_modules/@openai/codex/bin/codex.js app-server',
           repoOwned: true,
@@ -54,6 +58,45 @@ test('reclaim planner safe scope targets repo-studio/codex only', async () => {
   assert.equal(plan.targets.every((item) => item.repoOwned), true);
 });
 
+test('reclaim planner includes child processes descended from tracked repo-studio roots', async () => {
+  const plan = await buildReclaimPlan({
+    scope: 'repo-studio',
+    dryRun: true,
+    force: false,
+    repoRoot: '/repo',
+    inventory: {
+      ok: true,
+      processes: [
+        {
+          pid: 700,
+          parentPid: 1,
+          name: 'RepoStudio.exe',
+          commandLine: 'C:/Users/test/AppData/Local/Programs/RepoStudio/RepoStudio.exe',
+          repoOwned: false,
+          repoStudioOwned: true,
+          knownPorts: [3020],
+        },
+        {
+          pid: 701,
+          parentPid: 700,
+          name: 'powershell.exe',
+          commandLine: 'C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -NoLogo',
+          repoOwned: false,
+          repoStudioOwned: false,
+          knownPorts: [],
+        },
+      ],
+    },
+    trackedPids: [700],
+    excludePids: [],
+  });
+
+  assert.equal(plan.repoStudioRootPids.includes(700), true);
+  assert.equal(plan.targets.some((item) => item.pid === 701), true);
+  const child = plan.targets.find((item) => item.pid === 701);
+  assert.match(String(child.reason || ''), /repo-studio-child/);
+});
+
 test('reclaim planner repo scope includes repo runtime sweep and protects excluded pids', async () => {
   const protectedPid = 550;
   const plan = await buildReclaimPlan({
@@ -66,6 +109,7 @@ test('reclaim planner repo scope includes repo runtime sweep and protects exclud
       processes: [
         {
           pid: protectedPid,
+          parentPid: 1,
           name: 'node',
           commandLine: '/repo/apps/studio/node_modules/next dev -p 3000',
           repoOwned: true,
@@ -74,6 +118,7 @@ test('reclaim planner repo scope includes repo runtime sweep and protects exclud
         },
         {
           pid: 560,
+          parentPid: 1,
           name: 'electron',
           commandLine: '/repo/packages/repo-studio/src/desktop/main.mjs',
           repoOwned: true,

@@ -8,6 +8,9 @@
 - [x] FRG-1534 reliability follow-up: CI/release gating included non-release semantic guard noise and weak post-install diagnostics.
   - Root cause: release jobs mixed policy guardrails with installer reliability checks, and failure triage relied mainly on log scrolling.
   - Resolution: removed `guard:workspace-semantics` from CI/release gates, added explicit packageManager/pnpm version verification pre-install, added post-install runtime readiness probe, and added failure artifact collection/upload for smoke JSON + desktop startup logs.
+- [x] Reclaim/process cleanup risk: child runtime processes (Next server, codex app-server, spawned terminals) could be missed or handled inconsistently without explicit parent-child lineage handling.
+  - Root cause: process inventory/reclaim logic evaluated processes mostly by command-line markers and known ports, but did not model parent PID relationships.
+  - Resolution: added `parentPid` to process inventory snapshots/parsers and reclaim planning now computes descendant sets from verified RepoStudio/Codex roots; child processes are reclaimed only when lineage is proven, avoiding kill-by-name overreach.
 
 ## 2026-02-26
 
