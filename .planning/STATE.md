@@ -5,7 +5,7 @@
 Phase: 15
 Plan: 15-01
 Status: Execution in progress
-Last activity: 2026-02-28 - FRG-1534 reliability cut in progress: release workflow now appends desktop smoke status into the GitHub Release body (status badge block), persists smoke summary markdown as an artifact, and keeps local `desktop:smoke:diff` tooling for run-to-run regression comparison
+Last activity: 2026-02-28 - FRG-1534 reliability cut in progress: release workflow now runs silent install smoke with automatic repair retry (`desktop:smoke:repair`) and only fails when both primary + retry paths fail, while preserving runtime readiness probing and release-body desktop status telemetry
 
 ## Execution
 

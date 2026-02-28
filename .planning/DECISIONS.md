@@ -13,6 +13,7 @@
 - [x] Desktop release workflow now uses explicit job/step timeouts and always uploads smoke/probe JSON artifacts (`repostudio-desktop-smoke-reports`) so long-running hangs are bounded and post-run diagnostics remain available even on passing runs.
 - [x] Desktop release telemetry should be visible without downloading artifacts first: publish a concise smoke/probe summary into `GITHUB_STEP_SUMMARY`, while keeping raw JSON artifacts for deep debugging and local run-to-run diffing via `desktop:smoke:diff`.
 - [x] Each GitHub release should include desktop health status in the release description: append smoke summary markdown from `repostudio-desktop-smoke-reports` into the release body while retaining generated changelog notes.
+- [x] Silent install smoke in release CI should be resilient to bad prior installs: run primary smoke first, auto-retry with repair (`desktop:smoke:repair`) on failure, and fail the gate only when both paths fail.
 
 ## 2026-02-13
 

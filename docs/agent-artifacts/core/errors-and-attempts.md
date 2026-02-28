@@ -2025,6 +2025,23 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 
 ---
 
+## Silent install smoke one-shot brittleness in CI (2026-02-28)
+
+**Cause**:
+- Release workflow treated silent install smoke as a single-attempt gate.
+- Recoverable cases (bad prior install state) required manual rerun rather than automated repair flow.
+
+**Fix**:
+- Updated release workflow to run:
+  - primary: `desktop:smoke:silent`
+  - retry on failure: `desktop:smoke:repair`
+  - enforcement step that passes if either path succeeds, fails only if both fail.
+
+**Guardrail**:
+- Keep runtime readiness probe strict, but allow install smoke one automatic repair retry before failing release packaging.
+
+---
+
 *(Add new entries when new errors are found and fixed.)*
 
 <!-- forge-loop:generated:start -->

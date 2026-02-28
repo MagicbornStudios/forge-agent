@@ -23,6 +23,9 @@
 - [x] Release pages still lacked quick desktop-health context even after run summaries/artifacts improved.
   - Root cause: smoke status lived in Actions run logs/artifacts only; release notes were changelog-focused and did not include installer/runtime readiness context.
   - Resolution: release workflow now downloads smoke report artifact and appends a "Desktop Release Status" section (from `repostudio-smoke-summary.md`) to release body before publishing.
+- [x] Silent install smoke still had brittle one-shot behavior in CI when runner state contained a bad prior installation.
+  - Root cause: install smoke gate had a single primary attempt; recoverable install corruption required manual rerun or operator intervention.
+  - Resolution: release workflow now performs primary install smoke, retries automatically via `desktop:smoke:repair` on failure, and enforces success only if at least one path passes.
 
 ## 2026-02-26
 

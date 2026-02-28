@@ -255,9 +255,31 @@ jobs:
             Pop-Location
           }
 
-      - name: Silent Install and Smoke Launch RepoStudio
+      - name: Silent Install and Smoke Launch RepoStudio (primary)
+        id: smoke_install_primary
         timeout-minutes: 20
+        continue-on-error: true
         run: pnpm --filter @forge/repo-studio run desktop:smoke:silent -- --timeout-ms 720000 --idle-timeout-ms 300000 --health-timeout-ms 360000
+
+      - name: Silent Install and Smoke Launch RepoStudio (repair retry)
+        id: smoke_install_repair_retry
+        if: ${{ steps.smoke_install_primary.outcome == 'failure' }}
+        timeout-minutes: 25
+        continue-on-error: true
+        run: pnpm --filter @forge/repo-studio run desktop:smoke:repair -- --timeout-ms 900000 --idle-timeout-ms 300000 --health-timeout-ms 420000
+
+      - name: Enforce Silent Install Smoke Success
+        if: always()
+        shell: pwsh
+        run: |
+          $primary = "${{ steps.smoke_install_primary.outcome }}"
+          $retry = "${{ steps.smoke_install_repair_retry.outcome }}"
+          if ($primary -eq "success" -or $retry -eq "success") {
+            Write-Host "Silent install smoke succeeded (primary=$primary, retry=$retry)"
+            exit 0
+          }
+          Write-Host "::error title=desktop-install-smoke::Silent install smoke failed on primary and repair retry."
+          exit 1
 
       - name: Probe Installed Runtime Readiness
         timeout-minutes: 12
