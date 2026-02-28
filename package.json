@@ -5,6 +5,7 @@
   "author": "b2gdevs",
   "private": false,
   "type": "module",
+  "packageManager": "pnpm@9.15.5",
   "main": "./src/desktop/main.cjs",
   "bin": {
     "forge-repo-studio": "./src/cli.mjs"
@@ -21,5 +22,12 @@
   },
   "optionalDependencies": {
     "keytar": "^7.9.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "lucide-react": "0.563.0",
+      "@types/react": "19.2.11",
+      "@types/react-dom": "19.2.3"
+    }
   }
 }

@@ -5,7 +5,7 @@
 Phase: 15
 Plan: 15-01
 Status: Execution in progress
-Last activity: 2026-02-28 - resolved silent installer readiness path in Phase 15 desktop work: rebuilt `RepoStudio Silent Setup 0.1.5.exe` with faster extraction, hardened installer smoke probe for completion signals, and verified install+launch health passes (`/api/repo/health` 200)
+Last activity: 2026-02-28 - fixing release pipeline follow-up after `v0.1.5` tag failure: synchronized root lockfile with current package metadata (`packageManager` + pnpm overrides) so `pnpm install --frozen-lockfile` can proceed in CI
 
 ## Execution
 
