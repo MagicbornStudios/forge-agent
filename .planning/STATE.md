@@ -5,7 +5,7 @@
 Phase: 15
 Plan: 15-01
 Status: Execution in progress
-Last activity: 2026-02-28 - checkpointed Phase 15 desktop work: fresh win-unpacked runtime passes health smoke, silent installer still exceeds current completion timeout, and partial timed-out installs can fail because `resources/next/standalone/server.js` cannot resolve `next`
+Last activity: 2026-02-28 - resolved silent installer readiness path in Phase 15 desktop work: rebuilt `RepoStudio Silent Setup 0.1.5.exe` with faster extraction, hardened installer smoke probe for completion signals, and verified install+launch health passes (`/api/repo/health` 200)
 
 ## Execution
 

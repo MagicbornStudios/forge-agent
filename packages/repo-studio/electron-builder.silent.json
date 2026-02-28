@@ -2,6 +2,7 @@
   "appId": "com.forge.repostudio",
   "productName": "RepoStudio",
   "artifactName": "RepoStudio Silent Setup ${version}.${ext}",
+  "compression": "store",
   "directories": {
     "output": "dist/desktop"
   },

@@ -16,13 +16,17 @@
     - packaged `RepoStudio 0.1.4.exe` can stay alive for the smoke window while `http://127.0.0.1:3020/api/repo/health` is unreachable and no `desktop-startup.log` is written in expected locations.
   - Impact: a published installer/executable can appear to run without becoming operational, matching the user-reported “installer runs but nothing launches” failure mode.
   - Next step: add a stricter post-launch readiness check (health endpoint and startup-log presence), then fix packaged desktop boot/install behavior before claiming desktop runtime is fully healthy.
-- [~] Current `0.1.5` desktop investigation narrowed the remaining silent-install failure path.
-  - Evidence:
-    - fresh `win-unpacked/RepoStudio.exe` now passes launch smoke (`/api/repo/health` returns `200` with `{\"ok\":true,\"app\":\"repo-studio\"}`),
-    - `RepoStudio Silent Setup 0.1.5.exe` copies a large payload into the requested `/D=` directory, but the installer process still does not exit within the current smoke timeout,
-    - killing that still-running installer can leave an incomplete install, and the partial installed app then fails because the embedded server cannot resolve `next` (`Cannot find module 'next'` from `resources\\next\\standalone\\server.js`).
-  - Impact: current silent-install smoke can produce false-negative runtime failures if it treats a long-running installer as complete and kills it mid-extract.
-  - Resolution in progress: added dedicated smoke probes (`src/desktop/smoke-install.mjs`, `src/desktop/smoke-launch.mjs`) and scratch cleanup between package stages so installer completion can be diagnosed deterministically before the next release.
+- [x] `RepoStudio Silent Setup 0.1.5.exe` was failing smoke validation because installer completion was detected too aggressively.
+  - Root cause:
+    - silent smoke used a short fixed timeout/idle window and could kill installer extraction before required files were present,
+    - this produced partial installs (missing `next` runtime files) and false-negative launch failures.
+  - Resolution:
+    - set silent installer packaging to `compression: "store"` in `packages/repo-studio/electron-builder.silent.json` to reduce extraction bottlenecks,
+    - hardened `src/desktop/smoke-install.mjs` with required-file completion checks, progress snapshots, and explicit timedOut/stalled reason tracking,
+    - updated `desktop:smoke:silent` to run install + launch validation (`--kind silent --timeout-ms 420000 --launch`) so health reachability is part of the baseline check.
+  - Verification:
+    - `pnpm --filter @forge/repo-studio run desktop:package:win` passed,
+    - `pnpm --filter @forge/repo-studio run desktop:smoke:silent` passed with installer `exitCode: 0`, `installReady: true`, and launch health `200` from `/api/repo/health`.
 - [x] Repeated local desktop packaging was leaving excessive stale artifacts on disk (`dist/desktop` reached ~1.8 GB).
   - Root cause: packaging preserved prior-version installers, `win-unpacked`, builder scratch files, and Repo Studio temp smoke scripts across repeated runs.
   - Resolution: added `src/desktop/clean.mjs`, wired `desktop:package:win` to reset stale output before packaging and prune disposable artifacts afterward, and exposed `pnpm --filter @forge/repo-studio run desktop:clean` for explicit local cleanup.

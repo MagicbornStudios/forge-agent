@@ -1791,21 +1791,33 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 1. Silent installer validation remained ambiguous: sometimes the custom `/D=` target looked empty, other times it contained a partial install, but the process still had not exited.
 2. Installed silent-build launches were failing health checks even though the current `win-unpacked` executable could boot successfully.
 
-**Current findings**:
-- Fresh `win-unpacked/RepoStudio.exe` now passes local launch smoke and serves `GET /api/repo/health` with `200`.
-- Current `RepoStudio Silent Setup 0.1.5.exe` copies a large payload into the target install directory, but the installer process can still be running beyond the current smoke timeout.
-- If the probe kills that still-running installer, the install can be incomplete; in that state the installed app fails because the embedded server cannot resolve `next` from `resources/next/standalone/server.js`.
-- This means a timeout-based kill can create a false negative: the installed app may be broken only because the installer was interrupted mid-extract.
+**Findings**:
+- Fresh `win-unpacked/RepoStudio.exe` passed local launch smoke and served `GET /api/repo/health` with `200`.
+- `RepoStudio Silent Setup 0.1.5.exe` could run longer than early smoke thresholds; killing it mid-run produced partial installs.
+- Partial installs were missing required runtime files under `resources/next/standalone/node_modules/next`, causing startup failures (`Cannot find module 'next'`).
 
-**Fixes in progress**:
-- Added `packages/repo-studio/src/desktop/smoke-install.mjs` for structured silent-installer probing.
-- Added `packages/repo-studio/src/desktop/smoke-launch.mjs` for direct packaged EXE health validation.
-- Added `desktop:smoke:silent` and `desktop:smoke:launch` scripts in `packages/repo-studio/package.json`.
-- Added `desktop:clean:scratch` and wired scratch cleanup between package stages so stale/corrupt `.nsis.7z` archives do not poison later installer builds.
+**Fix**:
+- Added structured probes:
+  - `packages/repo-studio/src/desktop/smoke-install.mjs`
+  - `packages/repo-studio/src/desktop/smoke-launch.mjs`
+- Hardened installer completion logic in `smoke-install.mjs`:
+  - required-file completion checks (including `Uninstall RepoStudio.exe` and `next/dist/server/next.js`),
+  - install progress snapshot tracking,
+  - explicit `timedOut` vs `stalled` reasons.
+- Updated `desktop:smoke:silent` to run install + launch (`--kind silent --timeout-ms 420000 --launch`).
+- Set `compression: "store"` for silent NSIS builds in `packages/repo-studio/electron-builder.silent.json` to reduce extraction bottlenecks.
+- Kept scratch cleanup between package stages (`desktop:clean:scratch`) to avoid stale/corrupt `.nsis.7z` carryover.
+
+**Verification**:
+- `pnpm --filter @forge/repo-studio run desktop:package:win` (pass).
+- `pnpm --filter @forge/repo-studio run desktop:smoke:silent` (pass):
+  - installer `exitCode: 0`,
+  - `installReady: true`,
+  - launched installed app reached `/api/repo/health` with `200`.
 
 **Guardrail**:
 - Do not treat a timed-out silent installer as a completed install.
-- Validate installer completion separately from runtime launch, and do not kill the installer early unless the intent is to inspect a partial install.
+- Validate installer completion via required runtime files before launch assertions.
 
 ---
 

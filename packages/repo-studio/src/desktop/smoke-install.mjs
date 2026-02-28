@@ -5,9 +5,27 @@ import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
+const REQUIRED_INSTALL_PATHS = [
+  'RepoStudio.exe',
+  'Uninstall RepoStudio.exe',
+  path.join('resources', 'app.asar'),
+  path.join('resources', 'next', 'BUILD_ID'),
+  path.join('resources', 'next', 'standalone', 'server.js'),
+  path.join('resources', 'next', 'standalone', 'node_modules', 'next', 'package.json'),
+  path.join('resources', 'next', 'standalone', 'node_modules', 'next', 'dist', 'server', 'next.js'),
+];
+
 function resolvePackageRoot() {
   const currentFile = fileURLToPath(import.meta.url);
   return path.resolve(path.dirname(currentFile), '..', '..');
+}
+
+function defaultTimeoutMs(kind) {
+  return kind === 'attended' ? 180000 : 600000;
+}
+
+function defaultIdleTimeoutMs(kind) {
+  return kind === 'attended' ? 30000 : 180000;
 }
 
 function parseArgs(argv = process.argv.slice(2)) {
@@ -24,10 +42,13 @@ function parseArgs(argv = process.argv.slice(2)) {
     }
     args.set(key, true);
   }
+  const kind = String(args.get('kind') || 'silent');
   return {
-    kind: String(args.get('kind') || 'silent'),
+    kind,
     installDir: String(args.get('install-dir') || '').trim(),
-    timeoutMs: Number(args.get('timeout-ms') || 90000),
+    timeoutMs: Number(args.get('timeout-ms') || defaultTimeoutMs(kind)),
+    idleTimeoutMs: Number(args.get('idle-timeout-ms') || defaultIdleTimeoutMs(kind)),
+    pollIntervalMs: Number(args.get('poll-interval-ms') || 5000),
     currentUser: args.get('current-user') !== 'false',
     keepInstallDir: args.get('keep-install-dir') === true,
     launch: args.get('launch') === true,
@@ -66,30 +87,8 @@ function defaultProbeInstallDir(kind) {
   return path.join(os.tmpdir(), kind === 'attended' ? 'RepoStudioInstallSmoke' : 'RepoStudioSilentInstallSmoke');
 }
 
-async function waitForProcessExit(child, timeoutMs) {
-  return await new Promise((resolve) => {
-    let settled = false;
-    const timeout = setTimeout(() => {
-      if (settled) return;
-      settled = true;
-      resolve({
-        timedOut: true,
-        exitCode: null,
-        signal: null,
-      });
-    }, timeoutMs);
-
-    child.once('exit', (code, signal) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timeout);
-      resolve({
-        timedOut: false,
-        exitCode: Number(code ?? 0),
-        signal: signal ?? null,
-      });
-    });
-  });
+async function waitForDelay(ms) {
+  await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function collectPathEntries(targetPath, limit = 200) {
@@ -114,6 +113,117 @@ async function collectPathEntries(targetPath, limit = 200) {
   }
 
   return entries;
+}
+
+async function collectInstallSnapshot(installDir) {
+  if (!fs.existsSync(installDir)) {
+    return {
+      fileCount: 0,
+      totalBytes: 0,
+      missingRequiredPaths: [...REQUIRED_INSTALL_PATHS],
+      ready: false,
+    };
+  }
+
+  let fileCount = 0;
+  let totalBytes = 0;
+  const queue = [installDir];
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    const children = await fsp.readdir(current, { withFileTypes: true }).catch(() => []);
+    for (const child of children) {
+      const fullPath = path.join(current, child.name);
+      if (child.isDirectory()) {
+        queue.push(fullPath);
+        continue;
+      }
+      if (!child.isFile()) continue;
+
+      fileCount += 1;
+      const stats = await fsp.stat(fullPath).catch(() => null);
+      if (stats) {
+        totalBytes += Number(stats.size || 0);
+      }
+    }
+  }
+
+  const missingRequiredPaths = REQUIRED_INSTALL_PATHS
+    .map((relativePath) => ({
+      relativePath,
+      fullPath: path.join(installDir, relativePath),
+    }))
+    .filter(({ fullPath }) => !fs.existsSync(fullPath))
+    .map(({ relativePath }) => relativePath);
+
+  return {
+    fileCount,
+    totalBytes,
+    missingRequiredPaths,
+    ready: missingRequiredPaths.length === 0,
+  };
+}
+
+function snapshotsMatch(previous, current) {
+  if (!previous || !current) return false;
+  return previous.fileCount === current.fileCount
+    && previous.totalBytes === current.totalBytes
+    && previous.ready === current.ready
+    && previous.missingRequiredPaths.join('|') === current.missingRequiredPaths.join('|');
+}
+
+async function waitForInstallerState(child, installDir, options = {}) {
+  const timeoutMs = Number(options.timeoutMs || defaultTimeoutMs(options.kind || 'silent'));
+  const idleTimeoutMs = Number(options.idleTimeoutMs || 30000);
+  const pollIntervalMs = Number(options.pollIntervalMs || 5000);
+  const startedAt = Date.now();
+
+  let exit = null;
+  child.once('exit', (code, signal) => {
+    exit = {
+      timedOut: false,
+      stalled: false,
+      exitCode: Number(code ?? 0),
+      signal: signal ?? null,
+      reason: 'process-exit',
+    };
+  });
+
+  let snapshot = await collectInstallSnapshot(installDir);
+  let lastProgressAt = Date.now();
+
+  while (exit == null) {
+    const now = Date.now();
+    if (now - startedAt >= timeoutMs) {
+      exit = {
+        timedOut: true,
+        stalled: false,
+        exitCode: null,
+        signal: null,
+        reason: 'timeout',
+      };
+      break;
+    }
+
+    await waitForDelay(pollIntervalMs);
+    const nextSnapshot = await collectInstallSnapshot(installDir);
+    if (!snapshotsMatch(snapshot, nextSnapshot)) {
+      lastProgressAt = Date.now();
+    } else if (Date.now() - lastProgressAt >= idleTimeoutMs) {
+      exit = {
+        timedOut: false,
+        stalled: true,
+        exitCode: null,
+        signal: null,
+        reason: nextSnapshot.ready ? 'stalled-after-ready' : 'stalled-before-ready',
+      };
+      snapshot = nextSnapshot;
+      break;
+    }
+    snapshot = nextSnapshot;
+  }
+
+  return { exit, snapshot };
 }
 
 function resolveInstalledExeCandidates(installDir) {
@@ -204,8 +314,8 @@ export async function runInstallerSmoke(options = {}) {
     windowsHide: true,
   });
 
-  const exit = await waitForProcessExit(child, options.timeoutMs || 90000);
-  if (exit.timedOut) {
+  const { exit, snapshot } = await waitForInstallerState(child, installDir, options);
+  if (exit.timedOut || exit.stalled) {
     await stopProcess(child);
   }
 
@@ -214,22 +324,29 @@ export async function runInstallerSmoke(options = {}) {
   const installedExePath = firstExistingPath(installedExeCandidates);
 
   const result = {
-    ok: !exit.timedOut && exit.exitCode === 0 && Boolean(installedExePath),
+    ok: exit.exitCode === 0 && Boolean(installedExePath) && snapshot.ready,
     artifactPath,
     kind: options.kind || 'silent',
     installerArgs,
     installDir,
     exit,
-    installCompleted: !exit.timedOut && exit.exitCode === 0,
+    installCompleted: exit.exitCode === 0,
+    installReady: snapshot.ready,
     installCopiedFiles: Boolean(installedExePath),
-    hangAfterInstall: exit.timedOut && Boolean(installedExePath),
+    hangAfterInstall: (exit.timedOut || exit.stalled) && Boolean(installedExePath) && snapshot.ready,
+    installProgress: snapshot,
     installedExePath,
     installedExeCandidates,
     installEntries,
     launch: null,
   };
 
-  if (!installedExePath || options.launch !== true || (exit.timedOut && options.launchAnyway !== true)) {
+  if (
+    !installedExePath
+    || options.launch !== true
+    || ((!exit.timedOut && !exit.stalled) ? false : options.launchAnyway !== true)
+    || !snapshot.ready
+  ) {
     return result;
   }
 

@@ -1,7 +1,7 @@
 ---
 title: Agent artifacts status
 created: 2026-02-04
-updated: 2026-02-27
+updated: 2026-02-28
 ---
 
 Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx).
@@ -42,6 +42,11 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 
 ## Ralph Wiggum loop
 
+- Done (2026-02-28): Silent installer readiness and runtime smoke stabilization for Repo Studio desktop:
+  - rebuilt `RepoStudio Silent Setup 0.1.5.exe` with `compression: "store"` to reduce extraction bottlenecks,
+  - upgraded installer smoke logic to use required-file completion checks and explicit timeout/stall reasons,
+  - `desktop:smoke:silent` now validates install + launch health end-to-end (`/api/repo/health` 200),
+  - verified with `desktop:package:win` + `desktop:smoke:silent` passing in the same slice.
 - In progress (2026-02-27): Phase 15 release cut `v0.1.1`:
   - added tag-driven GitHub desktop release workflow (`.github/workflows/release-repo-studio-desktop.yml`) with verify -> windows package -> release jobs,
   - enforced strict standalone desktop gate in `@forge/repo-studio` (`--require-standalone` + `src/desktop/verify-standalone.mjs`) so fallback packaging cannot publish,
