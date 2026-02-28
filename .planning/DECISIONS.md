@@ -8,6 +8,8 @@
 - [x] CI/release workflows now explicitly verify `pnpm --version` matches root `packageManager` before `pnpm install --frozen-lockfile`.
 - [x] Desktop release flow now captures downloadable failure diagnostics (`repostudio-smoke-result*.json`, runtime probe output, and desktop startup logs) and adds a post-install runtime-readiness probe (`/api/repo/health`, `/api/repo/runtime/deps`, `/api/repo/codex/session/status`).
 - [x] Process reclaim safety now uses process lineage: child processes are reclaimed only when they descend from verified RepoStudio/Codex root processes (tracked PID + safe-port/ownership checks), preventing broad kill-by-name behavior against unrelated user terminals/services.
+- [x] FRG-1534 continuation will prioritize bad-install recovery: add explicit repair/reinstall path and CI upgrade-from-broken-install smoke checks so previously corrupted local installs can be recovered deterministically before release sign-off.
+- [x] Installer smoke progress detection now monitors requested install dir + registry/legacy install directories and only applies idle-stall aborts before any observed install progress, reducing false-negative kills on upgrades where NSIS writes to prior install locations.
 
 ## 2026-02-13
 

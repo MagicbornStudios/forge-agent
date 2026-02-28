@@ -646,12 +646,14 @@ function registerIpcHandlers() {
 }
 
 app.on('window-all-closed', () => {
+  appendDesktopLogEntry('window-all-closed', 'All windows closed; app may quit depending on platform.');
   if (process.platform !== 'darwin') {
     app.quit();
   }
 });
 
 app.on('before-quit', () => {
+  appendDesktopLogEntry('before-quit', 'Desktop runtime stopping resources.');
   stopResources().catch(() => {});
 });
 
@@ -669,6 +671,7 @@ process.on('unhandledRejection', (reason) => {
 
 app.whenReady()
   .then(async () => {
+    appendDesktopLogEntry('startup-begin', `safeMode=${safeMode} verboseStartup=${verboseStartup} desktopDev=${desktopDev}`);
     logDesktopVerbose('Desktop bootstrap starting.', `safeMode=${safeMode} verboseStartup=${verboseStartup} desktopDev=${desktopDev}`);
     await createSplashWindow();
     logDesktopVerbose('Splash window created.');
@@ -683,6 +686,7 @@ app.whenReady()
     registerIpcHandlers();
     logDesktopVerbose('IPC handlers registered.');
     await createMainWindow();
+    appendDesktopLogEntry('startup-complete', `appPort=${appPort} view=${view} profile=${profile}`);
     logDesktopVerbose('Main window created.');
     if (safeMode) {
       emitRuntimeEvent({

@@ -2,8 +2,16 @@ import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { execSync, spawn, spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+
+import {
+  firstExistingPath,
+  getActualInstallLocation,
+  resolveKnownInstallDirectories,
+  resolveInstalledExeCandidates,
+} from './install-locations.mjs';
+import { runRepairInstall } from './repair-install.mjs';
 
 const REQUIRED_INSTALL_PATHS = [
   'RepoStudio.exe',
@@ -55,6 +63,7 @@ function parseArgs(argv = process.argv.slice(2)) {
     launchAnyway: args.get('launch-anyway') === true,
     port: Number(args.get('port') || 3020),
     healthTimeoutMs: Number(args.get('health-timeout-ms') || 120000),
+    repairExisting: args.get('repair-existing') === true,
   };
 }
 
@@ -86,6 +95,24 @@ function resolveArtifactPath(packageRoot, kind) {
 
 function defaultProbeInstallDir(kind) {
   return path.join(os.tmpdir(), kind === 'attended' ? 'RepoStudioInstallSmoke' : 'RepoStudioSilentInstallSmoke');
+}
+
+function normalizePath(input) {
+  return path.resolve(String(input || '')).replace(/[\\/]+$/, '');
+}
+
+function uniquePaths(candidates = []) {
+  const seen = new Set();
+  const list = [];
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    const normalized = normalizePath(candidate);
+    const key = normalized.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    list.push(normalized);
+  }
+  return list;
 }
 
 async function waitForDelay(ms) {
@@ -165,12 +192,70 @@ async function collectInstallSnapshot(installDir) {
   };
 }
 
-function snapshotsMatch(previous, current) {
+function monitoredSnapshotsMatch(previous, current) {
   if (!previous || !current) return false;
-  return previous.fileCount === current.fileCount
-    && previous.totalBytes === current.totalBytes
-    && previous.ready === current.ready
-    && previous.missingRequiredPaths.join('|') === current.missingRequiredPaths.join('|');
+  return previous.signature === current.signature;
+}
+
+async function collectMonitoredInstallSnapshot(monitorDirs = []) {
+  const dirs = uniquePaths(monitorDirs);
+  const snapshots = [];
+  for (const dirPath of dirs) {
+    // eslint-disable-next-line no-await-in-loop
+    const snapshot = await collectInstallSnapshot(dirPath);
+    snapshots.push({
+      dirPath,
+      snapshot,
+    });
+  }
+
+  let primary = null;
+  for (const entry of snapshots) {
+    if (!primary) {
+      primary = entry;
+      continue;
+    }
+
+    const currentReady = entry.snapshot.ready === true;
+    const primaryReady = primary.snapshot.ready === true;
+    if (currentReady && !primaryReady) {
+      primary = entry;
+      continue;
+    }
+
+    if (currentReady === primaryReady && entry.snapshot.totalBytes > primary.snapshot.totalBytes) {
+      primary = entry;
+    }
+  }
+
+  const aggregate = {
+    fileCount: snapshots.reduce((sum, entry) => sum + entry.snapshot.fileCount, 0),
+    totalBytes: snapshots.reduce((sum, entry) => sum + entry.snapshot.totalBytes, 0),
+    readyDirs: snapshots.filter((entry) => entry.snapshot.ready).length,
+  };
+
+  const signature = snapshots
+    .map((entry) => `${entry.dirPath.toLowerCase()}|${entry.snapshot.fileCount}|${entry.snapshot.totalBytes}|${entry.snapshot.ready ? 1 : 0}|${entry.snapshot.missingRequiredPaths.join(',')}`)
+    .join('||');
+
+  return {
+    dirs,
+    snapshots,
+    primary,
+    aggregate: {
+      ...aggregate,
+      ready: aggregate.readyDirs > 0,
+    },
+    signature,
+  };
+}
+
+function resolveMonitorDirs(installDir) {
+  const registryInstallDir = process.platform === 'win32' ? getActualInstallLocation() : null;
+  return uniquePaths(resolveKnownInstallDirectories({
+    installDir,
+    registryInstallDir,
+  }));
 }
 
 async function waitForInstallerState(child, installDir, options = {}) {
@@ -190,8 +275,10 @@ async function waitForInstallerState(child, installDir, options = {}) {
     };
   });
 
-  let snapshot = await collectInstallSnapshot(installDir);
+  let monitorDirs = resolveMonitorDirs(installDir);
+  let monitoring = await collectMonitoredInstallSnapshot(monitorDirs);
   let lastProgressAt = Date.now();
+  let hasObservedProgress = monitoring.aggregate.totalBytes > 0;
 
   while (exit == null) {
     const now = Date.now();
@@ -207,66 +294,29 @@ async function waitForInstallerState(child, installDir, options = {}) {
     }
 
     await waitForDelay(pollIntervalMs);
-    const nextSnapshot = await collectInstallSnapshot(installDir);
-    if (!snapshotsMatch(snapshot, nextSnapshot)) {
+    const refreshedDirs = resolveMonitorDirs(installDir);
+    monitorDirs = uniquePaths([...monitorDirs, ...refreshedDirs]);
+    const nextMonitoring = await collectMonitoredInstallSnapshot(monitorDirs);
+    if (!monitoredSnapshotsMatch(monitoring, nextMonitoring)) {
       lastProgressAt = Date.now();
-    } else if (Date.now() - lastProgressAt >= idleTimeoutMs) {
+    } else if (!hasObservedProgress && Date.now() - lastProgressAt >= idleTimeoutMs) {
       exit = {
         timedOut: false,
         stalled: true,
         exitCode: null,
         signal: null,
-        reason: nextSnapshot.ready ? 'stalled-after-ready' : 'stalled-before-ready',
+        reason: 'stalled-before-progress',
       };
-      snapshot = nextSnapshot;
+      monitoring = nextMonitoring;
       break;
     }
-    snapshot = nextSnapshot;
+    if (nextMonitoring.aggregate.totalBytes > 0) {
+      hasObservedProgress = true;
+    }
+    monitoring = nextMonitoring;
   }
 
-  return { exit, snapshot };
-}
-
-function resolveInstalledExeCandidates(installDir) {
-  const localPrograms = process.env.LOCALAPPDATA
-    ? path.join(process.env.LOCALAPPDATA, 'Programs')
-    : null;
-
-  return [
-    path.join(installDir, 'RepoStudio.exe'),
-    ...(localPrograms ? [
-      path.join(localPrograms, 'RepoStudio', 'RepoStudio.exe'),
-      path.join(localPrograms, '@forgerepo-studio', 'RepoStudio.exe'),
-    ] : []),
-  ];
-}
-
-function firstExistingPath(paths) {
-  for (const candidate of paths) {
-    if (fs.existsSync(candidate)) return candidate;
-  }
-  return null;
-}
-
-function getActualInstallLocation() {
-  if (process.platform !== 'win32') return null;
-  try {
-    const script = [
-      "Get-ChildItem 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*' -ErrorAction SilentlyContinue |",
-      "ForEach-Object { $p = Get-ItemProperty $_.PSPath -ErrorAction SilentlyContinue;",
-      "if ($p.DisplayName -eq 'RepoStudio' -and $p.InstallLocation) { $p.InstallLocation.TrimEnd([char]0x5C) } } |",
-      "Select-Object -First 1",
-    ].join(' ');
-    const out = execSync(`powershell -NoProfile -Command "${script}"`, {
-      encoding: 'utf8',
-      timeout: 5000,
-    });
-    const loc = (out || '').trim();
-    if (loc && fs.existsSync(path.join(loc, 'RepoStudio.exe'))) return loc;
-  } catch {
-    // ignore
-  }
-  return null;
+  return { exit, monitoring };
 }
 
 async function maybeWriteFailureArtifact(result, prefix = 'repostudio-smoke-result') {
@@ -339,6 +389,14 @@ export async function runInstallerSmoke(options = {}) {
   const packageRoot = resolvePackageRoot();
   const artifactPath = resolveArtifactPath(packageRoot, options.kind || 'silent');
   const installDir = path.resolve(options.installDir || defaultProbeInstallDir(options.kind || 'silent'));
+  const repair = options.repairExisting === true
+    ? await runRepairInstall({
+      installDir,
+      includeLegacyDirs: true,
+      skipUninstall: false,
+      skipProcessStop: false,
+    })
+    : null;
 
   await fsp.rm(installDir, { recursive: true, force: true });
   await fsp.mkdir(installDir, { recursive: true });
@@ -358,21 +416,32 @@ export async function runInstallerSmoke(options = {}) {
     windowsHide: true,
   });
 
-  const { exit, snapshot } = await waitForInstallerState(child, installDir, options);
+  const { exit, monitoring } = await waitForInstallerState(child, installDir, options);
   if (exit.timedOut || exit.stalled) {
     await stopProcess(child);
   }
 
-  const installEntries = await collectPathEntries(installDir);
+  const requestedInstallEntries = await collectPathEntries(installDir);
   let installedExePath = firstExistingPath(resolveInstalledExeCandidates(installDir));
   if (!installedExePath && process.platform === 'win32') {
     const regDir = getActualInstallLocation();
-    if (regDir) installedExePath = path.join(regDir, 'RepoStudio.exe');
+    const regExePath = regDir ? path.join(regDir, 'RepoStudio.exe') : null;
+    if (regExePath && fs.existsSync(regExePath)) {
+      installedExePath = regExePath;
+    }
   }
   const effectiveInstallDir = installedExePath ? path.dirname(installedExePath) : installDir;
-  const effectiveSnapshot = effectiveInstallDir !== installDir
-    ? await collectInstallSnapshot(effectiveInstallDir)
-    : snapshot;
+  const effectiveSnapshot = await collectInstallSnapshot(effectiveInstallDir);
+  const effectiveInstallEntries = effectiveInstallDir !== installDir
+    ? await collectPathEntries(effectiveInstallDir)
+    : requestedInstallEntries;
+  const warnings = [];
+  if (repair && repair.ok === false) {
+    warnings.push('Repair pre-step reported warnings/errors; install proceeded with best-effort cleanup.');
+  }
+  if (installedExePath && normalizePath(effectiveInstallDir) !== normalizePath(installDir)) {
+    warnings.push(`Installer wrote to a different location than requested (/D): ${effectiveInstallDir}`);
+  }
 
   const result = {
     ok: exit.exitCode === 0 && Boolean(installedExePath) && effectiveSnapshot.ready,
@@ -388,7 +457,11 @@ export async function runInstallerSmoke(options = {}) {
     installProgress: effectiveSnapshot,
     installedExePath,
     effectiveInstallDir,
-    installEntries,
+    requestedInstallEntries,
+    effectiveInstallEntries,
+    installMonitoring: monitoring,
+    repair,
+    warnings,
     launch: null,
   };
 

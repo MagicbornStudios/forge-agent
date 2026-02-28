@@ -87,7 +87,8 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
   - added explicit packageManager/pnpm version verification steps before frozen install in CI and desktop release workflows,
   - added installed-runtime readiness probe after silent install smoke (`health` + `runtime/deps.desktopRuntimeReady` + `codex CLI installed`),
   - added failure artifact collection/upload for smoke/probe JSON and desktop startup log to improve release-run debugging,
-  - hardened reclaim/process cleanup with parent-PID lineage targeting so child processes are reclaimed only when they descend from verified RepoStudio/Codex runtime roots.
+  - hardened reclaim/process cleanup with parent-PID lineage targeting so child processes are reclaimed only when they descend from verified RepoStudio/Codex runtime roots,
+  - updated installer smoke progress detection to monitor requested + registry/legacy install paths and only apply idle-stall aborts before any observed install progress (prevents false kills on upgrade/reinstall paths).
 - Done (2026-02-27): Phase 15 desktop onboarding and debug ergonomics:
   - added temporary branding/logo and a splash loading window for the desktop shell,
   - added a first-run in-app setup flow with dependency readiness, project-opening guidance, and desktop startup flag visibility,

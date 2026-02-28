@@ -1947,6 +1947,26 @@ npm adduser --registry http://localhost:4873 --auth-type=legacy
 
 ---
 
+## Desktop installer smoke false-stall on upgraded installs (2026-02-28)
+
+**Cause**:
+- Silent installer smoke idle detection watched only the requested `/D=` probe directory.
+- On upgraded/bad-prior installs, NSIS may write to a previously registered install location, so smoke saw "no progress" and could kill a valid install attempt.
+
+**Fix**:
+- Added shared install-location resolution (`install-locations.mjs`) and switched smoke monitoring to known install candidates:
+  - requested install dir,
+  - registry `InstallLocation`,
+  - legacy/default local-program paths.
+- Changed stall policy to fail only on `stalled-before-progress`; once any install progress is observed, smoke relies on explicit timeout rather than idle-killing.
+- Tightened registry fallback launch detection to require actual `RepoStudio.exe` existence before treating the path as install-success candidate.
+
+**Guardrail**:
+- Never treat requested `/D=` path as the only source of installer progress.
+- For Windows installer smoke, monitor known install candidates and keep stall aborts constrained to "no progress ever observed."
+
+---
+
 *(Add new entries when new errors are found and fixed.)*
 
 <!-- forge-loop:generated:start -->

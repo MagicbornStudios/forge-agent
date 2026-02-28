@@ -1,7 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { execSync, spawn, spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+
+import { resolveInstalledExePath as resolveInstalledExePathFromState } from './install-locations.mjs';
 
 function resolvePackageRoot() {
   const currentFile = fileURLToPath(import.meta.url);
@@ -30,65 +32,10 @@ function parseArgs(argv = process.argv.slice(2)) {
   };
 }
 
-function resolveInstalledExeCandidates() {
-  const localPrograms = process.env.LOCALAPPDATA
-    ? path.join(process.env.LOCALAPPDATA, 'Programs')
-    : null;
-  return [
-    ...(localPrograms ? [
-      path.join(localPrograms, 'RepoStudio', 'RepoStudio.exe'),
-      path.join(localPrograms, '@forgerepo-studio', 'RepoStudio.exe'),
-    ] : []),
-  ];
-}
-
-function firstExistingPath(paths) {
-  for (const candidate of paths) {
-    if (fs.existsSync(candidate)) return candidate;
-  }
-  return null;
-}
-
-function getActualInstallLocation() {
-  if (process.platform !== 'win32') return null;
-  try {
-    const script = [
-      "Get-ChildItem 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*' -ErrorAction SilentlyContinue |",
-      "ForEach-Object { $p = Get-ItemProperty $_.PSPath -ErrorAction SilentlyContinue;",
-      "if ($p.DisplayName -eq 'RepoStudio' -and $p.InstallLocation) { $p.InstallLocation.TrimEnd([char]0x5C) } } |",
-      'Select-Object -First 1',
-    ].join(' ');
-    const out = execSync(`powershell -NoProfile -Command "${script}"`, {
-      encoding: 'utf8',
-      timeout: 5000,
-    });
-    const installDir = String(out || '').trim();
-    if (installDir && fs.existsSync(path.join(installDir, 'RepoStudio.exe'))) {
-      return installDir;
-    }
-  } catch {
-    // ignore lookup failures
-  }
-  return null;
-}
-
 function resolveInstalledExePath(explicitPath = '') {
-  if (explicitPath) {
-    const absPath = path.resolve(explicitPath);
-    if (fs.existsSync(absPath)) return absPath;
-  }
-
-  const candidates = resolveInstalledExeCandidates();
-  const existing = firstExistingPath(candidates);
-  if (existing) return existing;
-
-  const regInstallDir = getActualInstallLocation();
-  if (regInstallDir) {
-    const exePath = path.join(regInstallDir, 'RepoStudio.exe');
-    if (fs.existsSync(exePath)) return exePath;
-  }
-
-  return null;
+  return resolveInstalledExePathFromState({
+    explicitExePath: explicitPath,
+  });
 }
 
 async function wait(ms) {

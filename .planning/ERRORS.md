@@ -11,6 +11,9 @@
 - [x] Reclaim/process cleanup risk: child runtime processes (Next server, codex app-server, spawned terminals) could be missed or handled inconsistently without explicit parent-child lineage handling.
   - Root cause: process inventory/reclaim logic evaluated processes mostly by command-line markers and known ports, but did not model parent PID relationships.
   - Resolution: added `parentPid` to process inventory snapshots/parsers and reclaim planning now computes descendant sets from verified RepoStudio/Codex roots; child processes are reclaimed only when lineage is proven, avoiding kill-by-name overreach.
+- [x] Silent installer smoke could false-stall and force-kill valid installs when NSIS ignored `/D=` and wrote to a prior registered install path.
+  - Root cause: idle-progress detection watched only the requested probe directory, so upgrades/install-repair flows writing elsewhere appeared idle.
+  - Resolution: `smoke-install.mjs` now monitors known install candidates (requested dir + registry/legacy defaults), stalls only before any observed install progress, and validates registry fallback executable existence before launch checks.
 
 ## 2026-02-26
 
@@ -27,7 +30,7 @@
     - the existing registered install at `C:\\Users\\benja\\AppData\\Local\\Programs\\@forgerepo-studio` currently has no `RepoStudio.exe` in place,
     - packaged `RepoStudio 0.1.4.exe` can stay alive for the smoke window while `http://127.0.0.1:3020/api/repo/health` is unreachable and no `desktop-startup.log` is written in expected locations.
   - Impact: a published installer/executable can appear to run without becoming operational, matching the user-reported “installer runs but nothing launches” failure mode.
-  - Next step: add a stricter post-launch readiness check (health endpoint and startup-log presence), then fix packaged desktop boot/install behavior before claiming desktop runtime is fully healthy.
+  - Next step: implement repair-first recovery for bad prior installs (detect existing install, clean/reinstall, then runtime probe) and add CI upgrade-from-broken-install smoke coverage so this failure mode is blocked before publish.
 - [x] `RepoStudio Silent Setup 0.1.5.exe` was failing smoke validation because installer completion was detected too aggressively.
   - Root cause:
     - silent smoke used a short fixed timeout/idle window and could kill installer extraction before required files were present,

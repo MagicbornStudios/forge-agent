@@ -24,7 +24,10 @@
     "desktop:clean:scratch": "node src/desktop/clean.mjs --scratch-only",
     "desktop:smoke:launch": "node src/desktop/smoke-launch.mjs",
     "desktop:smoke:silent": "node src/desktop/smoke-install.mjs --kind silent --timeout-ms 420000 --launch",
+    "desktop:smoke:repair": "node src/desktop/smoke-install.mjs --kind silent --timeout-ms 420000 --launch --repair-existing",
+    "desktop:smoke:upgrade-repair": "node src/desktop/smoke-upgrade-repair.mjs --kind silent --timeout-ms 720000 --idle-timeout-ms 300000 --health-timeout-ms 360000",
     "desktop:smoke:runtime": "node src/desktop/smoke-runtime-readiness.mjs",
+    "desktop:repair": "node src/desktop/repair-install.mjs --include-legacy-dirs",
     "desktop:verify:standalone": "node src/desktop/verify-standalone.mjs",
     "desktop:package:win": "node src/desktop/clean.mjs --reset-dist --include-temp && node src/desktop/build.mjs --require-standalone && node src/desktop/verify-standalone.mjs && electron-builder --config electron-builder.json --win dir && node src/desktop/clean.mjs --scratch-only && electron-builder --prepackaged dist/desktop/win-unpacked --config electron-builder.json --win portable nsis && node src/desktop/clean.mjs --scratch-only && electron-builder --prepackaged dist/desktop/win-unpacked --config electron-builder.silent.json --win nsis && node src/desktop/clean.mjs --include-temp",
     "publish": "npm publish"

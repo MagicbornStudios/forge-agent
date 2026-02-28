@@ -252,6 +252,10 @@ jobs:
       - name: Probe Installed Runtime Readiness
         run: pnpm --filter @forge/repo-studio run desktop:smoke:runtime -- --timeout-ms 360000
 
+      - name: Upgrade and Repair Smoke (opt-in)
+        if: ${{ vars.REPOSTUDIO_UPGRADE_REPAIR_SMOKE == '1' }}
+        run: pnpm --filter @forge/repo-studio run desktop:smoke:upgrade-repair
+
       - name: Collect Desktop Failure Diagnostics
         if: failure()
         shell: pwsh
@@ -278,6 +282,8 @@ jobs:
           path: |
             ${{ runner.temp }}/repostudio-smoke-result*.json
             ${{ runner.temp }}/repostudio-runtime-probe*.json
+            ${{ runner.temp }}/repostudio-upgrade-repair*.json
+            ${{ runner.temp }}/repostudio-repair*.json
             ${{ runner.temp }}/desktop-failure-diagnostics/*
           if-no-files-found: warn
 
