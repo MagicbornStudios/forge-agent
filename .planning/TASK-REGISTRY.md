@@ -101,6 +101,8 @@
 | FRG-1529 | 15 | 15-10 | Complete | Semantic guard portability hardening: removed ripgrep runtime dependency by switching guard scripts to Node/git-file search fallback, fixing Windows + CI guard failures. |
 | FRG-1530 | 15 | 15-10 | Complete | Phase 15 Windows desktop UX hardening complete: guided installer, visible startup crash diagnostics, packaged EXE smoke-launch gate, and next artifact version aligned to `0.1.3`. |
 | FRG-1531 | 15 | 15-10 | Complete | Phase 15 desktop onboarding/debug UX completed: temporary branding/logo, splash loading window, first-run setup flow with dependency checks, `--safe-mode`, and `--verbose-startup`; validated with fresh `desktop:package:win` and portable EXE smoke launch. Code signing remains deferred pending certificate ownership. |
+| FRG-1532 | 15 | 15-10 | Complete | Installer branding/path polish: NSIS attended install now normalizes legacy default install folder from `@forgerepo-studio` to `RepoStudio`, preserves custom paths, and aligns shortcut/uninstall display names. |
+| FRG-1533 | 15 | 15-10 | In progress | Publish installer-path follow-up release: bump RepoStudio desktop package to `0.1.4`, rebuild Windows artifacts, and publish a new GitHub release so the default install path fix reaches downloadable installers. |
 | FRG-1601 | 16 | 16-01 | Pending | Add submodule vendor/repo-studio → MagicbornStudios/RepoStudio; update .gitmodules. |
 | FRG-1602 | 16 | 16-01 | Pending | Release workflow: init vendor/repo-studio in verify and package_windows jobs. |
 | FRG-1603 | 16 | 16-01 | Pending | Verify: Repo on GitHub and pullable; document. |
@@ -140,10 +142,14 @@
 | FRG-2003 | 20 | 20-01 | Pending | Add Human TODOs panel; display HUMAN-TASKS content; optional rail badge for open human task count. |
 | FRG-2004 | 20 | 20-02 | Pending | Unified view: "My todos" (HUMAN-TASKS) and "Agent tasks" (TASK-REGISTRY) in one panel or tabbed section. |
 | FRG-2005 | 20 | 20-02 | Pending | Correlation: show "blocked by HT-xx" on agent tasks when referenced in notes/spec. |
-| FRG-2006 | 20 | 20-03 | Pending | Optional: On Planning workspace load, open assistant and send planning "what to do" prompt to Codex; configurable; document in DECISIONS. |
-| FRG-2007 | 20 | 20-03 | Pending | Optional: Badge or notification when HUMAN-TASKS has open items; document in DECISIONS if deferred. |
+| FRG-2006 | 20 | 20-03 | Pending | Planning welcome default OFF; show suggested prompts to get started (no auto-send); optional setting to enable welcome. |
+| FRG-2007 | 20 | 20-03 | Pending | Badges for HUMAN-TASKS open items; status strip (rotating currently running); task completion notifications; toast-type settings (settings UI/codegen). |
+| FRG-2008 | 20 | 20-03 | Pending | Configurable planning scan/parse interval in settings (default ~30s; min/max in DECISIONS); use existing settings registry/codegen. |
+| FRG-2009 | 20 | 20-03 | Pending | Chat contract: document and review (what server receives, prefill, suggested prompts, what appears in chat); capture decisions and open questions in DECISIONS. |
 | FRG-2101 | 21 | 21-01 | Pending | Document artifact layout decisions: which artifacts in which panels/groups; viewport vs tree; align with panel discipline. |
 | FRG-2102 | 21 | 21-01 | Pending | Optional: Add short artifact layout spec or DECISIONS entry for Planning workspace panel-to-artifact mapping. |
+| FRG-2105 | 21 | 21-01 | Pending | Document user workflow: blocking visibility, notifications (human-blocked, execution/other loops), what appears in chat, and how layout supports it. |
+| FRG-2106 | 21 | 21-01 | Pending | Document badge placement (task list, phase list, tree) and hover popup + click-to-open-doc behavior. |
 | FRG-2103 | 21 | 21-02 | Pending | Document loop efficiency decisions: context, tools, cadence and human/agent handoffs; reference Phase 19, HUMAN-TASKS, DoD. |
 | FRG-2104 | 21 | 21-02 | Pending | Optional: Add loop efficiency checklist or DECISIONS entry for agents and Codex. |
 | FRG-2201 | 22 | 22-01 | Pending | Remove Copy @ token and Open in Assistant (or equivalent) buttons from PlanningPanel and PlanningDocumentsPanel. |

@@ -5,13 +5,13 @@
 Phase: 15
 Plan: 15-01
 Status: Execution in progress
-Last activity: 2026-02-28 - published RepoStudio v0.1.3 desktop release from tag `v0.1.3`; Windows installer, portable executable, checksum, and blockmap are now available on GitHub Releases
+Last activity: 2026-02-28 - preparing RepoStudio `v0.1.4` follow-up release so the installer default path fix (`RepoStudio` instead of `@forgerepo-studio`) is available in published Windows artifacts
 
 ## Execution
 
 - Active phase: Strategic shift - Repo Studio + Platform focus
 - Active plan: 15-01 (Master plan - execute shift in tracked slices)
-- Active task: None selected - FRG-1531 is complete; next execution can resume broader Phase 15 release/publish follow-through when needed
+- Active task: FRG-1533 Publish installer-path follow-up release (`0.1.4`)
 
 ## Strategic shift (Phase 15)
 
