@@ -5,13 +5,13 @@
 Phase: 15
 Plan: 15-01
 Status: Execution in progress
-Last activity: 2026-02-28 - published RepoStudio `v0.1.4`; downloadable Windows installer and portable executable now include the installer default path fix (`RepoStudio` instead of `@forgerepo-studio`)
+Last activity: 2026-02-28 - expanding Phase 15 desktop work to fix post-publish readiness defects: silent install verification, installed app file integrity, packaged runtime health reachability, startup log diagnostics, and local build-output cleanup
 
 ## Execution
 
 - Active phase: Strategic shift - Repo Studio + Platform focus
 - Active plan: 15-01 (Master plan - execute shift in tracked slices)
-- Active task: None selected - FRG-1533 is complete; Phase 15 can continue with desktop diagnostics/recovery polish when needed
+- Active task: FRG-1534 Fix post-publish desktop readiness defects (including local artifact cleanup/retention)
 
 ## Strategic shift (Phase 15)
 

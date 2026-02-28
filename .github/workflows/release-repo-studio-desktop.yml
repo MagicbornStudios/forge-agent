@@ -166,32 +166,154 @@ jobs:
       - name: Assert Standalone Desktop Bundle
         run: pnpm --filter @forge/repo-studio run desktop:verify:standalone
 
-      - name: Package RepoStudio Windows Desktop
-        run: pnpm --filter @forge/repo-studio exec electron-builder --config electron-builder.json --win nsis portable
+      - name: Package RepoStudio Windows Desktop Directory
+        shell: pwsh
+        run: |
+          pnpm --filter @forge/repo-studio run desktop:verify:standalone
+          Push-Location packages/repo-studio
+          try {
+            .\node_modules\.bin\electron-builder.CMD --config electron-builder.json --win dir --publish never
+          } finally {
+            Pop-Location
+          }
 
-      - name: Smoke Launch Portable RepoStudio
+      - name: Smoke Launch Win-Unpacked RepoStudio
+        shell: pwsh
+        run: |
+          $winUnpackedExe = "packages/repo-studio/dist/desktop/win-unpacked/RepoStudio.exe"
+          if (-not (Test-Path $winUnpackedExe)) {
+            Write-Host "::error title=desktop-runtime-smoke::Missing win-unpacked executable at $winUnpackedExe"
+            exit 1
+          }
+
+          $previousElectronRunAsNode = $env:ELECTRON_RUN_AS_NODE
+          Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue
+
+          $process = Start-Process -FilePath $winUnpackedExe -PassThru
+          $healthOk = $false
+          try {
+            for ($attempt = 0; $attempt -lt 24; $attempt++) {
+              Start-Sleep -Seconds 5
+              try {
+                $response = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:3020/api/repo/health" -TimeoutSec 3
+                if ($response.StatusCode -eq 200) {
+                  $healthOk = $true
+                  break
+                }
+              } catch {
+                # keep waiting
+              }
+            }
+
+            if (-not $healthOk) {
+              Write-Host "::error title=desktop-runtime-smoke::Win-unpacked RepoStudio never reported healthy on /api/repo/health"
+              exit 1
+            }
+          } finally {
+            if ([string]::IsNullOrEmpty($previousElectronRunAsNode)) {
+              Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue
+            } else {
+              $env:ELECTRON_RUN_AS_NODE = $previousElectronRunAsNode
+            }
+            Get-Process | Where-Object { $_.ProcessName -like "RepoStudio*" } | Stop-Process -Force -ErrorAction SilentlyContinue
+            Get-NetTCPConnection -LocalPort 3020 -State Listen -ErrorAction SilentlyContinue |
+              Select-Object -ExpandProperty OwningProcess -ErrorAction SilentlyContinue |
+              ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }
+          }
+
+      - name: Package RepoStudio Attended Installer and Portable
+        shell: pwsh
+        run: |
+          Push-Location packages/repo-studio
+          try {
+            .\node_modules\.bin\electron-builder.CMD --prepackaged dist/desktop/win-unpacked --config electron-builder.json --win nsis portable --publish never
+          } finally {
+            Pop-Location
+          }
+
+      - name: Package RepoStudio Silent Installer
+        shell: pwsh
+        run: |
+          Push-Location packages/repo-studio
+          try {
+            .\node_modules\.bin\electron-builder.CMD --prepackaged dist/desktop/win-unpacked --config electron-builder.silent.json --win nsis --publish never
+          } finally {
+            Pop-Location
+          }
+
+      - name: Silent Install RepoStudio Smoke
         shell: pwsh
         run: |
           $artifactDir = "packages/repo-studio/dist/desktop"
-          $portableFile = Get-ChildItem -Path (Join-Path $artifactDir "RepoStudio *.exe") |
-            Where-Object { $_.Name -notlike "RepoStudio Setup *.exe" } |
+          $setupFile = Get-ChildItem -Path (Join-Path $artifactDir "RepoStudio Silent Setup *.exe") |
             Sort-Object LastWriteTime -Descending |
             Select-Object -First 1
-          if (-not $portableFile) {
-            Write-Host "::error title=desktop-smoke::Could not locate portable executable in $artifactDir"
+          if (-not $setupFile) {
+            Write-Host "::error title=desktop-install-smoke::Could not locate setup executable in $artifactDir"
             exit 1
           }
 
-          $process = Start-Process -FilePath $portableFile.FullName -PassThru
-          Start-Sleep -Seconds 15
-          $process.Refresh()
+          $installDir = Join-Path $env:RUNNER_TEMP "RepoStudioInstallSmoke"
+          if (Test-Path $installDir) {
+            Remove-Item -Recurse -Force $installDir
+          }
 
-          if ($process.HasExited) {
-            Write-Host "::error title=desktop-smoke::Portable executable exited before smoke window completed."
+          $process = Start-Process -FilePath $setupFile.FullName -ArgumentList "/S", "/CURRENTUSER", "/D=$installDir" -Wait -PassThru
+          if ($process.ExitCode -ne 0) {
+            Write-Host "::error title=desktop-install-smoke::Silent installer exited with code $($process.ExitCode)."
             exit 1
           }
 
-          & taskkill /PID $process.Id /T /F | Out-Null
+          $installedExe = Join-Path $installDir "RepoStudio.exe"
+          if (-not (Test-Path $installedExe)) {
+            Write-Host "::error title=desktop-install-smoke::Installed executable missing at $installedExe"
+            if (Test-Path $installDir) {
+              Get-ChildItem -Path $installDir -Recurse | Select-Object FullName, Length | Format-Table -AutoSize
+            }
+            exit 1
+          }
+
+      - name: Smoke Launch Installed RepoStudio
+        shell: pwsh
+        run: |
+          $installDir = Join-Path $env:RUNNER_TEMP "RepoStudioInstallSmoke"
+          $installedExe = Join-Path $installDir "RepoStudio.exe"
+          if (-not (Test-Path $installedExe)) {
+            Write-Host "::error title=desktop-runtime-smoke::Installed executable missing at $installedExe"
+            exit 1
+          }
+
+          $previousElectronRunAsNode = $env:ELECTRON_RUN_AS_NODE
+          Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue
+
+          $process = Start-Process -FilePath $installedExe -PassThru
+          $healthOk = $false
+          try {
+            for ($attempt = 0; $attempt -lt 24; $attempt++) {
+              Start-Sleep -Seconds 5
+              try {
+                $response = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:3020/api/repo/health" -TimeoutSec 3
+                if ($response.StatusCode -eq 200) {
+                  $healthOk = $true
+                  break
+                }
+              } catch {
+                # keep waiting
+              }
+            }
+
+            if (-not $healthOk) {
+              Write-Host "::error title=desktop-runtime-smoke::Installed RepoStudio never reported healthy on /api/repo/health"
+              exit 1
+            }
+          } finally {
+            if ([string]::IsNullOrEmpty($previousElectronRunAsNode)) {
+              Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue
+            } else {
+              $env:ELECTRON_RUN_AS_NODE = $previousElectronRunAsNode
+            }
+            Get-Process | Where-Object { $_.ProcessName -like "RepoStudio*" } | Stop-Process -Force -ErrorAction SilentlyContinue
+          }
 
       - name: Generate SHA256 Checksums
         shell: pwsh
@@ -226,7 +348,9 @@ jobs:
           name: repostudio-desktop-windows
           path: |
             packages/repo-studio/dist/desktop/RepoStudio Setup *.exe
+            packages/repo-studio/dist/desktop/RepoStudio Silent Setup *.exe
             packages/repo-studio/dist/desktop/RepoStudio Setup *.exe.blockmap
+            packages/repo-studio/dist/desktop/RepoStudio Silent Setup *.exe.blockmap
             packages/repo-studio/dist/desktop/RepoStudio [0-9]*.exe
             packages/repo-studio/dist/desktop/RepoStudio [0-9]*.exe.blockmap
             packages/repo-studio/dist/desktop/RepoStudio-*.txt
@@ -251,7 +375,9 @@ jobs:
           prerelease: false
           files: |
             release-artifacts/RepoStudio Setup *.exe
+            release-artifacts/RepoStudio Silent Setup *.exe
             release-artifacts/RepoStudio Setup *.exe.blockmap
+            release-artifacts/RepoStudio Silent Setup *.exe.blockmap
             release-artifacts/RepoStudio [0-9]*.exe
             release-artifacts/RepoStudio [0-9]*.exe.blockmap
             release-artifacts/RepoStudio-*.txt

@@ -63,6 +63,40 @@ async function copyDir(source, target) {
   });
 }
 
+function packagePathSegments(packageName) {
+  return String(packageName || '')
+    .split('/')
+    .filter(Boolean);
+}
+
+async function ensureStandaloneRuntimeDependencies(workspaceRoot, standaloneTarget) {
+  const nextPackageJsonPath = path.join(workspaceRoot, 'node_modules', 'next', 'package.json');
+  if (!fsSync.existsSync(nextPackageJsonPath)) return;
+
+  const nextPackageJson = JSON.parse(await fs.readFile(nextPackageJsonPath, 'utf8'));
+  const standaloneNodeModules = path.join(standaloneTarget, 'node_modules');
+  const dependencyNames = new Set([
+    ...Object.keys(nextPackageJson.dependencies || {}),
+    ...Object.keys(nextPackageJson.optionalDependencies || {}),
+    'react',
+    'react-dom',
+  ]);
+
+  for (const packageName of dependencyNames) {
+    if (packageName === 'next') continue;
+
+    const segments = packagePathSegments(packageName);
+    const sourcePath = path.join(workspaceRoot, 'node_modules', ...segments);
+    const targetPath = path.join(standaloneNodeModules, ...segments);
+
+    if (!fsSync.existsSync(sourcePath) || fsSync.existsSync(targetPath)) {
+      continue;
+    }
+
+    await copyDir(sourcePath, targetPath);
+  }
+}
+
 function resolveDesktopBuildRoot() {
   const thisFile = fileURLToPath(import.meta.url);
   const packageRoot = path.resolve(path.dirname(thisFile), '..', '..');
@@ -207,6 +241,7 @@ export async function runDesktopBuild(options = {}) {
 
   await fs.rm(buildRoot, { recursive: true, force: true });
   await copyDir(path.dirname(resolved.resolved), standaloneTarget);
+  await ensureStandaloneRuntimeDependencies(workspaceRoot, standaloneTarget);
   await copyDir(staticSource, staticTarget);
   await fs.copyFile(buildIdSource, buildIdTarget);
   await copyDir(publicSource, publicTarget).catch(() => {});

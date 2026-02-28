@@ -1,11 +1,11 @@
 {
   "name": "@forge/repo-studio",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A new IDE centered around multiple coding agents, company agnostic but primarily integrated with Codex.",
   "author": "b2gdevs",
   "private": false,
   "type": "module",
-  "main": "./src/desktop/main.mjs",
+  "main": "./src/desktop/main.cjs",
   "bin": {
     "forge-repo-studio": "./src/cli.mjs"
   },
@@ -19,8 +19,10 @@
     "test": "node --test \"src/__tests__/*.test.mjs\"",
     "desktop:dev": "node src/cli.mjs open --desktop-runtime --foreground",
     "desktop:build": "node src/desktop/build.mjs",
+    "desktop:clean": "node src/desktop/clean.mjs --include-temp",
+    "desktop:clean:all": "node src/desktop/clean.mjs --reset-dist --include-temp",
     "desktop:verify:standalone": "node src/desktop/verify-standalone.mjs",
-    "desktop:package:win": "node src/desktop/build.mjs --require-standalone && node src/desktop/verify-standalone.mjs && electron-builder --config electron-builder.json --win nsis portable",
+    "desktop:package:win": "node src/desktop/clean.mjs --reset-dist --include-temp && node src/desktop/build.mjs --require-standalone && node src/desktop/verify-standalone.mjs && electron-builder --config electron-builder.json --win dir && electron-builder --prepackaged dist/desktop/win-unpacked --config electron-builder.json --win portable nsis && electron-builder --prepackaged dist/desktop/win-unpacked --config electron-builder.silent.json --win nsis && node src/desktop/clean.mjs --include-temp",
     "publish": "npm publish"
   },
   "dependencies": {

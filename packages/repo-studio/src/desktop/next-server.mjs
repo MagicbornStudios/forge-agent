@@ -3,7 +3,7 @@ import net from 'node:net';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 
-const DEFAULT_START_TIMEOUT_MS = 30000;
+const DEFAULT_START_TIMEOUT_MS = 60000;
 
 function exists(filePath) {
   try {
@@ -75,6 +75,9 @@ function buildProdCommand(workspaceRoot, port, options = {}) {
     shell: false,
     mode: 'prod',
     standalone,
+    env: process.versions?.electron
+      ? { ELECTRON_RUN_AS_NODE: '1' }
+      : {},
   };
 }
 
@@ -111,6 +114,37 @@ async function waitForPort(port, timeoutMs = DEFAULT_START_TIMEOUT_MS) {
   return false;
 }
 
+async function waitForHealth(port, child, timeoutMs = DEFAULT_START_TIMEOUT_MS) {
+  const startedAt = Date.now();
+  const targetUrl = `http://127.0.0.1:${Number(port)}/api/repo/health`;
+
+  while (Date.now() - startedAt < timeoutMs) {
+    if (child?.exitCode != null || child?.killed === true) {
+      return {
+        ok: false,
+        reason: `RepoStudio Next server exited before becoming healthy (exitCode=${child?.exitCode ?? 'null'}).`,
+      };
+    }
+
+    try {
+      const response = await fetch(targetUrl);
+      if (response.ok) {
+        return { ok: true };
+      }
+    } catch {
+      // keep waiting
+    }
+
+    // eslint-disable-next-line no-await-in-loop
+    await wait(500);
+  }
+
+  return {
+    ok: false,
+    reason: `RepoStudio Next server did not become healthy within ${timeoutMs}ms.`,
+  };
+}
+
 function spawnServer(command, args, options = {}) {
   const child = spawn(command, args, {
     cwd: options.cwd || process.cwd(),
@@ -142,6 +176,7 @@ export async function startRepoStudioNextServer(options = {}) {
     shell: command.shell,
     stdio,
     env: {
+      ...(command.env || {}),
       PORT: String(port),
       HOSTNAME: '127.0.0.1',
       REPO_STUDIO_DESKTOP: '1',
@@ -150,6 +185,24 @@ export async function startRepoStudioNextServer(options = {}) {
       ...(sqliteUri ? { REPO_STUDIO_DATABASE_URI: sqliteUri } : {}),
     },
   });
+
+  if (typeof options.onStdout === 'function' && child.stdout) {
+    child.stdout.on('data', (chunk) => {
+      options.onStdout(String(chunk || ''));
+    });
+  }
+
+  if (typeof options.onStderr === 'function' && child.stderr) {
+    child.stderr.on('data', (chunk) => {
+      options.onStderr(String(chunk || ''));
+    });
+  }
+
+  if (typeof options.onExit === 'function') {
+    child.on('exit', (code, signal) => {
+      options.onExit(code, signal);
+    });
+  }
 
   if (!child.pid) {
     throw new Error('Failed to spawn RepoStudio Next server process.');
@@ -163,6 +216,16 @@ export async function startRepoStudioNextServer(options = {}) {
       // ignore
     }
     throw new Error(`RepoStudio Next server did not start listening on port ${port}.`);
+  }
+
+  const health = await waitForHealth(port, child);
+  if (!health.ok) {
+    try {
+      child.kill('SIGTERM');
+    } catch {
+      // ignore
+    }
+    throw new Error(health.reason);
   }
 
   return {

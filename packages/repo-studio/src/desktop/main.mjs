@@ -3,8 +3,6 @@ import { appendFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
-import { app, BrowserWindow, dialog, ipcMain, safeStorage } from 'electron';
-
 import { createDesktopWatcher } from './watcher.mjs';
 import { DESKTOP_IPC, DESKTOP_RUNTIME_EVENT_TYPES } from './ipc-channels.mjs';
 import { resolveRepoStudioSqlite } from '../core/runtime/sqlite-paths.mjs';
@@ -12,10 +10,27 @@ import { startRepoStudioNextServer } from './next-server.mjs';
 import { createCredentialManager } from '../security/credential-manager.mjs';
 import { normalizeBaseUrl, toSafeMessage } from '../security/contracts.mjs';
 
+const electron = globalThis.__REPO_STUDIO_ELECTRON__;
+
+if (!electron || typeof electron !== 'object') {
+  throw new Error('RepoStudio desktop main runtime failed to resolve Electron APIs.');
+}
+
+const {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  safeStorage,
+} = electron;
+
+app.setName('RepoStudio');
+
 function parseArgs(argv = process.argv.slice(2)) {
   const args = new Map();
   for (let index = 0; index < argv.length; index += 1) {
     const token = argv[index];
+    if (token === '--') continue;
     if (!token.startsWith('--')) continue;
     const key = token.slice(2);
     const next = argv[index + 1];
@@ -63,8 +78,8 @@ const workspaceRoot = path.resolve(String(argv.get('workspace-root') || process.
 const view = String(argv.get('view') || 'planning');
 const profile = String(argv.get('profile') || 'forge-loop');
 const desktopDev = argv.get('desktop-dev') === true;
-const safeMode = argv.get('safe-mode') === true;
-const verboseStartup = argv.get('verbose-startup') === true;
+const safeMode = argv.get('safe-mode') === true || process.env.REPO_STUDIO_SAFE_MODE === '1';
+const verboseStartup = argv.get('verbose-startup') === true || process.env.REPO_STUDIO_VERBOSE_STARTUP === '1';
 
 let ownsServer = argv.get('owns-server') === true;
 let runtimeServerPid = Number(argv.get('server-pid') || 0);
@@ -95,6 +110,9 @@ function resolveDesktopLogoPath() {
 }
 
 function resolveDesktopIconPath() {
+  if (process.platform === 'win32') {
+    return resolveDesktopAssetPath('..', '..', 'build', 'repo-studio.ico');
+  }
   return resolveDesktopLogoPath();
 }
 
@@ -233,7 +251,17 @@ async function ensureServerReady() {
       ? path.join(process.resourcesPath, 'next', 'standalone')
       : undefined,
     databaseUri: sqlite.databaseUri,
-    stdio: 'ignore',
+    stdio: 'pipe',
+    onStdout: verboseStartup
+      ? (chunk) => appendDesktopLogEntry('next-server stdout', chunk)
+      : undefined,
+    onStderr: (chunk) => appendDesktopLogEntry('next-server stderr', chunk),
+    onExit: (code, signal) => {
+      appendDesktopLogEntry(
+        'next-server exit',
+        `code=${code ?? 'null'} signal=${signal ?? 'null'}`,
+      );
+    },
   });
   runtimeServerPid = started.pid;
   ownsServer = true;
@@ -341,7 +369,7 @@ async function createSplashWindow() {
 
 async function createMainWindow() {
   const currentFile = fileURLToPath(import.meta.url);
-  const preloadPath = path.resolve(path.dirname(currentFile), 'preload.mjs');
+  const preloadPath = path.resolve(path.dirname(currentFile), 'preload.cjs');
   const url = runtimeUrl(appPort, view, profile);
 
   mainWindow = new BrowserWindow({
@@ -487,6 +515,8 @@ function registerIpcHandlers() {
     ok: true,
     appPort,
     workspaceRoot,
+    userDataPath: app.getPath('userData'),
+    startupLogPath: resolveDesktopStartupLogPath(),
     serverPid: runtimeServerPid,
     ownsServer,
     safeMode,

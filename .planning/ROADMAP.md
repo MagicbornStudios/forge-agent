@@ -38,7 +38,9 @@ Phase 15 archive execution note: `apps/studio` and `apps/consumer-studio` are no
 - [ ] **Phase 22: Workspace and panel design refactor — composition, chat-in-chat, fewer rails** - Remove Copy @ from panels; reduce Planning left rail; tree + context menu for structure actions
 - [ ] **Phase 23: Repo review and cleanup — GSD/Cursor setup, analysis consolidation, layout and legacy** - GSD install and Cursor rule; consolidate or clarify analysis; document repo layout and .cursor/plans hygiene
 - [ ] **Phase 24: Loop model and multi-loop** - Loop hierarchy (new scope = new loop; child loops under meta loop); fixed naming conventions; max doc size + contextual summarize/archive; discoverability for Repo Studio and coding agents
-- [ ] **Phase 25: Game simulation workspace** - Extension workspace "game simulation" with own parser and doc writes; GRD + `.concept`; simulation entry point scoping Codex to workspace docs only; two-loop handoff (concept vs PRD)
+- [ ] **Phase 25: Concept simulation workspace** - Concept discovery workspace; ask "what are we building?" (suggestions: game, story, software); docs-only simulation; DISCOVERED-FEATURES output; two-loop handoff
+- [ ] **Phase 26: Codebase vector indexing** - sqlite-vss + Transformers.js/all-MiniLM-L6-v2; model at install time; exclusion policy; reduces token cost and improves relevance
+- [ ] **Phase 27: Repo Studio documentation** - Comprehensive docs; Repo Studio downloadable from docs site; packages; install instructions; what it does; how to extend
 
 ## Phase Details
 
@@ -300,14 +302,19 @@ Plans:
 - [ ] 24-01: Loop hierarchy and naming: document when to create child loops; fixed naming conventions for GRD/PRD and loop folders; LOOPS.json and .planning/loops/<loopId> discoverability
 - [ ] 24-02: Max doc size and summarize/archive: define max size for key planning docs; contextual summarize and archive behavior; wire or document existing mechanisms
 
-### Phase 25: Game simulation workspace
-**Goal:** Extension workspace "game simulation" with its own parser and doc writes; GRD + `.concept`; simulation entry point (e.g. agent.md) that scopes Codex to this workspace only; two-loop model (concept/simulation loop vs software/PRD loop) with handoff; one game loop + one PRD per workspace. Reference: `.tmp/dungeonbreak-docs-reference/` (from `pnpm reference:copy-dungeonbreak`).
+### Phase 25: Concept simulation workspace
+**Goal:** **Concept discovery** workspace that **deprecates Story**. **First-class types:** game, story (book), software (small); type **fixed at creation**. Extension in **repo-studio-extensions**; **src downloadable** into user project for extension. Docs-only simulation; DISCOVERED-FEATURES output; two-loop handoff.
 **Depends on:** Phase 24 recommended (loop model); extension workspace pattern (e.g. Story)
 **Plans:** 2 plans
 
 Plans:
-- [ ] 25-01: Game simulation workspace extension: register workspace; own parser and write path for docs; tree + viewport similar to Planning; fixed naming; `.concept` as project folder; simulation entry point for Codex
-- [ ] 25-02: Two-loop handoff and scoping: concept/simulation loop (GRD, .concept) vs software/PRD loop; assistant scoped to game simulation workspace docs only during simulation; handoff from simulation to PRD
+- [ ] 25-01: Concept workspace extension (extensions repo): first-class types (game, story, software); type immutable; deprecate Story; src downloadable; parser, tree, viewport, `.concept`, DISCOVERED-FEATURES
+- [ ] 25-02: Two-loop handoff and scoping: concept/simulation loop (GRD, .concept) vs software/PRD loop; assistant scoped to concept simulation workspace docs only during simulation; handoff from simulation to PRD
+
+### Phase 26: Codebase vector indexing
+**Goal:** Chunk-level semantic search for codebase retrieval. **Vector stack:** sqlite-vss; Transformers.js + all-MiniLM-L6-v2; model downloaded during installation (install fails if model download fails). Exclusion: .gitignore + vendor/ (default) + .cursorignore. See DECISIONS (Codebase indexing, Vector stack). Verify sqlite-vss Windows support.
+**Depends on:** Phase 19/20 recommended
+**Plans:** TBD (index pipeline, retrieval integration, installer model download)
 
 ## Progress
 
@@ -337,4 +344,6 @@ Plans:
 | 22. Workspace and panel design refactor | 0/3 | Pending | - |
 | 23. Repo review and cleanup | 0/3 | Pending | - |
 | 24. Loop model and multi-loop | 0/2 | Pending | - |
-| 25. Game simulation workspace | 0/2 | Pending | - |
+| 25. Concept simulation workspace | 0/2 | Pending | - |
+| 26. Codebase vector indexing | 0/TBD | Pending | - |
+| 27. Repo Studio documentation | 0/TBD | Pending | - |

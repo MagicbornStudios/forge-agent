@@ -8,6 +8,11 @@ A **planning/design-only** phase. Decide and document (1) how `.planning` (and r
 
 - No single spec for "which artifacts go in which panels" or how to group them (e.g. Overview vs Work); Phase 20 adds DoD and HUMAN-TASKS but panel count and grouping are ad hoc.
 - Loop efficiency (context, tools, handoffs) is spread across Phase 19, HUMAN-TASKS, and DoD; no consolidated checklist or decisions for "how we keep loops efficient" when using Repo Studio.
+- **User workflow and expectations** are not fully documented: how we expect users to use planning docs and parsed info, how **blocking** is visible (human todos, agent tasks blocked by HT-xx), **notifications** (human-blocked, execution done, other loops running), what **appears in chat** (context, suggested next), and how layout supports that workflow. Phase 20 CONTEXT and 20-03 start this; Phase 21 should capture it as design so layout and panels align.
+- **Autonomous / overnight mode:** See DECISIONS (Autonomous execution and overnight mode). Agents update docs as they go; Codex can work with planning agent in background during implementation; no automatic Planning→Code handoff (human decides); multiple loops in parallel; session state for resume. Agents default to recommended action.
+- **Context budget:** See DECISIONS (Context budget and compaction). 128k per request; chat and tool results summarized beyond recent ~15 turns; fixed planning list (STATE, active phase, HUMAN-TASKS) + on-demand codebase/URL retrieval.
+- **Codebase indexing:** See DECISIONS (Codebase indexing and exclusion policy, Vector stack). sqlite-vss; Transformers.js + all-MiniLM-L6-v2; model at install time; exclude .gitignore + vendor/ + .cursorignore.
+- **Badge and hover behavior:** Badges on task list items, phase list items, and tree (wave, depends, "blocked by"). On **hover**: popup (not just tooltip) with more info (summary, doc reference, section). On **click**: open doc in viewport and navigate to referenced section. Status strip (toolbar), toast settings, scan/parse interval — see Phase 20-03.
 
 ## Source of truth
 

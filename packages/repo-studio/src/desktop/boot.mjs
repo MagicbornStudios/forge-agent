@@ -19,7 +19,7 @@ const require = createRequire(import.meta.url);
 
 function resolveDesktopMainPath() {
   const currentFile = fileURLToPath(import.meta.url);
-  return path.resolve(path.dirname(currentFile), 'main.mjs');
+  return path.resolve(path.dirname(currentFile), 'main.cjs');
 }
 
 function resolveElectronBinary() {
@@ -104,13 +104,17 @@ export async function runDesktopBoot(options = {}) {
     cwd: workspaceRoot,
     detached: detach,
     stdio: detach ? 'ignore' : 'inherit',
-    env: {
-      ...process.env,
-      REPO_STUDIO_DESKTOP: '1',
-      ...(safeMode ? { REPO_STUDIO_SAFE_MODE: '1' } : {}),
-      ...(verboseStartup ? { REPO_STUDIO_VERBOSE_STARTUP: '1' } : {}),
-      REPO_STUDIO_DATABASE_URI: sqlite.databaseUri,
-    },
+    env: (() => {
+      const nextEnv = {
+        ...process.env,
+        REPO_STUDIO_DESKTOP: '1',
+        ...(safeMode ? { REPO_STUDIO_SAFE_MODE: '1' } : {}),
+        ...(verboseStartup ? { REPO_STUDIO_VERBOSE_STARTUP: '1' } : {}),
+        REPO_STUDIO_DATABASE_URI: sqlite.databaseUri,
+      };
+      delete nextEnv.ELECTRON_RUN_AS_NODE;
+      return nextEnv;
+    })(),
   });
 
   if (!electronChild.pid) {

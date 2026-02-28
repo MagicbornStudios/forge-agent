@@ -73,6 +73,10 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
   - pushed `main` at `f1debda` and created/pushed tag `v0.1.4`,
   - GitHub Actions release workflow run `#39` completed successfully,
   - public GitHub Release `RepoStudio v0.1.4` is live with Windows installer, portable executable, checksum, and blockmap assets carrying the installer-path fix.
+- In progress (2026-02-28): Phase 15 desktop readiness hardening continues:
+  - local packaging cleanup is now part of the desktop contract (`src/desktop/clean.mjs` + `desktop:clean`),
+  - `desktop:package:win` now resets stale `dist/desktop` output up front and prunes `win-unpacked` plus builder scratch/temp artifacts after packaging,
+  - this is specifically to stop repeated Windows packaging runs from accumulating large local disk usage while FRG-1534 continues on silent-install/runtime readiness.
 - Done (2026-02-27): Phase 15 desktop onboarding and debug ergonomics:
   - added temporary branding/logo and a splash loading window for the desktop shell,
   - added a first-run in-app setup flow with dependency readiness, project-opening guidance, and desktop startup flag visibility,

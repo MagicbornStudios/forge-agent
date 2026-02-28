@@ -29,6 +29,7 @@ Files for AI/coding agents. Keep accurate and greppable.
 - **`.planning/HUMAN-TASKS.md`** - Human-only tasks (repos, secrets, Vercel, npm, OAuth); check before assuming a task is blocked on human action.
 - **`.planning/PLATFORM-PRD.md`** - Platform product and gateway roadmap (Repo Studio backend, proxy APIs, capabilities).
 - **`.planning/PRD.md`** - Default loop product intent (when present).
+- **`.planning/MONETIZATION-STRATEGY.md`** - Iteration doc: revenue model, license, subscription gating, extension gating, platform entitlements; not MIT.
 - **`.planning/DEFINITION-OF-DONE.md`** - Stage DoD (Planning, Execution, Review, PRD scope); use to determine when a stage is complete.
 - **`.planning/phases/*`** - Context, research, plans, summaries, UAT, verification. Phase 20 wires DoD and HUMAN-TASKS into Repo Studio Planning workspace (snapshot, panels, unified todos); see ROADMAP.
 - **`.planning/prompts/*`** - Runtime-agnostic prompt packs for coding-agent/manual runs.
@@ -39,6 +40,8 @@ See [how-to/forge-loop-workflow](how-to/forge-loop-workflow), [how-to/forge-loop
 ## Expected repo layout
 
 Monorepo: **root** contains `.planning/`, `apps/`, `packages/`, `vendor/`, `docs/`, `scripts/`. **No top-level `app`** — applications live under `apps/*` (e.g. repo-studio, docs, platform). **Repo Studio** is the primary app for Forge Loop. **Vendor:** submodules and vendored deps (e.g. `vendor/get-shit-done`, `vendor/repo-studio-extensions`, `vendor/twick`; Phase 16/17 add vendor/repo-studio, vendor/platform). **Extensions:** installables and examples in `vendor/repo-studio-extensions`; per-project config at `.repo-studio/extensions`. **Docs:** how-tos and agent-artifacts in `docs/`; docs site app in `apps/docs`. **Legacy:** `docs/agent-artifacts/core/*` are read-only snapshots from `.planning`; archived apps (e.g. studio, consumer-studio) may live under `apps/*` with ARCHIVED.md or in `legacy/`. **.cursor/plans:** ad-hoc Cursor plans; **.planning** is canonical for phase work (ROADMAP, STATE, TASK-REGISTRY, phases).
+
+**Codebase indexing (when implemented):** Vector store: sqlite-vss. Embeddings: Transformers.js + all-MiniLM-L6-v2; model downloaded during installation (no repo, no first-launch surprise). Excludes `.gitignore`, `vendor/` (by default), `.cursorignore`. See DECISIONS (Codebase indexing, Vector stack).
 
 ## Legacy continuity snapshots (`docs/agent-artifacts/core`)
 

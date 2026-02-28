@@ -6,6 +6,7 @@ Repo-wide product intent for the default planning loop (`.planning/`). We ship *
 
 - **Strategic shift and scope:** [.planning/phases/15-strategic-shift-repo-studio-platform-focus/15-PRD.md](.planning/phases/15-strategic-shift-repo-studio-platform-focus/15-PRD.md)
 - **Platform:** [.planning/PLATFORM-PRD.md](.planning/PLATFORM-PRD.md)
+- **Monetization (iteration):** [.planning/MONETIZATION-STRATEGY.md](.planning/MONETIZATION-STRATEGY.md)
 - **Stage and PRD conventions:** [.planning/DEFINITION-OF-DONE.md](.planning/DEFINITION-OF-DONE.md)
 
 ## Goals (default loop)

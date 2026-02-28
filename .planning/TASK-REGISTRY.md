@@ -103,6 +103,7 @@
 | FRG-1531 | 15 | 15-10 | Complete | Phase 15 desktop onboarding/debug UX completed: temporary branding/logo, splash loading window, first-run setup flow with dependency checks, `--safe-mode`, and `--verbose-startup`; validated with fresh `desktop:package:win` and portable EXE smoke launch. Code signing remains deferred pending certificate ownership. |
 | FRG-1532 | 15 | 15-10 | Complete | Installer branding/path polish: NSIS attended install now normalizes legacy default install folder from `@forgerepo-studio` to `RepoStudio`, preserves custom paths, and aligns shortcut/uninstall display names. |
 | FRG-1533 | 15 | 15-10 | Complete | Published RepoStudio `v0.1.4` follow-up release: desktop package bumped to `0.1.4`, Windows artifacts rebuilt, and a new GitHub release is live so the default install path fix reaches downloadable installers. |
+| FRG-1534 | 15 | 15-10 | In progress | Fix post-publish desktop readiness defects: silent installer verification, installed app file integrity, packaged runtime health endpoint reachability, startup log diagnostics, and local desktop artifact cleanup/retention must all work before the next desktop release. |
 | FRG-1601 | 16 | 16-01 | Pending | Add submodule vendor/repo-studio → MagicbornStudios/RepoStudio; update .gitmodules. |
 | FRG-1602 | 16 | 16-01 | Pending | Release workflow: init vendor/repo-studio in verify and package_windows jobs. |
 | FRG-1603 | 16 | 16-01 | Pending | Verify: Repo on GitHub and pullable; document. |

@@ -1,0 +1,48 @@
+{
+  "appId": "com.forge.repostudio",
+  "productName": "RepoStudio",
+  "artifactName": "RepoStudio Silent Setup ${version}.${ext}",
+  "directories": {
+    "output": "dist/desktop"
+  },
+  "files": [
+    "src/desktop/**",
+    "src/core/runtime/**",
+    "src/security/**",
+    "src/lib/**",
+    "package.json"
+  ],
+  "extraResources": [
+    {
+      "from": ".desktop-build/next",
+      "to": "next"
+    }
+  ],
+  "win": {
+    "signAndEditExecutable": false,
+    "target": [
+      "nsis"
+    ]
+  },
+  "nsis": {
+    "include": "build-resources/installer.nsh",
+    "oneClick": true,
+    "perMachine": false,
+    "allowElevation": false,
+    "shortcutName": "RepoStudio",
+    "uninstallDisplayName": "RepoStudio",
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "runAfterFinish": false
+  },
+  "mac": {
+    "target": [
+      "dmg"
+    ]
+  },
+  "linux": {
+    "target": [
+      "AppImage"
+    ]
+  }
+}

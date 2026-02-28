@@ -21,7 +21,8 @@ Platform is the **backend and integration gateway** for Repo Studio: auth, API k
 
 1. **Open Router proxy (Phase 18)** — Platform proxy for chat; Repo Studio uses it when connected and capability set.
 2. **Extension install proxy (Phase 18)** — Platform fetches extension content from RepoStudio-Extensions; Repo Studio uses when capability set and no user GitHub token.
-3. **Future integrations** — Add proxy/capabilities as needed (e.g. other AI or data sources).
+3. **Entitlements (future)** — For monetization: subscription check, tier, extension gating. Desktop calls platform to validate; platform returns `{ active, tier }`. See [.planning/MONETIZATION-STRATEGY.md](.planning/MONETIZATION-STRATEGY.md).
+4. **Future integrations** — Add proxy/capabilities as needed (e.g. other AI or data sources).
 
 ## Human-only setup
 

@@ -9,6 +9,16 @@
 - [x] Extension API test assumed Story extension is always installed in repo-local `.repo-studio/extensions`.
   - Root cause: Story is now optional per project in extension-registry install model.
   - Resolution: relaxed route test contract to validate payload shape always, and validate Story tool contract only when Story entry exists.
+- [ ] Post-publish `v0.1.4` installer/runtime smoke validation exposed a real desktop gap.
+  - Evidence:
+    - silent installer invocation can return successfully while a custom `/D=` target directory remains empty,
+    - the existing registered install at `C:\\Users\\benja\\AppData\\Local\\Programs\\@forgerepo-studio` currently has no `RepoStudio.exe` in place,
+    - packaged `RepoStudio 0.1.4.exe` can stay alive for the smoke window while `http://127.0.0.1:3020/api/repo/health` is unreachable and no `desktop-startup.log` is written in expected locations.
+  - Impact: a published installer/executable can appear to run without becoming operational, matching the user-reported “installer runs but nothing launches” failure mode.
+  - Next step: add a stricter post-launch readiness check (health endpoint and startup-log presence), then fix packaged desktop boot/install behavior before claiming desktop runtime is fully healthy.
+- [x] Repeated local desktop packaging was leaving excessive stale artifacts on disk (`dist/desktop` reached ~1.8 GB).
+  - Root cause: packaging preserved prior-version installers, `win-unpacked`, builder scratch files, and Repo Studio temp smoke scripts across repeated runs.
+  - Resolution: added `src/desktop/clean.mjs`, wired `desktop:package:win` to reset stale output before packaging and prune disposable artifacts afterward, and exposed `pnpm --filter @forge/repo-studio run desktop:clean` for explicit local cleanup.
 
 ## 2026-02-13
 

@@ -12,7 +12,7 @@ Tasks that require **human action** (create repos, set env/secrets, configure Ve
 | HT-06 | Platform: GitHub token for RepoStudio-Extensions fetch | Pending | Phase 18 (extension install) | Read-only token for extension content. |
 | HT-07 | npm: create org/scope if needed; first publish; 2FA | Pending | Release flow | If not already done. |
 | HT-08 | GitHub App / OAuth: create app, client ID/secret, install on org | Pending | If needed for platform auth | Optional depending on current auth. |
-| HT-09 | Provide Windows code-signing certificate and release-signing ownership for RepoStudio desktop | Pending | Desktop release trust/signing | Required to remove unsigned Windows warnings and enable real code signing in release workflow. |
-| HT-10 | Provide a proper multi-size Windows `.ico` asset for RepoStudio installer/executable branding | Pending | Desktop packaging polish | Current PNG is used for in-app branding and splash only; NSIS/electron-builder still need a valid `.ico` file. |
+| HT-09 | Provide Windows code-signing certificate and release-signing ownership for RepoStudio desktop | Pending | Desktop release trust/signing | Deferred until 50k funding/revenue. Currently at 0; no foreseeable monetization plan. Requires in-depth discussion. |
+| HT-10 | Provide a proper multi-size Windows `.ico` asset for RepoStudio installer/executable branding | Done | — | `repo_studio.ico` placed at `packages/repo-studio/build/repo-studio.ico`; electron-builder and main window use it. |
 
 Append new rows for new human-only items; do not remove rows (keep history).

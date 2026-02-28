@@ -209,6 +209,10 @@
 - [x] Debug-first launch modes are first-class CLI contracts: `--safe-mode` disables nonessential desktop background services (starting with watchers) and `--verbose-startup` writes step-by-step startup progress to the desktop startup log.
 - [x] Code signing is not auto-implemented by agents in this slice; it remains a human-owned release concern until a Windows signing certificate and signing workflow are available.
 
+## 2026-02-28 (Phase 15 desktop artifact retention)
+
+- [x] Local desktop packaging must auto-clean after itself: `desktop:package:win` resets stale `dist/desktop` output before packaging, then prunes `win-unpacked`, builder scratch files, prior-version installers, and known Repo Studio temp smoke artifacts after packaging so repeated Windows builds do not accumulate large local disk usage.
+
 ## 2026-02-27 (Phase 16: Repo Studio canonical submodule)
 
 - [x] Repo Studio app canonical source is [MagicbornStudios/RepoStudio](https://github.com/MagicbornStudios/RepoStudio); forge-agent includes it as a submodule at `vendor/repo-studio` for build and reference.
@@ -238,7 +242,8 @@
 
 ## 2026-02-26 (Phase 20: Planning artifacts first-class in Repo Studio)
 
-- [x] Phase 20 (Planning artifacts first-class — DoD, HUMAN-TASKS, panels, unified todos) adds DoD and HUMAN-TASKS to the Planning workspace: (1) both artifacts in planning snapshot (coreFiles) and DoD + Human TODOs panels; (2) unified "My todos | Agent tasks" view with correlation (e.g. blocked by HT-xx); (3) optional on-load Codex "what to do" prompt and human-blocker badge/notifications. See [.planning/phases/20-planning-artifacts-and-todos-in-repo-studio/](.planning/phases/20-planning-artifacts-and-todos-in-repo-studio/). Depends on Phase 19 recommended first; can overlap with 16–18.
+- [x] Phase 20 (Planning artifacts first-class — DoD, HUMAN-TASKS, panels, unified todos) adds DoD and HUMAN-TASKS to the Planning workspace: (1) both artifacts in planning snapshot (coreFiles) and DoD + Human TODOs panels; (2) unified "My todos | Agent tasks" view with correlation (e.g. blocked by HT-xx); (3) planning welcome, notifications, status strip, chat contract. See [.planning/phases/20-planning-artifacts-and-todos-in-repo-studio/](.planning/phases/20-planning-artifacts-and-todos-in-repo-studio/). Depends on Phase 19 recommended first; can overlap with 16–18.
+- [ ] **Planning UX (20-03):** Planning welcome **default OFF**; show suggested prompts. Status strip in toolbar (rotating "currently running"); task completion toasts; configurable toast types (task done, phase done, human-blocked, errors only). Scan/parse interval configurable (default ~30s). Badges on task list, phase list, tree; hover = popup with more info; click = open doc in viewport + navigate to section. **Chat contract** decided — see "Phase 20 chat contract and session scope" below.
 
 ## 2026-02-26 (Phase 21 and 22: Artifact layout, loop efficiency, workspace design refactor)
 
@@ -250,3 +255,76 @@
 - [x] Phase 23 (Repo review and cleanup — GSD/Cursor setup, analysis consolidation, layout and legacy) aligns tooling (GSD install for Codex, Cursor rule for .planning + forge-loop), consolidates or clarifies analysis (ANALYSIS-LOOPS, ANALYSIS-REFERENCES), and documents repo layout and .cursor/plans hygiene. See [.planning/phases/23-repo-review-and-cleanup/](.planning/phases/23-repo-review-and-cleanup/). Can run in parallel with 19–22.
 
 **Analysis and loops (Phase 23):** Analysis folders (repo_studio_analysis, forge_env_analysis, ide_navigation_analysis, agent_centric_ide_analysis) are **reference only**; one focus per loop. docs_codegen_analysis and agent_observability_analysis are listed in ANALYSIS-LOOPS but folders are not present at repo root (planned). Single Forge Loop: `.planning` + GSD/Codex + Repo Studio; analysis feeds requirements and phase context into .planning, no separate execution track.
+
+## 2026-02-26 (Phase 20 chat contract and session scope)
+
+- [x] **selectedDocId:** Doc reference for initial context or when user says "this" / current file. **Reference only** — not required; used for context when provided.
+- [x] **Suggested prompts:** Shown as **chips** (clickable). User **must select** one — not in input, not in chat, not automatic. Chips disappear after selection.
+- [x] **Codex display:** Chat shows tools being used, tasks being worked, different text coloring for tool calls, summary; special formatting for agent workflow. Sometimes asks questions; all Codex workflows.
+- [x] **Multi-loop inspect:** While agent works in one loop, user can inspect other loops and work at the same time.
+- [x] **Session scope:** Each workspace can work on its own loop: Planning = planning loop; Concept simulation = concept loop; Code = implementation loop. System prompts per workspace define behavior and scope; can get context from workspace files and related loops.
+- [x] **Workspace roles:** Planning workspace = planning only (same techniques as dev). Concept simulation workspace = simulate product/game/software as if it exists and build upon it. Code workspace = custom UI for Codex implementation; planning docs from Planning workspace feed agents here. Agents can bypass Code workspace via codex/claude code CLIs.
+- [x] **Skills visibility:** Show skills installed to project and available from get-shit-done (or custom version). If custom, version it in our forked repo.
+
+## 2026-02-26 (Autonomous execution and overnight mode)
+
+- [x] **Default to recommended:** Agents act as staff-level engineers; always push forward with recommended action. No approval gates for autonomous runs.
+- [x] **Overnight mode = continuous execution:** Execute constantly with recommended action; not literally overnight. User can intervene anytime, pick back up later, or steer. Same behavior for extended unattended runs.
+- [x] **Docs-first progress:** Agents update planning docs (STATE, TASK-REGISTRY, phase docs, STATUS) as they go. User wakes to **final summary + diffs**; then reviews docs more thoroughly. Granular review comes from the updated docs.
+- [x] **Context compaction:** Compact and summarize context; dump the rest. Suggested prompts ("what's next", "what can we improve", "let's plan the most underplanned phase") stay stable.
+- [x] **Fully autonomous for now:** All execution autonomous. Agents make constant builds. If feedback goes to another agent, no approval — default to recommended.
+- [x] **Planning ↔ Code is human handoff:** No automatic handoff from Planning workspace to Code. Planning is a phase before execution; human decides when to execute. Code workspace + Codex can plan, update tasks, and do everything (skills, planning docs) during implementation. Codex can work with a planning agent in background to update docs and execute again.
+- [x] **Phase pivots:** During execution, if errors or pivot needed, agents can extend phases (add tasks, update plans). Expected in overnight mode.
+- [x] **Rollback:** Git revert. Codex and other agents use git.
+- [x] **Scope:** Phase/task boundaries already constrain scope creep.
+- [x] **Parallelism:** Multiple loops (Planning, Code, Concept simulation) can run in parallel.
+- [x] **Persistence:** Session state (SQLite or file-based) for resume; can pick back up from last turn/task.
+- [x] **Headless CLI:** Direct codex/claude code CLI users are advanced; no hand-holding. Assume drift risk. Must still work with our loops and planning docs.
+
+## 2026-02-26 (Agent output UX and linkification)
+
+- [x] **Presentation over actions:** Codex extension has review cards with files and line diffing; we fall short there. User cares about **how we present text and formatting**, not Undo/Review buttons. Focus: **linkification** — links to executables, files in repo, web URLs. Rich text and formatting in agent output.
+- [x] **Codebase vector indexing:** In scope. Doc ingestion (URLs) deferred. See "Codebase indexing and exclusion policy" below.
+
+## 2026-02-26 (Context budget and compaction)
+
+- [x] **Target: 128k tokens per request.** 2026 baseline: 128k–200k common (GPT, Claude Sonnet); 1M available for some models. We target 128k so we run on all supported models with headroom.
+- [x] **Chat and tool results:** Summarized when they exceed the recent window. Older turns and long tool outputs are compacted into a short "run summary"; raw content is dropped. Recent window: last ~15 turns or ~40k tokens of chat+tools; beyond that, summarize.
+- [x] **Session state = summarize and recent only.** No separate retention policy. We keep: (1) run summary of older context, (2) recent N turns (raw). On resume, inject summary + recent. Most long-lived context lives in documents (planning docs), not chat history.
+- [x] **Planning context:** Fixed list always included — STATE, active phase/plan, HUMAN-TASKS, relevant core files. Additional context pulled on demand from codebase, URLs, etc. (Codex/Cursor-style retrieval). Not everything in every request.
+
+## 2026-02-26 (Codebase indexing and exclusion policy)
+
+- [x] **Default exclusion: .gitignore.** Everything in .gitignore is excluded from indexing. Single source of truth; user already maintains it. Covers node_modules, dist, .next, __pycache__, build outputs, secrets, etc.
+- [x] **vendor/ excluded by default.** Even when not in .gitignore (often committed), vendor/ is excluded to avoid index bloat and retrieval noise. Opt-in via project config when indexing vendored code is desired.
+- [x] **Additional exclusions: .cursorignore.** Support .cursorignore for extra exclusions beyond .gitignore (e.g. huge checked-in datasets, paths user wants excluded from indexing).
+- [x] **Opt-in vendor:** Project config (e.g. `.repo-studio/index-config.yaml` or `index.vendor: true`) allows indexing vendor/ when needed.
+- [x] **Project-type agnostic:** Indexing adapts to project layout (monorepo, Unreal, Unity, generic); not hardcoded to apps/packages structure.
+- [x] **Index scope:** .planning, scripts, packages, apps, docs, templates; root configs. Excludes per .gitignore + vendor/ + .cursorignore.
+- [x] **Chunk-level indexing:** ~500–800 token chunks with overlap; semantic retrieval returns top-K chunks per query for relevance and token savings.
+
+## 2026-02-26 (Vector stack: sqlite-vss, embeddings, model distribution)
+
+- [x] **Vector store: sqlite-vss.** Reuse existing SQLite stack. Extension loads into Repo Studio DB or a dedicated index DB. Works with better-sqlite3. Note: sqlite-vss npm lists macOS/Linux; Windows support to be verified in Phase 26 (build from source or platform-specific).
+- [x] **Embedding model: downloaded during installation.** Installer step fetches the model before install completes. If download fails, install fails — no first-launch surprises; user knows space requirements upfront. Model never in repo.
+- [x] **Embedding library:** Transformers.js (@xenova/transformers) + all-MiniLM-L6-v2 (~23MB). Fastest, smallest, easiest with Node/Electron/TypeScript — pure JS/ONNX, no native build. Alternative: fastembed (npm) for higher speed if needed later.
+- [x] **Model storage:** App data dir (e.g. Electron `userData/models/`), not in repo. Installer downloads from HuggingFace/CDN into that location. Same pattern for other large assets (runtimes, indices) — downloaded with installer or on demand, never committed.
+
+## 2026-02-26 (Concept simulation: first-class types, deprecate Story, extensions repo)
+
+- [x] **First-class concept types:** game, story (like a book), software (small PoC). Not just suggestions — primary types.
+- [x] **Type immutable:** Concept type is set at creation; cannot change afterward.
+- [x] **Deprecate Story extension:** Concept workspace replaces Story. Story becomes concept type "story" within concept simulation.
+- [x] **Extension in repo-studio-extensions:** Concept workspace lives in extensions repo (vendor/repo-studio-extensions); not built-in.
+- [x] **Src downloadable:** Extension src can be downloaded into user project (`.repo-studio/extensions/concept-workspace/`) so users can extend it (edit-in-place).
+- [x] **Discovery purpose:** Concept simulation finds tech/features to build by simulating as if they exist. Output: DISCOVERED-FEATURES.md.
+
+## 2026-02-26 (Phase 27: Repo Studio documentation)
+
+- [x] **Dedicated docs phase:** Phase 27 is for comprehensive Repo Studio documentation — docs site as hub, Repo Studio downloadable, packages, install, what it does, how to extend.
+
+## 2026-02-26 (Desktop packaging: icon, code-signing deferred)
+
+- [x] **Windows .ico:** `repo_studio.ico` placed at `packages/repo-studio/build/repo-studio.ico`; electron-builder and BrowserWindow use it. HT-10 done.
+- [x] **Code-signing deferred:** Windows code-signing certificate (HT-09) deferred until 50k funding/revenue. Currently at 0.
+- [x] **Monetization iteration doc:** [.planning/MONETIZATION-STRATEGY.md](.planning/MONETIZATION-STRATEGY.md) — iterate on revenue model, platform entitlements, extension gating, license. Desktop subscription and extension gating are acceptable; license TBD (not MIT).

@@ -51,6 +51,9 @@ apps/repo-studio/data/
 # Repo Studio desktop packaging build output
 packages/repo-studio/.desktop-build/
 packages/repo-studio/dist/desktop/
+# Exception: desktop icon for electron-builder (not build output)
+!packages/repo-studio/build/
+!packages/repo-studio/build/repo-studio.ico
 # Exception: shared package media components (used by docs, tool-ui)
 !packages/shared/src/shared/components/media/
 !packages/shared/src/shared/components/media/**
