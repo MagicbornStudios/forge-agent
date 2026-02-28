@@ -21,8 +21,11 @@
     "desktop:build": "node src/desktop/build.mjs",
     "desktop:clean": "node src/desktop/clean.mjs --include-temp",
     "desktop:clean:all": "node src/desktop/clean.mjs --reset-dist --include-temp",
+    "desktop:clean:scratch": "node src/desktop/clean.mjs --scratch-only",
+    "desktop:smoke:launch": "node src/desktop/smoke-launch.mjs",
+    "desktop:smoke:silent": "node src/desktop/smoke-install.mjs --kind silent",
     "desktop:verify:standalone": "node src/desktop/verify-standalone.mjs",
-    "desktop:package:win": "node src/desktop/clean.mjs --reset-dist --include-temp && node src/desktop/build.mjs --require-standalone && node src/desktop/verify-standalone.mjs && electron-builder --config electron-builder.json --win dir && electron-builder --prepackaged dist/desktop/win-unpacked --config electron-builder.json --win portable nsis && electron-builder --prepackaged dist/desktop/win-unpacked --config electron-builder.silent.json --win nsis && node src/desktop/clean.mjs --include-temp",
+    "desktop:package:win": "node src/desktop/clean.mjs --reset-dist --include-temp && node src/desktop/build.mjs --require-standalone && node src/desktop/verify-standalone.mjs && electron-builder --config electron-builder.json --win dir && node src/desktop/clean.mjs --scratch-only && electron-builder --prepackaged dist/desktop/win-unpacked --config electron-builder.json --win portable nsis && node src/desktop/clean.mjs --scratch-only && electron-builder --prepackaged dist/desktop/win-unpacked --config electron-builder.silent.json --win nsis && node src/desktop/clean.mjs --include-temp",
     "publish": "npm publish"
   },
   "dependencies": {

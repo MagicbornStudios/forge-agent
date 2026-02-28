@@ -13,6 +13,7 @@ function parseArgs(argv = process.argv.slice(2)) {
   return {
     resetDist: argv.includes('--reset-dist'),
     includeTemp: argv.includes('--include-temp'),
+    scratchOnly: argv.includes('--scratch-only'),
   };
 }
 
@@ -25,7 +26,7 @@ async function safeRemove(targetPath) {
   }
 }
 
-function isDisposableDesktopFile(fileName, version) {
+function isScratchDesktopFile(fileName) {
   if (!fileName) return false;
 
   if (
@@ -39,6 +40,13 @@ function isDisposableDesktopFile(fileName, version) {
     return true;
   }
   if (fileName.endsWith('.nsis.7z')) return true;
+
+  return false;
+}
+
+function isDisposableDesktopFile(fileName, version) {
+  if (!fileName) return false;
+  if (isScratchDesktopFile(fileName)) return true;
 
   if (
     fileName === `RepoStudio ${version}.exe`
@@ -95,7 +103,7 @@ function matchesTempCleanupName(name) {
   return prefixes.some((prefix) => name.startsWith(prefix));
 }
 
-async function cleanDesktopDist(packageRoot, version, resetDist) {
+async function cleanDesktopDist(packageRoot, version, resetDist, scratchOnly = false) {
   const distRoot = path.join(packageRoot, 'dist', 'desktop');
   if (!fsSync.existsSync(distRoot)) {
     return { removed: [], freedBytes: 0 };
@@ -117,9 +125,9 @@ async function cleanDesktopDist(packageRoot, version, resetDist) {
   for (const entry of entries) {
     const targetPath = path.join(distRoot, entry.name);
     const isDisposable = entry.isDirectory()
-      ? isDisposableDesktopDirectory(entry.name)
+      ? (scratchOnly ? false : isDisposableDesktopDirectory(entry.name))
       : entry.isFile()
-        ? isDisposableDesktopFile(entry.name, version)
+        ? (scratchOnly ? isScratchDesktopFile(entry.name) : isDisposableDesktopFile(entry.name, version))
         : false;
 
     if (!isDisposable) continue;
@@ -177,7 +185,12 @@ export async function runDesktopCleanup(options = {}) {
   const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
   const version = String(packageJson.version || '').trim();
 
-  const distResult = await cleanDesktopDist(packageRoot, version, options.resetDist === true);
+  const distResult = await cleanDesktopDist(
+    packageRoot,
+    version,
+    options.resetDist === true,
+    options.scratchOnly === true,
+  );
   const tempResult = options.includeTemp === true
     ? await cleanTempScratch()
     : { removed: [], freedBytes: 0 };

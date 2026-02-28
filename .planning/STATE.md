@@ -5,7 +5,7 @@
 Phase: 15
 Plan: 15-01
 Status: Execution in progress
-Last activity: 2026-02-28 - expanding Phase 15 desktop work to fix post-publish readiness defects: silent install verification, installed app file integrity, packaged runtime health reachability, startup log diagnostics, and local build-output cleanup
+Last activity: 2026-02-28 - checkpointed Phase 15 desktop work: fresh win-unpacked runtime passes health smoke, silent installer still exceeds current completion timeout, and partial timed-out installs can fail because `resources/next/standalone/server.js` cannot resolve `next`
 
 ## Execution
 
