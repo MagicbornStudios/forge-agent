@@ -2,6 +2,10 @@
 
 ## 2026-02-26
 
+- [x] `git push origin main` during the `v0.1.3` release cut timed out locally but still advanced the remote branch.
+  - Root cause: the remote accepted the push, but the local shell session timed out before surfacing the success result.
+  - Resolution: verify remote refs with `git ls-remote origin refs/heads/main` before retrying; treat push timeouts as inconclusive rather than automatic failures.
+
 - [x] Extension API test assumed Story extension is always installed in repo-local `.repo-studio/extensions`.
   - Root cause: Story is now optional per project in extension-registry install model.
   - Resolution: relaxed route test contract to validate payload shape always, and validate Story tool contract only when Story entry exists.

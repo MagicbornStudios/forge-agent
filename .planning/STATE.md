@@ -5,7 +5,7 @@
 Phase: 15
 Plan: 15-01
 Status: Execution in progress
-Last activity: 2026-02-27 - completed Phase 15 desktop onboarding/debug UX: branding, splash loading window, first-run setup, dependency checks, and safe-mode/verbose startup; validated with fresh Windows packaging and portable smoke launch
+Last activity: 2026-02-28 - published RepoStudio v0.1.3 desktop release from tag `v0.1.3`; Windows installer, portable executable, checksum, and blockmap are now available on GitHub Releases
 
 ## Execution
 

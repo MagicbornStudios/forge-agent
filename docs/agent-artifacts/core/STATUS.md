@@ -61,6 +61,10 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
   - Electron main-process fatal boot/runtime failures now write `desktop-startup.log` and show a blocking error dialog with the log path,
   - Windows release workflow now smoke-launches the packaged portable EXE before artifact upload,
   - local validation succeeded with fresh `RepoStudio Setup 0.1.3.exe` and `RepoStudio 0.1.3.exe` artifacts plus a successful portable smoke launch.
+- Done (2026-02-28): RepoStudio `v0.1.3` desktop release published:
+  - pushed `main` at `c2ad1b1` and created/pushed tag `v0.1.3`,
+  - GitHub Actions release workflow run `#38` completed successfully,
+  - public GitHub Release `RepoStudio v0.1.3` is live with Windows installer, portable executable, checksum, and blockmap assets.
 - Done (2026-02-27): Phase 15 desktop onboarding and debug ergonomics:
   - added temporary branding/logo and a splash loading window for the desktop shell,
   - added a first-run in-app setup flow with dependency readiness, project-opening guidance, and desktop startup flag visibility,
