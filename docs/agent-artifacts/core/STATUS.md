@@ -42,6 +42,10 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 
 ## Ralph Wiggum loop
 
+- Done (2026-03-01): Desktop custom header controls landed for Windows runtime:
+  - main window now runs with custom frame mode on Windows and native menubar hidden,
+  - desktop IPC bridge now supports window state + window control actions (minimize/maximize/close),
+  - Repo Studio renders an in-app draggable header with app-owned menubar and window control buttons in desktop mode.
 - Done (2026-03-01): Desktop packaged runtime/style reliability follow-up:
   - fixed standalone runtime dependency copy to resolve package roots via Node resolution paths (pnpm-safe) instead of assuming flat `node_modules`,
   - fixed standalone static asset placement by copying into server-relative static targets and enforcing that via standalone verification,

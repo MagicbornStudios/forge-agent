@@ -11,6 +11,9 @@
 - [x] Installed-runtime probe sometimes could not locate the just-installed executable in smoke runs.
   - Root cause: install-location resolver did not include temp smoke install folders used by `desktop:smoke:*` flows.
   - Resolution: added `%TEMP%/RepoStudioSilentInstallSmoke` and `%TEMP%/RepoStudioInstallSmoke` as known install candidates for exe/path discovery.
+- [x] Repo Studio app build failed during custom desktop-header wiring with TypeScript nullability error (`desktop` possibly null).
+  - Root cause: runtime-bridge effect used boolean helper (`isDesktop`) that did not narrow the `desktop` variable for subsequent property access.
+  - Resolution: switched guard to direct object narrowing (`if (!desktop) return`) and kept window-state subscriptions behind function checks.
 
 ## 2026-02-28
 

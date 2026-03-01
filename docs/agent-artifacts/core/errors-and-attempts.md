@@ -38,6 +38,35 @@ Log of known failures and fixes so agents and developers avoid repeating the sam
 
 ---
 
+## Desktop custom header/titlebar integration (2026-03-01)
+
+**Problem**:
+- Native Windows menubar/title region remained visible and inconsistent with in-app menu UX.
+- Repo Studio needed app-owned window controls (minimize/maximize/close) similar to IDE shells.
+
+**Root cause**:
+- Desktop main window used default framed BrowserWindow behavior with native title/menu surface.
+- Renderer had no bridge APIs for window-control actions/state.
+
+**Fix**:
+- Desktop main process now enables custom frame mode on Windows (`frame: false`, hidden menu visibility) and exposes window IPC handlers:
+  - `windowState`
+  - `windowMinimize`
+  - `windowToggleMaximize`
+  - `windowClose`
+  - `windowStateChanged` event stream.
+- Preload bridge now exposes those APIs to renderer.
+- Repo Studio root renders an in-app desktop header when custom-frame desktop mode is active:
+  - app-owned menubar,
+  - minimize/maximize/restore/close controls,
+  - draggable region with no-drag control/menu subregions.
+
+**Guardrail**:
+- Desktop-only UI controls must be behind runtime bridge detection.
+- Keep framed-window assumptions out of renderer; all window control goes through typed IPC bridge.
+
+---
+
 ## Desktop reclaim child-process lineage safety (2026-02-28)
 
 **Problem**: Reclaim/cleanup needed to handle child processes (Next server, codex app-server, spawned terminals) without broad process-name matching that could kill unrelated user workloads.

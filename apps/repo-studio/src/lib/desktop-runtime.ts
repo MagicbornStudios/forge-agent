@@ -9,6 +9,14 @@ export type DesktopRuntimeEvent = {
   polling?: boolean;
 };
 
+export type DesktopWindowState = {
+  customFrame: boolean;
+  platform: string;
+  isMaximized: boolean;
+  isMinimized: boolean;
+  isFocused: boolean;
+};
+
 export type DesktopAuthStatus = {
   ok: boolean;
   connected: boolean;
@@ -31,8 +39,13 @@ export type DesktopAuthStatus = {
 
 export type DesktopRuntimeBridge = {
   subscribeRuntimeEvents: (listener: (event: DesktopRuntimeEvent) => void) => () => void;
+  subscribeWindowState?: (listener: (state: DesktopWindowState) => void) => () => void;
   runtimeStatus?: () => Promise<unknown>;
   stopRuntime?: () => Promise<unknown>;
+  windowState?: () => Promise<DesktopWindowState>;
+  windowMinimize?: () => Promise<DesktopWindowState>;
+  windowToggleMaximize?: () => Promise<DesktopWindowState>;
+  windowClose?: () => Promise<{ ok: boolean }>;
   pickProjectFolder?: () => Promise<{
     ok: boolean;
     canceled?: boolean;

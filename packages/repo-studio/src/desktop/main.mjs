@@ -80,6 +80,7 @@ const profile = String(argv.get('profile') || 'forge-loop');
 const desktopDev = argv.get('desktop-dev') === true;
 const safeMode = argv.get('safe-mode') === true || process.env.REPO_STUDIO_SAFE_MODE === '1';
 const verboseStartup = argv.get('verbose-startup') === true || process.env.REPO_STUDIO_VERBOSE_STARTUP === '1';
+const useCustomWindowFrame = process.platform === 'win32';
 
 let ownsServer = argv.get('owns-server') === true;
 let runtimeServerPid = Number(argv.get('server-pid') || 0);
@@ -205,6 +206,31 @@ async function handleFatalDesktopError(context, error) {
 function emitRuntimeEvent(payload) {
   if (!mainWindow || mainWindow.isDestroyed()) return;
   mainWindow.webContents.send(DESKTOP_IPC.runtimeEvent, payload);
+}
+
+function getMainWindowState() {
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    return {
+      customFrame: useCustomWindowFrame,
+      platform: process.platform,
+      isMaximized: false,
+      isMinimized: false,
+      isFocused: false,
+    };
+  }
+
+  return {
+    customFrame: useCustomWindowFrame,
+    platform: process.platform,
+    isMaximized: mainWindow.isMaximized(),
+    isMinimized: mainWindow.isMinimized(),
+    isFocused: mainWindow.isFocused(),
+  };
+}
+
+function emitMainWindowState() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  mainWindow.webContents.send(DESKTOP_IPC.windowStateChanged, getMainWindowState());
 }
 
 function closeSplashWindow() {
@@ -377,6 +403,8 @@ async function createMainWindow() {
     height: 980,
     minWidth: 1200,
     minHeight: 760,
+    frame: !useCustomWindowFrame,
+    autoHideMenuBar: true,
     show: false,
     backgroundColor: '#071227',
     icon: resolveDesktopIconPath(),
@@ -387,13 +415,24 @@ async function createMainWindow() {
       sandbox: false,
     },
   });
+  if (useCustomWindowFrame) {
+    mainWindow.setMenuBarVisibility(false);
+    mainWindow.removeMenu();
+  }
 
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+  mainWindow.on('maximize', () => emitMainWindowState());
+  mainWindow.on('unmaximize', () => emitMainWindowState());
+  mainWindow.on('minimize', () => emitMainWindowState());
+  mainWindow.on('restore', () => emitMainWindowState());
+  mainWindow.on('focus', () => emitMainWindowState());
+  mainWindow.on('blur', () => emitMainWindowState());
   mainWindow.once('ready-to-show', () => {
     logDesktopVerbose('Main window ready to show.');
     mainWindow?.show();
+    emitMainWindowState();
     closeSplashWindow();
   });
 
@@ -519,6 +558,7 @@ function registerIpcHandlers() {
     startupLogPath: resolveDesktopStartupLogPath(),
     serverPid: runtimeServerPid,
     ownsServer,
+    customWindowFrame: useCustomWindowFrame,
     safeMode,
     verboseStartup,
     watcher: watcher
@@ -532,6 +572,33 @@ function registerIpcHandlers() {
   ipcMain.handle(DESKTOP_IPC.runtimeStop, async () => {
     app.quit();
     return { ok: true, message: 'Desktop runtime stop requested.' };
+  });
+
+  ipcMain.handle(DESKTOP_IPC.windowState, () => getMainWindowState());
+
+  ipcMain.handle(DESKTOP_IPC.windowMinimize, () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.minimize();
+    }
+    return getMainWindowState();
+  });
+
+  ipcMain.handle(DESKTOP_IPC.windowToggleMaximize, () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      if (mainWindow.isMaximized()) {
+        mainWindow.unmaximize();
+      } else {
+        mainWindow.maximize();
+      }
+    }
+    return getMainWindowState();
+  });
+
+  ipcMain.handle(DESKTOP_IPC.windowClose, () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.close();
+    }
+    return { ok: true };
   });
 
   ipcMain.handle(DESKTOP_IPC.projectPickFolder, async () => {

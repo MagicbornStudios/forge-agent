@@ -5,6 +5,7 @@
 - [x] Desktop packaging must resolve Next runtime dependencies from actual workspace resolution (`require.resolve` paths) instead of assuming flat `workspaceRoot/node_modules` so pnpm installs package all required server deps.
 - [x] Desktop packaging must copy Next static assets into standalone server-relative locations (`standalone/.next/static` and nested app fallback path) in addition to top-level `next/static` to avoid unstyled launched builds.
 - [x] Desktop smoke/runtime probes should include temp smoke install directories in install-path candidate resolution so post-install validation can reliably find launched binaries from smoke runs.
+- [x] Windows desktop should use a custom Electron frame with app-owned header controls (in-app menu + minimize/maximize/close) and hidden native menubar to match IDE expectations (Cursor/VS Code style).
 
 ## 2026-02-28
 

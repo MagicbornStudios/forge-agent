@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Image from 'next/image';
-import { FolderOpen, FolderTree, Github, LayoutPanelTop, Loader2, X } from 'lucide-react';
+import { FolderOpen, FolderTree, Github, LayoutPanelTop, Loader2, Minus, Square, X } from 'lucide-react';
 import { StudioApp } from '@forge/shared/components/app';
 import { WorkspaceMenubar } from '@forge/shared/components/workspace';
 import { Button } from '@forge/ui/button';
@@ -54,7 +54,7 @@ import type {
 } from '@/lib/api/types';
 import type { PlanningSnapshot, RepoCommandEntry, RepoLoopsSnapshot } from '@/lib/repo-data';
 import type { RepoCommandView, RepoWorkspaceId } from '@/lib/types';
-import { getDesktopRuntimeBridge } from '@/lib/desktop-runtime';
+import { getDesktopRuntimeBridge, type DesktopWindowState } from '@/lib/desktop-runtime';
 import { buildRepoWorkspaceMenus } from '@/lib/app-shell/menu-contributions';
 import { useRepoStudioShellStore } from '@/lib/app-shell/store';
 import { RepoStudioProvider } from '@/lib/app-shell/RepoStudioContext';
@@ -112,6 +112,26 @@ function dedupeMessages(values: string[]) {
   return next;
 }
 
+const DEFAULT_DESKTOP_WINDOW_STATE: DesktopWindowState = {
+  customFrame: false,
+  platform: '',
+  isMaximized: false,
+  isMinimized: false,
+  isFocused: false,
+};
+
+function normalizeDesktopWindowState(value: unknown): DesktopWindowState {
+  if (!value || typeof value !== 'object') return DEFAULT_DESKTOP_WINDOW_STATE;
+  const input = value as Record<string, unknown>;
+  return {
+    customFrame: input.customFrame === true,
+    platform: String(input.platform || ''),
+    isMaximized: input.isMaximized === true,
+    isMinimized: input.isMinimized === true,
+    isFocused: input.isFocused === true,
+  };
+}
+
 export function RepoStudioRoot({
   commands,
   planning,
@@ -146,6 +166,7 @@ export function RepoStudioRoot({
   const [showAdvancedPathInput, setShowAdvancedPathInput] = React.useState(false);
   const [projectActionBusy, setProjectActionBusy] = React.useState(false);
   const [desktopRuntimeActive, setDesktopRuntimeActive] = React.useState(false);
+  const [desktopWindowState, setDesktopWindowState] = React.useState<DesktopWindowState>(DEFAULT_DESKTOP_WINDOW_STATE);
   const [firstRunSetupOpen, setFirstRunSetupOpen] = React.useState(false);
   const [startupFlags, setStartupFlags] = React.useState({
     safeMode: false,
@@ -716,15 +737,36 @@ export function RepoStudioRoot({
     }
   }, [refreshProjectAndAuth, setCommandOutput]);
 
+  const handleDesktopWindowMinimize = React.useCallback(() => {
+    const desktop = getDesktopRuntimeBridge();
+    if (!desktop || typeof desktop.windowMinimize !== 'function') return;
+    desktop.windowMinimize()
+      .then((state) => setDesktopWindowState(normalizeDesktopWindowState(state)))
+      .catch(() => {});
+  }, []);
+
+  const handleDesktopWindowToggleMaximize = React.useCallback(() => {
+    const desktop = getDesktopRuntimeBridge();
+    if (!desktop || typeof desktop.windowToggleMaximize !== 'function') return;
+    desktop.windowToggleMaximize()
+      .then((state) => setDesktopWindowState(normalizeDesktopWindowState(state)))
+      .catch(() => {});
+  }, []);
+
+  const handleDesktopWindowClose = React.useCallback(() => {
+    const desktop = getDesktopRuntimeBridge();
+    if (!desktop || typeof desktop.windowClose !== 'function') return;
+    desktop.windowClose().catch(() => {});
+  }, []);
+
   React.useEffect(() => {
     if (typeof window === 'undefined') return;
     const desktop = getDesktopRuntimeBridge();
-    const isDesktop = Boolean(desktop);
     const params = new URLSearchParams(window.location.search);
     const safeModeActive = params.get('safeMode') === '1';
     const verboseStartupActive = params.get('verboseStartup') === '1';
 
-    setDesktopRuntimeActive(isDesktop);
+    setDesktopRuntimeActive(Boolean(desktop));
     setStartupFlags({
       safeMode: safeModeActive,
       verboseStartup: verboseStartupActive,
@@ -736,9 +778,28 @@ export function RepoStudioRoot({
       setCommandOutput('RepoStudio verbose startup logging is enabled. Check desktop-startup.log for step-by-step boot details.');
     }
 
-    if (!isDesktop) return;
-    if (window.localStorage.getItem('repo-studio.desktop.first-run.v1') === 'done') return;
-    setFirstRunSetupOpen(true);
+    if (!desktop) {
+      setDesktopWindowState(DEFAULT_DESKTOP_WINDOW_STATE);
+      return;
+    }
+
+    if (typeof desktop.windowState === 'function') {
+      desktop.windowState()
+        .then((state) => setDesktopWindowState(normalizeDesktopWindowState(state)))
+        .catch(() => {});
+    }
+    const unsubscribeWindowState = typeof desktop.subscribeWindowState === 'function'
+      ? desktop.subscribeWindowState((state) => {
+        setDesktopWindowState(normalizeDesktopWindowState(state));
+      })
+      : () => {};
+
+    if (window.localStorage.getItem('repo-studio.desktop.first-run.v1') !== 'done') {
+      setFirstRunSetupOpen(true);
+    }
+    return () => {
+      unsubscribeWindowState();
+    };
   }, [setCommandOutput]);
 
   React.useEffect(() => {
@@ -1163,6 +1224,7 @@ export function RepoStudioRoot({
     ]),
     [dependencyHealth, runtimeDeps],
   );
+  const showDesktopWindowChrome = desktopRuntimeActive && desktopWindowState.customFrame;
 
   return (
     <RepoStudioProvider
@@ -1181,11 +1243,62 @@ export function RepoStudioRoot({
         onOpenChange={setSettingsSidebarOpen}
         className="h-screen w-full"
       >
-        <SidebarInset className="h-screen overflow-hidden bg-background">
-          <StudioApp className="h-full">
+        <SidebarInset className="flex h-screen flex-col overflow-hidden bg-background">
+          {showDesktopWindowChrome ? (
+            <div
+              className="flex h-10 items-center justify-between border-b border-border bg-muted/60 px-2"
+              style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
+            >
+              <div
+                className="inline-flex min-w-0 items-center gap-2"
+                style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+              >
+                <div className="size-2 rounded-full bg-emerald-500" />
+                <span className="text-xs font-medium text-foreground">RepoStudio</span>
+                <WorkspaceMenubar menus={menus} />
+              </div>
+              <div
+                className="inline-flex items-center gap-0.5"
+                style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+              >
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="size-8 rounded-sm"
+                  aria-label="Minimize window"
+                  onClick={handleDesktopWindowMinimize}
+                >
+                  <Minus size={14} />
+                </Button>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="size-8 rounded-sm"
+                  aria-label={desktopWindowState.isMaximized ? 'Restore window' : 'Maximize window'}
+                  onClick={handleDesktopWindowToggleMaximize}
+                >
+                  {desktopWindowState.isMaximized ? <LayoutPanelTop size={14} /> : <Square size={14} />}
+                </Button>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="size-8 rounded-sm hover:bg-destructive/20 hover:text-destructive"
+                  aria-label="Close window"
+                  onClick={handleDesktopWindowClose}
+                >
+                  <X size={14} />
+                </Button>
+              </div>
+            </div>
+          ) : null}
+
+          <StudioApp className="min-h-0 flex-1">
             <StudioApp.Tabs label="RepoStudio Tabs" tabListClassName="justify-center">
               <StudioApp.Tabs.Left>
-                <WorkspaceMenubar menus={menus} />
+                {!showDesktopWindowChrome ? <WorkspaceMenubar menus={menus} /> : null}
               </StudioApp.Tabs.Left>
               <StudioApp.Tabs.Main>
                 {openWorkspaceIds.map((workspaceId) => (

@@ -5,7 +5,7 @@
 Phase: 15
 Plan: 15-01
 Status: Execution in progress
-Last activity: 2026-03-01 - FRG-1534 reliability cut in progress: packaged desktop startup/styling regressions were remediated by resolving Next runtime deps from pnpm paths, copying standalone server-relative static assets, and extending install-location detection for smoke installs
+Last activity: 2026-03-01 - FRG-1534 reliability cut in progress: shipped Windows custom-frame desktop header controls (in-app menubar + minimize/maximize/close IPC), hid native menu frame for desktop window, and validated Repo Studio app build after bridge/type updates
 
 ## Execution
 
