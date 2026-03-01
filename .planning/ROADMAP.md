@@ -245,14 +245,15 @@ Plans:
 - [ ] 18-03: Extend auth response capabilities (openRouterProxy, extensionInstallProxy); Repo Studio types and client wiring
 
 ### Phase 19: Planning assistant context and tools
-**Goal:** Assistant context correctness (loop/workspace/doc in every request) and plan actions (Forge tools); optional LangGraph for planning orchestration and multi-loop awareness.
+**Goal:** Assistant context correctness (loop/workspace/doc in every request) and plan actions (Forge tools); optional LangGraph for planning orchestration and multi-loop awareness; runtime unification for Forge/Codex tool parity.
 **Depends on:** Phase 15 (release cut); can overlap with 16–18
-**Plans:** 3 plans
+**Plans:** 4 plans
 
 Plans:
 - [ ] 19-01: Client→server context: loopId, workspaceId, selectedDocId in body or server fallback to query params
 - [ ] 19-02: Plan-specific Forge tools: add_task, update_task_status, open_planning_doc (scoped to active loop)
 - [ ] 19-03: LangGraph for planning assistant (feature-flagged): orchestration for planning workspace, multi-loop awareness, optional checkpoints
+- [ ] 19-04: Assistant runtime unification: Forge/Codex tool parity, contract-for-both, Codex tool bridge, data stream alignment; see [.planning/ASSISTANT-RUNTIME-STRATEGY.md](.planning/ASSISTANT-RUNTIME-STRATEGY.md)
 
 ### Phase 20: Planning artifacts and todos in Repo Studio
 **Goal:** DoD and HUMAN-TASKS first-class in Planning workspace; unified human/agent todo view with correlation; optional on-load planning prompt and human-blocker notifications.

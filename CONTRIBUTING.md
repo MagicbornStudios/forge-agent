@@ -7,6 +7,11 @@ Human workflow for contributing to this repo. For agent rules and artifact index
 - Prefer a branch per slice or feature. Open a PR when the work is ready for review.
 - Fill out the [pull request template](.github/pull_request_template.md): link task/initiative, confirm tests and doc updates, note UI/screenshot if applicable. Same "Definition of Done" as in our agent strategy.
 
+## Package manager
+
+- pnpm is pinned via `packageManager` in root `package.json`. Use Corepack locally (`corepack enable`).
+- When changing `pnpm.overrides` or adding dependencies, run `pnpm install` and commit `pnpm-lock.yaml`.
+
 ## Running tests and lint
 
 - **Tests:** `pnpm test` (Studio). Run before claiming a slice is done.

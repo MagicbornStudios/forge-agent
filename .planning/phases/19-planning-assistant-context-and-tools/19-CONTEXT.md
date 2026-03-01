@@ -14,6 +14,7 @@ Ensure the assistant receives correct **context** (loopId, workspaceId, selected
 - **19-01-PLAN.md** — Client→server context: ensure loopId, workspaceId, selectedDocId in request body or server fallback to query params.
 - **19-02-PLAN.md** — Plan-specific Forge tools: add_task, update_task_status, open_planning_doc (scoped to active loop).
 - **19-03-PLAN.md** — LangGraph for planning assistant (feature-flagged): orchestration, multi-loop awareness, optional checkpoints.
+- **19-04-PLAN.md** — Assistant runtime unification: Forge/Codex tool parity, data stream alignment, contract-for-both, Codex tool bridge. See also [.planning/ASSISTANT-RUNTIME-STRATEGY.md](../../ASSISTANT-RUNTIME-STRATEGY.md).
 
 ## Dependencies
 

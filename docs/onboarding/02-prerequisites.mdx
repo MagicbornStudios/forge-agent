@@ -7,7 +7,12 @@ title: Prerequisites
 Before you start, make sure you have:
 
 - **Node 20+** — Run `node -v` to check
-- **pnpm 9+** — Run `pnpm -v` to check. If needed: `npm install -g pnpm`
+- **pnpm** — Run `pnpm -v` to check. This repo pins pnpm via `packageManager`; use Corepack to match CI:
+  ```bash
+  corepack enable
+  corepack prepare pnpm@9.15.5 --activate
+  ```
+  Or: `corepack enable` (Node will use the version from `package.json`).
 
 ## Optional but useful
 
