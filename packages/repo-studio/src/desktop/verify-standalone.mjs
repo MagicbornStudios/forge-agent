@@ -38,6 +38,10 @@ export function verifyDesktopStandaloneBundle() {
     path.join(standaloneRoot, 'server.js'),
     path.join(standaloneRoot, 'apps', 'repo-studio', 'server.js'),
   ];
+  const standaloneStaticCandidates = [
+    path.join(standaloneRoot, '.next', 'static'),
+    path.join(standaloneRoot, 'apps', 'repo-studio', '.next', 'static'),
+  ];
 
   const missing = [];
   if (!existsAsFile(buildIdPath)) missing.push(buildIdPath);
@@ -45,6 +49,9 @@ export function verifyDesktopStandaloneBundle() {
   if (!existsAsDirectory(standaloneRoot)) missing.push(standaloneRoot);
   if (!standaloneServerCandidates.some((candidate) => existsAsFile(candidate))) {
     missing.push(...standaloneServerCandidates);
+  }
+  if (!standaloneStaticCandidates.some((candidate) => existsAsDirectory(candidate))) {
+    missing.push(...standaloneStaticCandidates);
   }
 
   if (missing.length > 0) {
@@ -63,6 +70,7 @@ export function verifyDesktopStandaloneBundle() {
       '[repo-studio:desktop] standalone bundle verified',
       `BUILD_ID: ${buildIdPath}`,
       `static: ${staticPath}`,
+      `standaloneStatic: ${standaloneStaticCandidates.find((candidate) => existsAsDirectory(candidate))}`,
       `server: ${standaloneServerCandidates.find((candidate) => existsAsFile(candidate))}`,
     ].join('\n'),
   );

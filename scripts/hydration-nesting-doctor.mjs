@@ -4,7 +4,35 @@ import fs from "node:fs/promises";
 import { existsSync } from "node:fs";
 import process from "node:process";
 import { execSync } from "node:child_process";
-import ts from "typescript";
+import path from "node:path";
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+
+function loadTypeScript() {
+  const roots = [
+    process.cwd(),
+    path.join(process.cwd(), "apps", "repo-studio"),
+    path.join(process.cwd(), "apps", "platform"),
+    path.join(process.cwd(), "packages", "shared"),
+    path.join(process.cwd(), "packages", "ui"),
+  ];
+
+  for (const root of roots) {
+    try {
+      const resolved = require.resolve("typescript", { paths: [root] });
+      return require(resolved);
+    } catch {
+      // continue probing workspace roots
+    }
+  }
+
+  throw new Error(
+    "Could not resolve 'typescript' from workspace roots. Run `pnpm install` and ensure at least one workspace declares typescript.",
+  );
+}
+
+const ts = loadTypeScript();
 
 const ROOT_GLOBS = [
   "apps/repo-studio",

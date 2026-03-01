@@ -1,7 +1,7 @@
 ---
 title: Errors and attempts
 created: 2026-02-04
-updated: 2026-02-28
+updated: 2026-03-01
 ---
 
 Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx).
@@ -11,6 +11,30 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 > **For coding agents.** See [Agent artifacts index](../../18-agent-artifacts-index.mdx) for the full list.
 
 Log of known failures and fixes so agents and developers avoid repeating the same mistakes.
+
+---
+
+## Desktop packaged startup/style regression follow-up (2026-03-01)
+
+**Problem**:
+- Installed/smoke-launched builds could fail at runtime with missing Next modules (`next`, `styled-jsx`) despite successful packaging.
+- Some successful launches showed largely unstyled UI because standalone static assets were not located where the standalone server served them from.
+- Runtime probe sometimes could not find smoke-installed binaries when install path lived under temp smoke folders.
+
+**Root cause**:
+- Desktop dependency copy path assumed `workspaceRoot/node_modules`, which breaks under pnpm resolution layout.
+- Static assets were copied only to top-level `.desktop-build/next/static`, not guaranteed standalone server-relative paths.
+- Install-location resolution omitted temp smoke install directories.
+
+**Fix**:
+- `packages/repo-studio/src/desktop/build.mjs` now resolves runtime package roots via `require.resolve(..., { paths })` and copies required runtime deps from resolved locations.
+- Static copy now includes standalone server-relative targets (`standalone/.next/static` and nested app fallback path), and `verify-standalone.mjs` asserts one exists.
+- `install-locations.mjs` now includes `%TEMP%/RepoStudioSilentInstallSmoke` and `%TEMP%/RepoStudioInstallSmoke` in known install candidates.
+
+**Guardrail**:
+- Do not assume flat `node_modules` layout for packaged runtime dependencies.
+- Desktop verifier must assert server-relative static presence, not only top-level static copy.
+- Smoke/runtime probes must resolve binaries across explicit install dir, registry install dir, and known smoke-temp locations.
 
 ---
 

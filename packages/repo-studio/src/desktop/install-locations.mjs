@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { execSync } from 'node:child_process';
 
 function normalizePath(input) {
@@ -26,6 +27,14 @@ export function resolveLocalProgramsRoot() {
     : null;
 }
 
+export function resolveSmokeInstallDirectories() {
+  const tempRoot = process.env.TEMP || process.env.TMP || os.tmpdir();
+  return uniqueExistingDirectories([
+    path.join(tempRoot, 'RepoStudioSilentInstallSmoke'),
+    path.join(tempRoot, 'RepoStudioInstallSmoke'),
+  ]);
+}
+
 export function resolveKnownInstallDirectories(options = {}) {
   const localPrograms = resolveLocalProgramsRoot();
   const explicitInstallDir = String(options.installDir || '').trim();
@@ -35,6 +44,7 @@ export function resolveKnownInstallDirectories(options = {}) {
   const candidates = [
     explicitInstallDir || null,
     registryInstallDir || null,
+    ...resolveSmokeInstallDirectories(),
     ...(localPrograms ? [
       path.join(localPrograms, 'RepoStudio'),
       path.join(localPrograms, '@forgerepo-studio'),
@@ -53,6 +63,7 @@ export function resolveInstalledExeCandidates(installDir = '', options = {}) {
       path.join(localPrograms, 'RepoStudio', 'RepoStudio.exe'),
       path.join(localPrograms, '@forgerepo-studio', 'RepoStudio.exe'),
     ] : []),
+    ...resolveSmokeInstallDirectories().map((dirPath) => path.join(dirPath, 'RepoStudio.exe')),
   ];
   const deduped = [];
   const seen = new Set();
@@ -140,4 +151,3 @@ export function resolveCurrentInstallState(options = {}) {
     primary,
   };
 }
-

@@ -1,7 +1,7 @@
 ---
 title: Agent artifacts status
 created: 2026-02-04
-updated: 2026-02-28
+updated: 2026-03-01
 ---
 
 Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent-artifacts-index.mdx).
@@ -42,6 +42,10 @@ Living artifact for agents. Index: [18-agent-artifacts-index.mdx](../../18-agent
 
 ## Ralph Wiggum loop
 
+- Done (2026-03-01): Desktop packaged runtime/style reliability follow-up:
+  - fixed standalone runtime dependency copy to resolve package roots via Node resolution paths (pnpm-safe) instead of assuming flat `node_modules`,
+  - fixed standalone static asset placement by copying into server-relative static targets and enforcing that via standalone verification,
+  - expanded install location detection to include smoke temp install directories so runtime probe can reliably locate installed binaries from smoke runs.
 - Done (2026-02-28): Silent installer readiness and runtime smoke stabilization for Repo Studio desktop:
   - rebuilt `RepoStudio Silent Setup 0.1.5.exe` with `compression: "store"` to reduce extraction bottlenecks,
   - upgraded installer smoke logic to use required-file completion checks and explicit timeout/stall reasons,

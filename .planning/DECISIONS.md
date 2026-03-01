@@ -1,5 +1,11 @@
 # Decisions
 
+## 2026-03-01
+
+- [x] Desktop packaging must resolve Next runtime dependencies from actual workspace resolution (`require.resolve` paths) instead of assuming flat `workspaceRoot/node_modules` so pnpm installs package all required server deps.
+- [x] Desktop packaging must copy Next static assets into standalone server-relative locations (`standalone/.next/static` and nested app fallback path) in addition to top-level `next/static` to avoid unstyled launched builds.
+- [x] Desktop smoke/runtime probes should include temp smoke install directories in install-path candidate resolution so post-install validation can reliably find launched binaries from smoke runs.
+
 ## 2026-02-28
 
 - [x] pnpm version is pinned via `packageManager` in root package.json; local dev uses Corepack; CI uses same version via pnpm/action-setup (reads from package.json).

@@ -3,8 +3,11 @@ import fsSync from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
 
 import { resolveRepoStudioStandaloneServer } from './next-server.mjs';
+
+const require = createRequire(import.meta.url);
 
 function findWorkspaceRoot(start = process.cwd()) {
   let current = path.resolve(start);
@@ -70,30 +73,65 @@ function packagePathSegments(packageName) {
 }
 
 async function ensureStandaloneRuntimeDependencies(workspaceRoot, standaloneTarget) {
-  const nextPackageJsonPath = path.join(workspaceRoot, 'node_modules', 'next', 'package.json');
-  if (!fsSync.existsSync(nextPackageJsonPath)) return;
+  const appRoot = path.join(workspaceRoot, 'apps', 'repo-studio');
+  let nextPackageJsonPath = null;
+  try {
+    nextPackageJsonPath = require.resolve('next/package.json', { paths: [appRoot, workspaceRoot] });
+  } catch {
+    return;
+  }
 
   const nextPackageJson = JSON.parse(await fs.readFile(nextPackageJsonPath, 'utf8'));
+  const nextPackageRoot = path.dirname(nextPackageJsonPath);
   const standaloneNodeModules = path.join(standaloneTarget, 'node_modules');
-  const dependencyNames = new Set([
+  const requiredDependencyNames = new Set([
     ...Object.keys(nextPackageJson.dependencies || {}),
-    ...Object.keys(nextPackageJson.optionalDependencies || {}),
     'react',
     'react-dom',
   ]);
+  const optionalDependencyNames = new Set([
+    ...Object.keys(nextPackageJson.optionalDependencies || {}),
+  ]);
+  const dependencyNames = new Set([...requiredDependencyNames, ...optionalDependencyNames]);
+  const missingRequiredDependencies = [];
+  const resolvePaths = [
+    appRoot,
+    workspaceRoot,
+    nextPackageRoot,
+    path.join(workspaceRoot, 'node_modules'),
+  ];
 
   for (const packageName of dependencyNames) {
     if (packageName === 'next') continue;
 
     const segments = packagePathSegments(packageName);
-    const sourcePath = path.join(workspaceRoot, 'node_modules', ...segments);
+    let sourcePath = null;
+    try {
+      const packageJsonPath = require.resolve(`${packageName}/package.json`, { paths: resolvePaths });
+      sourcePath = path.dirname(packageJsonPath);
+    } catch {
+      sourcePath = null;
+    }
     const targetPath = path.join(standaloneNodeModules, ...segments);
 
-    if (!fsSync.existsSync(sourcePath) || fsSync.existsSync(targetPath)) {
+    if (!sourcePath) {
+      if (requiredDependencyNames.has(packageName)) {
+        missingRequiredDependencies.push(packageName);
+      }
+      continue;
+    }
+
+    if (fsSync.existsSync(targetPath)) {
       continue;
     }
 
     await copyDir(sourcePath, targetPath);
+  }
+
+  if (missingRequiredDependencies.length > 0) {
+    throw new Error(
+      `Missing required Next standalone runtime dependencies: ${missingRequiredDependencies.join(', ')}`,
+    );
   }
 }
 
@@ -234,6 +272,10 @@ export async function runDesktopBuild(options = {}) {
   const standaloneTarget = path.join(buildRoot, 'next', 'standalone');
   const staticSource = path.join(appRoot, '.next', 'static');
   const staticTarget = path.join(buildRoot, 'next', 'static');
+  const standaloneStaticTargets = [
+    path.join(standaloneTarget, '.next', 'static'),
+    path.join(standaloneTarget, 'apps', 'repo-studio', '.next', 'static'),
+  ];
   const buildIdSource = path.join(appRoot, '.next', 'BUILD_ID');
   const buildIdTarget = path.join(buildRoot, 'next', 'BUILD_ID');
   const publicSource = path.join(appRoot, 'public');
@@ -243,6 +285,7 @@ export async function runDesktopBuild(options = {}) {
   await copyDir(path.dirname(resolved.resolved), standaloneTarget);
   await ensureStandaloneRuntimeDependencies(workspaceRoot, standaloneTarget);
   await copyDir(staticSource, staticTarget);
+  await Promise.all(standaloneStaticTargets.map((targetPath) => copyDir(staticSource, targetPath)));
   await fs.copyFile(buildIdSource, buildIdTarget);
   await copyDir(publicSource, publicTarget).catch(() => {});
 
@@ -254,6 +297,7 @@ export async function runDesktopBuild(options = {}) {
     copied: {
       standaloneTarget,
       staticTarget,
+      standaloneStaticTargets,
       buildIdTarget,
       publicTarget,
     },

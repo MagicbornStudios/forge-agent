@@ -1,5 +1,17 @@
 # Errors and Attempts
 
+## 2026-03-01
+
+- [x] Installed/smoke-launched Repo Studio could start with missing Next runtime modules (`next`, `styled-jsx`) even when packaging passed.
+  - Root cause: desktop standalone dependency copy assumed `workspaceRoot/node_modules/*`, which does not hold for pnpm-resolved package locations.
+  - Resolution: desktop build now resolves runtime package paths via `require.resolve(..., { paths })` and copies from resolved package roots; required missing deps now hard-fail packaging.
+- [x] Packaged desktop app could launch with mostly unstyled UI (raw controls, missing Tailwind output styling).
+  - Root cause: static assets were copied to top-level `.desktop-build/next/static`, but the standalone Next server expects server-relative static paths under `standalone/.next/static` (or nested app path).
+  - Resolution: desktop build now copies static assets into standalone server-relative static targets and verifier now asserts standalone static presence before packaging succeeds.
+- [x] Installed-runtime probe sometimes could not locate the just-installed executable in smoke runs.
+  - Root cause: install-location resolver did not include temp smoke install folders used by `desktop:smoke:*` flows.
+  - Resolution: added `%TEMP%/RepoStudioSilentInstallSmoke` and `%TEMP%/RepoStudioInstallSmoke` as known install candidates for exe/path discovery.
+
 ## 2026-02-28
 
 - [x] v0.1.5 release failed: CI `pnpm install --frozen-lockfile` hit `ERR_PNPM_LOCKFILE_CONFIG_MISMATCH` (overrides vs lockfile drift).

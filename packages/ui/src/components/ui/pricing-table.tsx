@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { Check } from 'lucide-react';
 import { Card, CardContent, CardHeader } from './card';
 import { Button } from './button';
@@ -74,14 +73,13 @@ export function PricingTable({
                   </li>
                 ))}
               </ul>
-              <Link href={plan.ctaHref} className="mt-auto">
-                <Button
-                  variant={plan.highlight ? 'default' : 'outline'}
-                  className="w-full"
-                >
-                  {plan.ctaLabel}
-                </Button>
-              </Link>
+              <Button
+                asChild
+                variant={plan.highlight ? 'default' : 'outline'}
+                className="mt-auto w-full"
+              >
+                <a href={plan.ctaHref}>{plan.ctaLabel}</a>
+              </Button>
             </CardContent>
           </Card>
         ))}
