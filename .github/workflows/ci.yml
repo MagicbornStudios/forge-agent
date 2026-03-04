@@ -6,6 +6,10 @@ on:
       - main
   pull_request:
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -13,6 +17,35 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Detect changed areas
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            repo_studio:
+              - 'apps/repo-studio/**'
+              - 'packages/repo-studio/**'
+              - 'packages/repo-studio-extension-adapters/**'
+              - 'packages/shared/**'
+              - 'packages/types/**'
+              - 'packages/ui/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - '.github/workflows/ci.yml'
+            forge_loop:
+              - 'packages/forge-loop/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - '.github/workflows/ci.yml'
+            forge_env:
+              - 'packages/forge-env/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - '.github/workflows/ci.yml'
 
       - name: Init required submodule
         run: |
@@ -41,17 +74,38 @@ jobs:
         run: |
           pnpm guard:assistant-canonical
 
+      - name: Restore RepoStudio Next.js cache
+        if: steps.changes.outputs.repo_studio == 'true'
+        uses: actions/cache@v4
+        with:
+          path: apps/repo-studio/.next/cache
+          key: ${{ runner.os }}-repo-studio-next-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-repo-studio-next-${{ hashFiles('pnpm-lock.yaml') }}-
+
       - name: RepoStudio App Build
+        if: steps.changes.outputs.repo_studio == 'true'
         run: pnpm --filter @forge/repo-studio-app build
 
       - name: RepoStudio App Lint
+        if: steps.changes.outputs.repo_studio == 'true'
         run: pnpm --filter @forge/repo-studio-app lint
 
       - name: RepoStudio Package Tests
+        if: steps.changes.outputs.repo_studio == 'true'
         run: pnpm --filter @forge/repo-studio test
 
       - name: Forge Loop Tests
+        if: steps.changes.outputs.forge_loop == 'true'
         run: pnpm --filter @forge/forge-loop test
 
       - name: Forge Env Tests
+        if: steps.changes.outputs.forge_env == 'true'
         run: pnpm --filter @forge/forge-env test
+
+      - name: CI scope summary
+        if: always()
+        run: |
+          echo "repo_studio=${{ steps.changes.outputs.repo_studio }}"
+          echo "forge_loop=${{ steps.changes.outputs.forge_loop }}"
+          echo "forge_env=${{ steps.changes.outputs.forge_env }}"

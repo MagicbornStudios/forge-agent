@@ -3,7 +3,7 @@ name: Release RepoStudio Desktop
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
   contents: write
@@ -32,7 +32,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Verify packageManager pin
         shell: bash
@@ -74,7 +74,7 @@ jobs:
     needs: verify
     timeout-minutes: 120
     env:
-      REPOSTUDIO_WRITE_SMOKE_ARTIFACTS: '1'
+      REPOSTUDIO_WRITE_SMOKE_ARTIFACTS: "1"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -82,10 +82,8 @@ jobs:
       - name: Init required submodules
         run: |
           git submodule sync -- vendor/repo-studio
-          git submodule sync -- vendor/platform
           git submodule sync -- vendor/repo-studio-extensions
           git submodule update --init --depth 1 vendor/repo-studio
-          git submodule update --init --depth 1 vendor/platform
           git submodule update --init --depth 1 vendor/repo-studio-extensions
 
       - name: Setup pnpm
@@ -96,6 +94,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Verify packageManager pin
         shell: pwsh
