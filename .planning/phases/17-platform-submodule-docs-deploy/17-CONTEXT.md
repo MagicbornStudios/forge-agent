@@ -6,6 +6,8 @@ Platform app source of truth lives in a separate GitHub repo ([MagicbornStudios/
 
 ## Source of truth
 
+- User-confirmed docs canonical repo: **MagicbornStudios/repo-studio-docs** (`https://github.com/MagicbornStudios/repo-studio-docs`).
+
 - **`.planning/`** — PRIMARY. STATE, ROADMAP, DECISIONS, TASK-REGISTRY, and this phase folder.
 - Platform app canonical source: **MagicbornStudios/RepoStudio-Platform** (separate repo).
 - Docs site: **apps/docs** in forge-agent (@forge/docs).
@@ -18,6 +20,8 @@ Platform app source of truth lives in a separate GitHub repo ([MagicbornStudios/
 - **17-04-PLAN.md** — Deployment matrix and CI: what deploys where, repos, env/URL matrix; release workflow update.
 
 ## Current understanding
+
+- User correction: docs should be treated as their own canonical repo (`https://github.com/MagicbornStudios/repo-studio-docs`) rather than the long-term deploy source from forge-agent.
 
 1. **RepoStudio-Platform repo** — [MagicbornStudios/RepoStudio-Platform](https://github.com/MagicbornStudios/RepoStudio-Platform). Platform app deploys to **Vercel from that repo**. Platform must set `NEXT_PUBLIC_DOCS_APP_URL` to the deployed docs site URL (from forge-agent).
 2. **forge-agent** — Public. Contains: **docs site** (apps/docs) → Vercel; **shared packages** → npm; **Electron** → GitHub Releases (tag `v*`); submodules: vendor/repo-studio (Phase 16), vendor/repo-studio-extensions, **vendor/platform** (this phase).
@@ -34,3 +38,16 @@ Platform app source of truth lives in a separate GitHub repo ([MagicbornStudios/
 - [.planning/STATE.md](../../STATE.md), [.planning/ROADMAP.md](../../ROADMAP.md), [.planning/DECISIONS.md](../../DECISIONS.md).
 - Release workflow: [.github/workflows/release-repo-studio-desktop.yml](../../../.github/workflows/release-repo-studio-desktop.yml).
 - Docs app: [apps/docs](../../../apps/docs). Platform app: [apps/platform](../../../apps/platform).
+
+## Canonical repos (user-confirmed)
+
+- Repo Studio app: `https://github.com/MagicbornStudios/RepoStudio`
+- Platform app: `https://github.com/MagicbornStudios/RepoStudio-Platform`
+- Docs app: `https://github.com/MagicbornStudios/repo-studio-docs`
+
+## Execution snapshot (2026-03-04)
+
+- `vendor/repo-studio` migrated and pushed to `RepoStudio` at commit `93501ab`.
+- `vendor/platform` migrated and pushed to `RepoStudio-Platform` at commit `2ec91d1`.
+- `docs/` replaced with submodule and docs content migrated/pushed to `repo-studio-docs` at commit `c1aa94f`.
+- Parent repo now tracks all three canonical sources as submodules (`.gitmodules` updated).

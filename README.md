@@ -30,6 +30,12 @@ If env keys are missing, the **env portal** opens in your browser. Fill required
 - **Docs app:** [http://localhost:3002/docs](http://localhost:3002/docs) - showcase docs with Developer + Developer (internal) in local dev
 - **Payload types:** Run `pnpm payload:types` after collection changes
 
+## Canonical GitHub repos
+
+- Repo Studio app: `https://github.com/MagicbornStudios/RepoStudio` (submodule path: `vendor/repo-studio`)
+- Platform app: `https://github.com/MagicbornStudios/RepoStudio-Platform` (submodule path: `vendor/platform`)
+- Docs app: `https://github.com/MagicbornStudios/repo-studio-docs`
+
 ---
 
 ## AI and LangGraph (in progress)

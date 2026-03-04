@@ -4,3 +4,12 @@
 [submodule "vendor/repo-studio-extensions"]
 	path = vendor/repo-studio-extensions
 	url = https://github.com/MagicbornStudios/RepoStudio-Extensions.git
+[submodule "vendor/repo-studio"]
+	path = vendor/repo-studio
+	url = https://github.com/MagicbornStudios/RepoStudio.git
+[submodule "vendor/platform"]
+	path = vendor/platform
+	url = https://github.com/MagicbornStudios/RepoStudio-Platform.git
+[submodule "docs"]
+	path = docs
+	url = https://github.com/MagicbornStudios/repo-studio-docs.git

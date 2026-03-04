@@ -16,9 +16,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Init required submodule
+      - name: Init required submodules (desktop packaging)
         run: |
+          git submodule sync -- vendor/repo-studio
           git submodule sync -- vendor/repo-studio-extensions
+          git submodule update --init --depth 1 vendor/repo-studio
           git submodule update --init --depth 1 vendor/repo-studio-extensions
 
       - name: Setup pnpm
@@ -29,6 +31,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: pnpm
           cache: pnpm
 
       - name: Verify packageManager pin
@@ -42,7 +45,6 @@ jobs:
       - name: Seed CI Env Files
         run: |
           cp apps/repo-studio/.env.example apps/repo-studio/.env
-          cp apps/platform/.env.example apps/platform/.env
 
       - name: Verify Codegen
         run: pnpm --filter @forge/repo-studio-app run codegen
@@ -57,29 +59,11 @@ jobs:
       - name: Verify Extension Registry Health
         run: pnpm --filter @forge/repo-studio-app run extensions:registry:health
 
-      - name: Build Platform App
-        run: pnpm --filter @forge/platform build
-
-      - name: Build Docs App (Linux smoke)
-        continue-on-error: true
-        shell: bash
-        env:
-          NEXT_TELEMETRY_DISABLED: '1'
-          NODE_OPTIONS: --max-old-space-size=4096
+      - name: Note dedicated platform/docs builds
         run: |
-          set -o pipefail
-          LOG_FILE="$(mktemp)"
-          set +e
-          pnpm --filter @forge/docs build 2>&1 | tee "$LOG_FILE"
-          BUILD_EXIT="${PIPESTATUS[0]}"
-          set -e
-          if [ "$BUILD_EXIT" -ne 0 ]; then
-            echo "::error title=docs-build::Build failed with exit code ${BUILD_EXIT}"
-            while IFS= read -r line; do
-              printf '::error title=docs-build-tail::%s\n' "$line"
-            done < <(tail -n 80 "$LOG_FILE")
-            exit "$BUILD_EXIT"
-          fi
+          echo "Skipping platform/docs builds in desktop release workflow."
+          echo "Platform canonical repo: MagicbornStudios/RepoStudio-Platform"
+          echo "Docs canonical repo: MagicbornStudios/repo-studio-docs"
 
       - name: Run Hydration Doctor (Linux smoke)
         continue-on-error: true
@@ -95,9 +79,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Init required submodule
+      - name: Init required submodules
         run: |
+          git submodule sync -- vendor/repo-studio
+          git submodule sync -- vendor/platform
           git submodule sync -- vendor/repo-studio-extensions
+          git submodule update --init --depth 1 vendor/repo-studio
+          git submodule update --init --depth 1 vendor/platform
           git submodule update --init --depth 1 vendor/repo-studio-extensions
 
       - name: Setup pnpm
