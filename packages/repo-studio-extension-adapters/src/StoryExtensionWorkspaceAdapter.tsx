@@ -1,23 +1,26 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import { BookOpen, Bot } from 'lucide-react';
-import { WorkspaceLayout, WorkspaceToolbar } from '@forge/shared/components/workspace';
-import { WorkspaceViewport } from '@forge/shared';
-import { AssistantPanel } from '../../../apps/repo-studio/src/components/features/assistant/AssistantPanel';
+import * as React from "react";
+import { BookOpen, Bot } from "lucide-react";
+import {
+  WorkspaceLayout,
+  WorkspaceToolbar,
+} from "@forge/shared/components/workspace";
+import { WorkspaceViewport } from "@forge/shared";
+import { AssistantPanel } from "../../../vendor/repo-studio/apps/repo-studio/src/components/features/assistant/AssistantPanel";
 import {
   getStoryPathFromViewportPanelId,
   getStoryViewportPanelId,
   StoryExplorerPanel,
   StoryPagePanel,
   useStoryWorkspaceModel,
-} from '../../../apps/repo-studio/src/components/features/story/StoryPanel';
-import { useRepoStudioShellStore } from '../../../apps/repo-studio/src/lib/app-shell/store';
+} from "../../../vendor/repo-studio/apps/repo-studio/src/components/features/story/StoryPanel";
+import { useRepoStudioShellStore } from "../../../vendor/repo-studio/apps/repo-studio/src/lib/app-shell/store";
 import {
   createHiddenPanelSet,
   isPanelVisible,
   type RepoWorkspaceProps,
-} from '../../../apps/repo-studio/src/components/workspaces/types';
+} from "../../../vendor/repo-studio/apps/repo-studio/src/components/workspaces/types";
 
 function normalizeStoryViewportPanelIds(panelIds: string[] | undefined) {
   const seen = new Set<string>();
@@ -39,9 +42,9 @@ function panelIdsEqual(a: string[], b: string[]) {
 }
 
 function getStoryTabTitle(path: string) {
-  const normalized = String(path || '').trim();
-  if (!normalized) return 'Page';
-  const parts = normalized.split('/');
+  const normalized = String(path || "").trim();
+  if (!normalized) return "Page";
+  const parts = normalized.split("/");
   return parts[parts.length - 1] || normalized;
 }
 
@@ -54,15 +57,22 @@ export function StoryExtensionWorkspaceAdapter({
   onPanelClosed,
   panelContext,
 }: RepoWorkspaceProps) {
-  const hiddenPanels = React.useMemo(() => createHiddenPanelSet(hiddenPanelIds), [hiddenPanelIds]);
-  const model = useStoryWorkspaceModel({ activeLoopId: panelContext.activeLoopId });
+  const hiddenPanels = React.useMemo(
+    () => createHiddenPanelSet(hiddenPanelIds),
+    [hiddenPanelIds],
+  );
+  const model = useStoryWorkspaceModel({
+    activeLoopId: panelContext.activeLoopId,
+  });
 
   const { activeLoopId } = panelContext;
   const viewportStateKey = React.useMemo(
     () => `${layoutId}::loop::${activeLoopId}`,
     [layoutId, activeLoopId],
   );
-  const viewportState = useRepoStudioShellStore((s) => s.viewportState[viewportStateKey]);
+  const viewportState = useRepoStudioShellStore(
+    (s) => s.viewportState[viewportStateKey],
+  );
   const setViewportState = useRepoStudioShellStore((s) => s.setViewportState);
 
   const openPanelIds = React.useMemo(
@@ -72,7 +82,8 @@ export function StoryExtensionWorkspaceAdapter({
 
   const activePanelId = React.useMemo(() => {
     if (!viewportState?.activeId) return null;
-    const normalized = normalizeStoryViewportPanelIds([viewportState.activeId])[0] || null;
+    const normalized =
+      normalizeStoryViewportPanelIds([viewportState.activeId])[0] || null;
     if (!normalized) return null;
     return openPanelIds.includes(normalized) ? normalized : null;
   }, [openPanelIds, viewportState?.activeId]);
@@ -86,11 +97,15 @@ export function StoryExtensionWorkspaceAdapter({
       const path = getStoryPathFromViewportPanelId(panelId);
       return Boolean(path && model.pagePathSet.has(path));
     });
-    const nextActive = activePanelId && validOpen.includes(activePanelId)
-      ? activePanelId
-      : (validOpen[0] || null);
+    const nextActive =
+      activePanelId && validOpen.includes(activePanelId)
+        ? activePanelId
+        : validOpen[0] || null;
 
-    if (!panelIdsEqual(validOpen, openPanelIds) || nextActive !== activePanelId) {
+    if (
+      !panelIdsEqual(validOpen, openPanelIds) ||
+      nextActive !== activePanelId
+    ) {
       setViewportState(viewportStateKey, {
         openIds: validOpen,
         activeId: nextActive,
@@ -111,69 +126,82 @@ export function StoryExtensionWorkspaceAdapter({
     }
   }, [activePanelId, openPanelIds, setViewportState, viewportStateKey]);
 
-  const openStoryPath = React.useCallback((path: string) => {
-    if (!path) return;
-    const panelId = getStoryViewportPanelId(path);
-    const nextOpen = openPanelIds.includes(panelId)
-      ? openPanelIds
-      : [...openPanelIds, panelId];
-    setViewportState(viewportStateKey, {
-      openIds: nextOpen,
-      activeId: panelId,
-    });
-    model.setSelectedPath(path);
-    void model.openPageDraft(path);
-  }, [model, openPanelIds, setViewportState, viewportStateKey]);
+  const openStoryPath = React.useCallback(
+    (path: string) => {
+      if (!path) return;
+      const panelId = getStoryViewportPanelId(path);
+      const nextOpen = openPanelIds.includes(panelId)
+        ? openPanelIds
+        : [...openPanelIds, panelId];
+      setViewportState(viewportStateKey, {
+        openIds: nextOpen,
+        activeId: panelId,
+      });
+      model.setSelectedPath(path);
+      void model.openPageDraft(path);
+    },
+    [model, openPanelIds, setViewportState, viewportStateKey],
+  );
 
-  const handleViewportOpenChange = React.useCallback((nextOpenIds: string[]) => {
-    const normalizedNextOpenIds = normalizeStoryViewportPanelIds(nextOpenIds);
-    const nextSet = new Set(normalizedNextOpenIds);
-    for (const panelId of openPanelIds) {
-      if (nextSet.has(panelId)) continue;
+  const handleViewportOpenChange = React.useCallback(
+    (nextOpenIds: string[]) => {
+      const normalizedNextOpenIds = normalizeStoryViewportPanelIds(nextOpenIds);
+      const nextSet = new Set(normalizedNextOpenIds);
+      for (const panelId of openPanelIds) {
+        if (nextSet.has(panelId)) continue;
+        const path = getStoryPathFromViewportPanelId(panelId);
+        if (path) model.dropDraft(path);
+      }
+      setViewportState(viewportStateKey, { openIds: normalizedNextOpenIds });
+    },
+    [model, openPanelIds, setViewportState, viewportStateKey],
+  );
+
+  const handleViewportActiveChange = React.useCallback(
+    (nextActiveId: string | null) => {
+      const normalizedActiveId = nextActiveId
+        ? normalizeStoryViewportPanelIds([nextActiveId])[0] || null
+        : null;
+      setViewportState(viewportStateKey, { activeId: normalizedActiveId });
+
+      const activePath = getStoryPathFromViewportPanelId(normalizedActiveId);
+      if (activePath) {
+        model.setSelectedPath(activePath);
+        void model.openPageDraft(activePath);
+      }
+    },
+    [model, setViewportState, viewportStateKey],
+  );
+
+  const handleBeforeCloseTab = React.useCallback(
+    (panelId: string) => {
       const path = getStoryPathFromViewportPanelId(panelId);
-      if (path) model.dropDraft(path);
-    }
-    setViewportState(viewportStateKey, { openIds: normalizedNextOpenIds });
-  }, [model, openPanelIds, setViewportState, viewportStateKey]);
-
-  const handleViewportActiveChange = React.useCallback((nextActiveId: string | null) => {
-    const normalizedActiveId = nextActiveId
-      ? normalizeStoryViewportPanelIds([nextActiveId])[0] || null
-      : null;
-    setViewportState(viewportStateKey, { activeId: normalizedActiveId });
-
-    const activePath = getStoryPathFromViewportPanelId(normalizedActiveId);
-    if (activePath) {
-      model.setSelectedPath(activePath);
-      void model.openPageDraft(activePath);
-    }
-  }, [model, setViewportState, viewportStateKey]);
-
-  const handleBeforeCloseTab = React.useCallback((panelId: string) => {
-    const path = getStoryPathFromViewportPanelId(panelId);
-    if (!path) return true;
-    return model.confirmClosePath(path);
-  }, [model]);
+      if (!path) return true;
+      return model.confirmClosePath(path);
+    },
+    [model],
+  );
 
   const viewportPanels = React.useMemo(
-    () => openPanelIds
-      .map((panelId) => {
-        const path = getStoryPathFromViewportPanelId(panelId);
-        if (!path) return null;
-        return {
-          id: panelId,
-          title: getStoryTabTitle(path),
-          icon: <BookOpen size={14} />,
-          content: (
-            <StoryPagePanel
-              model={model}
-              path={path}
-              onCopyText={panelContext.onCopyText}
-            />
-          ),
-        };
-      })
-      .filter((panel): panel is NonNullable<typeof panel> => panel != null),
+    () =>
+      openPanelIds
+        .map((panelId) => {
+          const path = getStoryPathFromViewportPanelId(panelId);
+          if (!path) return null;
+          return {
+            id: panelId,
+            title: getStoryTabTitle(path),
+            icon: <BookOpen size={14} />,
+            content: (
+              <StoryPagePanel
+                model={model}
+                path={path}
+                onCopyText={panelContext.onCopyText}
+              />
+            ),
+          };
+        })
+        .filter((panel): panel is NonNullable<typeof panel> => panel != null),
     [model, openPanelIds, panelContext.onCopyText],
   );
 
@@ -182,9 +210,7 @@ export function StoryExtensionWorkspaceAdapter({
       <WorkspaceToolbar className="shrink-0 border-b border-border px-2 py-1">
         <WorkspaceToolbar.Left />
         <WorkspaceToolbar.Center>
-          <span className="text-xs text-muted-foreground">
-            Story
-          </span>
+          <span className="text-xs text-muted-foreground">Story</span>
         </WorkspaceToolbar.Center>
       </WorkspaceToolbar>
       <WorkspaceLayout
@@ -196,18 +222,23 @@ export function StoryExtensionWorkspaceAdapter({
         className="min-h-0 flex-1"
       >
         <WorkspaceLayout.Left hideTabBar>
-          {isPanelVisible(hiddenPanels, 'story') ? (
-            <WorkspaceLayout.Panel id="story" title="Story" icon={<BookOpen size={14} />}>
-              <StoryExplorerPanel
-                model={model}
-                onOpenPath={openStoryPath}
-              />
+          {isPanelVisible(hiddenPanels, "story") ? (
+            <WorkspaceLayout.Panel
+              id="story"
+              title="Story"
+              icon={<BookOpen size={14} />}
+            >
+              <StoryExplorerPanel model={model} onOpenPath={openStoryPath} />
             </WorkspaceLayout.Panel>
           ) : null}
         </WorkspaceLayout.Left>
 
         <WorkspaceLayout.Main hideTabBar>
-          <WorkspaceLayout.Panel id="viewport" title="Viewport" icon={<BookOpen size={14} />}>
+          <WorkspaceLayout.Panel
+            id="viewport"
+            title="Viewport"
+            icon={<BookOpen size={14} />}
+          >
             <WorkspaceViewport
               panels={viewportPanels}
               openIds={openPanelIds}
@@ -216,18 +247,22 @@ export function StoryExtensionWorkspaceAdapter({
               onActiveChange={handleViewportActiveChange}
               allowEmpty
               onBeforeCloseTab={handleBeforeCloseTab}
-              emptyState={(
+              emptyState={
                 <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
                   Open a page from Story panel.
                 </div>
-              )}
+              }
             />
           </WorkspaceLayout.Panel>
         </WorkspaceLayout.Main>
 
         <WorkspaceLayout.Right hideTabBar>
-          {isPanelVisible(hiddenPanels, 'assistant') ? (
-            <WorkspaceLayout.Panel id="assistant" title="Assistant" icon={<Bot size={14} />}>
+          {isPanelVisible(hiddenPanels, "assistant") ? (
+            <WorkspaceLayout.Panel
+              id="assistant"
+              title="Assistant"
+              icon={<Bot size={14} />}
+            >
               <AssistantPanel defaultRuntime="forge" />
             </WorkspaceLayout.Panel>
           ) : null}

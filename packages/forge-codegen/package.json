@@ -10,8 +10,8 @@
     "cli.mjs"
   ],
   "scripts": {
-    "codegen:layout:repo-studio": "node cli.mjs layout --config ../../apps/repo-studio/forge-codegen.config.mjs",
-    "codegen:settings:repo-studio": "node cli.mjs settings --config ../../apps/repo-studio/forge-codegen.config.mjs"
+    "codegen:layout:repo-studio": "node cli.mjs layout --config ../../vendor/repo-studio/apps/repo-studio/forge-codegen.config.mjs",
+    "codegen:settings:repo-studio": "node cli.mjs settings --config ../../vendor/repo-studio/apps/repo-studio/forge-codegen.config.mjs"
   },
   "engines": {
     "node": ">=18"

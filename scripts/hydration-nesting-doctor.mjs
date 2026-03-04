@@ -12,8 +12,8 @@ const require = createRequire(import.meta.url);
 function loadTypeScript() {
   const roots = [
     process.cwd(),
-    path.join(process.cwd(), "apps", "repo-studio"),
-    path.join(process.cwd(), "apps", "platform"),
+    path.join(process.cwd(), "vendor", "repo-studio", "apps", "repo-studio"),
+    path.join(process.cwd(), "vendor", "platform", "apps", "platform"),
     path.join(process.cwd(), "packages", "shared"),
     path.join(process.cwd(), "packages", "ui"),
   ];
@@ -35,13 +35,19 @@ function loadTypeScript() {
 const ts = loadTypeScript();
 
 const ROOT_GLOBS = [
-  "apps/repo-studio",
-  "apps/platform",
+  "vendor/repo-studio/apps/repo-studio",
+  "vendor/platform/apps/platform",
   "packages/shared",
   "packages/ui",
 ];
 
-const interactiveNative = new Set(["button", "a", "input", "select", "textarea"]);
+const interactiveNative = new Set([
+  "button",
+  "a",
+  "input",
+  "select",
+  "textarea",
+]);
 const forgeUIButtonLike = new Set([
   "Button",
   "Switch",
@@ -102,7 +108,9 @@ function buildImportMap(sourceFile) {
       clause.namedBindings.elements.forEach((element) => {
         map.set(element.name.text, {
           module,
-          imported: element.propertyName ? element.propertyName.text : element.name.text,
+          imported: element.propertyName
+            ? element.propertyName.text
+            : element.name.text,
         });
       });
     }
@@ -129,7 +137,8 @@ function classifyElement(tagName, attributes, importMap) {
   const isKnownButtonLike =
     (imported.module.startsWith("@forge/ui/") &&
       forgeUIButtonLike.has(imported.imported)) ||
-    (imported.module === "@forge/shared" && imported.imported === "WorkspaceButton") ||
+    (imported.module === "@forge/shared" &&
+      imported.imported === "WorkspaceButton") ||
     (imported.module === "@forge/shared/components/workspace" &&
       imported.imported === "WorkspaceButton");
 
@@ -183,7 +192,9 @@ async function collectViolations(files) {
     };
 
     const record = (node, current) => {
-      const pos = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile));
+      const pos = sourceFile.getLineAndCharacterOfPosition(
+        node.getStart(sourceFile),
+      );
       const ancestor = stack[stack.length - 1];
       violations.push({
         file,
@@ -204,7 +215,11 @@ async function collectViolations(files) {
         const entersInteractiveWrapper =
           current?.kind === "buttonLike" || current?.kind === "anchorLike";
 
-        if (current && stack.length > 0 && isForbiddenDescendant(stack[stack.length - 1], current)) {
+        if (
+          current &&
+          stack.length > 0 &&
+          isForbiddenDescendant(stack[stack.length - 1], current)
+        ) {
           record(node.openingElement, current);
         }
 
@@ -215,8 +230,16 @@ async function collectViolations(files) {
       }
 
       if (ts.isJsxSelfClosingElement(node)) {
-        const current = classifyElement(node.tagName, node.attributes, importMap);
-        if (current && stack.length > 0 && isForbiddenDescendant(stack[stack.length - 1], current)) {
+        const current = classifyElement(
+          node.tagName,
+          node.attributes,
+          importMap,
+        );
+        if (
+          current &&
+          stack.length > 0 &&
+          isForbiddenDescendant(stack[stack.length - 1], current)
+        ) {
           record(node, current);
         }
         return;
@@ -249,7 +272,9 @@ async function main() {
     return;
   }
 
-  console.error("[hydration-doctor] FAIL: found nested interactive descendants:");
+  console.error(
+    "[hydration-doctor] FAIL: found nested interactive descendants:",
+  );
   violations.forEach((v) => {
     console.error(
       `  - ${v.file}:${v.line}:${v.col} -> ${v.descendant} inside ${v.ancestor}`,

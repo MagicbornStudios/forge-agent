@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import { Bot, FileText, ShieldCheck } from 'lucide-react';
-import { WorkspaceLayout } from '@forge/shared/components/workspace';
-import { WorkspaceViewport } from '@forge/shared';
-import { AssistantPanel } from '../../../apps/repo-studio/src/components/features/assistant/AssistantPanel';
-import { EnvScopeListPanel } from '../../../apps/repo-studio/src/components/features/env/EnvScopeListPanel';
-import { EnvFileEditorPanel } from '../../../apps/repo-studio/src/components/features/env/EnvFileEditorPanel';
-import { useRepoStudioShellStore } from '../../../apps/repo-studio/src/lib/app-shell/store';
+import * as React from "react";
+import { Bot, FileText, ShieldCheck } from "lucide-react";
+import { WorkspaceLayout } from "@forge/shared/components/workspace";
+import { WorkspaceViewport } from "@forge/shared";
+import { AssistantPanel } from "../../../vendor/repo-studio/apps/repo-studio/src/components/features/assistant/AssistantPanel";
+import { EnvScopeListPanel } from "../../../vendor/repo-studio/apps/repo-studio/src/components/features/env/EnvScopeListPanel";
+import { EnvFileEditorPanel } from "../../../vendor/repo-studio/apps/repo-studio/src/components/features/env/EnvFileEditorPanel";
+import { useRepoStudioShellStore } from "../../../vendor/repo-studio/apps/repo-studio/src/lib/app-shell/store";
 import {
   createHiddenPanelSet,
   isPanelVisible,
   type RepoWorkspaceProps,
-} from '../../../apps/repo-studio/src/components/workspaces/types';
+} from "../../../vendor/repo-studio/apps/repo-studio/src/components/workspaces/types";
 
 function getEnvFileTabTitle(filePath: string): string {
-  const n = filePath.replace(/\/+$/, '').trim();
-  const i = n.lastIndexOf('/');
+  const n = filePath.replace(/\/+$/, "").trim();
+  const i = n.lastIndexOf("/");
   return i < 0 ? n : n.slice(i + 1);
 }
 
@@ -28,16 +28,26 @@ export function EnvExtensionWorkspaceAdapter({
   hiddenPanelIds,
   onPanelClosed,
 }: RepoWorkspaceProps) {
-  const hiddenPanels = React.useMemo(() => createHiddenPanelSet(hiddenPanelIds), [hiddenPanelIds]);
+  const hiddenPanels = React.useMemo(
+    () => createHiddenPanelSet(hiddenPanelIds),
+    [hiddenPanelIds],
+  );
 
   const viewportStateKey = React.useMemo(() => `env::${layoutId}`, [layoutId]);
-  const viewportState = useRepoStudioShellStore((s) => s.viewportState[viewportStateKey]);
+  const viewportState = useRepoStudioShellStore(
+    (s) => s.viewportState[viewportStateKey],
+  );
   const setViewportState = useRepoStudioShellStore((s) => s.setViewportState);
 
-  const openPanelIds = React.useMemo(() => viewportState?.openIds ?? [], [viewportState?.openIds]);
+  const openPanelIds = React.useMemo(
+    () => viewportState?.openIds ?? [],
+    [viewportState?.openIds],
+  );
   const activePanelId = React.useMemo(() => {
     if (!viewportState?.activeId) return openPanelIds[0] ?? null;
-    return openPanelIds.includes(viewportState.activeId) ? viewportState.activeId : openPanelIds[0] ?? null;
+    return openPanelIds.includes(viewportState.activeId)
+      ? viewportState.activeId
+      : (openPanelIds[0] ?? null);
   }, [openPanelIds, viewportState?.activeId]);
 
   const dirtyByPathRef = React.useRef<Record<string, boolean>>({});
@@ -61,7 +71,9 @@ export function EnvExtensionWorkspaceAdapter({
   const openEnvFile = React.useCallback(
     (filePath: string) => {
       if (!filePath) return;
-      const nextOpen = openPanelIds.includes(filePath) ? openPanelIds : [...openPanelIds, filePath];
+      const nextOpen = openPanelIds.includes(filePath)
+        ? openPanelIds
+        : [...openPanelIds, filePath];
       setViewportState(viewportStateKey, {
         openIds: nextOpen,
         activeId: filePath,
@@ -87,7 +99,9 @@ export function EnvExtensionWorkspaceAdapter({
   const handleBeforeCloseTab = React.useCallback((panelId: string) => {
     const dirty = dirtyByPathRef.current[panelId];
     if (!dirty) return true;
-    return window.confirm(`Unsaved changes in ${getEnvFileTabTitle(panelId)}. Close anyway?`);
+    return window.confirm(
+      `Unsaved changes in ${getEnvFileTabTitle(panelId)}. Close anyway?`,
+    );
   }, []);
 
   const viewportPanels = React.useMemo(
@@ -116,7 +130,11 @@ export function EnvExtensionWorkspaceAdapter({
       className="h-full"
     >
       <WorkspaceLayout.Left>
-        <WorkspaceLayout.Panel id="env-tree" title="Env" icon={<ShieldCheck size={14} />}>
+        <WorkspaceLayout.Panel
+          id="env-tree"
+          title="Env"
+          icon={<ShieldCheck size={14} />}
+        >
           <EnvScopeListPanel
             selectedFilePath={activePanelId}
             onOpenFile={openEnvFile}
@@ -124,7 +142,11 @@ export function EnvExtensionWorkspaceAdapter({
         </WorkspaceLayout.Panel>
       </WorkspaceLayout.Left>
       <WorkspaceLayout.Main hideTabBar>
-        <WorkspaceLayout.Panel id="viewport" title="Viewport" icon={<FileText size={14} />}>
+        <WorkspaceLayout.Panel
+          id="viewport"
+          title="Viewport"
+          icon={<FileText size={14} />}
+        >
           <WorkspaceViewport
             panels={viewportPanels}
             openIds={openPanelIds}
@@ -133,17 +155,21 @@ export function EnvExtensionWorkspaceAdapter({
             onActiveChange={handleViewportActiveChange}
             allowEmpty
             onBeforeCloseTab={handleBeforeCloseTab}
-            emptyState={(
+            emptyState={
               <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
                 Select an env file from the tree.
               </div>
-            )}
+            }
           />
         </WorkspaceLayout.Panel>
       </WorkspaceLayout.Main>
       <WorkspaceLayout.Right hideTabBar>
-        {isPanelVisible(hiddenPanels, 'assistant') ? (
-          <WorkspaceLayout.Panel id="assistant" title="Assistant" icon={<Bot size={14} />}>
+        {isPanelVisible(hiddenPanels, "assistant") ? (
+          <WorkspaceLayout.Panel
+            id="assistant"
+            title="Assistant"
+            icon={<Bot size={14} />}
+          >
             <AssistantPanel defaultRuntime="forge" />
           </WorkspaceLayout.Panel>
         ) : null}

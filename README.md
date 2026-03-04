@@ -118,7 +118,7 @@ pnpm forge-env:doctor -- --mode headless --strict
 **Package entrypoint:** `npx @forge/forge-loop --help` (after publish)
 **Env package:** `@forge/forge-env` (`pnpm forge-env --help`, `npx @forge/forge-env --help` after publish)
 **RepoStudio package:** `@forge/repo-studio` (`pnpm forge-repo-studio open --view forge-loop`, `npx @forge/repo-studio open`)
-**RepoStudio runbooks:** `packages/repo-studio/docs/01-quickstart.md` ... `packages/repo-studio/docs/05-assistant.md`
+**RepoStudio runbooks:** `vendor/repo-studio/packages/repo-studio/docs/01-quickstart.md` ... `vendor/repo-studio/packages/repo-studio/docs/05-assistant.md`
 
 ---
 
