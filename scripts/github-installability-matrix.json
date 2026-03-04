@@ -1,0 +1,123 @@
+{
+  "entries": [
+    {
+      "name": "@forge/docs",
+      "path": "apps/docs",
+      "mode": "dedicated_repo_app",
+      "repo": "https://github.com/MagicbornStudios/repo-studio-docs",
+      "notes": "Canonical docs source is dedicated repo; root docs content is mounted via submodule."
+    },
+    {
+      "name": "@forge/platform",
+      "path": "vendor/platform/apps/platform",
+      "mode": "dedicated_repo_app",
+      "repo": "https://github.com/MagicbornStudios/RepoStudio-Platform",
+      "notes": "Canonical platform source is dedicated repo and consumed via vendor/platform submodule."
+    },
+    {
+      "name": "@forge/repo-studio-app",
+      "path": "vendor/repo-studio/apps/repo-studio",
+      "mode": "dedicated_repo_app",
+      "repo": "https://github.com/MagicbornStudios/RepoStudio",
+      "notes": "Canonical app source is dedicated repo and consumed via vendor/repo-studio submodule."
+    },
+    {
+      "name": "@forge/agent-engine",
+      "path": "packages/agent-engine",
+      "mode": "repo_coupled_package",
+      "repo": "https://github.com/MagicbornStudios/forge-agent",
+      "notes": "Install via monorepo clone; depends on in-repo @forge/shared."
+    },
+    {
+      "name": "@forge/assistant-runtime",
+      "path": "packages/assistant-runtime",
+      "mode": "repo_coupled_package",
+      "repo": "https://github.com/MagicbornStudios/forge-agent",
+      "notes": "Install via monorepo clone; depends on in-repo @forge/types."
+    },
+    {
+      "name": "@forge/dev-kit",
+      "path": "packages/dev-kit",
+      "mode": "repo_coupled_package",
+      "repo": "https://github.com/MagicbornStudios/forge-agent",
+      "notes": "Install via monorepo clone; depends on multiple in-repo packages."
+    },
+    {
+      "name": "@forge/domain-character",
+      "path": "packages/domain-character",
+      "mode": "repo_coupled_package",
+      "repo": "https://github.com/MagicbornStudios/forge-agent",
+      "notes": "Install via monorepo clone; depends on in-repo shared/types."
+    },
+    {
+      "name": "@forge/domain-forge",
+      "path": "packages/domain-forge",
+      "mode": "repo_coupled_package",
+      "repo": "https://github.com/MagicbornStudios/forge-agent",
+      "notes": "Install via monorepo clone; depends on in-repo agent-engine/shared/types."
+    },
+    {
+      "name": "@forge/forge-codegen",
+      "path": "packages/forge-codegen",
+      "mode": "standalone_package",
+      "repo": "https://github.com/MagicbornStudios/forge-agent",
+      "notes": "Standalone package; smoke-tested via packed install."
+    },
+    {
+      "name": "@forge/forge-env",
+      "path": "packages/forge-env",
+      "mode": "standalone_package",
+      "repo": "https://github.com/MagicbornStudios/forge-agent",
+      "notes": "Standalone package; smoke-tested via packed install."
+    },
+    {
+      "name": "@forge/forge-loop",
+      "path": "packages/forge-loop",
+      "mode": "standalone_package",
+      "repo": "https://github.com/MagicbornStudios/forge-agent",
+      "notes": "Standalone package; smoke-tested via packed install."
+    },
+    {
+      "name": "@forge/repo-studio-extension-adapters",
+      "path": "packages/repo-studio-extension-adapters",
+      "mode": "repo_coupled_package",
+      "repo": "https://github.com/MagicbornStudios/forge-agent",
+      "notes": "Install via monorepo clone; depends on in-repo shared/ui."
+    },
+    {
+      "name": "@forge/repo-studio",
+      "path": "vendor/repo-studio/packages/repo-studio",
+      "mode": "standalone_package",
+      "repo": "https://github.com/MagicbornStudios/RepoStudio",
+      "notes": "Standalone CLI package hosted in canonical RepoStudio repo; smoke-tested via packed install."
+    },
+    {
+      "name": "@forge/shared",
+      "path": "packages/shared",
+      "mode": "repo_coupled_package",
+      "repo": "https://github.com/MagicbornStudios/forge-agent",
+      "notes": "Install via monorepo clone; depends on in-repo @forge/ui."
+    },
+    {
+      "name": "@forge/types",
+      "path": "packages/types",
+      "mode": "standalone_package",
+      "repo": "https://github.com/MagicbornStudios/forge-agent",
+      "notes": "Standalone source package; smoke-tested via packed install."
+    },
+    {
+      "name": "@forge/ui",
+      "path": "packages/ui",
+      "mode": "standalone_package",
+      "repo": "https://github.com/MagicbornStudios/forge-agent",
+      "notes": "Standalone package; smoke-tested via packed install."
+    },
+    {
+      "name": "@forge/yarn-converter",
+      "path": "packages/yarn-converter",
+      "mode": "repo_coupled_package",
+      "repo": "https://github.com/MagicbornStudios/forge-agent",
+      "notes": "Install via monorepo clone; depends on in-repo @forge/types."
+    }
+  ]
+}

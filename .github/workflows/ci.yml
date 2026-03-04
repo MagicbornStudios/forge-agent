@@ -24,8 +24,8 @@ jobs:
         with:
           filters: |
             repo_studio:
-              - 'apps/repo-studio/**'
-              - 'packages/repo-studio/**'
+              - 'vendor/repo-studio/apps/repo-studio/**'
+              - 'vendor/repo-studio/packages/repo-studio/**'
               - 'packages/repo-studio-extension-adapters/**'
               - 'packages/shared/**'
               - 'packages/types/**'
@@ -78,7 +78,7 @@ jobs:
         if: steps.changes.outputs.repo_studio == 'true'
         uses: actions/cache@v4
         with:
-          path: apps/repo-studio/.next/cache
+          path: vendor/repo-studio/apps/repo-studio/.next/cache
           key: ${{ runner.os }}-repo-studio-next-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-repo-studio-next-${{ hashFiles('pnpm-lock.yaml') }}-

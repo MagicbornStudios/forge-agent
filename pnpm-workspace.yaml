@@ -1,3 +1,9 @@
 packages:
   - "apps/*"
   - "packages/*"
+  - "!apps/repo-studio"
+  - "!apps/platform"
+  - "!packages/repo-studio"
+  - "vendor/repo-studio/apps/*"
+  - "vendor/repo-studio/packages/*"
+  - "vendor/platform/apps/*"

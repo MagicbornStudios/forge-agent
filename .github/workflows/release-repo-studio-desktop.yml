@@ -44,7 +44,7 @@ jobs:
 
       - name: Seed CI Env Files
         run: |
-          cp apps/repo-studio/.env.example apps/repo-studio/.env
+          cp vendor/repo-studio/apps/repo-studio/.env.example vendor/repo-studio/apps/repo-studio/.env
 
       - name: Verify Codegen
         run: pnpm --filter @forge/repo-studio-app run codegen
@@ -111,16 +111,16 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Seed Repo Studio CI Env
-        run: Copy-Item apps/repo-studio/.env.example apps/repo-studio/.env
+        run: Copy-Item vendor/repo-studio/apps/repo-studio/.env.example vendor/repo-studio/apps/repo-studio/.env
 
       - name: Build Strict Standalone Desktop Payload
         shell: pwsh
         timeout-minutes: 35
         run: |
           $logFile = Join-Path $env:RUNNER_TEMP 'desktop-standalone-build.log'
-          $diagFile = 'packages/repo-studio/.desktop-build/failure-diagnostics.json'
+          $diagFile = 'vendor/repo-studio/packages/repo-studio/.desktop-build/failure-diagnostics.json'
 
-          $command = "node packages/repo-studio/src/desktop/build.mjs --require-standalone"
+          $command = "node vendor/repo-studio/packages/repo-studio/src/desktop/build.mjs --require-standalone"
           & cmd /d /s /c "$command 1>$logFile 2>&1"
           $standaloneExit = $LASTEXITCODE
 
@@ -155,7 +155,7 @@ jobs:
         timeout-minutes: 20
         run: |
           pnpm --filter @forge/repo-studio run desktop:verify:standalone
-          Push-Location packages/repo-studio
+          Push-Location vendor/repo-studio/packages/repo-studio
           try {
             .\node_modules\.bin\electron-builder.CMD --config electron-builder.json --win dir --publish never
           } finally {
@@ -166,7 +166,7 @@ jobs:
         shell: pwsh
         timeout-minutes: 12
         run: |
-          $winUnpackedExe = "packages/repo-studio/dist/desktop/win-unpacked/RepoStudio.exe"
+          $winUnpackedExe = "vendor/repo-studio/packages/repo-studio/dist/desktop/win-unpacked/RepoStudio.exe"
           if (-not (Test-Path $winUnpackedExe)) {
             Write-Host "::error title=desktop-runtime-smoke::Missing win-unpacked executable at $winUnpackedExe"
             exit 1
@@ -225,7 +225,7 @@ jobs:
         shell: pwsh
         timeout-minutes: 20
         run: |
-          Push-Location packages/repo-studio
+          Push-Location vendor/repo-studio/packages/repo-studio
           try {
             .\node_modules\.bin\electron-builder.CMD --prepackaged dist/desktop/win-unpacked --config electron-builder.json --win nsis portable --publish never
           } finally {
@@ -236,7 +236,7 @@ jobs:
         shell: pwsh
         timeout-minutes: 20
         run: |
-          Push-Location packages/repo-studio
+          Push-Location vendor/repo-studio/packages/repo-studio
           try {
             .\node_modules\.bin\electron-builder.CMD --prepackaged dist/desktop/win-unpacked --config electron-builder.silent.json --win nsis --publish never
           } finally {
@@ -341,7 +341,7 @@ jobs:
       - name: Generate SHA256 Checksums
         shell: pwsh
         run: |
-          $artifactDir = "packages/repo-studio/dist/desktop"
+          $artifactDir = "vendor/repo-studio/packages/repo-studio/dist/desktop"
           $setupFile = Get-ChildItem -Path (Join-Path $artifactDir "RepoStudio Setup *.exe") |
             Sort-Object LastWriteTime -Descending |
             Select-Object -First 1
@@ -370,13 +370,13 @@ jobs:
         with:
           name: repostudio-desktop-windows
           path: |
-            packages/repo-studio/dist/desktop/RepoStudio Setup *.exe
-            packages/repo-studio/dist/desktop/RepoStudio Silent Setup *.exe
-            packages/repo-studio/dist/desktop/RepoStudio Setup *.exe.blockmap
-            packages/repo-studio/dist/desktop/RepoStudio Silent Setup *.exe.blockmap
-            packages/repo-studio/dist/desktop/RepoStudio [0-9]*.exe
-            packages/repo-studio/dist/desktop/RepoStudio [0-9]*.exe.blockmap
-            packages/repo-studio/dist/desktop/RepoStudio-*.txt
+            vendor/repo-studio/packages/repo-studio/dist/desktop/RepoStudio Setup *.exe
+            vendor/repo-studio/packages/repo-studio/dist/desktop/RepoStudio Silent Setup *.exe
+            vendor/repo-studio/packages/repo-studio/dist/desktop/RepoStudio Setup *.exe.blockmap
+            vendor/repo-studio/packages/repo-studio/dist/desktop/RepoStudio Silent Setup *.exe.blockmap
+            vendor/repo-studio/packages/repo-studio/dist/desktop/RepoStudio [0-9]*.exe
+            vendor/repo-studio/packages/repo-studio/dist/desktop/RepoStudio [0-9]*.exe.blockmap
+            vendor/repo-studio/packages/repo-studio/dist/desktop/RepoStudio-*.txt
 
   release:
     runs-on: ubuntu-latest
