@@ -18,16 +18,17 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsup && node scripts/copy-editor-styles.cjs"
+    "build": "tsup && node scripts/copy-editor-styles.cjs",
+    "prepare": "tsup && node scripts/copy-editor-styles.cjs"
   },
   "publishConfig": {
     "registry": "http://localhost:4873"
   },
   "dependencies": {
-    "@forge/forge-codegen": "workspace:*",
-    "@forge/ui": "workspace:*",
-    "@forge/shared": "workspace:*",
-    "@forge/agent-engine": "workspace:*"
+    "@forge/forge-codegen": "file:../forge-codegen",
+    "@forge/ui": "file:../ui",
+    "@forge/shared": "file:../shared",
+    "@forge/agent-engine": "file:../agent-engine"
   },
   "devDependencies": {
     "tsup": "^8.5.0"

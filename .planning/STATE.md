@@ -5,7 +5,7 @@
 Phase: 15
 Plan: 15-01
 Status: Execution in progress
-Last activity: 2026-03-01 - FRG-1534 reliability cut in progress: shipped Windows custom-frame desktop header controls (in-app menubar + minimize/maximize/close IPC), hid native menu frame for desktop window, and validated Repo Studio app build after bridge/type updates
+Last activity: 2026-03-04 - GitHub installability hardening and submodule execution: added vendor/repo-studio and vendor/platform submodules, updated release workflow submodule init, verified repo-studio app build with submodules present, and added doctor/smoke + install matrix checks
 
 ## Execution
 
@@ -13,7 +13,15 @@ Last activity: 2026-03-01 - FRG-1534 reliability cut in progress: shipped Window
 - Active plan: 15-01 (Master plan - execute shift in tracked slices)
 - Active task: FRG-1534 Fix post-publish desktop readiness defects (CI guard relax + installer/runtime hardening closeout)
 
+## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 15.1 inserted after Phase 15: GitHub-first package installability (URGENT)
+
 ## Strategic shift (Phase 15)
+
+- **Immediate prerequisite:** Phase 15.1 (GitHub-first package installability) now sits before Phase 16. Use `.planning/phases/15.1-github-first-package-installability/` as the source of truth for package install hardening.
 
 - **Goal:** Archive Studio app; move Character and Dialogue to studio examples in RepoStudio-Extensions; move consumer-studio to `assistant-only` studio example; deprecate forge graphs and Yarn Spinner dialogue on platform; platform supports Repo Studio first.
 - **Process:** Loop (discuss -> plan -> execute -> verify); PRD, phases, tasks, decisions in .planning. See `.planning/phases/15-strategic-shift-repo-studio-platform-focus/` (CONTEXT, PRD, 15-01-PLAN).

@@ -1,7 +1,7 @@
 {
   "name": "@forge/yarn-converter",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -13,10 +13,15 @@
   },
   "scripts": {
     "build": "tsup",
+    "prepare": "tsup",
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch"
   },
+  "files": [
+    "src",
+    "dist"
+  ],
   "dependencies": {
-    "@forge/types": "workspace:*"
+    "@forge/types": "file:../types"
   },
   "devDependencies": {
     "tsup": "^8.5.0",

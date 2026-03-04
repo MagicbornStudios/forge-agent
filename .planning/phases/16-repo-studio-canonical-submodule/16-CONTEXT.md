@@ -7,7 +7,7 @@ Repo Studio app source of truth lives in a separate GitHub repo ([MagicbornStudi
 ## Source of truth
 
 - **`.planning/`** — PRIMARY. STATE, ROADMAP, DECISIONS, TASK-REGISTRY, and this phase folder.
-- Repo Studio app canonical source: **MagicbornStudios/RepoStudio** (separate repo).
+- Repo Studio app canonical source: **MagicbornStudios/RepoStudio** (`https://github.com/MagicbornStudios/RepoStudio`).
 
 ## Key documents
 

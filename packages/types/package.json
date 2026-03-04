@@ -1,9 +1,21 @@
 {
   "name": "@forge/types",
-  "private": true,
-  "version": "0.0.0",
+  "private": false,
+  "version": "0.1.0",
+  "type": "module",
   "types": "src/index.ts",
   "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./graph": "./src/graph.ts",
+    "./payload": "./src/payload.ts",
+    "./page": "./src/page.ts",
+    "./character": "./src/character.ts",
+    "./payload-types": "./src/payload-types.ts"
+  },
+  "files": [
+    "src"
+  ],
   "devDependencies": {
     "payload": "^3.74.0"
   }

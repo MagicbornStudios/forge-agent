@@ -20,7 +20,8 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsup"
+    "build": "tsup",
+    "prepare": "tsup"
   },
   "publishConfig": {
     "registry": "http://localhost:4873"

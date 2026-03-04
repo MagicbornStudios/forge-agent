@@ -29,8 +29,9 @@ Phase 15 archive execution note: `apps/studio` and `apps/consumer-studio` are no
 - [x] **Phase 13: AI runtimes correction and Database workspace** - Register AI runtimes/companion work in the loop, fix Database workspace to use embedded Drizzle Studio, and sync legacy artifacts
 - [x] **Phase 14: AI/chat-first hard-cut and consumer studio reference** - Canonical shared assistant surface, inline workspace panel composition, `assistantTarget` contracts, companion runtime reuse, and chat-only consumer app
 - [ ] **Phase 15: Strategic shift — Repo Studio + Platform focus** - Archive Studio app; move Character and Dialogue workspaces to extensions (other repo); turn consumer-studio into extension; deprecate forge graphs and Yarn Spinner dialogue on platform; platform supports Repo Studio first
+- [ ] **Phase 15.1: GitHub-first package installability (INSERTED)** - Remove workspace-only install assumptions, make package boundaries GitHub-safe, and define app/submodule install surfaces before Phase 16 canonicalization
 - [ ] **Phase 16: Repo Studio canonical submodule** - Add MagicbornStudios/RepoStudio as submodule (vendor/repo-studio); verify in GitHub, pull, and build in monorepo; then switch to canonical build from submodule so monorepo is shared packages + platform + Repo Studio (submodule)
-- [ ] **Phase 17: Platform submodule and docs deploy** - Platform in RepoStudio-Platform repo and as submodule (vendor/platform); docs site (apps/docs) and platform on Vercel; deployment matrix (docs Vercel, platform Vercel, npm, Electron Releases)
+- [ ] **Phase 17: Platform submodule and docs deploy** - Platform in RepoStudio-Platform repo and as submodule (vendor/platform); docs site in repo-studio-docs and platform on Vercel; deployment matrix (docs Vercel, platform Vercel, npm, Electron Releases)
 - [ ] **Phase 18: Platform integration gateway** - Platform as BFF: Open Router proxy, extension install proxy, capability flags in auth response; Repo Studio uses proxy when connected
 - [ ] **Phase 19: Planning assistant context and tools** - Ensure assistant receives loopId/workspaceId/selectedDocId; add plan-specific Forge tools (add task, update status, open planning doc); optional LangGraph for planning orchestration and multi-loop awareness
 - [ ] **Phase 20: Planning artifacts first-class in Repo Studio — DoD, HUMAN-TASKS, panels, unified todos** - Bake DoD and HUMAN-TASKS into snapshot and panels; unified "my todos | agent tasks" view with correlation; optional on-load Codex "what to do" and human-blocker notifications
@@ -214,23 +215,33 @@ Plans:
 - [x] 14-03: Shared companion runtime switch/store/url hook + Studio adoption
 - [x] 14-04: Remove `examples/consumer`, add `apps/consumer-studio`, add AI/chat-first semantic guard scripts
 
+### Phase 15.1: GitHub-first package installability
+**Goal:** Make every package boundary installable from GitHub by removing workspace-protocol coupling, adding GitHub-safe package hooks/exports, and defining which app surfaces stay repo/submodule-first instead of registry-first.
+**Depends on:** Phase 15 active cleanup; must complete before Phase 16 canonical submodule switch hardens the repo split.
+**Plans:** 3 plans
+
+Plans:
+- [x] 15.1-01: Normalize package manifests (remove `workspace:*`, add `file:` links/exports/files/prepare hooks, publish-blocking flag review)
+- [x] 15.1-02: Add GitHub installability diagnostics and smoke verification for every package boundary
+- [x] 15.1-03: Finalize app and outlier install surfaces (repo clone vs submodule vs dedicated repo) and close remaining blockers
+
 ### Phase 16: Repo Studio canonical submodule
 **Goal:** Repo Studio app is canonical in MagicbornStudios/RepoStudio; include as submodule and build from it so the monorepo is shared packages + platform + Repo Studio (submodule).
 **Depends on:** Phase 15 (release cut); RepoStudio repo on GitHub with initial structure
 **Plans:** 2 plans
 
 Plans:
-- [ ] 16-01: Add submodule at vendor/repo-studio; verify repo on GitHub, pullable, and monorepo builds with submodule
+- [x] 16-01: Add submodule at vendor/repo-studio; verify repo on GitHub, pullable, and monorepo builds with submodule
 - [ ] 16-02: Switch to canonical build from submodule (workspace integration, next-server/build.mjs resolution, release workflow; remove/archive in-repo app/package)
 
 ### Phase 17: Platform submodule and docs deploy
-**Goal:** Platform in own repo (RepoStudio-Platform) and as submodule in forge-agent; docs site and platform both on Vercel; forge-agent = docs + shared packages + Electron releases + submodules; deployment matrix documented.
+**Goal:** Platform in own repo (RepoStudio-Platform) and as submodule in forge-agent; docs site in repo-studio-docs and platform both on Vercel; forge-agent = shared packages + Electron releases + submodules; deployment matrix documented.
 **Depends on:** Phase 16 optional; RepoStudio-Platform repo on GitHub
 **Plans:** 4 plans
 
 Plans:
 - [ ] 17-01: Add Platform submodule (vendor/platform); update .gitmodules and release workflow; verify clone/build
-- [ ] 17-02: Docs site Vercel-ready and deploy from forge-agent; record docs URL
+- [ ] 17-02: Docs site Vercel-ready and deploy from repo-studio-docs; record docs URL
 - [ ] 17-03: Platform deploy from RepoStudio-Platform repo; env NEXT_PUBLIC_DOCS_APP_URL; remove/archive apps/platform when submodule canonical
 - [ ] 17-04: Deployment matrix and CI; release workflow update; STATE/DECISIONS
 

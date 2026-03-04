@@ -10,20 +10,23 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
-    }
+    },
+    "./workflow/*": "./src/workflow/*.ts"
   },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsup"
+    "build": "tsup",
+    "prepare": "tsup"
   },
   "publishConfig": {
     "registry": "http://localhost:4873"
   },
   "dependencies": {
-    "@forge/shared": "workspace:*"
+    "@forge/shared": "file:../shared"
   },
   "devDependencies": {
     "tsup": "^8.5.0"

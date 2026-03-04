@@ -17,13 +17,14 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsup"
+    "build": "tsup",
+    "prepare": "tsup"
   },
   "publishConfig": {
     "registry": "http://localhost:4873"
   },
   "dependencies": {
-    "@forge/types": "workspace:*",
+    "@forge/types": "file:../types",
     "@langchain/core": "^1.1.22",
     "@langchain/langgraph": "^1.1.4",
     "@langchain/langgraph-checkpoint": "^1.0.0",

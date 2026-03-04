@@ -11,24 +11,34 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
+    "./components/app": "./src/shared/components/app/index.ts",
+    "./components/assistant-ui": "./src/shared/components/assistant-ui/index.ts",
     "./components/workspace": "./src/shared/components/workspace/index.ts",
     "./components/docs": "./src/shared/components/docs/index.ts",
+    "./components/tool-ui/plan": "./src/shared/components/tool-ui/plan/index.tsx",
+    "./components/tool-ui/plan/schema": "./src/shared/components/tool-ui/plan/schema.ts",
     "./lib/utils": "./src/shared/lib/utils.ts",
     "./styles/editor": "./dist/styles/editor.css",
-    "./assistant": "./src/shared/assistant/index.ts"
+    "./assistant": "./src/shared/assistant/index.ts",
+    "./copilot": "./src/shared/copilot/index.ts",
+    "./copilot/types": "./src/shared/copilot/types.ts",
+    "./copilot/generative-ui": "./src/shared/copilot/generative-ui/index.ts",
+    "./copilot/workflows/patch": "./src/shared/copilot/workflows/patch.ts"
   },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsup && node scripts/bundle-editor-css.cjs"
+    "build": "tsup && node scripts/bundle-editor-css.cjs",
+    "prepare": "tsup && node scripts/bundle-editor-css.cjs"
   },
   "publishConfig": {
     "registry": "http://localhost:4873"
   },
   "dependencies": {
-    "@forge/ui": "workspace:*",
+    "@forge/ui": "file:../ui",
     "@assistant-ui/react": "^0.12.9",
     "@assistant-ui/react-ai-sdk": "^1.3.6",
     "@assistant-ui/react-markdown": "^0.12.3",
@@ -56,6 +66,7 @@
     "fumadocs-core": ">=16"
   },
   "devDependencies": {
+    "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "tsup": "^8.5.0"

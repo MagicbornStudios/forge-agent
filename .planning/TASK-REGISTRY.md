@@ -104,22 +104,27 @@
 | FRG-1532 | 15 | 15-10 | Complete | Installer branding/path polish: NSIS attended install now normalizes legacy default install folder from `@forgerepo-studio` to `RepoStudio`, preserves custom paths, and aligns shortcut/uninstall display names. |
 | FRG-1533 | 15 | 15-10 | Complete | Published RepoStudio `v0.1.4` follow-up release: desktop package bumped to `0.1.4`, Windows artifacts rebuilt, and a new GitHub release is live so the default install path fix reaches downloadable installers. |
 | FRG-1534 | 15 | 15-10 | In progress | Fix post-publish desktop readiness defects: registry-based install validation + CI timeout hardening completed; this slice adds CI/release guard relaxation (workspace-semantics removed), packageManager pin verification before install, failure artifact uploads, installed-runtime readiness probe (health + runtime deps + codex CLI), reclaim child-process lineage safety (only descendants of verified RepoStudio/Codex roots are auto-targeted), and repair hardening for bad prior installs (shared install-location resolver, `desktop:repair`, `desktop:smoke:repair`, `desktop:smoke:upgrade-repair`, `smoke-install --repair-existing`, opt-in release workflow hook via `REPOSTUDIO_UPGRADE_REPAIR_SMOKE`, multi-path installer smoke monitoring so idle-stall kill only occurs before any observed install progress, release job/step timeout bounds, always-on smoke report artifacts, `desktop:cleanup:owned` post-smoke process cleanup, GitHub step-summary smoke telemetry, release-body desktop status block, primary+repair install smoke enforcement, local `desktop:smoke:diff -- --a <json> --b <json>` run comparison tooling, packaging/runtime follow-ups for pnpm-safe Next dependency resolution, standalone server-relative static copy verification, smoke-temp install location detection, and custom desktop frame controls (in-app title/header with minimize/maximize/close IPC and hidden native window menubar on Windows). |
-| FRG-1601 | 16 | 16-01 | Pending | Add submodule vendor/repo-studio → MagicbornStudios/RepoStudio; update .gitmodules. |
-| FRG-1602 | 16 | 16-01 | Pending | Release workflow: init vendor/repo-studio in verify and package_windows jobs. |
-| FRG-1603 | 16 | 16-01 | Pending | Verify: Repo on GitHub and pullable; document. |
-| FRG-1604 | 16 | 16-01 | Pending | Verify: git submodule update --init vendor/repo-studio works from fresh clone. |
-| FRG-1605 | 16 | 16-01 | Pending | Verify: With submodule present, pnpm install and Repo Studio app build succeed. |
-| FRG-1606 | 16 | 16-01 | Pending | Document: Repo Studio canonical source = MagicbornStudios/RepoStudio; submodule at vendor/repo-studio. |
+| FRG-15101 | 15.1 | 15.1-01 | In progress | Package inventory and classification: capture current package boundaries, blockers, and target GitHub install mode for every app/package manifest. |
+| FRG-15102 | 15.1 | 15.1-01 | In progress | Normalize manifests: remove `workspace:*`, replace internal links with GitHub-safe `file:` paths, and fix package boundary metadata that only works inside the monorepo. |
+| FRG-15103 | 15.1 | 15.1-01 | In progress | Add GitHub-safe package hooks: `prepare` for dist-built packages, source file inclusion where exports reference `src`, and subpath export fixes (notably `@forge/types`). |
+| FRG-15104 | 15.1 | 15.1-02 | Complete | Added `doctor:github-installability` and `smoke:github-installability`; standalone package smoke passes and repo-coupled/app surfaces are explicitly classified as skips for Phase 15.1-03. |
+| FRG-15105 | 15.1 | 15.1-03 | Complete | Finalize repo/submodule install surfaces for apps and remaining outliers; canonical repos recorded (RepoStudio, RepoStudio-Platform, repo-studio-docs) and install matrix checks added. |
+| FRG-1601 | 16 | 16-01 | Complete | Added submodule vendor/repo-studio → MagicbornStudios/RepoStudio and updated .gitmodules. |
+| FRG-1602 | 16 | 16-01 | Complete | Release workflow now inits vendor/repo-studio in verify and package_windows jobs. |
+| FRG-1603 | 16 | 16-01 | Complete | Verified repo on GitHub and pullable via submodule add + status checks. |
+| FRG-1604 | 16 | 16-01 | Complete | Verified `git submodule sync/update --init --depth 1 vendor/repo-studio` succeeds. |
+| FRG-1605 | 16 | 16-01 | Complete | Verified with submodule present: `pnpm install --ignore-scripts` and `pnpm --filter @forge/repo-studio-app build` succeed. |
+| FRG-1606 | 16 | 16-01 | Complete | Documented canonical Repo Studio source and submodule path in planning/docs updates. |
 | FRG-1610 | 16 | 16-02 | Pending | Integrate vendor/repo-studio into pnpm workspace (or document required submodule layout). |
 | FRG-1611 | 16 | 16-02 | Pending | Update next-server.mjs and build.mjs to resolve app root from submodule. |
 | FRG-1612 | 16 | 16-02 | Pending | Release workflow: run desktop build from submodule. |
 | FRG-1613 | 16 | 16-02 | Pending | Remove or archive apps/repo-studio and packages/repo-studio; update scripts/guards/docs. |
 | FRG-1614 | 16 | 16-02 | Pending | Verification: full release path produces .exe from submodule; update STATE/DECISIONS. |
-| FRG-1701 | 17 | 17-01 | Pending | Add submodule vendor/platform → RepoStudio-Platform; update .gitmodules. |
-| FRG-1702 | 17 | 17-01 | Pending | Release workflow: init vendor/platform in verify job (and optionally build platform from submodule or document that platform build is in its repo). |
-| FRG-1703 | 17 | 17-01 | Pending | Verify platform submodule clone and build (from submodule or from RepoStudio-Platform repo). |
-| FRG-1704 | 17 | 17-02 | Pending | Docs site: Vercel-ready (build/root/framework); document Vercel project setup for docs from forge-agent. |
-| FRG-1705 | 17 | 17-02 | Pending | Deploy docs app to Vercel (from forge-agent); record docs URL for env matrix. |
+| FRG-1701 | 17 | 17-01 | Complete | Added submodule vendor/platform → RepoStudio-Platform and updated .gitmodules. |
+| FRG-1702 | 17 | 17-01 | Complete | Release workflow now inits vendor/platform in verify (tracking) and skips it in package_windows for faster desktop packaging. |
+| FRG-1703 | 17 | 17-01 | In progress | Submodule clone/init verified; build verification is blocked because current upstream snapshot is README-only (no app/package build target yet). |
+| FRG-1704 | 17 | 17-02 | Pending | Docs site: Vercel-ready (build/root/framework); document Vercel project setup for docs from repo-studio-docs. |
+| FRG-1705 | 17 | 17-02 | Pending | Deploy docs app to Vercel (from repo-studio-docs); record docs URL for env matrix. |
 | FRG-1706 | 17 | 17-03 | Pending | Document platform Vercel deploy from RepoStudio-Platform repo; env NEXT_PUBLIC_DOCS_APP_URL (and related) set to docs site URL. |
 | FRG-1707 | 17 | 17-03 | Pending | Remove or archive apps/platform from forge-agent once platform submodule is canonical; update release workflow and guards. |
 | FRG-1708 | 17 | 17-04 | Pending | Deployment matrix doc: docs (Vercel), platform (Vercel), npm, Electron (Releases); repos and env/URL matrix; update STATE/DECISIONS. |

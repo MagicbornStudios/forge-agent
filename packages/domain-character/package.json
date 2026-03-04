@@ -1,12 +1,15 @@
 {
   "name": "@forge/domain-character",
-  "private": true,
-  "version": "0.0.0",
+  "private": false,
+  "version": "0.1.0",
   "types": "src/index.ts",
   "main": "src/index.ts",
+  "files": [
+    "src"
+  ],
   "dependencies": {
-    "@forge/shared": "workspace:*",
-    "@forge/types": "workspace:*"
+    "@forge/shared": "file:../shared",
+    "@forge/types": "file:../types"
   },
   "peerDependencies": {
     "react": "^19",
