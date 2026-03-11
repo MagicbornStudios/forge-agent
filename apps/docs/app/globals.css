@@ -2,7 +2,7 @@
 @import 'tw-animate-css';
 @import 'dockview/dist/styles/dockview.css';
 @import '../../../packages/shared/src/shared/styles/dockview-overrides.css';
-@import '../../platform/src/styles/theme.css';
+/* Platform theme.css not imported: docs build must work without apps/platform (Vercel/submodule). Use shared themes. */
 @import '../../../packages/shared/src/shared/styles/themes.css';
 @import '../../../packages/shared/src/shared/styles/contexts.css';
 @import '../../../packages/shared/src/shared/styles/graph.css';
